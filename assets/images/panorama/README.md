@@ -1,0 +1,1 @@
+Images for panorama can be changed on server

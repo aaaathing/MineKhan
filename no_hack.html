@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Hello this is to stop cheaters this gets loaded with onloaded.js -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+    <title>Why Hack?</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        
+        p {
+            color: red;
+            font-family: Orbitron;
+        }
+
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .message {
+            font-family: monospace;
+            font-size: 3rem;
+            color: #00ff00; /* Green color */
+            text-transform: uppercase;
+            animation: neon 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes neon {
+            0% {
+                text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00, 0 0 15px #00ff00;
+            }
+            100% {
+                text-shadow: 0 0 10px #00ff00, 0 0 15px #00ff00, 0 0 20px #00ff00;
+            }
+        }
+
+        .background-animation {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: -1;
+        }
+
+        .falling-digit {
+          position: fixed;
+          color: rgba(0, 255, 0, 0.15);
+          font-family: Monospace;
+        }
+    </style>
+</head>
+<body class="background-animation">
+    <div class="container">
+        <div class="message"><span id="user"></span> WHY CHEAT?</div>
+        <p>You know, <span id="otherUser"></span> - cheating is against the MineKhan rules. It looks like you've been using a MineKhan 'Hacked Client'. And since that is against the rules, you're lucky you're not getting banned for a while. So, consider this a warning.</p>
+    </div>
+    <script>
+      function getRandomBinary() {
+        return Math.floor(Math.random() * 2);
+      }
+
+      function getRandomX() {
+        return Math.random() * window.innerWidth;
+      }
+
+      class FallingDigit {
+        constructor() {
+          this.digit = getRandomBinary();
+          this.x = getRandomX();
+          this.y = 0;
+          this.speed = Math.random() * 5 + 2;
+          this.element = document.createElement('span');
+          this.element.innerText = this.digit;
+          this.element.style.position = 'fixed';
+          this.element.classList.add('falling-digit');
+          this.element.style.left = this.x + 'px';
+          this.element.style.top = this.y + 'px';
+          document.body.appendChild(this.element);
+        }
+
+        update() {
+          this.y += this.speed;
+          this.element.style.top = this.y + 'px';
+        }
+
+        isOutOfScreen() {
+          return this.y > window.innerHeight;
+        }
+
+        remove() {
+          document.body.removeChild(this.element);
+        }
+      }
+
+      const fallingDigits = [];
+
+      function startAnimation() {
+        setInterval(function () {
+          const digit = new FallingDigit();
+          fallingDigits.push(digit);
+        }, 200);
+
+        requestAnimationFrame(updateAnimation);
+      }
+
+      function updateAnimation() {
+        fallingDigits.forEach(function (digit) {
+          digit.update();
+
+          if (digit.isOutOfScreen()) {
+            digit.remove();
+            const index = fallingDigits.indexOf(digit);
+            fallingDigits.splice(index, 1);
+          }
+        });
+
+        requestAnimationFrame(updateAnimation);
+      }
+
+      if (document.body.classList.contains('background-animation')) {
+        startAnimation();
+      }
+    </script>
+    <script>
+      var user = null;
+
+      fetch("/server/getUser")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.text();
+      })
+      .then((text) => {
+        if(!text) {
+          console.log("couldn't log it because text content wasn't defined")
+        } else {
+          user = text;
+          document.getElementById('user').innerText=user + ",";
+          document.getElementById('otherUser').innerText=user;
+          console.log('User:', user + '.')
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching URL:', error);
+      });
+    </script>
+    <canvas id="background"></canvas>
+</body>
+</html>

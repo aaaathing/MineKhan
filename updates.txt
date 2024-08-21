@@ -1,0 +1,519 @@
+# to add update, add with time function, then title, and description. add it to the end of file
+# make sure things that happen later are after
+# time function: time => "-- "+new Date(time).getTime()+" | "+(new Date(time).toLocaleDateString(undefined,{year: "numeric", month: "long", day: "numeric"}))
+
+-- 1626034439018 | July 11, 2021
+Updated crack textures
+
+-- 1626066610672 | July 11, 2021
+Updated liquid physics.
+Liquid is now hitbox-free.
+You can place non solid blocks where you are standing.
+
+-- 1626107698911 | July 12, 2021
+Add slime block.
+Add slime block. Slime and beds are bouncy. Slime and soul sand slows you down. Soul sand is 1 pixel lower than normal block.
+
+-- 1626114879149 | July 12, 2021
+Added particles.
+For now, only digging a block makes particles.
+
+-- 1626192985315 | July 13, 2021
+Added ice, soul soil, calcite.
+
+-- 1626192985315 | July 13, 2021
+Add particle when landing on a block. Play sound when anvil falls.
+
+-- 1626286136420 | July 14, 2021
+Added loom, furnace, note block, jukebox, smoker, blast funace.
+
+-- 1626369710270 | July 15, 2021
+Added colored text.
+Its a little glitchy
+
+-- 1626632308954 | July 18, 2021
+Torches can now be placed sideways
+
+-- 1626636442607 | July 18, 2021
+v1.0.3
+
+-- 1626717529063 | July 19, 2021
+Add hunger bar.
+Add hunger bar. Hunger bar can control speed of healing.
+Added apple. Right click to eat edible stuff.
+Leaves now also drop apples.
+
+-- 1626740701840 | July 19, 2021
+Add crafting in inventory.
+It is 2x2 instead of 3x3.
+Add pickaxes
+
+-- 1626825559188 | July 20, 2021
+Blocks are categorized into different types.
+Blocks are categorized into different types.
+Different types can be mined with different things.
+For example, blocks that are rock3 type can be only mined with iron and diamond pickaxe.
+
+-- 1626901231517 | July 21, 2021
+Add spliting stacks.
+Right click to split. Only adds one to the square you clicked.
+
+-- 1626981311496 | July 22, 2021
+Add moss block, moss carpet, cave vines
+
+-- 1626985250308 | July 22, 2021
+Add spore blossoms, rooted dirt, hanging roots.
+
+-- 1626997663851 | July 22, 2021
+Add durability for pickaxes.
+
+-- 1627085796307 | July 23, 2021
+Entities work with multiplayer now.
+
+-- 1628382379381 | August 7, 2021
+Add sugarcane
+Add sugarcane, entitites are now saved when you save the world, you drop your stuff when you die, there is an animation when you get items.
+
+-- 1628546404322 | August 9, 2021
+When you save a world, an picture of the world also gets saved.
+
+-- 1628970639646 | August 14, 2021
+Fix a few lighting crashes
+Fix a few lighting crashes
+You can now dig the bedrock at the bottom of the world.
+
+-- 1628973011593 | August 14, 2021
+You can fall into the void and if you are playing in survival mode, you will die
+
+-- 1630178103542 | August 28, 2021
+Added shovels and axes.
+Added shovels and axes. Also added new crafting recipes.
+
+-- 1630542356679 | September 1, 2021
+Add musroom stuff.
+Add musroom stuff. Textures now rotate correctly which means glass panes and sideways logs are fixed.
+
+-- 1630716232851 | September 3, 2021
+Add terracotta and glazed terracotta
+
+-- 1632188540294 | September 20, 2021
+In multiplayer, your inventory will be saved.
+In multiplayer, your inventory will be saved. So if you leave and join a server, your inventory will be how it was before you left.
+
+-- 1633294912875 | October 3, 2021
+v1.0.4
+Added a better background for the main menu which is a panorama.
+Added smooth transition on the loading screen when it is done loading.
+
+-- 1633813127445 | October 9, 2021
+Experience points
+
+-- 1634083401657 | October 12, 2021
+You can now download and upload worlds.
+
+-- 1634336631981 | October 15, 2021
+There are now animated textures.
+There are now animated textures.
+Blocks that are animated currently: water, lava, nether portal, prismarine, sea lantern, stonecutter
+
+-- 1635291744304 | October 26, 2021
+Controls can now be changed by going to options > change controls
+
+-- 1635639485897 | October 30, 2021
+Updated physics so it only runs once every tick
+
+-- 1636221585057 | November 6, 2021
+Added skins
+
+-- 1638408587875 | December 1, 2021
+Textures are now updated to Minecraft 1.18 textures.
+
+-- 1638571258000 | December 3, 2021
+Added particles when breaking blocks
+
+-- 1638665686000 | December 4, 2021
+Change command decsriptions.
+
+-- 1638835284000 | December 6, 2021
+Furnace thing
+
+-- 1639015310000 | December 8, 2021
+Add vines to jungle trees
+
+-- 1639181475000 | December 10, 2021
+Add your ping
+
+-- 1639185860000 | December 10, 2021
+Update drops
+
+-- 1639268839000 | December 11, 2021
+Make diamonds to you achievment work.
+
+-- 1639330152000 | December 12, 2021
+Improve TNT
+
+-- 1639888939000 | December 18, 2021
+Change chest texture
+Probably chirstmas chest
+
+-- 1640022932825 | December 20, 2021
+Menu music has been added
+
+-- 1640052283000 | December 20, 2021
+Add durability to items
+
+-- 1640390033000 | December 24, 2021
+Change and add some things
+
+-- 1640730075000 | December 28, 2021
+Update lightTint
+
+-- 1640745337000 | December 28, 2021
+Snowballs kind of work
+
+-- 1640825871000 | December 29, 2021
+Add tomato, tomato seeds, tomato plant
+
+-- 1640992964000 | December 31, 2021
+Temperature has been added
+Shown in HUD
+
+-- 1641070293000 | January 1, 2022
+Load nether correctly
+
+-- 1641244580000 | January 3, 2022
+Multiplayer improvements
+
+-- 1641324225000 | January 4, 2022
+Bug fixes and cactus growth
+
+-- 1641428612000 | January 5, 2022
+Change chest texture back to normal
+
+-- 1641786192000 | January 9, 2022
+Cherries and stuff have been added
+Cherry log and leaves
+
+-- 1641863115000 | January 10, 2022
+Fix cracks
+
+-- 1642117189522 | January 13, 2022
+Redstone has been added. It will not be released yet.
+
+-- 1642729232420 | January 20, 2022
+Redstone torches have been added
+Redstone lamps, redstone blocks, and tnt can also be used in redstone circuits.
+
+-- 1642902092000 | January 22, 2022
+Fix redstone bugs
+
+-- 1642970349000 | January 23, 2022
+Levers have been added
+
+-- 1643075345000 | January 24, 2022
+Make note blocks work
+
+-- 1643157104000 | January 25, 2022
+Add note particles
+
+-- 1643330922000 | January 27, 2022
+Add biome tinting
+Desert grass more yellow, jungle grass more green
+
+-- 1643425988000 | January 28, 2022
+Add suffocation and stuff
+
+-- 1643513373000 | January 29, 2022
+Add slingshots
+
+-- 1643572496000 | January 30, 2022
+Add buttons
+Redstone buttons
+
+-- 1644884311000 | February 14, 2022
+Update temperature calculation
+
+-- 1645747572000 | February 24, 2022
+Fix a loading bug
+
+-- 1645837079000 | February 25, 2022
+Improve nether
+
+-- 1646700847000 | March 7, 2022
+Added suggestions
+From repeat https://github.com/RepeatGitHub
+
+-- 1646959086000 | March 10, 2022
+Piston head
+
+-- 1647473457000 | March 16, 2022
+Better explosions
+
+-- 1647647901000 | March 18, 2022
+Finish pistons (sticky pistons are next)
+
+-- 1647906487000 | March 21, 2022
+Works better on touch screen
+
+-- 1647996250000 | March 22, 2022
+Sticky piston
+
+-- 1648252938000 | March 25, 2022
+Observers
+
+-- 1648602867000 | March 29, 2022
+Redstone can go diagnoally up
+
+-- 1648681426000 | March 30, 2022
+Fix some redstone and observer bugs
+
+-- 1648685945000 | March 30, 2022
+Pressure plates
+
+-- 1648844050000 | April 1, 2022
+v1.0.5
+The redstone update
+
+-- 1648851461000 | April 1, 2022
+Better ban
+
+-- 1649389920000 | April 7, 2022
+Something about explosions
+
+-- 1649556000000 | April 9, 2022
+Moving block correctly in multiplayer
+
+-- 1649724480000 | April 11, 2022
+Prevent sending too much positions
+
+-- 1649894340000 | April 13, 2022
+Player body and head rotation are now seperate
+
+-- 1650057960000 | April 15, 2022
+Servers not hosted by players are possible now
+External servers
+
+-- 1650068400000 | April 15, 2022
+Dyes and stuff
+
+-- 1650410220000 | April 19, 2022
+Make player hidden when die
+
+-- 1650501960000 | April 20, 2022
+Breaking blocks that have damage makes you take damage
+Example: breaking magma block causes player to take damage
+
+-- 1651531800000 | May 2, 2022
+Put overworld and nether in same world
+Big change
+
+-- 1651624140000 | May 3, 2022
+Add whitelist
+
+-- 1651878660000 | May 6, 2022
+Update physics and other stuff
+
+-- 1652230080000 | May 10, 2022
+Falling dust particle
+
+-- 1652403420000 | May 12, 2022
+Added capes
+
+-- 1652745240000 | May 16, 2022
+Better chat
+before: chat is small and only shows last few messages
+after: chat is full screen and shows all messages
+
+-- 1652831040000 | May 17, 2022
+Better buttons and sliders
+
+-- 1652918160000 | May 18, 2022
+Add cloud saves
+
+-- 1653004140000 | May 19, 2022
+Spreading in crafting
+before, spreading could be done in inventory
+
+-- 1653348060000 | May 23, 2022
+Make some faces show correctly
+
+-- 1653434760000 | May 24, 2022
+Title can fade in and out
+
+-- 1654126105000 | June 1, 2022
+End dimension
+
+-- 1655590203000 | June 18, 2022
+Add MC 1.19 stuff and other stuff
+mangrove planks, logs, leaves, mud
+
+-- 1655687335000 | June 19, 2022
+Skybox
+Sky have gradient where bottom is usually lighter, and top depends on biome
+
+-- 1655952846000 | June 22, 2022
+Make long save codes be splitted
+So big multiplayer worlds can be joined
+
+-- 1656020610000 | June 23, 2022
+Make fire spread
+
+-- 1656213584000 | June 25, 2022
+Add logic gates
+
+-- 1656618072000 | June 30, 2022
+Works better on touch screen
+
+-- 1656731710000 | July 1, 2022
+Add text above players
+The username
+
+-- 1656820027000 | July 2, 2022
+Add signs
+
+-- 1656899889000 | July 3, 2022
+A lot of food
+
+-- 1657156862000 | July 6, 2022
+You can sleep in beds now
+
+-- 1657241248000 | July 7, 2022
+Add chair
+
+-- 1657324756000 | July 8, 2022
+Anvil works
+
+-- 1657488507000 | July 10, 2022
+Suggestions when typing commands
+Shows things that can be typed next
+
+-- 1657838498000 | July 14, 2022
+Improve inventory
+
+-- 1657932498000 | July 15, 2022
+Colored beds
+
+-- 1658101655000 | July 17, 2022
+More suggestions when typing commands
+
+-- 1658194129000 | July 18, 2022
+Bow and arrow
+
+-- 1658277805000 | July 19, 2022
+Swimming
+
+-- 1658450306000 | July 21, 2022
+A buncha stuff like end poem (kind of)
+
+-- 1658818800000 | July 26, 2022
+Improve menus and a bunch of other stuff
+
+-- 1658970875000 | July 27, 2022
+Flowing water
+
+-- 1659051267000 | July 28, 2022
+Improve water on July 28
+
+-- 1659337200000 | August 1, 2022
+Inventory categories
+Categories including: build, tools, redstone
+
+-- 1659510000000 | August 3, 2022
+Make items entities stackable
+
+-- 1659596400000 | August 4, 2022
+Make tags save to save code
+
+-- 1660028400000 | August 9, 2022
+Better crafting
+some recipes can have ingredients mixed up
+Shapeless recipe, shaped recipe, fixed recipe
+
+-- 1661410800000 | August 25, 2022
+Dispensers & droppers
+
+-- 1662534000000 | September 7, 2022
+Hopper
+
+-- 1663311600000 | September 16, 2022
+Comparator
+
+-- 1677709915346 | March 1, 2023
+Website broken
+The MineKhan website is broken. We will be fixing it. This may take up to a month.
+Edit: This is probably a bug in Replit.
+Edit March 7: This seems to be fixed. We are veryfing that it is fixed.,Edit: The website is broken again,Edit: This may be caused by a new feature: https://ask.replit.com/t/upcoming-replit-changes-community-crisis-waiting-to-happen/13985,Edit: This seems to be fixed by Replit: https://status.replit.com/history/2023/march/ndq65dsbkckvuwth-repl-dns-is-unstable,Resolved: We have moved our website to https://thingmaker.us.eu.org/
+
+-- 1677906972021 | March 3, 2023
+Resource packs
+Resource packs have been added allowing custom textures!
+
+-- 1678168026344 | March 6, 2023
+Texture change
+The texture atlas is now 256 by 4096 pixels.
+
+-- 1678551892258 | March 11, 2023
+Nether fog and End fog
+There is now nether fog and end fog. Nether terrain has also been changed.
+
+-- 1679095885314 | March 17, 2023
+Multiple commands
+You can now run multiple commands at the same time by doing something like this: /command1 /command2
+
+-- 1680668871140 | April 4, 2023
+Ambient sounds optimization
+Before, ambient sounds were very slow. Now, they are a lot faster. This will be released in the next update.
+
+-- 1681183104406 | April 10, 2023
+Hardcore mode
+A new game mode has been added: hardcore mode. You can search it up to find out what it is.
+
+-- 1681345825234 | April 12, 2023
+Double sided signs
+Signs are now double sided. You can edit the other side by going to the other side of the sign.
+
+-- 1681576919542 | April 15, 2023
+Campfires
+Campfires now set you on fire and can be set on fire by burning entities.
+
+-- 1683244218292 | May 4, 2023
+Liquids seen on inside
+Liquid sides can now be seen while inside the liquid.
+
+-- 1683849455621 | May 11, 2023
+Added a bunch of old updates
+
+-- 1684300110954 | May 16, 2023
+New breaking sound
+When breaking blocks, there is now a sound effect.
+
+-- 1686779463025 | June 14, 2023
+End portals can now be activated with end portal frames
+
+-- 1686866410751 | June 15, 2023
+Fixed population problem
+Previously, trees would disappear when loading saves and the player position was far from spawn. This may break old saves. This problem has existed for many versions.
+
+-- 1687149971502 | June 18, 2023
+1.20 stuff
+Added cherry and bamboo stuff, and some other stuff. Total time: about 2 hours and 25 minutes
+
+-- 1698612894570 | October 29, 2023
+v1.1.0
+Version Beta 1.1.0. Terrain has been updated which includes many more biomes and trees. There are also oceans and mountains now. The server and client have been split into 2 files.
+
+-- 1701056282906 | November 26, 2023
+Texture atlas updated
+The texture atlas can now contain different size textures. Before, it could only contain 16x16 textures.
+
+-- 1701652669772 | December 3, 2023
+Rivers
+Small rivers have been made more common. It is done by making it go up when it flows into a place that makes it stuck.
+
+-- 1709409156719 | March 2, 2024
+v1.1.1
+Many changed were made to server code. Servers now do more things and clients do less things like player health, hunger, and inventory.
+
+-- 1710366525654 | March 13, 2024
+discontinued
+no more updates because too few people play. alternative: eaglercraft

@@ -1,0 +1,81 @@
+<input type="file" id="img">
+<br>
+<label for="pixelsX">Width in texture pixels</label><input id="pixelsX" type="number"><br>
+<label for="pixelsY">Height in texture pixels</label><input id="pixelsY" type="number">
+<br>
+<pre id="info"></pre>
+<br>
+<button id="ok">convert</button>
+<br><br>
+<canvas style="border:1px solid black; width:200px; image-rendering:pixelated;" id="output" width="16" height="16"></canvas>
+
+<script>
+  var outp = document.getElementById("output");
+  var ctx = outp.getContext("2d");
+  var inp = document.getElementById("img");
+  
+  var cnv2 = document.createElement("canvas");
+  var ctx2 = cnv2.getContext("2d");
+  
+  var info = document.getElementById("info");
+  
+  var fr = new FileReader();
+  document.querySelector("#ok").onclick = () => {
+    fr.onload = () => {
+      var img = new Image();
+      img.onload = () => {
+        convert(img, parseInt(document.querySelector("#pixelsX").value), parseInt(document.querySelector("#pixelsY").value));
+      };
+      img.src = fr.result;
+    }
+    fr.readAsDataURL(inp.files[0]);
+  }
+  
+  function round(num, nearestWhat){
+    return Math.round(num*nearestWhat)/nearestWhat;
+  }
+  
+  function convert(img, w, h){
+    w = w || w === 0 ? w : 16
+    h = h || h === 0 ? h : 16
+    
+    var size = Math.max(img.width, img.height);
+    
+    var eachX = img.width / w;
+    var eachY = img.height / h;
+    
+    cnv2.width = size;
+    cnv2.height = size;
+    
+    info.innerHTML = `Image Information
+Width: ${img.width}
+Height: ${img.height}
+Pixel width (estimated): ${eachX}
+Pixel height (estimated): ${eachY}`;
+    
+    var marginX = (16-w) * eachX;
+    var marginY = (16-h) * eachY;
+    //align to bottom center
+    ctx2.drawImage(img, 
+                   round(((size-img.width)/2) + marginX, eachX), 
+                   round(((size-img.height)/2) + marginY, eachY), 
+                   cnv2.width - marginX, 
+                   cnv2.height - marginY);
+    
+    var imageData = ctx.createImageData(16, 16);
+    
+    for (let i = 0; i < imageData.data.length; i += 4){
+      var y = Math.floor( (i/4) / 16)
+      var x = (i/4) - (y * 16)
+      
+      var color = ctx2.getImageData( (eachX*x) + (eachX / 2), (eachY*y) + (eachY / 2), 1, 1).data;
+      
+      imageData.data[i + 0] = color[0];  // R value
+      imageData.data[i + 1] = color[1];  // G value
+      imageData.data[i + 2] = color[2];  // B value
+      imageData.data[i + 3] = color[3];  // A value
+    }
+    
+    ctx.putImageData(imageData,0,0)
+  }
+</script>

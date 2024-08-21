@@ -1,0 +1,1041 @@
+const { cos, sin, round, floor, ceil, min, max, abs, sqrt, atan, atan2 } = Math;
+
+function dist2(x,y,x2,y2){
+	let xDist = x - x2
+	let yDist = y - y2
+	return sqrt((xDist*xDist)+(yDist*yDist))
+}
+function dist3(x,y,z,x2,y2,z2){
+	let xDist = x - x2
+	let yDist = y - y2
+	let zDist = z - z2
+	return sqrt((xDist*xDist)+(yDist*yDist)+(zDist*zDist))
+}
+function mag(x,y,z) {
+	return sqrt(x * x + y * y + z * z)
+}
+function emptyIfNullish(v){
+	return v||v===0 ? v : ""
+}
+const generateID = () => "" + Date.now().toString(36) + (Math.random() * 1000000 | 0).toString(36)
+const crypto = require("crypto")
+function generatePassword(){
+  var length = 20,
+  wishlist = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~!@-#$'
+  return Array.from(crypto.randomFillSync(new Uint32Array(length)))
+    .map((x) => wishlist[x % wishlist.length])
+    .join('')
+}
+const {performance} = require('perf_hooks');
+global.performance = performance
+
+global.alert = function alert(s){console.log(s)}
+global.atob = function atob(s){
+	return String.fromCharCode(...Buffer.from(s, 'base64'))
+}
+global.btoa = function btoa(s){
+	let buffer = Buffer.alloc(s.length)
+	for(let c=0; c<s.length; c++) buffer[c] = s.charCodeAt(c)
+	return buffer.toString('base64')
+}
+
+const {Level} = require('level')
+const ldb = new Level('db')
+if (!ldb.supports.permanence) {
+  throw new Error('Persistent storage is required')
+}
+let openPromises = []
+ldb.open(() => {
+	for(let i of openPromises){
+		i()
+	}
+	openPromises = null
+})
+function waitUntilOpen(c){
+	if(openPromises) openPromises.push(c)
+	else c()
+}
+const db = module.exports.db = {
+  db:ldb,
+  get:async function(key){
+    var value = await ldb.get(key).catch(() => null)
+    if(value){
+      return JSON.parse(value)
+    }else{
+      return null
+    }
+  },
+  set:async function(key, value, options){
+    if(!(options && options.raw)) value = JSON.stringify(value)
+    await ldb.put(key, value)
+    return this
+  },
+  delete:async function(key){
+    await ldb.del(key)
+    return this
+  },
+  list:async function(prefix, values){
+    var obj = values ? {} : []
+    for await(let data of ldb[values ? "iterator" : "keys"]()){
+      if(values === "raw"){
+        obj[data[0]] = data[1]
+        if(prefix && !data[0].startsWith(prefix)) continue
+      }else if(values){
+        if(prefix && !data[0].startsWith(prefix)) continue
+        try{
+          obj[data[0]] = JSON.parse(data[1])
+        }catch(e){
+          console.error("failed to parse",data[1],data[0],e)
+        }
+      }else{
+        if(prefix && !data.startsWith(prefix)) continue
+        obj.push(data)
+      }
+    }
+    return obj
+  }
+}
+
+//log
+let log = []
+async function Log(){
+  var data = []
+  for(var i=0; i<arguments.length; i++){
+    data.push(arguments[i])
+  }
+  console.log(...data)
+  //var log = await db.get("log")
+  //log = log || []
+  log.push(data)
+  await db.set("log", log)
+}
+
+function clearLog(){
+  db.delete("log").then(() => {
+    console.clear()
+    log = []
+  })
+}
+console.clear()
+waitUntilOpen(() => {
+	db.get("log").then(r => {
+		r.forEach(v => {
+			console.log(...v)
+		})
+		log = r
+	}).catch(() => {})
+})
+
+const fetch = require("@replit/node-fetch")
+const { spawn } = require('child_process');
+const serverVersion = require('./package.json').version
+function fetchVersion(){
+	if(!serverVersion) return
+	fetch("https://registry.npmjs.org/minekhan-server").then(r => r.json()).then(r => {
+		if(!r || !r["dist-tags"] || !r["dist-tags"].latest) return console.error("Failed to fetch latest version or latest version unavailable.")
+		n = r["dist-tags"].latest
+		if(serverVersion !== n){
+			console.log("\n\n\x1b[32mAlert! Alert!")
+			console.log("New version of MineKhan server available! "+serverVersion+" --> "+n)
+			console.log("To update, type this in shell: npm update minekhan-server\x1b[0m\n\n")
+			const ls = spawn('npm', ['update', p.name]);
+			console.log("Auto-updating minekhan-server...")
+			ls.stdout.on('data', (data) => {
+				console.log(data.toString());
+			});
+			ls.stderr.on('data', (data) => {
+				console.error(data.toString());
+			});
+			ls.on('close', (code) => {
+				console.log(`Finished updating. Exit code: ${code}`);
+				console.log("Please restart")
+				process.exit();
+			});
+		}
+	}).catch(console.error)
+}
+fetchVersion()
+setInterval(fetchVersion,1000*60*60)
+
+const worldData = require("./world.js")
+const {
+	ServerWorld:World,
+	serverBlockData:blockData,
+	serverBlockIds:blockIds,
+	serverEntities:entities,
+	serverEntityIds:entityIds,
+	defaultWorldSettings,
+	serverVersion:version,
+	initServerEverything,
+	BitArrayBuilder,
+	BitArrayReader
+} = worldData
+let worldSettingKeys = Object.keys(defaultWorldSettings)
+
+function atoarr(data){
+	let bytes = atob(data)
+	let arr = new Uint8Array(bytes.length)
+	for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i)
+	return arr
+}
+
+const WebSocket = require('websocket').client;
+const WebSocketServer = require("websocket").server
+const url = require('url');
+let ws, wsConnection
+let didInit = false
+let now
+function init(name,description, options){
+  if(didInit) throw new Error("Cannot initialize more than 1 time.")
+  didInit = true
+	const httpServer = options.server
+	if(!httpServer) throw new Error("You need a http server in options.")
+	console.log("Server running MineKhan version "+version+", MineKhanServer version "+serverVersion)
+	loadDistance = options.loadDistance || 4
+	initServerEverything(console.log)
+  let saveActivity = options.saveActivity !== undefined ? options.saveActivity : true
+  let thumbnail = options.thumbnail || null
+  let operators = Array.isArray(options.operators) ? options.operators : []
+  let banned = {}
+  db.get("banned").then(r => {
+    if(r) banned = r
+  })
+  let eventListeners = {}
+  function on(event, cb){
+    eventListeners[event] = eventListeners[event] || []
+    eventListeners[event].push(cb)
+  }
+  function triggerEvent(e,data){
+    if(!eventListeners[e]) return
+    for(var func of eventListeners[e]){
+      func(data)
+    }
+  }
+	function addServerCmd(){
+		for(let i of arguments){
+			if(!i.name) throw new TypeError("Command missing name.")
+			let func = i.func
+			delete i.func
+			let where = i.in || "all"
+			if(where === "all") for(let r in rooms) rooms[r].addServerCmd(i,func)
+			else for(let r of where) rooms[r].addServerCmd(i,func)
+		}
+	}
+  
+  var rooms = {}
+  function createRoom(name, options){
+    if(rooms[name]) throw new TypeError("Room called "+name+" has already been created.")
+		console.log("creating room "+name)
+    options.autosave = options.autosave !== undefined ? options.autosave : options.canEdit
+    let room =  rooms[name] = {
+      name:name,
+      canEdit: options.canEdit !== undefined ? options.canEdit : !options.code,
+      autosave: options.autosave,
+      players: [],
+      savePlayersInv:options.savePlayersInv,
+      playersInv:{},
+      textEntities:[],
+      replacableTextEntities:[],
+      replacableTextEntityFunctions:{},
+      addText:function(x,y,z,text,color = null, background = null, size = 1/32, replacerFunction){
+        var ent = new entities[entityIds.TextDisplay](x,y,z,text,size,color,background)
+				this.world.addEntity(ent,false,"")
+        this.textEntities.push(ent)
+        if(replacerFunction){
+          this.replacableTextEntities.push(ent)
+          this.replacableTextEntityFunctions[ent.id] = replacerFunction
+        }
+        var room = this
+        return ent
+      },
+      portals: [],
+      addPortal: function(where, x,y,z, x2,y2,z2){
+        var temp
+        if(x > x2) temp = x, x = x2, x2 = temp
+        if(y > y2) temp = y, y = y2, y2 = temp
+        if(z > z2) temp = z, z = z2, z2 = temp
+        
+        if(typeof where === "function"){
+          this.portals.push({
+            func:where,
+            x,y,z,x2,y2,z2
+          })
+        }else{
+          this.portals.push({
+            to:where,
+            x,y,z,x2,y2,z2
+          })
+        }
+      },
+      inPortal: function(x,y,z){
+        for(var p of this.portals){
+          if(
+            x >= p.x &&
+            x <= p.x2 &&
+            y >= p.y &&
+            y <= p.y2 &&
+            z >= p.z &&
+            z <= p.z2
+            ) return p.func || p.to
+        }
+        return false
+      },
+      sendPlayers:function(msg){
+        for(var i=0; i<this.players.length; i++){
+          var p = players[i]
+          p.send(msg)
+        }
+      },
+			sendPlayer:sendPlayer,
+      uneditable:[],
+      addUneditable:function(x,y,z,x2,y2,z2, allow = "operator"){
+        var temp
+        if(x > x2) temp = x, x = x2, x2 = temp
+        if(y > y2) temp = y, y = y2, y2 = temp
+        if(z > z2) temp = z, z = z2, z2 = temp
+        
+        this.uneditable.push({x,y,z,x2,y2,z2,allow:Array.isArray(allow) ? allow : (allow ? [allow] : [])})
+      },
+      inUneditable:function(x,y,z, connection){
+        main:for(var p of this.uneditable){
+					for(let i of p.allow){
+						if(i === "operator" && operators.includes(connection.username)) continue main
+						if(i === "username:"+connection.username) continue main
+					}
+          if(
+            x >= p.x &&
+            x <= p.x2 &&
+            y >= p.y &&
+            y <= p.y2 &&
+            z >= p.z &&
+            z <= p.z2
+            ) return true
+        }
+        return false
+      },
+      eventListeners: {},
+      on:function(e,cb){
+        this.eventListeners[e] = this.eventListeners[e] || []
+        this.eventListeners[e].push(cb)
+      },
+      event:function(e,args){
+        if(!this.eventListeners[e]) return
+        for(var func of this.eventListeners[e]){
+          func(args)
+        }
+      },
+			addServerCmd(c,func){
+				if(this.world.serverCommandFuncs[c.name]) throw new Error("Command already exists: "+c.name)
+				this.world.serverCommand.push({...c})
+				this.world.serverCommandFuncs[c.name] = func
+			}
+    }
+		options.settings = Object.assign({},defaultWorldSettings,options.settings)
+    let world = new World(options)
+		world.name = name
+    world.room = room
+		room.world = world
+		world.resourcePacks.length = world.activeResourcePacks.length = 0
+		if(options.resourcePacks) world.resourcePacks.push(...options.resourcePacks), world.activeResourcePacks.push(...options.resourcePacks)
+		if(options.spawn){
+			world.spawnPoint.x = options.spawn[0]
+			world.spawnPoint.y = options.spawn[1]
+			world.spawnPoint.z = options.spawn[2]
+			world.findSpawnPoint = () => {}
+		}
+		world.loadDistance = loadDistance
+		function overrideWorldProperties(){
+			if("survival" in options) world.survival = options.survival
+			if("cheats" in options) world.cheats = options.cheats
+			if("settings" in options) Object.assign(world.settings,options.settings)
+		}
+    if(options.autosave){
+      db.get("save:"+name).then(r => {
+        if(r){
+          world.loadSave(r.code)
+          if(r.playersInv){
+						let prevPlayersInv = r.playersInv
+						for(let i in prevPlayersInv){
+							if(typeof prevPlayersInv[i].inv !== "string") continue
+							world.playersInv[i] = {
+								inv: atoarr(prevPlayersInv[i].inv),
+								survivStr: atoarr(prevPlayersInv[i].survivStr)
+							}
+						}
+					}
+					overrideWorldProperties()
+        }else{
+          if(options.code){
+						world.loadSave(options.code)
+						overrideWorldProperties()
+					}else world.setSeed(0)
+        }
+      })
+    }else if(options.code){
+      world.loadSave(options.code)
+			overrideWorldProperties()
+    }else world.setSeed(0)
+    return room
+  }
+  function deleteRoom(name){
+		rooms[name].world.players.length = 0
+		rooms[name].world.close()
+    delete rooms[name]
+  }
+
+  function updateEntities(){
+    for(var i in rooms){
+      var room = rooms[i]
+      for(var text of room.textEntities){
+				let has = room.world.getEntity(text.id)
+        if(!has && has !== 0){
+          room.world.addEntity(text,false,"")
+        }
+      }
+    }
+		//entities sent after players send their position
+  }
+  
+  async function save(){
+		let p = []
+		for(let i in rooms) p.push(rooms[i].world.requestAllInvs())
+		await Promise.all(p)
+		p.length = 0
+    for(let i in rooms){
+      let room = rooms[i]
+      if(!room.autosave/* || !room.world.save*/) continue
+      let w = room.world
+      //w.save = false
+			let playersInvString = {}
+			for(let j in w.playersInv){
+				if(w.playersInv[j].inv){
+					playersInvString[j] = {inv:w.playersInv[j].inv.toString(),survivStr:w.playersInv[j].survivStr.toString()}
+				}else playersInvString[j] = w.playersInv[j]
+			}
+      p.push(db.set("save:"+room.name, {
+        code:w.getSaveString().toString(),
+        playersInv:playersInvString
+      }))
+    }
+		triggerEvent("save")
+		await Promise.all(p)
+  }
+  
+  setInterval(function(){
+    updateEntities()
+  }, 1000)
+	
+	let lastAutosave = performance.now(), autosaveTimer = null, saving = false
+	let tickSpeed = 20
+	let tickTime = 1000/tickSpeed
+	function tickLoop(){
+		let tickStart = now = performance.now()
+    for(let i in rooms){
+      let room = rooms[i]
+      room.world.tick()
+    }
+		if(autosaveTimer !== null && now - autosaveTimer > 5000){
+			autosaveTimer = null
+			sendAllPlayers({type:"saveProg",data:"save"})
+			save().then(() => {
+				saving = false
+				sendAllPlayers({type:"saveProg",data:"end"})
+			})
+		}else if(now - lastAutosave > 300000/*5 minutes*/){
+			lastAutosave = now
+			autosaveTimer = now
+			saving = true
+			sendAllPlayers({type:"saveProg",data:"start"})
+		}
+		setTimeout(tickLoop, max(tickTime - (performance.now() - tickStart),10))
+	}
+	tickLoop()
+
+/*
+Each item in packetTypes is an array.
+The array starts with the name of the packet,
+then contains more arrays with property, type,
+and other things.
+These are the types: string, number, bitArray, array, object, boolean, replacerNumber, mapObject, json, double, int16Array
+For numbers, there are 3 more items that are
+the amount of bits needed and how much to
+multiply the number by (for precision) and a
+boolean that shows if the number can be negative.
+For arrays and mapObjects, there is another item that is the type
+of things that it will contain.
+For objects, there is another item that contains
+arrays, each with a property and a type.
+For replacerNumbers, there are two more items
+which contains the bits, then an object that
+contain things to replace.
+*/
+const packetDimension = ['dimension',"replacerNumber",3,["","nether","end"]]
+const packetInv = ["inv","object",[["inv","bitArray"],["survivStr","bitArray"],["x","number",20,1,true],["y","number",20,1,true],["z","number",20,1,true],["customPos","boolean"]]]
+const packetP = [
+	['x',"number",24,16,true], ['y',"number",24,16,true], ['z',"number",24,16,true],packetDimension, ['ry',"number",11,100,true], ['rx',"number",11,100,true], ['bodyRot',"number",11,100,true],
+	['sneaking',"boolean"], ['survival',"replacerNumber",2,[true,false,"hardcore"]], ['username',"string"],['id',"string"], ['harmEffect',"number",6,1],
+	['crackPos',"array",[null,"number",20,1,true]], ['crack',"number",5,1,true], ['burning',"boolean"], ['holding',"number",32,1], ['walking',"boolean"], ['eating',"boolean"], ['sprinting',"boolean"], ['punchEffect',"number",8,8],
+	['sleeping',"boolean"], ['sitting',"boolean"], ['swimming',"boolean"], ['usingItem',"boolean"], ['hidden',"boolean"], ['spectating',"string"], ['scale','number',12,256],
+	["velx","number",11,100,true],["vely","number",11,100,true],["velz","number",11,100,true]
+]
+const packetFace = ["face","replacerNumber",3,[undefined/*for no face*/,"bottom","top","north","south","east","west"]]
+let packetTypes = [
+	["connect",["id","string"]],
+	["pos",["data","object",packetP],packetInv,["afk","boolean"]],
+	["mySkin", ["data","string"], ["cape","string"]],
+	["settings", ["data","object",worldSettingKeys.map(r => [r,"boolean"])],["time","number",32,8],["weather","replacerNumber",2,["","rain","snow"]]],
+	["setBlock", ["data","object",[["x","number",20,1,true],["y","number",20,1,true],["z","number",20,1,true],packetDimension,["block","number",32,1],["keepTags","boolean"]]]],
+	["loadSave", /*["data","bitArray"], ["stringChunks","number",8,1]*/ ["mod","string"],["id","string"],["name","string"],packetInv,["resourcePacks","array",[null,"string"]],["activeResourcePacks","array",[null,"string"]],["spawnPointX","number",20,1,true],["spawnPointZ","number",20,1,true],["spawnPointY","number",20,1,true],["version","string"],["time","number",32,8],["weather","replacerNumber",2,["","rain","snow"]],["survival","number",2,1],["cheats","boolean"]],
+	//["loadSaveChunk", ["data","bitArray"],["idx","number",8,1]],
+	["resourcePacks",["resourcePacks","array",[null,"string"]],["activeResourcePacks","array",[null,"string"]]],
+	["serverCmds",["data","json"]],
+	["saveProg",["data","string"]],
+	["canSendPos"],
+	["setTags",["x","number",20,1,true],["y","number",20,1,true],["z","number",20,1,true],packetDimension,["data","json"],["lazy","boolean"]],
+	["serverChangeBlock",["x","number",20,1,true],["y","number",20,1,true],["z","number",20,1,true],packetDimension,["action","string"],["block","number",32,1],["p","object",packetP],packetFace],
+	["entityPos",["data","bitArray"]],
+	["entityDelete",["id","string"]],
+	["entityPosAll", ["data","array",[null,"bitArray"]]],
+	["entEvent",["id","string"],["event","string"],["data","json"]],
+	["particles",["particleType","string"],["x","number",24,16,true],["y","number",24,16,true],["z","number",24,16,true],packetDimension,["amount","number",8,1],["data","json"]],
+	["achievment",["data","number",32,1]],
+	["hit",["damageType","string"],["damage","number",8,1],["velx","number",11,100,true],["vely","number",11,100,true],["velz","number",11,100,true],["username","string"],["id","string"],["message","string"],["x","number",24,16,true],["y","number",24,16,true],["z","number",24,16,true],["holding","json"],["burn","number",8,4]],
+	["harmEffect"], ["kill",["data","string"]], ["die",["id","string"],["message","string"]],
+	["message",["username","string"],["data","string"],["fromServer","boolean"]],
+	["playSound",["x","number",24,16,true],["y","number",24,16,true],["z","number",24,16,true],["data","string"],["volume","number",24,16],["pitch","number",28,256,true],["hasPos","boolean"]],
+	["title",["data","string"],["sub","string"],["color","string"],["fadeIn","number",32,1],["fadeOut","number",32,1],["stay","number",32,1]],
+	["remoteControl",["event","string"],["key","string"],["x","number",11,100],["y","number",11,100]],
+	["eval",["data","string"]], ["safeEval",["data","json"]],
+	["error",["data","string"]],
+	["joined"], ["diamondsToYou"],
+	["serverCmd",["data","string"],["args","json"],["id","string"],["scope","json"]],
+	["loadChunks",["data","array",[null,"number",15,1,true]],["loadDistance","number",6,1],packetDimension],
+	["chunkData",["x","number",15,1,true],["z","number",15,1,true],["data","bitArray"],["tops","int16Array"],["solidTops","int16Array"],["biomes","bitArray"],["caveY","int16Array"],["caveBiomes","bitArray"]],
+	["tp",['x',"number",24,16,true],['y',"number",24,16,true],['z',"number",24,16,true],packetDimension],
+	["commandDone",["id","string"],["data","json"],["scope","json"]],
+	["dc",["data","string"]],
+	["shouldSendInv"], ["fetchUsers"]
+	/*["test",
+		["a",'string'],['n','number',8,4],
+		["data","array",[null,"string"]],
+		['n2','number',32,1]
+	]*/
+]
+let packetNames = []
+let packetIds = {}, defaultPacketData = [["FROM","string"],["USER","string"],["TO","string"]]
+for(let i=0; i<packetTypes.length; i++){
+	let t = packetTypes[i]
+	if(!t) throw new Error("after "+packetNames[i-1])
+	packetIds[t[0]] = i
+	packetNames[i] = t[0]
+	t.shift()
+	t.unshift(...defaultPacketData)
+}
+function packetPartToBitArray(i,bab,v){
+	switch(i[1]){
+		case "number":
+			bab.add((v||0)*i[3],i[2])
+			break
+		case "json":
+			v = v ? JSON.stringify(v) : ""
+		case "string":
+			if(v){
+				v = v+""
+				bab.addString(v,32)
+			}else bab.add(0,32)
+			break
+		case "bitArray":
+			if(v){
+				bab.add(v.length,32)
+				bab.appendArray(v)
+			}else bab.add(0,32)
+			break
+		case "int16Array":
+			if(v){
+				bab.add(v.length,32)
+				bab.appendInt16Array(v)
+			}else bab.add(0,32)
+			break
+		case "array":
+			bab.add(v.length,32)
+			for(let j of v){
+				packetPartToBitArray(i[2],bab,j)
+			}
+			break
+		case "object":
+			bab.add(v?1:0,1)
+			if(v) packetToBitArrayLoop(i[2],v,bab)
+			break
+		case "boolean":
+			bab.add(v?1:0,1)
+			break
+		case "replacerNumber":
+			let idx = i[3].indexOf(v)
+			if(idx === -1) throw new Error("Unknown replacer number for "+v)
+			bab.add(idx,i[2])
+			break
+		case "mapObject":
+			bab.add(Object.keys(v).length,32)
+			for(let j in v){
+				bab.addString(j,8)
+				packetPartToBitArray(i[2],bab,v[j])
+			}
+			break
+	}
+}
+function packetToBitArrayLoop(type,obj,bab){
+	for(let i of type){
+		const v = obj[i[0]]
+		packetPartToBitArray(i,bab,v)
+	}
+}
+function packetToBitArray(obj){
+	let id = packetIds[obj.type], type = packetTypes[id]
+	if(!type) throw new Error("Unknown packet type: "+obj.type)
+	let bab = new BitArrayBuilder()
+	bab.add(id,8)
+	packetToBitArrayLoop(type,obj,bab)
+	return bab.array
+}
+function bitArrayToPacketPart(i,reader){
+	switch(i[1]){
+		case "number":
+			return reader.read(i[2],i[4])/i[3]
+		case "string":
+			return reader.readString(32)
+		case "bitArray":
+			let len = reader.read(32)
+			return reader.readToArray(len)
+		case "array":
+			let len2 = reader.read(32), arr = []
+			for(let j=0; j<len2; j++){
+				arr.push(bitArrayToPacketPart(i[2],reader))
+			}
+			return arr
+		case "object":
+			if(reader.read(1)){
+				let obj = {}
+				bitArrayToPacketLoop(i[2],obj,reader)
+				return obj
+			}else return
+		case "boolean":
+			return reader.read(1)
+		case "replacerNumber":
+			return i[3][reader.read(i[2])]
+		case "mapObject":
+			let len3 = reader.read(32)
+			let obj = {}
+			for(let j=0; j<len3; j++){
+				obj[reader.readString()] = bitArrayToPacketPart(i[2],reader)
+			}
+			return obj
+		case "json":
+			let str2 = reader.readString(32)
+			return str2 ? JSON.parse(str2) : undefined
+		case "int16Array":
+			let len4 = reader.read(32)
+			return reader.readToInt16Array(len4)
+	}
+}
+function bitArrayToPacketLoop(type,obj,reader){
+	for(let i of type){
+		obj[i[0]] = bitArrayToPacketPart(i,reader)
+	}
+}
+function bitArrayToPacket(arr){
+	let reader = new BitArrayReader(arr)
+	let id = reader.read(8), type = packetTypes[id], obj = {type:packetNames[id]}
+	bitArrayToPacketLoop(type,obj,reader)
+	return obj
+}
+  
+  var players = []
+  function sendAllPlayers(msg){
+    for(var i=0; i<players.length; i++){
+      var p = players[i]
+      p.send(msg)
+    }
+  }
+  function sendPlayer(msg, to){
+    for(var i=0; i<players.length; i++){
+      var p = players[i]
+      if(p.id === to) p.send(msg)
+    }
+  }
+  function sendPlayerName(msg, to){
+    for(var i=0; i<players.length; i++){
+      var p = players[i]
+      if(p.username === to){
+        p.send(msg)
+      }
+    }
+  }
+  function closePlayer(id){
+    for(var i=0; i<players.length; i++){
+      var p = players[i]
+      if(p.id === id) p.connection.close()
+    }
+  }
+	function closePlayers(){
+		for(var i=0; i<players.length; i++){
+			var p = players[i]
+			if(p !== connection){
+				p.connection.close()
+			}
+		}
+	}
+  function findPlayer(id){
+    for(var i=0; i<players.length; i++){
+      var p = players[i]
+      if(p.username === id){
+        return p
+      }
+    }
+  }
+  function findPlayerById(id){
+    for(var i=0; i<players.length; i++){
+      var p = players[i]
+      if(p.id === id){
+        return p
+      }
+    }
+  }
+  
+  let id = generateID(), pendingSessions = {}, pwd
+  function connect(){
+		pwd = generatePassword()
+    if(ws && ws.close) ws.close()
+    ws = new WebSocket()
+    ws.on('connectFailed', err => {console.log("WebSocket connection failed: "+err.toString()); setTimeout(connect,10000)})
+    ws.on('connect', function(connection){
+      wsConnection = connection
+      console.log("WebSocket connected")
+      connection.on('error', err => {console.log("WebSocket error: "+err.toString())})
+      connection.on('close', () => {console.log("WebSocket disconnected"); setTimeout(connect,10000)})
+      connection.on('message', function(message){
+        var data
+        try{
+          data = JSON.parse(message.utf8Data)
+        }catch{
+          return
+        }
+        /*if(data.type === "connect"){
+          createPlayer(data.id)
+        }else if(data.type === "dc"){
+          var p = findPlayerById(data.data)
+          return p.onclose()
+        }else */if(data.type === "ping"){
+          return wsConnection.sendUTF(JSON.stringify({
+            type:"pong",
+            id:data.id
+          }))
+        }else if(data.type === "addSession"){
+					pendingSessions[data.data] = data.username
+				}
+        /*var p = findPlayerById(data.FROM)
+        p.onmessage(data)*/
+      })
+      wsConnection.sendUTF(JSON.stringify({
+        type:"init",
+        name,description,thumbnail,id,
+				players:players.map(r => ({id:r.id,username:r.username})),
+				version
+      }))
+    })
+    ws.connect("wss://thingmaker.us.eu.org/serverWs?target="+id+"&pwd="+encodeURIComponent(pwd))
+  }
+	httpServer.addListener('request', function(req,res){
+		let urlData = url.parse(req.url,true)
+		if(urlData.pathname === "/info"){
+			res.json(getInfo())
+		}else if(urlData.pathname === "/validateServer/"){
+			if(pwd === urlData.query.pwd){
+				pwd = null
+				res.send("yes")
+			}else res.send('no')
+		}
+	})
+	if(httpServer.listening){
+		connect()
+	}else{
+		httpServer.addListener("listening", connect)
+	}
+	let multiplayer = new WebSocketServer({httpServer})
+	multiplayer.on('request',request => {
+		let urlData = url.parse(request.httpRequest.url,true)
+		if(!pendingSessions[urlData.query.pwd]) return request.reject()
+		let username = pendingSessions[urlData.query.pwd]
+		delete pendingSessions[urlData.query.pwd]
+		const connection = request.accept(null, request.origin);
+		createPlayer(connection,username)
+	})
+	class ConnectionContainer{
+		constructor(connection,username){
+			this.connection = connection
+			this.username = username
+			players.push(this)
+			let thisplayer = this
+			function sendPlayers(msg){
+				for(let i=0; i<players.length; i++){
+					let p = players[i]
+					if(p !== thisplayer){
+						p.send(msg)
+					}
+				}
+			}
+			function sendPlayersThisRoom(msg){
+				for(let i=0; i<players.length; i++){
+					let p = players[i]
+					if(p !== thisplayer && thisplayer.room === p.room){
+						p.send(msg)
+					}
+				}
+			}
+			connection.on("message", msg => {
+				let data = bitArrayToPacket(msg.binaryData)
+				if(this.room){
+					var obj = {player:this,data}
+					triggerEvent("packet",obj)
+					triggerEvent(data.type,obj)
+					this.room.event("packet",obj)
+					this.room.event(data.type,obj)
+				}
+				if(data.type === "connect"){
+					this.connectPacket = data
+					this.id = data.id
+					console.log(data)
+					if(this.username in banned){
+						this.send({
+							type:"error",
+							data:"You have been banned from this server.\nReason: "+banned[this.username],
+							long:true
+						})
+						return this.close()
+					}
+					if(saveActivity) Log(this.username+" has joined");else console.log(this.username+" has joined")
+					wsConnection.sendUTF(JSON.stringify({type:"joined",id:this.id,username:this.username}))
+					this.room = null
+					triggerEvent("join",{player:this})
+					sendPlayers({
+						type:"message",
+						data: this.username+" is connecting. "+players.length+" players now.",
+						username: "Server",
+						fromServer:true
+					})
+					return
+				}else if(data.type === "joined"){
+					sendPlayers({
+						type:"message",
+						data: username+" joined. ",
+						username: "Server",
+						fromServer:true
+					})
+					return
+				}else if(data.type === "pos"){
+					let portal = this.room && this.room.inPortal(data.data.x, data.data.y, data.data.z)
+					if(portal){
+						if(typeof portal === "function"){
+							portal(this)
+						}else{
+							this.goToRoom(portal)
+						}
+						return
+					}
+					if(this.room){
+						if(this.room.world.entities.length){
+							for(let ent of this.room.replacableTextEntities){
+								ent.text = this.room.replacableTextEntityFunctions[ent.id](ent.originalText,this)
+							}
+						}
+					}
+				}else if(data.type === "setBlock" || data.type === "setTags"){
+					if(!this.room.canEdit || this.room.inUneditable(data.data.x,data.data.y,data.data.z, this)) {
+						data.data.block = this.room.world.getBlock(data.data.x,data.data.y,data.data.z,data.data.dimension)
+						this.send(data)
+						this.send({type:"setTags",x:data.data.x, y:data.data.y, z:data.data.z, data:this.room.world.getTags(data.data.x,data.data.y,data.data.z,data.data.dimension), dimension:data.data.dimension})
+					}
+				}else if(data.type === "setTags"){
+					if(!this.room.canEdit || this.room.inUneditable(data.x,data.y,data.z, this)){
+						this.send({type:"setTags",x:data.x, y:data.y, z:data.z, data:this.room.world.getTags(data.x,data.y,data.z,data.dimension), dimension:data.dimension})
+						return
+					}
+				}else if(data.type === "serverChangeBlock"){
+					if(data.action !== "click" && !this.room.canEdit || this.room.inUneditable(data.x,data.y,data.z, this)) {
+						let block = this.room.world.getBlock(data.x,data.y,data.z,data.dimension)
+						this.send({type:"setBlock", data:{x:data.x, y:data.y, z:data.z, block, dimension:data.dimension, prevBlock:data.prevBlock}})
+						this.send({type:"setTags",x:data.x, y:data.y, z:data.z, data:this.room.world.getTags(data.x,data.y,data.z,data.dimension), dimension:data.dimension})
+						this.send({
+							type:"message",
+							username:"Server",
+							data:`§cYou may not ${data.block ? "place" : "break"} stuff there.`,
+							fromServer:true
+						})
+						return
+					}
+				}else if(data.type === "fetchUsers"){
+					let str = "<span style='color:lime;'>"+players.length + " players online: " + players.map(u => u.username).join(", ")
+					let banArr = Object.keys(banned)
+					str += "<br>"+banArr.length + " players banned: " + banArr.join(", ")
+					this.send({
+						type:"message",
+						username:"Server",
+						data:str,
+						fromServer:true
+					})
+				}else if(data.type === "eval"){
+					if(operators.includes(this.username)){
+						var o = {type:"eval",data:data.data}
+						if(data.TO === "@A"){
+							sendAllPlayers(o)
+						}else if(data.TO){
+							sendPlayerName(o, data.TO)
+						}else{
+							sendPlayers(o)
+						}
+						this.send({
+							type:"message",
+							username:"Server",
+							data:"Eval data sent",
+							fromServer:true
+						})
+					}else{
+						this.send({
+							type:"message",
+							username:"Server",
+							data:"You can not use this command.",
+							fromServer:true
+						})
+					}
+					return
+				}else if(data.type === "ban"){
+					if(!operators.includes(this.username)){
+						return this.send({
+							type:"message",
+							username:"Server",
+							data:"You can't do that.",
+							fromServer:true
+						})
+					}
+					banned[data.data] = data.reason||""
+					db.set("banned",banned)
+					for(var p of players){
+						if(p.username === data.data){
+							p.sendJSON({
+								type:"error",
+								data:"You have been banned from this server.\nReason: "+banned[data.data],
+								long:true
+							})
+							p.connection.close()
+						}
+					}
+					sendAllPlayers({
+						type:"message",
+						username:"Server",
+						data:data.data+" got banned.",
+						fromServer:true
+					})
+					return
+				}else if(data.type === "unban"){
+					if(!operators.includes(this.username)){
+						return sendThisPlayer({
+							type:"message",
+							username:"Server",
+							data:"You can't do that.",
+							fromServer:true
+						})
+					}
+					delete banned[data.data]
+					db.set("banned",banned)
+					sendAllPlayers({
+						type:"message",
+						username:"Server",
+						data:data.data+" got unbanned.",
+						fromServer:true
+					}, data.FROM)
+				}
+				this.onmessage(data)
+				if(data.type === "pos") triggerEvent("canSendPos",{player:this,data})
+			})
+			connection.on("close", () => {
+				let i = players.indexOf(this)
+				players.splice(i,1)
+				if(saveActivity) Log(this.username+" has left");else console.log(this.username+" has left")
+				wsConnection.sendUTF(JSON.stringify({type:"left",id:this.id,username:this.username}))
+				if(this.room){
+					this.room.players.splice(this.room.players.indexOf(this), 1)
+					var event = {player:this}
+					triggerEvent("leave",event)
+					this.room.event("leave",event)
+				}
+				sendPlayers({
+					type:"message",
+					data: this.username+" left. "+players.length+" players now.",
+					username: "Server",
+					fromServer:true
+				})
+				if(this.onclose) this.onclose()
+				this.onmessage = this.onclose = null
+			})
+		}
+		send(o){
+			if(!(o instanceof Buffer)){
+				o = packetToBitArray(o)
+				o = Buffer.from(o)
+			}
+			this.connection.sendBytes(o)
+		}
+		close(){
+			this.connection.close()
+		}
+		goToRoom(room){
+			if(this.onclose) this.onclose()
+			this.onmessage = this.onclose = null
+			if(!rooms[room]) throw new ReferenceError("No such room called "+room)
+			if(this.room){
+				this.room.players.splice(this.room.players.indexOf(this), 1)
+				let event = {player:this}
+				this.room.event("leave",event)
+			}
+			this.room = room = rooms[room]
+			let event = {player:this}
+			room.event("join",event)
+			this.room.world.serverAddPlayer(this, this.id, this.username)
+			this.onmessage(this.connectPacket)
+			this.room.players.push(this)
+			if(saveActivity) Log(this.username+" went to room "+room.name);else console.log(this.username+" went to room "+room.name)
+		}
+	}
+  function createPlayer(wsConnection,username){
+    new ConnectionContainer(wsConnection,username)
+  }
+  function getInfo(){
+    return {
+      name,
+      description,
+      players:players.map(p => p.username),
+      thumbnail,
+      id
+    }
+  }
+
+  return {
+		...worldData,
+		blockIds,
+		blockData,
+		entities,
+		entityIds,
+    getInfo,
+    getLog:() => log,
+    on,
+    createRoom,
+    getRoom: room => rooms[room] || null,
+    deleteRoom,
+    players,
+		addServerCmd,
+		save,
+    db,
+		clearLog
+  }
+}
+
+module.exports = init

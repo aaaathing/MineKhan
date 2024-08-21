@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<h1>offline</h1>
+<button onclick="download()">Start downloading</button>
+<script>
+  async function download(){
+    //let data = await (await fetch("/minekhan")).arrayBuffer()
+    //let version = (new TextDecoder().decode(data.slice(0,50))).match(/@[A-Za-z0-9 \.]*/)[0]
+    let a = document.createElement("a")
+    a.href = "/minekhan"
+    a.download = "mktm "+new Date().toISOString()+".html"
+    a.click()
+  }
+  addEventListener("error",e=>alert(e.message))
+</script>

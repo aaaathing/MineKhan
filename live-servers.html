@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Servers</title>
+  	<link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/assets/common.css">
+    <style>
+      @font-face{
+        src:url(/minekhan/Minecraft-Regular.ttf);
+        font-family:font;
+      }
+      body{
+        font-family:font;
+        color:whitesmoke;
+      }
+      #bg{
+        background-image:url(/assets/dirt.png);
+        image-rendering:pixelated;
+        filter:brightness(0.4);
+        z-index:-1;
+        position:absolute;
+        top:0;
+        left:0;
+        width:100vw;
+        height:100vh;
+      }
+      #nav{
+        display:flex;
+        flex-direction:row;
+        justify-content: space-between;
+      }
+      a{
+        color:lightblue;
+      }
+      #servers{
+        background:RGBA(0, 0, 0, 0.6);
+      }
+      .server{
+        color:gray;
+        border:1px solid black;
+        padding:4px;
+        font-size:13px;
+        width:50%;
+        margin:auto;
+        margin-top:15px;
+      }
+      .server b{
+        color:white;
+      }
+      .server .lockImg{
+        width:14px;
+        height: 16px;
+        image-rendering: pixelated;
+        float: right;
+        margin-left: 4px;
+        background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAICAYAAAA1BOUGAAAAAXNSR0IArs4c6QAAAD9JREFUGFdjZICChQsX/oex4+PjGUFsMAGSgAkg8xnRJZBNwi+ZmZkJtwumC0YzIktOnz6dITMzE66GeEl0YwHnrii1au6ixAAAAABJRU5ErkJggg==");
+        background-size:100%;
+      }
+      .server .thumbnail{
+        float:left;
+        margin-right:8px;
+        width:64px;
+        height:64px;
+      }
+      .server::after{
+        content:'';
+        display: block;
+        clear:left;
+      }
+    </style>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VRNT3CCCGH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VRNT3CCCGH');
+</script>
+  </head>
+  <body>
+    <div id="nav"><a href="javascript:useUrl('https://willard.fun/minekhan/worlds')">use willard.fun (not recommended)</a></div>
+
+    <div id="bg"></div>
+    
+    <h1>Live list of servers</h1>
+    <div id="servers"></div>
+
+    <script>
+      var bg = document.querySelector("#bg")
+      var servers = document.querySelector("#servers")
+      onresize = function(){
+        let aspect = innerWidth / innerHeight
+        let stack = innerHeight / 96
+        var w = (stack*aspect)
+        var h = stack
+        w = innerWidth / w
+        h = innerHeight / h
+        bg.style.backgroundSize = w+"px " + h+"px"
+      }
+      onresize()
+
+      function updateList(data){
+        var html = ""
+        players = 0
+        data.forEach(v => {
+          if(!v.players && v.users) v.players = v.users
+          html += "<div class='server'>"
+          if(v.thumbnail) html += "<img class='thumbnail' src='" + v.thumbnail + "'>"
+          if((v.banned && typeof v.banned[username] === "string") || (v.whitelist && !v.whitelist.includes(username))) html += "<div class='lockImg'></div>"
+          html += "<b>"+format(v.name)+"</b><br>"
+          if(v.host) html += "Hosted by "+v.host+"<br>"
+          if(v.description) html += v.description+"<br>"
+          html += v.players.length+" players online: "+v.players.join(", ")+"<br>"
+          for(let i of v.players) if(i !== username) players++
+          let i = 0
+          for(let j in v.banned) i++
+          if(i){
+            html += i+" players banned: "
+            for(let j in v.banned) html += format(j)+", "
+            html = html.substring(0,html.length-2) + "<br>"
+          }
+          if(v.whitelist) html += v.whitelist.length+" players whitelisted: "+format(v.whitelist.join(", "))
+          html += "</div>"
+        })
+        servers.innerHTML = html
+        document.title = data.length+" Servers, "+players+" Players. "+(usingUrl ? "From "+usingUrl : "")
+      }
+      
+      var ws, worlds, username, prevPlayers, players, usingUrl
+      function ondata(data){
+        prevPlayers = players
+        worlds = data
+        updateList(data)
+        if(!prevPlayers && players && Notification.permission === "granted"){
+          new Notification('Players online!', {
+            body: 'There is now a player online!'
+          });
+        }
+      }
+      function initWs(){
+        ws = new WebSocket("wss://"+location.host+"/worlds")
+        ws.onmessage = msg => ondata(JSON.parse(msg.data))
+        ws.onerror = () => ws.close()
+        ws.onclose = function(){
+          initWs()
+        }
+      }
+      initWs()
+      function useUrl(url){
+        usingUrl = url
+        url = "https://around.thingmaker.repl.co/-?url="+encodeURIComponent(url)
+        ws.onclose = null
+        ws.close()
+        let me
+        ws = {
+          stop:false,
+          close:function(){
+            this.stop = true
+          },
+          timeout:function(){
+            fetch(url).then(r => r.json()).then(data => {
+              if(me.stop) return
+              ondata(data)
+              setTimeout(me.timeout,5000)
+            })
+          }
+        }
+        me = ws
+        ws.timeout()
+      }
+
+      fetch("/server/getuser").then(r => r.text()).then(r => {
+        username = r
+        if(worlds) updateList(worlds)
+      })
+
+      function notifyMe() {
+        if (!window.Notification) {
+          console.log('Browser does not support notifications.');
+        } else {
+          if (Notification.permission !== 'granted') {
+            Notification.requestPermission()
+          }
+        }
+      }
+      addEventListener("load",notifyMe)
+    </script>
+    <script src="/assets/common.js"></script> <!--This has swal in it-->
+  </body>
+</html>

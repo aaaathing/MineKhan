@@ -1,0 +1,30 @@
+{
+  "name":"example",
+  "description":"just an example",
+  "version":"1.2.0",
+  "textures":{
+    "grassTop":"0g0glþÇHĪcWJPWðoH÷-ZéŞZĆåZóEYĎĂHÞĮWĊóWĂÖYí8WĒĒYĖĢZâľHĞłHĢŒYåŎYĚĲWĦŢZ0QMùČ(eOĉA1k5ęÙ#ÀwùÔÁaOĄR1Ăňĥùäĵ1$Ċ#82t5ÃsĮ-ŕôĿðüŋÈŋð0boeİsëFùx(ŌoŇňw4wĳÞl33ðĩEĕRŇľMĭăÆxIĬ3wR%ĔoXĹ{õÇëðSícùĩs4rðĈc[0òFüďIoâIß-÷ÃySÐÌyĕìÀĂĝtĖÂîFĜ2E0+Āřoeá$2BaĸIō"
+  },
+  "images":{
+    "hotbar":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAABhJREFUGFdj/M/w/z8jAwgyMPz/z/CfAQA5DAX/rY1o3wAAAABJRU5ErkJggg==",
+		"minekhan":"https://i.imgur.com/Mo2wuT1.png"
+	},
+  "texts":{
+    "Paused":"never gonna give you up",
+    "Create New World":"stuff"
+  },
+  "animated":{
+    "grassTop":{
+      "arr":["redConcrete","orangeConcrete","yellowConcrete","limeConcrete","blueConcrete","purpleConcrete","magentaConcrete"],
+      "time":10,
+      "interpolate":true
+    }
+  },
+  "settings":{
+    "skyBottom":[1,0,0],
+    "skyOrange":[0,1,0],
+    "sky":{
+      "field":[1,1,0]
+    }
+  }
+}
