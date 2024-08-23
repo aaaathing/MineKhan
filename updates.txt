@@ -515,5 +515,6 @@ v1.1.1
 Many changed were made to server code. Servers now do more things and clients do less things like player health, hunger, and inventory.
 
 -- 1710366525654 | March 13, 2024
-discontinued
-no more updates because too few people play. alternative: eaglercraft
+
+-- 1724437896306 | August 23, 2024
+continue if people come back

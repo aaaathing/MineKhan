@@ -54,4 +54,3 @@ if(document.title.toLowerCase().includes("falconcraft") || location.href.toLower
   //stop()
   //setTimeout(() => document.documentElement.innerHTML = "<h1 style='font:100px cursive;'>error</h1>", 10000)
 }
-//if(window.version==="Beta 1.1.1")alert("MineKhan has been discontinued on this website.\nAlternatives:\neaglercraft\nhttps://willard.fun/minekhan")
