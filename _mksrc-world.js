@@ -622,6 +622,7 @@ const skyColor = expandTints({
 	warpedForest:0x1a051a,
 	"end,endIslands":0xa080a0
 })
+win.skyColor = skyColor
 const waterColor = [68/255,175/255,245/255]
 const waterTint = expandTints({
 	"default,void,plains,grove,snowySlopes,frozenPeaks,stonePeaks,jaggedPeaks,sunflowerPlains,rockyPlains":0x44aff5,

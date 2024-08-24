@@ -516,5 +516,6 @@ Many changed were made to server code. Servers now do more things and clients do
 
 -- 1710366525654 | March 13, 2024
 
--- 1724437896306 | August 23, 2024
-continue if people come back
+-- 1724464498566 | August 23, 2024
+Make code smaller
+Also fixed jump

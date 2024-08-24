@@ -4686,168 +4686,6 @@ function MineKhan() {
     }
     return textures
   }
-  const grassColor = {/*r:145/255,g:189/255,b:89/255*/r:71/255,g:206/255,b:49/255}
-  //var foliageColor = {/*r:119/255,g:171/255,b:47/255*/r:26/255,g:191/255,b:0}
-  const leafColor = {r:72/255,g:181/255,b:24/255}
-	const grassTint = expandTints({
-		default:0x8eb971,//used for water biomes
-		/*"plains,beach,sunflowerPlains":0x91bd59,
-		"frozenRiver,snowyPlains,iceSpikes,grove,frozenPeaks,jaggedPeaks,snowySlopes,snowyTaiga,frozenOcean,deepFrozenOcean":0x80b497,
-		snowyBeach:0x83b593,
-		meadow:0x86b87f,*/
-		"savanna,savannaPlateau,windsweptSavanna,grassySavanna":0xd6bb4d,
-		"badlands,woodedBadlands,erodedBadlands":0x90814d,
-		//"forest,flowerForest,shrubland":0x79c05a,
-		//darkForest:0x507a32,
-		/*"birchForest,oldBirchForest,sparseForest":0x88bb67,
-		oldPineTaiga:0x86b87f,
-		"oldSpruceTaiga,taiga":0x86b783,
-		"windsweptGravellyHills,windsweptForest,windsweptHills,stonyShore":0x8ab689,
-		"jungle,bambooJungle":0x59c93c,
-		sparseJungle:0x64c73f,
-		stonePeaks:0x9abe4b,*/
-		//lushHills:0x00ad34,
-		"swamp,mangroveSwamp":[0x6A7039,0x4C763C],
-		marsh:0x92ad6f,
-		cherryGrove:0xb6db61,
-		forest:0x79c05a,
-		trashland:0x424a2a,
-		lushCaves:0xb9b75b,
-		dripstoneCaves:0x8db58a,
-		"netherWastes,crimsonForest,warpedForest":0xbfb755,
-		"end,endIslands":0x8eb971
-	})
-  /*const foliageTint = {
-    default:[foliageColor.r,foliageColor.g,foliageColor.b],
-    snowyPlains:[128/255,180/255,151/255],
-    desert:[191/255,183/255,85/255],
-    plains:[121/255,192/255,90/255],
-    forest:[121/255,192/255,90/255],
-  }*/
-  const leafTint = expandTints({
-		default:0x71a74d,//used for water biomes
-		/*"plains,beach,sunflowerPlains":0x77ab2f,
-		"frozenRiver,snowyPlains,iceSpikes,grove,frozenPeaks,jaggedPeaks,snowySlopes,snowyTaiga,frozenOcean,deepFrozenOcean":0x60a17b,
-		snowyBeach:0x64a278,
-		meadow:0x68a55f,
-		*/"savanna,savannaPlateau,windsweptSavanna,grassySavanna":0x96b330,
-		"badlands,woodedBadlands,erodedBadlands":0x9e814d,
-		/*"forest,flowerForest,darkForest,shrubland":0x59ae30,
-		"birchForest,oldBirchForest,sparseForest":0x6ba941,
-		oldPineTaiga:0x68a55f,
-		"oldSpruceTaiga,taiga":0x68a464,
-		"windsweptGravellyHills,windsweptForest,windsweptHills,stonyShore":0x6da36b,
-		"jungle,bambooJungle":0x30bb0b,
-		sparseJungle:0x3eb80f,
-		stonePeaks:0x82ac1e,*/
-		//lushHills:0x18ad39,
-		swamp:0x6A7039,
-		mangroveSwamp:0x8DB127,
-		cherryGrove:0xb6db61,
-		forest:0x59ae30,
-		trashland:0x5a6932,
-		lushCaves:0xa6a432,
-		dripstoneCaves:0x70a26c,
-		"netherWastes,crimsonForest,warpedForest":0xaea42a,
-		"end,endIslands":0x71a74d
-	})
-	const skyColor = expandTints({
-		default:0x7ba4ff,
-		"plains,beach,sunflowerPlains,swamp,mangroveSwamp":0x78a7ff,
-		"frozenRiver,snowyPlains,iceSpikes,frozenOcean,deepFrozenOcean,snowyBeach":0x7fa1ff,
-		grove:0x81a0ff,
-		"frozenPeaks,jaggedPeaks":0x859dff,
-		snowySlopes:0x829fff,
-		snowyTaiga:0x839eff,
-		"meadow,oldPineTaiga,cherryGrove":0x7ca3ff,
-		"desert,savanna,savannaPlateau,windsweptSavanna,grassySavanna,badlands,woodedBadlands,erodedBadlands":0x6eb1ff,
-		"forest,flowerForest,darkForest,shrubland":0x79a6ff,
-		"birchForest,oldBirchForest,sparseForest":0x7aa5ff,
-		"oldSpruceTaiga,taiga":0x7da3ff,
-		"windsweptGravellyHills,windsweptForest,windsweptHills,stonyShore":0x7da2ff,
-		"jungle,bambooJungle,sparseJungle":0x77a8ff,
-		stonePeaks:0x76a8ff,
-		//lushHills:0x4a5fff,
-		trashland:0x4c7575,
-		//lushCaves:0x2a4524,
-		//dripstoneCaves:0x4d4b3e,
-		netherWastes:0x330808,
-		crimsonForest:0x330303,
-		warpedForest:0x1a051a,
-		"end,endIslands":0xa080a0
-	})
-	const waterColor = [68/255,175/255,245/255]
-	const waterTint = expandTints({
-		"default,void,plains,grove,snowySlopes,frozenPeaks,stonePeaks,jaggedPeaks,sunflowerPlains,rockyPlains":0x44aff5,
-		warmOcean:0x02b0e5,
-		"lukewarmOcean,deepLukewarmOcean":0x0d96db,
-		"coldOcean,deepColdOcean":0x2080c9,
-		"frozenOcean,deepFrozenOcean":0x2570b5,
-		"ocean,deepOcean":0x1787d4,
-		snowyBeach:0x1463a5,
-		snowyTaiga:0x205e83,
-		frozenRiver:0x185390,
-		meadow:0x44aff5,
-		"river,rockyRiver":0x0084ff,
-		beach:0x157cab,
-		stonyShore:0x0d67bb,
-		"snowyPlains,iceSpikes":0x14559b,
-		taiga:0x287082,
-		"oldPineTaiga,oldSpruceTaiga":0x2d6d77,
-		darkForest:0x3b6cd1,
-		flowerForest:0x20a3cc,
-		"forest,shrubland,sparseForest,bambooForest":0x1e97f2,
-		birchForest:0x0677ce,
-		oldBirchForest:0x0a74c4,
-		"jungle,bambooJungle":0x14a2c5,
-		sparseJungle:0x0d8ae3,
-		"savanna,grassySavanna,dryRiver":0x2c8b9c,
-		"savannaPlateau,windsweptSavanna":0x2590a8,
-		"desert,dryShrubland":0x32a598,
-		badlands:0x4e7f81,
-		erodedBadlands:0x497f99,
-		woodedBadlands:0x55809e,
-		"windsweptForest,windsweptGravellyHills,alpineHills":0x0e63ab,
-		windsweptHills:0x007bf7,
-		cherryGrove:0x5db7ef,
-		//lushHills:0x1774ff,
-		"swamp,marsh":0x4C6559,
-		mangroveSwamp:0x3A7A6A,
-		mushroomFields:0x8a8997,
-		trashland:0x008040,
-		"lushCaves,dripstoneCaves":0x44aff5,
-		"netherWastes,crimsonForest,warpedForest":0x905957,
-		"end,endIslands":0x62529e
-	})
-	{
-		let {biomeData} = window
-		for(let i in biomeData){
-			let data = biomeData[i]
-			if(!waterTint[i]) logError("Missing water tint for "+i)
-			if(grassTint[i] && leafTint[i]) continue
-			let rainfall = max(min(data[1],1),0)
-			let temperature = max(min(data[0],1),0)
-			let temperatureHigher = 1-(1-temperature)**2
-			if(!grassTint[i]){
-				grassTint[i] = [//0x00ad34
-					lerp(rainfall, lerp(temperature, 115, 192), lerp(temperatureHigher, 0, 70))/255,
-					lerp(rainfall, lerp(temperature, 161, 183), lerp(temperatureHigher, 173, 205))/255,
-					lerp(rainfall, lerp(temperature, 135, 86), lerp(temperatureHigher, 52, 54))/255
-				]
-			}
-			if(!leafTint[i]){
-				leafTint[i] = [
-					lerp(rainfall, lerp(temperature, 86, 174), lerp(temperatureHigher, 24, 29))/255,
-					lerp(rainfall, lerp(temperature, 145, 164), lerp(temperatureHigher, 173, 191))/255,
-					lerp(rainfall, lerp(temperature, 111, 41), lerp(temperatureHigher, 56, 1))/255
-				]
-			}
-			/*if(!skyColor[i]){
-				let t = min(max(data[0]/3,-1),1)
-				skyColor[i] = [ 0.62222224 - t*0.05, 0.5+t*0.1, 1 ]
-			}*/
-		}
-	}
   const semiTransTextures = []
   window.semiTransTextures = semiTransTextures
 /*
@@ -4859,7 +4697,7 @@ arrays are texture that will be connected, useful for shapes used for different 
 	const textures = {
 		grassTop: n => {
       const pix = getPixels("0g0glþÇHĪcWJPWðoH÷-ZéŞZĆåZóEYĎĂHÞĮWĊóWĂÖYí8WĒĒYĖĢZâľHĞłHĢŒYåŎYĚĲWĦŢZ0QMùČ(eOĉA1k5ęÙ#ÀwùÔÁaOĄR1Ăňĥùäĵ1$Ċ#82t5ÃsĮ-ŕôĿðüŋÈŋð0boeİsëFùx(ŌoŇňw4wĳÞl33ðĩEĕRŇľMĭăÆxIĬ3wR%ĔoXĹ{õÇëðSícùĩs4rðĈc[0òFüďIoâIß-÷ÃySÐÌyĕìÀĂĝtĖÂîFĜ2E0+Āřoeá$2BaĸIō");
-      const c = grassColor
+      //const c = grassColor
       for (let i = 0; i < pix.length; i += 4) {
         //setPixel(n, i >> 2 & 15, i >> 6, (pix[i] / 255) * c.r * 255, (pix[i + 1] / 255) * c.g * 255, (pix[i + 2] / 255) * c.b * 255, pix[i + 3]);
         setPixel(n, i >> 2 & 15, i >> 6, pix[i], pix[i + 1], pix[i + 2], pix[i + 3]);
@@ -4872,7 +4710,7 @@ arrays are texture that will be connected, useful for shapes used for different 
         setPixel(n, i >> 2 & 15, i >> 6, pix[i], pix[i + 1], pix[i + 2], pix[i + 3]);
       }
       pix = getPixels("0g0gdĒĒYJPWþÇH÷-ZĆåZĚĲWí8W000óEYðoHĖĢZâľHéŞZ1z12A4ÄR31Å6Â138DÇ7n4!çDGGnGĮ,GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG");
-      const c = grassColor
+      //const c = grassColor
       for (let i = 0; i < pix.length; i += 4) {
         if (pix[i+3]>0) {
           //setPixel(n, i >> 2 & 15, i >> 6, (pix[i] / 255) * c.r * 255, (pix[i + 1] / 255) * c.g * 255, (pix[i + 2] / 255) * c.b * 255, pix[i + 3]);
@@ -5784,7 +5622,6 @@ arrays are texture that will be connected, useful for shapes used for different 
     darkOakLeaves: function(n){
       var pix = getPixels("0g0g5ÞğW000ĞŒHĂÖYéŎZ0Ċŀ×yUÑùzFĊĂBĚŃ?iJ!0ÃSJÁ|NÈAmİPiĈ0ìpÙXĺ%þŉëkú2yċ{ëă%)sQù4ÒAj%ùÉIĈ2Ý2^ÕĞ9öþİQ8ôÕĐ1wĝq?)İÙüĸÒA]hJô")
       for (let i = 0; i < pix.length; i += 4) {
-				var c = leafColor
         var bright = avg(pix[i],pix[i+1],pix[i+2])
 				setPixel(n, i >> 2 & 15, i >> 6, bright, bright, bright, pix[i + 3]);
 			}
@@ -5798,7 +5635,6 @@ arrays are texture that will be connected, useful for shapes used for different 
     jungleLeaves: function(n){
       var pix = getPixels("0g0gb000ÞğWóoHĂÖYĞŒHĒyWņ5ZĩßHĦÏHŖæHŊDW0i2j4)TiOi2NOQ2xRO0Ow00AAO0y02*4>(yi0BÓz(3Mw05ÓS0Qz0yw)A0RÅ3MwA)2]ĂQz04Qx?Ď>>0wSyBÓNS2jOR40Oj2hAQ033N02>)0N000wQ)0M(0Qz4Swxz3>>w")
       for (let i = 0; i < pix.length; i += 4) {
-				var c = leafColor
         var bright = avg(pix[i],pix[i+1],pix[i+2])
 				setPixel(n, i >> 2 & 15, i >> 6, bright, bright, bright, pix[i + 3]);
 			}
@@ -5807,7 +5643,6 @@ arrays are texture that will be connected, useful for shapes used for different 
       var pix = getPixels("0g0gb000ÞğWóoHĂÖYĞŒHĒyWņ5ZĩßHĦÏHŖæHŊDW0i2j4)TiOi2NOQ2xRO0Ow00AAO0y02*4>(yi0BÓz(3Mw05ÓS0Qz0yw)A0RÅ3MwA)2]ĂQz04Qx?Ď>>0wSyBÓNS2jOR40Oj2hAQ033N02>)0N000wQ)0M(0Qz4Swxz3>>w")
       for (let i = 0; i < pix.length; i += 4) {
         if(abs(pix[i+2] - pix[i+1]) < 10){
-				  var c = leafColor
           var bright = avg(pix[i],pix[i+1],pix[i+2])
 				  setPixel(n, i >> 2 & 15, i >> 6, bright, bright, bright, pix[i + 3]);
         }else{
@@ -5818,7 +5653,6 @@ arrays are texture that will be connected, useful for shapes used for different 
     acaciaLeaves: function(n){
       var pix = getPixels("0g0g6óoH000ĞłHÚĎYĆåZðoH5yPÑĊŋÑQ>CEK$ûwAķÇ5Ī1]þıXA^ëĚyAIQBûUNiÏõXP(k^SīÀëĬc4ĊUõóPwA]BĚÂÎSÇ(mQ|JİóJİ$ĭRNwÊBwÏAER@6ÁXü]XJs")
       for (let i = 0; i < pix.length; i += 4) {
-				var c = leafColor
         var bright = avg(pix[i],pix[i+1],pix[i+2])
 				setPixel(n, i >> 2 & 15, i >> 6, bright, bright, bright, pix[i + 3]);
 			}
@@ -5833,7 +5667,6 @@ arrays are texture that will be connected, useful for shapes used for different 
     oakLeaves: function(n){
       var pix = getPixels("0g0g5ÖþY000ĢŢYĂÖYâľH0ĊŀùNUÑùz&NĂCRŃ?JJ&0ÃSJÁÞĩÈAðİÛiĈ0úpùXĺNmŉëkú2Nċ{ëăMĭÊQù4ÒĞÃ%ùÉIĚ^À2^ÕĭPöþİQ8óÕĐ1wĝq?)İùüĸÒA]2iô")
       for (let i = 0; i < pix.length; i += 4) {
-        var c = leafColor
         var bright = avg(pix[i],pix[i+1],pix[i+2])
 				setPixel(n, i >> 2 & 15, i >> 6, bright, bright, bright, pix[i + 3]);
 			}
@@ -6581,7 +6414,6 @@ arrays are texture that will be connected, useful for shapes used for different 
     mangroveLeaves: n => {
       var pix = getPixels("0g0g6PAYĞłH000óoHĆåZÚĎY5wPÎĀS1Á^ÎJ?lÀĹþz?l/ĹõBØĝ:iùV#aġleĻÙ^Ç>iĜ{Ē,?Ďę|×O>Ď(ŒójØČĲ$íü#Ù:pìXĒK]Çýï3{^ó+##}ģÂAē$Âģ2ð!ÎÁĲ2")
       for (let i = 0; i < pix.length; i += 4) {
-        var c = leafColor
         var bright = avg(pix[i],pix[i+1],pix[i+2])
 				setPixel(n, i >> 2 & 15, i >> 6, bright, bright, bright, pix[i + 3]);
 			}
@@ -8347,6 +8179,27 @@ if time is 0, it will update every time
 			if(stroke) ctx.stroke()
 		}
 	}
+	function blockNameText(txt){
+		let full = txt.startsWith("block.")
+		let block = blockData[txt.replace(/(block|blockName)\./,'')]
+		if(customResources.texts["block."+block.name]) txt = customResources.texts["block."+block.name]
+		else if(block) txt = block.Name
+		if(typeof txt === "function") txt = txt()
+		if(full){
+			if(block.rarity){
+				if(block.rarity === "uncommon") ctx.fillStyle = colors.css.e, txt += "\nUncommon"
+				if(block.rarity === "rare") ctx.fillStyle = colors.css.b, txt += "\nRare"
+				if(block.rarity === "epic") ctx.fillStyle = colors.css.d, txt += "\nEpic"
+			}
+			if(block.category) txt += "\n§9"+blockCategories[block.category]
+			if(block.type) txt += "\n§c"+blockCategories[block.type]
+			if(blockInfoIds[block.id]){
+				txt += "\n§r"+blockInfo[blockInfoIds[block.id]].data
+			}
+			if(block.name !== block.Name) txt += "\n§7"+block.name
+		}
+		return txt
+	}
 	//let asdf=/[a-zA-Z]/g, asdfg = txt => txt.replace(asdf,"*")
 	//hoverbox types: 1: block name, 2: block name over inventory, 3: debug info bottom aligned, 4: debug info
 	let textLineSizes = [], textLineSplits = []
@@ -8355,26 +8208,8 @@ if time is 0, it will update every time
 		h = h || 0
 		let prevFillStyle = ctx.fillStyle
 		if(customResources.texts[txt]) txt = customResources.texts[txt]
-		else if(txt.startsWith("block.") || txt.startsWith("blockName.")){
-			let full = txt.startsWith("block.")
-			let block = blockData[txt.replace(/(block|blockName)\./,'')]
-			if(customResources.texts["block."+block.name]) txt = customResources.texts["block."+block.name]
-			else if(block) txt = block.Name
-			if(typeof txt === "function") txt = txt()
-			if(full){
-				if(block.rarity){
-					if(block.rarity === "uncommon") ctx.fillStyle = colors.css.e, txt += "\nUncommon"
-					if(block.rarity === "rare") ctx.fillStyle = colors.css.b, txt += "\nRare"
-					if(block.rarity === "epic") ctx.fillStyle = colors.css.d, txt += "\nEpic"
-				}
-				if(block.category) txt += "\n§9"+blockCategories[block.category]
-				if(block.type) txt += "\n§c"+blockCategories[block.type]
-				if(blockInfoIds[block.id]){
-					txt += "\n"+blockInfo[blockInfoIds[block.id]].data
-				}
-				if(block.name !== block.Name) txt += "\n§7"+block.name
-			}
-		}else if(txt.startsWith("slider:"))sliderLoop:{
+		else if(txt.startsWith("block.") || txt.startsWith("blockName.")) txt = blockNameText(txt)
+		else if(txt.startsWith("slider:"))sliderLoop:{
 			txt = txt.replace("slider:","")
 			let i = txt.indexOf(",")
 			if(i === -1) break sliderLoop
@@ -8439,8 +8274,8 @@ if time is 0, it will update every time
       x = px
 		}
 		ctx.font = fontBeforeMeasure
+		let textAlign = ctx.textAlign
 		for (let i = 0; i < lines.length; i++) {
-      let textAlign = ctx.textAlign
       ctx.textAlign = "left"
       let px = x
       x = textLineSizes[i]
@@ -8463,10 +8298,10 @@ if time is 0, it will update every time
           x += ctx.measureText(str).width
         }
       }else ctx.fillText(lines[i], x, y + h * i)
-      ctx.textAlign = textAlign
-      ctx.fillStyle = fillStyle
+      //ctx.fillStyle = fillStyle
       x = px
 		}
+		ctx.textAlign = textAlign
     ctx.textBaseline = baseline
 		ctx.fillStyle = prevFillStyle
 	}
@@ -9903,6 +9738,7 @@ Comments starts with # and ends at the end of the line.</span><br>
 	}
 
 	let unsupported = []
+	let replaceWithEl = document.createElement("span")
 	const {CommandReader} = win
   let Messages = {
     span:document.createElement("span"),
@@ -10707,30 +10543,42 @@ Comments starts with # and ends at the end of the line.</span><br>
 				return true
 			}
 		},
+		formatElcb(el){
+			for(let n of el.childNodes){
+				if(n.nodeType === Node.TEXT_NODE){
+					let str = n.textContent.replace(/\n/g,"<br>")
+					if(str.includes("§")){
+		        let arr = str.split("§")
+		        let res = arr[0], spans = 0
+		        for(let i=1; i<arr.length; i++){
+		          let s = arr[i], code = s[0]
+		          let style
+							if(code === "l") style = "font-weight:bold;"
+							if(code === "o") style = "font-style:italic;"
+							else if(code === "r"){
+								style = ""
+							  res += "</span>".repeat(spans)
+								spans = 0
+							}else style = "color:"+colors.css[code]+";"
+		          s = s.substring(1)
+		          res += "<span style='"+style+"'>"+s
+							spans++
+		        }
+		        res += "</span>".repeat(spans)
+		        replaceWithEl.innerHTML = res
+      			n.replaceWith(...replaceWithEl.childNodes)
+		      }
+				}
+			}
+		},
     format(str){
       //str = this.formatConvertToSafeHtml(this.formatGetElementsInString(str),document.createElement("div")).innerHTML
-			str = makeHTMLSafe(str,this.formatAttrcb)
+			str = makeHTMLSafe(str,this.formatAttrcb,this.formatElcb)
       if(userInfo ? userInfo.profanityFilter : true) for(var obj of this.remove){ //remove bad words
         str = str.replace(obj.replace, obj.with)//"<span style='color:red; background:black;'>"+obj.with+"</span>")
       } //if you change this change it at canvas text
       
-      if(str.includes("§")){
-        let arr = str.split("§")
-        let res = arr[0], spans = 0
-        for(let i=1; i<arr.length; i++){
-          let s = arr[i], code = s[0]
-          let style
-					if(code === "l") style = "font-weight:bold;"
-					if(code === "o") style = "font-style:italic;"
-					else if(code === "r") style = "font-weight:normal;font-style:normal;"
-					else style = "color:"+colors.css[code]+";"
-          s = s.substring(1)
-          res += "<span style='"+style+"'>"+s
-					spans++
-        }
-        res += "</span>".repeat(spans)
-        return res
-      }else return str
+      return str
     }
   }
   window.Messages = Messages
@@ -13992,34 +13840,6 @@ return//*/
     }
 
 		if (!p.flying) {
-      if (liquid){
-        //p.jumpSpeed = 0.135;
-        if (controlMap.jump.pressed){
-          p.velocity.y += 1
-        }
-        if (controlMap.sneak.pressed){
-          p.velocity.y -= 1
-        }
-        p.velocity.y *= 0.7
-        p.velocity.x *= 0.7
-        p.velocity.z *= 0.7
-      }
-      if(powder){
-        p.velocity.y *= 0.4
-        p.velocity.x *= 0.4
-        p.velocity.z *= 0.4
-        if(controlMap.jump.pressed) p.velocity.y += 0.13
-      }
-      if(spikyBush){
-        p.velocity.y *= 0.35
-        p.velocity.x *= 0.35
-        p.velocity.z *= 0.35
-      }
-      if(quicksand){
-        p.velocity.y *= 0.0001
-        p.velocity.x *= 0.0001
-        p.velocity.z *= 0.0001
-      }
 			let blockAtFeet = world.getBlock(p2.x, ceil(p.y-p.height*0.5), p2.z, p.dimension)
       if(p.blockHere && blockData[p.blockHere].ladder || blockAtFeet && blockData[blockAtFeet].ladder){
         p.lastY = p.y
@@ -14031,7 +13851,7 @@ return//*/
           p.velocity.y *= 0.2
         }
       }
-			let drag = liquid ? 0.9 : (p.onGround ? 0.5 : 0.85)
+			let drag = liquid ? 0.35 : powder ? 0.2 : spikyBush ? 0.175 : quicksand ? 0.00005 : (p.onGround ? 0.5 : 0.85)
       if(blockData[p.standingOn].slide) drag = blockData[p.standingOn].slide
 			p.velocity.z += (p.velocity.z * drag - p.velocity.z)
 			p.velocity.x += (p.velocity.x * drag - p.velocity.x)
@@ -14129,6 +13949,18 @@ return//*/
 				blockSound(block, "step", p.x,p.y-p.height*0.5,p.z)
 				send({type:"jump"})
 			}
+		}
+		if (liquid){
+			//p.jumpSpeed = 0.135;
+			if (controlMap.jump.pressed){
+				p.velocity.y += 0.15
+			}
+			if (controlMap.sneak.pressed){
+				p.velocity.y -= 0.15
+			}
+		}
+		if(powder){
+			if(controlMap.jump.pressed) p.velocity.y += 0.13
 		}
     p.velocity.y += p.gravityStength
 	}
@@ -26262,8 +26094,15 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
     static all = []
 	}
+	let hoverboxCurText
 	function showHoverbox(hoverText){
-		hoverbox.innerText = hoverText
+		if(customResources.texts[hoverText]) hoverText = customResources.texts[hoverText]
+		else if(hoverText.startsWith("block.") || hoverText.startsWith("blockName.")) hoverText = blockNameText(hoverText)
+
+		if(hoverboxCurText !== hoverText){
+			hoverboxCurText = hoverText
+			hoverbox.innerHTML = Messages.format(hoverText)
+		}
 		hoverbox.classList.remove("hidden")
 		if (mouseY < height / 2) {
 			hoverbox.style.bottom = ""
@@ -26472,7 +26311,6 @@ p.camera.transformation.elements.set(matrix)//*/
 			}
     }
 		static draw() {
-			hoverbox.classList.add("hidden")
 			for (let button of this.all) {
 				button.draw()
 			}
@@ -29179,9 +29017,10 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
 		ctx.drawImage(gl.canvas,0,0, width,height)
     if(showName){
-			ctx.font = "16px thefont";
+			/*ctx.font = "16px thefont";
 			fill(255)
-			text(showName, mouseX, mouseY, 16, 1);
+			text(showName, mouseX, mouseY, 16, 1);*/
+			showHoverbox(showName)
 		}
     ctx.drawImage(canvas2, 0,0), ctx.globalAlpha = 1
 	}
@@ -30416,12 +30255,14 @@ p.camera.transformation.elements.set(matrix)//*/
 			mouseX = e.x
 			mouseY = e.y
       if((screen !== "main menu" || performFast) && !autoDrawScreens.includes(screen) && changeSceneAnimation === null){
+				hoverbox.classList.add("hidden")
         drawScreens[screen]()
         redraw = true
         Slider.drag(e)
       }
 		}
     if(screen === "inventory" || screen === "crafting" || screen === "furnace" || screen === "chest" || screen === "anvil" || screen === "dispenser" || screen === "hopper"){
+			hoverbox.classList.add("hidden")
       moveInv()
       redraw = true
     }
@@ -35751,6 +35592,7 @@ p.camera.transformation.elements.set(matrix)//*/
     if(allLoaded){
 			prevAnimationAmount = animationAmount
 			if(changeSceneAnimation !== null){
+				hoverbox.classList.add("hidden")
 				if(now - changeSceneAnimation > 500){
 					changeSceneAnimation = null
 					animationAmount = 0
@@ -35796,6 +35638,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			}
       
       if (autoDrawScreens.includes(screen) || changeSceneAnimation !== null) {
+				hoverbox.classList.add("hidden")
         drawScreens[screen]()
         Button.draw()
         Slider.draw()
