@@ -1,6 +1,6 @@
 "use strict"
 
-const version = "Beta 1.1.1"
+const version = "Beta 1.1.2"
 let win, isNode = false
 try{
 	win = window
@@ -25182,6 +25182,11 @@ class Section {
 	deleteBlock(x, y, z) {
 		this.blocks[x * 256 + y * 16 + z] = 0
 	}
+	setWorldBlock(x,y,z,blockId){
+		if(x<0 || x>=16 || y<0 || y>=16 || z<0 || z>=16){
+			this.world.setBlock(x+this.x,y+this.y,z+this.z,blockId,true,true,false,false,this.type)
+		}else this.setBlock(x,y,z,blockId)
+	}
 	updateBlock(x, y, z, world, noOnupdate, sx,sy,sz) {
 		let i = x
 		let j = y
@@ -25254,12 +25259,12 @@ class Section {
 		for (let x = this.x, xx = 0; x < wx; x++, xx++) {
 			for (let z = this.z, zz = 0; z < wz; z++, zz++) {
 				wy = this.chunk.tops[zz * 16 + xx]
-				for (let y = this.y; y < wy; y++) {
+				for (let y = this.y, yy=0; y < wy; y++, yy++) {
 					if (isCave(x, y, z, world)) {
 						if (y > 3) {
 							for (let i = 0; i < sphere.length; i += 3) {
-								if(y+sphere[i + 1]<10) world.setBlock(x + sphere[i], y + sphere[i + 1], z + sphere[i + 2], blockIds.Lava, true,true,false,false, this.type)
-								else world.setBlock(x + sphere[i], y + sphere[i + 1], z + sphere[i + 2], blockIds.air, true,true,false,false, this.type)
+								const block = y+sphere[i + 1]<10 ? blockIds.Lava :  blockIds.air
+								this.setWorldBlock(xx + sphere[i], yy + sphere[i + 1], zz + sphere[i + 2], block, true,true,false,false, this.type)
 							}
 						}
 					}
@@ -26052,17 +26057,131 @@ class Chunk {
 		//}
 		let gen = 0, floatGen = 0
 		if(this.world.customChunkGenerate && !this.world.customChunkGenerate(this)){
-		}else if(this.world.usePreBeta || this.type !== "" || this.world.superflat){
+		}else if(this.world.usePreBeta && this.type === "" && !this.world.superflat){
 		for (let i = 0; i < 16; i++) {
 			for (let k = 0; k < 16; k++) {
-				let wx = trueX + i, wz = trueZ + k
 				floatGen = noiseProfile.noise((trueX + i) * smoothness, (trueZ + k) * smoothness) * hilliness + generator.extra
-				gen = this.world.superflat === "island" && this.type === "" ? this.world.islandGenerator.GetHeight(x*16+i, z*16+k) : (this.world.superflat ? 4 : Math.round(floatGen))
+				gen = Math.round(floatGen)
 				/*if(this.type === "nether" && superflat){
 					gen = Math.round(floatGen)
 				}*/
 				this.tops[k * 16 + i] = gen
-				if(this.type === "nether"){
+				let biome = noiseProfile.noise((trueX + i) * biomeSmooth, (trueZ + k) * biomeSmooth);
+				var b = getBiome(biome)
+				this.biomes[k * 16 + i] = biomeIds[b]
+				if(b === "desert"){
+					this.tops[k * 16 + i] = gen;
+
+					this.setBlock(i, gen, k, blockIds.sand);
+					this.setBlock(i, gen - 1, k, blockIds.sand);
+					this.setBlock(i, gen - 2, k, blockIds.sandstone);
+					this.setBlock(i, gen - 3, k, blockIds.sandstone);
+					if(gen<60) {
+						gen = 59;
+						this.setBlock(i, gen+1, k, blockIds.Water);
+						this.setBlock(i, gen, k, blockIds.Water);
+						this.setBlock(i, gen - 1, k, blockIds.Water);
+						this.setBlock(i, gen - 2, k, blockIds.gravel);
+						this.setBlock(i, gen - 3, k, blockIds.gravel);
+					}
+					if(gen>120){
+							this.setBlock(i, gen, k, blockIds.stone);
+					}
+					if(gen>140){
+							this.setBlock(i, gen, k, blockIds.sand);
+					}
+				}
+
+				if(b === "plains" || b === "forest"){
+					this.tops[k * 16 + i] = gen;
+
+					this.setBlock(i, gen, k, blockIds.grass);
+					this.setBlock(i, gen - 1, k, blockIds.dirt);
+					this.setBlock(i, gen - 2, k, blockIds.dirt);
+					this.setBlock(i, gen - 3, k, blockIds.dirt);
+					if(gen<60) {
+						gen = 59;
+						this.setBlock(i, gen+1, k, blockIds.Water);
+						this.setBlock(i, gen, k, blockIds.Water);
+						this.setBlock(i, gen - 1, k, blockIds.Water);
+						this.setBlock(i, gen - 2, k, blockIds.gravel);
+						this.setBlock(i, gen - 3, k, blockIds.gravel);
+					}
+				}
+				if(b === "snowyPlains"){
+					this.tops[k * 16 + i] = gen;
+
+					if(gen >= 60){
+						var h = ceil(((floatGen + 0.5) % 1) * 8)
+						switch(h){//really smooth terrain!
+							case 1:
+								this.setBlock(i, gen + 1, k, blockIds.snow | LAYER1)
+								break
+							case 2:
+								this.setBlock(i, gen + 1, k, blockIds.snow | LAYER2)
+								break
+							case 3:
+								this.setBlock(i, gen + 1, k, blockIds.snow | LAYER3)
+								break
+							case 4:
+								this.setBlock(i, gen + 1, k, blockIds.snow | LAYER4)
+								break
+							case 5:
+								this.setBlock(i, gen + 1, k, blockIds.snow | LAYER5)
+								break
+							case 6:
+								this.setBlock(i, gen + 1, k, blockIds.snow | LAYER6)
+								break
+							case 7:
+								this.setBlock(i, gen + 1, k, blockIds.snow | LAYER7)
+								break
+							case 8:
+								this.setBlock(i, gen + 1, k, blockIds.snowBlock)
+								break
+						}
+						this.setBlock(i, gen, k, blockIds.grass | CROSS);
+						this.setBlock(i, gen - 1, k, blockIds.dirt);
+						this.setBlock(i, gen - 2, k, blockIds.dirt);
+						this.setBlock(i, gen - 3, k, blockIds.dirt);
+					}
+					if(gen<60) {
+						gen = 59;
+						this.setBlock(i, gen+1, k, blockIds.ice);
+						this.setBlock(i, gen, k, blockIds.ice);
+						this.setBlock(i, gen - 1, k, blockIds.Water);
+						this.setBlock(i, gen - 2, k, blockIds.gravel);
+						this.setBlock(i, gen - 3, k, blockIds.gravel);
+					}
+				}
+				
+				if(b === "sparseJungle" || b === "jungle" || b === "bambooJungle"){
+					this.tops[k * 16 + i] = gen;
+
+					if(b === "bambooJungle") this.setBlock(i, gen, k, blockIds.podzol)
+					else this.setBlock(i, gen, k, blockIds.grass)
+					this.setBlock(i, gen - 1, k, blockIds.dirt);
+					this.setBlock(i, gen - 2, k, blockIds.dirt);
+					this.setBlock(i, gen - 3, k, blockIds.dirt);
+					
+					if(gen<60) {
+						this.setBlock(i, 60, k, blockIds.Water);
+						for(var y=59; y>=gen; y--){
+							this.setBlock(i, y, k, blockIds.Water);
+						}
+						this.setBlock(i, gen, k, blockIds.gravel);
+						this.setBlock(i, gen - 1, k, blockIds.gravel);
+					}
+				}
+
+				for (let j = 1; j < gen - 3; j++) {
+					this.setBlock(i, j, k, blockIds.stone)
+				}
+				this.setBlock(i, 0, k, blockIds.bedrock)
+			}
+		}}else if(this.type === "nether"){
+			for (let i = 0; i < 16; i++) {
+				for (let k = 0; k < 16; k++) {
+					let wx = trueX + i, wz = trueZ + k
 					let biome = noiseProfile.noise((trueX + i) * biomeSmooth, (trueZ + k) * biomeSmooth)
 					let b = getNetherBiome(biome)
 					this.biomes[k * 16 + i] = biomeIds[b]
@@ -26106,7 +26225,12 @@ class Chunk {
 						chunk.setBlock(i, netherHeight - j, k, block)
 					}*/
 					this.setBlock(i,netherHeight,k, blockIds.bedrock)
-				}else if(this.type === "end"){
+				}
+			}
+		}else if(this.type === "end"){
+			for (let i = 0; i < 16; i++) {
+				for (let k = 0; k < 16; k++) {
+					let wx = trueX + i, wz = trueZ + k
 					this.tops[k * 16 + i] = 0
 					for(let j = 0; j<64; j++){
 						gen = noiseProfile.noise(wx * 0.01, j*0.01, wz * 0.01) - 0.57
@@ -26137,7 +26261,14 @@ class Chunk {
 					}else{
 						this.biomes[k * 16 + i] = biomeIds.end
 					}
-				}else if (this.world.superflat === "island") {
+				}
+			}
+		}else if(this.world.superflat === "island"){
+			for (let i = 0; i < 16; i++) {
+				for (let k = 0; k < 16; k++) {
+					let wx = trueX + i, wz = trueZ + k
+					let gen = this.world.islandGenerator.GetHeight(x*16+i, z*16+k)
+					this.tops[k*16+i] = gen
 					if (this.world.islandGenerator.GetWaterDepth(x*16+i, z*16+k) > 0) {
 						this.setBlock(i, gen, k, blockIds.Water);
 						this.setBlock(i, gen - 1, k, blockIds.Water)
@@ -26177,132 +26308,33 @@ class Chunk {
 							this.biomes[k * 16 + i] = biomeIds.plains
 						}
 					}
-				} else if(this.world.superflat === "void"){
-					this.biomes[k * 16 + i] = biomeIds.void
-				} else if(this.world.superflat){
-					this.tops[k * 16 + i] = gen;
-					this.biomes[k * 16 + i] = biomeIds.plains
 
-					this.setBlock(i, gen, k, blockIds.grass);
-					this.setBlock(i, gen - 1, k, blockIds.dirt);
-					this.setBlock(i, gen - 2, k, blockIds.dirt);
-					this.setBlock(i, gen - 3, k, blockIds.dirt);
-				}else{
-					let biome = noiseProfile.noise((trueX + i) * biomeSmooth, (trueZ + k) * biomeSmooth);
-					var b = getBiome(biome)
-					this.biomes[k * 16 + i] = biomeIds[b]
-					if(b === "desert"){
-						this.tops[k * 16 + i] = gen;
-
-						this.setBlock(i, gen, k, blockIds.sand);
-						this.setBlock(i, gen - 1, k, blockIds.sand);
-						this.setBlock(i, gen - 2, k, blockIds.sandstone);
-						this.setBlock(i, gen - 3, k, blockIds.sandstone);
-						if(gen<60) {
-							gen = 59;
-							this.setBlock(i, gen+1, k, blockIds.Water);
-							this.setBlock(i, gen, k, blockIds.Water);
-							this.setBlock(i, gen - 1, k, blockIds.Water);
-							this.setBlock(i, gen - 2, k, blockIds.gravel);
-							this.setBlock(i, gen - 3, k, blockIds.gravel);
-						}
-						if(gen>120){
-								this.setBlock(i, gen, k, blockIds.stone);
-						}
-						if(gen>140){
-								this.setBlock(i, gen, k, blockIds.sand);
-						}
-					}
-
-					if(b === "plains" || b === "forest"){
-						this.tops[k * 16 + i] = gen;
-
-						this.setBlock(i, gen, k, blockIds.grass);
-						this.setBlock(i, gen - 1, k, blockIds.dirt);
-						this.setBlock(i, gen - 2, k, blockIds.dirt);
-						this.setBlock(i, gen - 3, k, blockIds.dirt);
-						if(gen<60) {
-							gen = 59;
-							this.setBlock(i, gen+1, k, blockIds.Water);
-							this.setBlock(i, gen, k, blockIds.Water);
-							this.setBlock(i, gen - 1, k, blockIds.Water);
-							this.setBlock(i, gen - 2, k, blockIds.gravel);
-							this.setBlock(i, gen - 3, k, blockIds.gravel);
-						}
-					}
-					if(b === "snowyPlains"){
-						this.tops[k * 16 + i] = gen;
-
-						if(gen >= 60){
-							var h = ceil(((floatGen + 0.5) % 1) * 8)
-							switch(h){//really smooth terrain!
-								case 1:
-									this.setBlock(i, gen + 1, k, blockIds.snow | LAYER1)
-									break
-								case 2:
-									this.setBlock(i, gen + 1, k, blockIds.snow | LAYER2)
-									break
-								case 3:
-									this.setBlock(i, gen + 1, k, blockIds.snow | LAYER3)
-									break
-								case 4:
-									this.setBlock(i, gen + 1, k, blockIds.snow | LAYER4)
-									break
-								case 5:
-									this.setBlock(i, gen + 1, k, blockIds.snow | LAYER5)
-									break
-								case 6:
-									this.setBlock(i, gen + 1, k, blockIds.snow | LAYER6)
-									break
-								case 7:
-									this.setBlock(i, gen + 1, k, blockIds.snow | LAYER7)
-									break
-								case 8:
-									this.setBlock(i, gen + 1, k, blockIds.snowBlock)
-									break
-							}
-							this.setBlock(i, gen, k, blockIds.grass | CROSS);
-							this.setBlock(i, gen - 1, k, blockIds.dirt);
-							this.setBlock(i, gen - 2, k, blockIds.dirt);
-							this.setBlock(i, gen - 3, k, blockIds.dirt);
-						}
-						if(gen<60) {
-							gen = 59;
-							this.setBlock(i, gen+1, k, blockIds.ice);
-							this.setBlock(i, gen, k, blockIds.ice);
-							this.setBlock(i, gen - 1, k, blockIds.Water);
-							this.setBlock(i, gen - 2, k, blockIds.gravel);
-							this.setBlock(i, gen - 3, k, blockIds.gravel);
-						}
-					}
-					
-					if(b === "sparseJungle" || b === "jungle" || b === "bambooJungle"){
-						this.tops[k * 16 + i] = gen;
-
-						if(b === "bambooJungle") this.setBlock(i, gen, k, blockIds.podzol)
-						else this.setBlock(i, gen, k, blockIds.grass)
-						this.setBlock(i, gen - 1, k, blockIds.dirt);
-						this.setBlock(i, gen - 2, k, blockIds.dirt);
-						this.setBlock(i, gen - 3, k, blockIds.dirt);
-						
-						if(gen<60) {
-							this.setBlock(i, 60, k, blockIds.Water);
-							for(var y=59; y>=gen; y--){
-								this.setBlock(i, y, k, blockIds.Water);
-							}
-							this.setBlock(i, gen, k, blockIds.gravel);
-							this.setBlock(i, gen - 1, k, blockIds.gravel);
-						}
-					}
-				}
-				if(this.type === "" && this.world.superflat !== "void"){
 					for (let j = 1; j < gen - 3; j++) {
 						this.setBlock(i, j, k, blockIds.stone)
 					}
 					this.setBlock(i, 0, k, blockIds.bedrock)
 				}
 			}
-		}}else{
+		}else if(this.world.superflat === "void"){
+			for (let i = 0; i < 16; i++) {
+				for (let k = 0; k < 16; k++) {
+					this.biomes[k * 16 + i] = biomeIds.void
+				}
+			}
+		}else if(this.world.superflat){
+			for (let i = 0; i < 16; i++) {
+				for (let k = 0; k < 16; k++) {
+					this.tops[k * 16 + i] = 4;
+					this.biomes[k * 16 + i] = biomeIds.plains
+		
+					this.setBlock(i, 4, k, blockIds.grass);
+					this.setBlock(i, 3, k, blockIds.dirt);
+					this.setBlock(i, 2, k, blockIds.dirt);
+					this.setBlock(i, 1, k, blockIds.dirt);
+					this.setBlock(i, 0, k, blockIds.bedrock);
+				}
+			}
+		}else{
 			let {blocks,tops,biomes,minY,maxY,waterTops,caveBiomes,caveY} = await doWork({generate:true,trueX,trueZ,seed:this.world.worldSeed,fancyRivers:this.world.fancyRivers,caves:!this.caves})
 			this.tops.set(tops)
 			this.solidTops.set(tops)
@@ -28365,7 +28397,7 @@ class Chunk {
 			const flowers = this.allFlowers
 			const clayReplaceable = [blockIds.dirt, blockIds.stone, blockIds.gravel]
 			const dirtReplaceable = [blockIds.stone,blockIds.gravel]
-			let smoothness = generator.smooth, hilliness = generator.height, biomeSmooth = generator.biomeSmooth
+			//let smoothness = generator.smooth, hilliness = generator.height, biomeSmooth = generator.biomeSmooth
 			for (let i = 0; i < 16; i++) {
 				for (let k = 0; k < 16; k++) {
 					wx = this.x + i
@@ -29670,6 +29702,70 @@ class Chunk {
 		let str = `${chunkX},${chunkZ},${this.type}`
 		let load = world.loadFrom[str]
 		if (load) {
+			let reader = new BitArrayReader(load)
+			let paletteLen = reader.read(32)
+			let palette = []
+			let paletteBits = BitArrayBuilder.bits(paletteLen)
+			for (let i = 0; i < paletteLen; i++) palette.push(reader.read(32))
+	
+			const getIndex = [
+				(index, x, y, z) => (y + (index >> 6 & 7))*256 + (x + (index >> 3 & 7))*16 + z + (index >> 0 & 7),
+				(index, x, y, z) => (y + (index >> 6 & 7))*256 + (x + (index >> 0 & 7))*16 + z + (index >> 3 & 7),
+				(index, x, y, z) => (y + (index >> 3 & 7))*256 + (x + (index >> 6 & 7))*16 + z + (index >> 0 & 7),
+				(index, x, y, z) => (y + (index >> 0 & 7))*256 + (x + (index >> 6 & 7))*16 + z + (index >> 3 & 7),
+				(index, x, y, z) => (y + (index >> 0 & 7))*256 + (x + (index >> 3 & 7))*16 + z + (index >> 6 & 7),
+				(index, x, y, z) => (y + (index >> 3 & 7))*256 + (x + (index >> 0 & 7))*16 + z + (index >> 6 & 7)
+			]
+	
+			let sectionCount = reader.read(32)
+			let chunk = {blocks:[],tags:[]}
+			for (let i = 0; i < sectionCount; i++) {
+				let x = reader.read(1) * 8
+				let y = reader.read(8) * 8
+				let z = reader.read(1) * 8
+				let orientation = reader.read(3)
+	
+				let runs = reader.read(8)
+				let singles = reader.read(9)
+				for (let j = 0; j < runs; j++) {
+					let index = reader.read(9)
+					let types = reader.read(9)
+					let lenSize = reader.read(4)
+					for (let k = 0; k < types; k++) {
+						let chain = reader.read(lenSize) + 1
+						let block = reader.read(paletteBits)
+						for (let l = 0; l < chain; l++) {
+							chunk.blocks[getIndex[orientation](index, x, y, z)] = palette[block]
+							index++
+						}
+					}
+				}
+				for (let j = 0; j < singles; j++) {
+					let index = reader.read(9)
+					let block = reader.read(paletteBits)
+					chunk.blocks[getIndex[orientation](index, x, y, z)] = palette[block]
+				}
+				let tagsCount = reader.read(9)
+				for(let j=0; j<tagsCount; j++){
+					let index = reader.read(9)
+					if(reader.read(1)){
+						let tags = reader.readString(16)
+						try{
+							chunk.tags[getIndex[0](index, x, y, z)] = JSON.parse(tags)
+						}catch(e){console.log(e)}
+					}else{
+						chunk.tags[getIndex[0](index, x, y, z)] = reader.read(32)
+					}
+				}
+			}
+	
+			let entsLen = reader.read(32)
+			for(let i=0; i<entsLen; i++){
+				let entLen = reader.read(16)
+				this.world.posEntity(reader.readToNew(entLen, true))
+			}
+			load = chunk
+
 			for (let j in load.blocks) {
 				let block = load.blocks[j], tags = load.tags[j]
 				if(!blockData[block]) continue
@@ -29908,6 +30004,138 @@ Remember to balance optimization with maintainability and readability. Sometimes
 			await yieldThread()
 		}
 		return bab.array
+	}
+	unload(){
+		let chunk = this, bab = new BitArrayBuilder()
+		
+		let blockSet = new Set()
+		let sectionMap = {}, sectionTags = {}, sectionTagsLength = {}
+		
+		if (chunk.edited) {
+			for (let y = 0; y < chunk.sections.length; y++) {
+				const section = chunk.sections[y], original = chunk.cleanSections[y], blocks = section.blocks, tags = section.tags
+				if(!section.edited) continue
+				let changes = false
+				for (let i = 0; i < blocks.length; i++) {
+					if (blocks[i] !== original[i] || tags[i]) {
+						blockSet.add(blocks[i])
+						changes = true
+						let x = (i >> 8) + section.x
+						let y = (i >> 4 & 15) + section.y - minHeight
+						let z = (i & 15) + section.z
+						let str = `${x>>3},${y>>3},${z>>3}` // 8x8x8 sections
+						if (!sectionMap[str]) {
+							sectionMap[str] = []
+							for (let k = 0; k < 6; k++) sectionMap[str].push(new Int32Array(8*8*8).fill(-1))
+							sectionTags[str] = []
+							sectionTagsLength[str] = 0
+						}
+
+						// 6 copies of the chunk, all oriented in different directions so we can see which one compresses the most
+						sectionMap[str][0][(y & 7) << 6 | (x & 7) << 3 | z & 7] = blocks[i]
+						sectionMap[str][1][(y & 7) << 6 | (z & 7) << 3 | x & 7] = blocks[i]
+						sectionMap[str][2][(x & 7) << 6 | (y & 7) << 3 | z & 7] = blocks[i]
+						sectionMap[str][3][(x & 7) << 6 | (z & 7) << 3 | y & 7] = blocks[i]
+						sectionMap[str][4][(z & 7) << 6 | (x & 7) << 3 | y & 7] = blocks[i]
+						sectionMap[str][5][(z & 7) << 6 | (y & 7) << 3 | x & 7] = blocks[i]
+						if(tags[i]){
+							sectionTags[str][(y & 7) << 6 | (x & 7) << 3 | z & 7] = typeof tags[i] === "number" ? tags[i] : JSON.stringify(tags[i]).substring(0,65535)
+							sectionTagsLength[str]++
+						}
+					}
+				}
+				if (!changes) {
+					section.edited = false
+				}
+			}
+		}
+		
+		let sections = Object.entries(sectionMap)
+		if(!sections.length) return
+
+		let blocks = Array.from(blockSet)
+		let palette = {}
+		blocks.forEach((block, index) => palette[block] = index)
+		let paletteBits = BitArrayBuilder.bits(blocks.length)
+		bab.add(blocks.length, 32)
+		for (let block of blocks) bab.add(block, 32)
+
+		bab.add(sections.length, 32)
+		for (let [coords, section] of sections) {
+			let [sx, sy, sz] = coords.split(",")
+			sx = +sx, sy = +sy, sz = +sz
+			bab.add(sx, 1).add(sy, 8).add(sz, 1)
+
+			// Determine the most compact orientation by checking all 6!
+			let bestBAB = null
+			for (let i = 0; i < 6; i++) {
+				let bab = new BitArrayBuilder()
+
+				let blocks = section[i]
+				bab.add(i, 3)
+
+				let run = null
+				let runs = []
+				let singles = []
+				for (let i = 0; i < blocks.length; i++) {
+					const block = blocks[i]
+					if (block >= 0) {
+						if (!run && i < blocks.length - 2 && blocks[i + 1] >= 0 && blocks[i + 2] >= 0) {
+							run = [i, []]
+							runs.push(run)
+						}
+						if (run) {
+							if (run[1].length && block === run[1][run[1].length-1][1]) run[1][run[1].length-1][0]++
+							else run[1].push([1, block])
+						}
+						else singles.push([i, blocks[i]])
+					}
+					else run = null
+				}
+
+				bab.add(runs.length, 8)
+				bab.add(singles.length, 9)
+				for (let [start, blocks] of runs) {
+					// Determine the number of bits needed to store the lengths of each block type
+					let maxBlocks = 0
+					for (let block of blocks) maxBlocks = Math.max(maxBlocks, block[0])
+					let lenBits = BitArrayBuilder.bits(maxBlocks)
+
+					bab.add(start, 9).add(blocks.length, 9).add(lenBits, 4)
+					for (let [count, block] of blocks) bab.add(count - 1, lenBits).add(palette[block], paletteBits)
+				}
+				for (let [index, block] of singles) {
+					bab.add(index, 9).add(palette[block], paletteBits)
+				}
+				bab.add(sectionTagsLength[coords],9)
+				if(sectionTagsLength[coords]) for(let i in sectionTags[coords]){
+					let tags = sectionTags[coords][i]
+					bab.add(i,9)
+					if(typeof tags === "number"){
+						bab.add(0,1)
+						bab.add(tags,32)
+					}else{
+						bab.add(1,1)
+						bab.addString(tags,16)
+					}
+				}
+				if (!bestBAB || bab.bitLength < bestBAB.bitLength) {
+					bestBAB = bab
+				}
+			}
+			bab.append(bestBAB)
+		}
+
+		let entities = Object.values(this.entities).filter(r => !r.remote)
+		bab.add(entities.length,32)
+		let now = performance.now()
+		for(let i of entities){
+			let pos = this.world.getEntPos(i,now)
+			bab.add(pos.bitLength,16)
+			bab.append(pos)
+		}
+		
+		this.world.loadFrom[`${this.x>>4},${this.z>>4},${this.type}`] = bab.array
 	}
 }
 
@@ -31033,7 +31261,6 @@ class World{
 		this.timeoutQueue = []
 		this.updateQueue = []
 		this.loadFrom = {}
-		this.loadKeys = []
 		this.generatedChunks = 0
 		this.entities = []
 		//this.resourcePacks = []
@@ -33299,173 +33526,7 @@ class World{
 	
 	getSaveString(){
 		let world = this
-		let chunks = this.chunks, netherChunks = this.netherChunks, endChunks = this.endChunks
-		
-		let blockSet = new Set()
-		let sectionMap = {}, sectionTags = {}, sectionTagsLength = {}
-		for (let x in chunks) {
-			for (let z in chunks[x]) {
-				let chunk = chunks[x][z]
-				if (chunk.edited) {
-					for (let y = 0; y < chunk.sections.length; y++) {
-						const section = chunk.sections[y], original = chunk.cleanSections[y], blocks = section.blocks, tags = section.tags
-						if(!section.edited) continue
-						let changes = false
-						for (let i = 0; i < blocks.length; i++) {
-							if (blocks[i] !== original[i] || tags[i]) {
-								blockSet.add(blocks[i])
-								changes = true
-								let x = (i >> 8) + section.x
-								let y = (i >> 4 & 15) + section.y - minHeight
-								let z = (i & 15) + section.z
-								let str = `${x>>3},${y>>3},${z>>3},` // 8x8x8 sections
-								if (!sectionMap[str]) {
-									sectionMap[str] = []
-									for (let k = 0; k < 6; k++) sectionMap[str].push(new Int32Array(8*8*8).fill(-1))
-									sectionTags[str] = []
-									sectionTagsLength[str] = 0
-								}
-
-								// 6 copies of the chunk, all oriented in different directions so we can see which one compresses the most
-								sectionMap[str][0][(y & 7) << 6 | (x & 7) << 3 | z & 7] = blocks[i]
-								sectionMap[str][1][(y & 7) << 6 | (z & 7) << 3 | x & 7] = blocks[i]
-								sectionMap[str][2][(x & 7) << 6 | (y & 7) << 3 | z & 7] = blocks[i]
-								sectionMap[str][3][(x & 7) << 6 | (z & 7) << 3 | y & 7] = blocks[i]
-								sectionMap[str][4][(z & 7) << 6 | (x & 7) << 3 | y & 7] = blocks[i]
-								sectionMap[str][5][(z & 7) << 6 | (y & 7) << 3 | x & 7] = blocks[i]
-								if(tags[i]){
-									sectionTags[str][(y & 7) << 6 | (x & 7) << 3 | z & 7] = typeof tags[i] === "number" ? tags[i] : JSON.stringify(tags[i]).substring(0,65535)
-									sectionTagsLength[str]++
-								}
-							}
-						}
-						if (!changes) {
-							section.edited = false
-						}
-					}
-				}
-			}
-		}
-		for(let j in this.loadFrom){
-			const section = this.loadFrom[j], blocks = section.blocks, tags = section.tags
-			let [sx, sz, dimension] = j.split(",")
-			sx = +sx, sz = +sz
-			for(let i in blocks){
-				blockSet.add(blocks[i])
-				const z = (i & 15)+sz*16, x = ((i >> 4) & 15)+sx*16, y = (i >> 8) & 255
-				let str = `${x>>3},${y>>3},${z>>3},${dimension}`
-				if (!sectionMap[str]) {
-					sectionMap[str] = []
-					for (let k = 0; k < 6; k++) sectionMap[str].push(new Int32Array(8*8*8).fill(-1))
-					sectionTags[str] = []
-					sectionTagsLength[str] = 0
-				}
-
-				sectionMap[str][0][(y & 7) << 6 | (x & 7) << 3 | z & 7] = blocks[i]
-				sectionMap[str][1][(y & 7) << 6 | (z & 7) << 3 | x & 7] = blocks[i]
-				sectionMap[str][2][(x & 7) << 6 | (y & 7) << 3 | z & 7] = blocks[i]
-				sectionMap[str][3][(x & 7) << 6 | (z & 7) << 3 | y & 7] = blocks[i]
-				sectionMap[str][4][(z & 7) << 6 | (x & 7) << 3 | y & 7] = blocks[i]
-				sectionMap[str][5][(z & 7) << 6 | (y & 7) << 3 | x & 7] = blocks[i]
-				if(tags[i]){
-					sectionTags[str][(y & 7) << 6 | (x & 7) << 3 | z & 7] = typeof tags[i] === "number" ? tags[i] : JSON.stringify(tags[i]).substring(0,65535)
-					sectionTagsLength[str]++
-				}
-			}
-		}
-		//nether
-		for (let x in netherChunks) {
-			for (let z in netherChunks[x]) {
-				let chunk = netherChunks[x][z]
-				if (chunk.edited) {
-					for (let y = 0; y < chunk.sections.length; y++) {
-						const section = chunk.sections[y], original = chunk.cleanSections[y], blocks = section.blocks, tags = section.tags
-						if(!section.edited) continue
-						let changes = false
-						for (let i = 0; i < blocks.length; i++) {
-							if (blocks[i] !== original[i] || tags[i]) {
-								blockSet.add(blocks[i])
-								changes = true
-								let x = (i >> 8) + section.x
-								let y = (i >> 4 & 15) + section.y - minHeight
-								let z = (i & 15) + section.z
-								let str = `${x>>3},${y>>3},${z>>3},nether` // 8x8x8 sections
-								if (!sectionMap[str]) {
-									sectionMap[str] = []
-									for (let k = 0; k < 6; k++) sectionMap[str].push(new Int32Array(8*8*8).fill(-1))
-									sectionTags[str] = []
-									sectionTagsLength[str] = 0
-								}
-
-								// 6 copies of the chunk, all oriented in different directions so we can see which one compresses the most
-								sectionMap[str][0][(y & 7) << 6 | (x & 7) << 3 | z & 7] = blocks[i]
-								sectionMap[str][1][(y & 7) << 6 | (z & 7) << 3 | x & 7] = blocks[i]
-								sectionMap[str][2][(x & 7) << 6 | (y & 7) << 3 | z & 7] = blocks[i]
-								sectionMap[str][3][(x & 7) << 6 | (z & 7) << 3 | y & 7] = blocks[i]
-								sectionMap[str][4][(z & 7) << 6 | (x & 7) << 3 | y & 7] = blocks[i]
-								sectionMap[str][5][(z & 7) << 6 | (y & 7) << 3 | x & 7] = blocks[i]
-								if(tags[i]){
-									sectionTags[str][(y & 7) << 6 | (x & 7) << 3 | z & 7] = typeof tags[i] === "number" ? tags[i] : JSON.stringify(tags[i]).substring(0,65535)
-									sectionTagsLength[str]++
-								}
-							}
-						}
-						if (!changes) {
-							section.edited = false
-						}
-					}
-				}
-			}
-		}
-		//end
-		for (let x in endChunks) {
-			for (let z in endChunks[x]) {
-				let chunk = endChunks[x][z]
-				if (chunk.edited) {
-					for (let y = 0; y < chunk.sections.length; y++) {
-						const section = chunk.sections[y], original = chunk.cleanSections[y], blocks = section.blocks, tags = section.tags
-						if(!section.edited) continue
-						let changes = false
-						for (let i = 0; i < blocks.length; i++) {
-							if (blocks[i] !== original[i] || tags[i]) {
-								blockSet.add(blocks[i])
-								changes = true
-								let x = (i >> 8) + section.x
-								let y = (i >> 4 & 15) + section.y - minHeight
-								let z = (i & 15) + section.z
-								let str = `${x>>3},${y>>3},${z>>3},end` // 8x8x8 sections
-								if (!sectionMap[str]) {
-									sectionMap[str] = []
-									for (let k = 0; k < 6; k++) sectionMap[str].push(new Int32Array(8*8*8).fill(-1))
-									sectionTags[str] = []
-									sectionTagsLength[str] = 0
-								}
-
-								// 6 copies of the chunk, all oriented in different directions so we can see which one compresses the most
-								sectionMap[str][0][(y & 7) << 6 | (x & 7) << 3 | z & 7] = blocks[i]
-								sectionMap[str][1][(y & 7) << 6 | (z & 7) << 3 | x & 7] = blocks[i]
-								sectionMap[str][2][(x & 7) << 6 | (y & 7) << 3 | z & 7] = blocks[i]
-								sectionMap[str][3][(x & 7) << 6 | (z & 7) << 3 | y & 7] = blocks[i]
-								sectionMap[str][4][(z & 7) << 6 | (x & 7) << 3 | y & 7] = blocks[i]
-								sectionMap[str][5][(z & 7) << 6 | (y & 7) << 3 | x & 7] = blocks[i]
-								if(tags[i]){
-									sectionTags[str][(y & 7) << 6 | (x & 7) << 3 | z & 7] = typeof tags[i] === "number" ? tags[i] : JSON.stringify(tags[i]).substring(0,65535)
-									sectionTagsLength[str]++
-								}
-							}
-						}
-						if (!changes) {
-							section.edited = false
-						}
-					}
-				}
-			}
-		}
-
-		let blocks = Array.from(blockSet)
-		let palette = {}
-		blocks.forEach((block, index) => palette[block] = index)
-		let paletteBits = BitArrayBuilder.bits(blocks.length)
+		let loadFrom = this.loadFrom
 
 		let worldTypeBits1 = this.superflat==="island" ? 2 : (this.superflat === "void" ? 3 : this.superflat)
 		let worldTypeBits2 = this.usePreBeta ? 1 : 0
@@ -33480,74 +33541,28 @@ class World{
 		bab.add(version.length, 8)
 		for (let c of version) bab.add(c.charCodeAt(0), 8)
 		bab.add(worldTypeBits2,1)
-		bab.add(blocks.length, 32)
-		for (let block of blocks) bab.add(block, 32)
 
-		let sections = Object.entries(sectionMap)
-		bab.add(sections.length, 32)
-		for (let [coords, section] of sections) {
-			let [sx, sy, sz, dimension] = coords.split(",")
-			sx = +sx, sy = +sy, sz = +sz
-			bab.add(sx, 16).add(sy, 8).add(sz, 16).add((dimension === "nether" ? 1 : (dimension === "end" ? 2 : 0)), 3)
-
-			// Determine the most compact orientation by checking all 6!
-			let bestBAB = null
-			for (let i = 0; i < 6; i++) {
-				let bab = new BitArrayBuilder()
-
-				let blocks = section[i]
-				bab.add(i, 3)
-
-				let run = null
-				let runs = []
-				let singles = []
-				for (let i = 0; i < blocks.length; i++) {
-					const block = blocks[i]
-					if (block >= 0) {
-						if (!run && i < blocks.length - 2 && blocks[i + 1] >= 0 && blocks[i + 2] >= 0) {
-							run = [i, []]
-							runs.push(run)
-						}
-						if (run) {
-							if (run[1].length && block === run[1][run[1].length-1][1]) run[1][run[1].length-1][0]++
-							else run[1].push([1, block])
-						}
-						else singles.push([i, blocks[i]])
-					}
-					else run = null
-				}
-
-				bab.add(runs.length, 8)
-				bab.add(singles.length, 9)
-				for (let [start, blocks] of runs) {
-					// Determine the number of bits needed to store the lengths of each block type
-					let maxBlocks = 0
-					for (let block of blocks) maxBlocks = Math.max(maxBlocks, block[0])
-					let lenBits = BitArrayBuilder.bits(maxBlocks)
-
-					bab.add(start, 9).add(blocks.length, 9).add(lenBits, 4)
-					for (let [count, block] of blocks) bab.add(count - 1, lenBits).add(palette[block], paletteBits)
-				}
-				for (let [index, block] of singles) {
-					bab.add(index, 9).add(palette[block], paletteBits)
-				}
-				bab.add(sectionTagsLength[coords],9)
-				if(sectionTagsLength[coords]) for(let i in sectionTags[coords]){
-					let tags = sectionTags[coords][i]
-					bab.add(i,9)
-					if(typeof tags === "number"){
-						bab.add(0,1)
-						bab.add(tags,32)
-					}else{
-						bab.add(1,1)
-						bab.addString(tags,16)
-					}
-				}
-				if (!bestBAB || bab.bitLength < bestBAB.bitLength) {
-					bestBAB = bab
-				}
+		for (let x in this.chunks) {
+			for (let z in this.chunks[x]) {
+				this.chunks[x][z].unload()
 			}
-			bab.append(bestBAB)
+		}
+		for (let x in this.netherChunks) {
+			for (let z in this.netherChunks[x]) {
+				this.netherChunks[x][z].unload()
+			}
+		}
+		for (let x in this.endChunks) {
+			for (let z in this.endChunks[x]) {
+				this.endChunks[x][z].unload()
+			}
+		}
+
+		bab.add(Object.keys(loadFrom).length, 32)
+		for(let c in loadFrom){
+			bab.addBasicString(c)
+			bab.add(loadFrom[c].length,32)
+			bab.appendArray(loadFrom[c])
 		}
 		
 		bab.add(worldSettingKeys.length,8)
@@ -33555,14 +33570,6 @@ class World{
 			bab.add(this.settings[i]?1:0, 1)
 		}
 
-		let entities = this.entities.filter(r => !r.remote)
-		bab.add(entities.length,32)
-		let now = performance.now()
-		for(let i of entities){
-			let pos = this.getEntPos(i,now)
-			bab.add(pos.bitLength,16)
-			bab.append(pos)
-		}
 		bab.add(this.gameMode === "survival" ? 1 : (this.gameMode==="hardcore"?2:0),2).add(this.cheats?1:0,1)
 		bab.add(this.fancyRivers, 1)
 		return bab.array
@@ -33621,80 +33628,18 @@ class World{
 		
 		if(onlyMetdata) return
 
-		let paletteLen = reader.read(32)
-		let palette = []
-		let paletteBits = BitArrayBuilder.bits(paletteLen)
-		for (let i = 0; i < paletteLen; i++) palette.push(reader.read(32))
-
-		const getIndex = [
-			(index, x, y, z) => (y + (index >> 6 & 7))*256 + (x + (index >> 3 & 7))*16 + z + (index >> 0 & 7),
-			(index, x, y, z) => (y + (index >> 6 & 7))*256 + (x + (index >> 0 & 7))*16 + z + (index >> 3 & 7),
-			(index, x, y, z) => (y + (index >> 3 & 7))*256 + (x + (index >> 6 & 7))*16 + z + (index >> 0 & 7),
-			(index, x, y, z) => (y + (index >> 0 & 7))*256 + (x + (index >> 6 & 7))*16 + z + (index >> 3 & 7),
-			(index, x, y, z) => (y + (index >> 0 & 7))*256 + (x + (index >> 3 & 7))*16 + z + (index >> 6 & 7),
-			(index, x, y, z) => (y + (index >> 3 & 7))*256 + (x + (index >> 0 & 7))*16 + z + (index >> 6 & 7)
-		]
-
-		let sectionCount = reader.read(32)
-		let chunks = {}
-		for (let i = 0; i < sectionCount; i++) {
-			let x = reader.read(16, true) * 8
-			let y = reader.read(preBetaVersion?5:8, false) * 8
-			let z = reader.read(16, true) * 8
-			let dimension = reader.read(3)
-			dimension = dimension === 1 ? "nether" : (dimension === 2 ? "end" : "")
-			let orientation = reader.read(3)
-			if(preBetaVersion) y -= minHeight
-
-			let cx = x >> 4
-			let cz = z >> 4
-
-			// Make them into local chunk coords
-			x = x !== cx * 16 ? 8 : 0
-			z = z !== cz * 16 ? 8 : 0
-
-			let ckey = `${cx},${cz},${dimension}`
-			let chunk = chunks[ckey]
-			if (!chunk) {
-				chunk = {blocks:[],tags:[]}
-				chunks[ckey] = chunk
-			}
-			let runs = reader.read(8)
-			let singles = reader.read(9)
-			for (let j = 0; j < runs; j++) {
-				let index = reader.read(9)
-				let types = reader.read(9)
-				let lenSize = reader.read(4)
-				for (let k = 0; k < types; k++) {
-					let chain = reader.read(lenSize) + 1
-					let block = reader.read(paletteBits)
-					for (let l = 0; l < chain; l++) {
-						chunk.blocks[getIndex[orientation](index, x, y, z)] = palette[block]
-						index++
-					}
-				}
-			}
-			for (let j = 0; j < singles; j++) {
-				let index = reader.read(9)
-				let block = reader.read(paletteBits)
-				chunk.blocks[getIndex[orientation](index, x, y, z)] = palette[block]
-			}
-			let tagsCount = reader.read(9)
-			for(let j=0; j<tagsCount; j++){
-				let index = reader.read(9)
-				if(reader.read(1)){
-					let tags = reader.readString(16)
-					try{
-						chunk.tags[getIndex[0](index, x, y, z)] = JSON.parse(tags)
-					}catch(e){console.log(e)}
-				}else{
-					chunk.tags[getIndex[0](index, x, y, z)] = reader.read(32)
-				}
+		if(!verMoreThan(this.version.replace(/(Alpha|Beta) /, ''),"1.1.1")){
+			this.loadSave_1_1_1(reader,preBetaVersion)
+		}else{
+			this.loadFrom = {}
+			let chunkCount = reader.read(32)
+			for(let i=0; i<chunkCount; i++){
+				let ckey = reader.readBasicString()
+				let datalen = reader.read(32)
+				this.loadFrom[ckey] = reader.readToArray(datalen)
 			}
 		}
-		this.loadFrom = chunks
-		this.loadKeys = Object.keys(chunks)
-
+		
 		let settingsKeys = reader.read(8)
 		Object.assign(this.settings,defaultWorldSettings)
 		for(let i=0; i<settingsKeys; i++){
@@ -33715,12 +33660,13 @@ class World{
 			if(invLength) inv.inv = reader.readToArrayBits(invLength)
 		}
 
-		let entsLen = reader.read(32)
-		for(let i=0; i<entsLen; i++){
-			let entLen = reader.read(16)
-			this.posEntity(reader.readToNew(entLen, true), null, preBetaVersion)
+		if(!verMoreThan(this.version.replace(/(Alpha|Beta) /, ''),"1.1.1")){
+			let entsLen = reader.read(32)
+			for(let i=0; i<entsLen; i++){
+				let entLen = reader.read(16)
+				this.posEntity(reader.readToNew(entLen, true), null, preBetaVersion)
+			}
 		}
-
 		if(!preBetaVersion){
 			let survival = reader.read(2)
 			this.gameMode = survival === 1 ? "survival" : (survival === 2 ? "hardcore" : "creative")
@@ -33729,6 +33675,90 @@ class World{
 			else this.fancyRivers = false
 		}
 		this.findSpawnPoint()
+	}
+	loadSave_1_1_1(reader,preBetaVersion){ //convert to 1.1.2 format
+		let paletteLen = reader.read(32)
+		let palette = []
+		let paletteBits = BitArrayBuilder.bits(paletteLen)
+		for (let i = 0; i < paletteLen; i++) palette.push(reader.read(32))
+
+		let sectionCount = reader.read(32)
+		let chunks = {}, chunkSectionCount = {}
+		for (let i = 0; i < sectionCount; i++) {
+			let x = reader.read(16, true) * 8
+			let y = reader.read(preBetaVersion?5:8, false) * 8
+			let z = reader.read(16, true) * 8
+			let dimension = reader.read(3)
+			dimension = dimension === 1 ? "nether" : (dimension === 2 ? "end" : "")
+			let orientation = reader.read(3)
+			if(preBetaVersion) y -= minHeight
+
+			let cx = x >> 4
+			let cz = z >> 4
+
+			// Make them into local chunk coords
+			x = x !== cx * 16 ? 8 : 0
+			z = z !== cz * 16 ? 8 : 0
+
+			let ckey = `${cx},${cz},${dimension}`
+			let chunk = chunks[ckey]
+			if (!chunk) {
+				chunk = new BitArrayBuilder()
+				chunks[ckey] = chunk
+
+				chunk.add(paletteLen, 32)
+				for (let block of palette) chunk.add(block, 32)
+				
+				chunkSectionCount[ckey] = {count:0,bit:chunk.bitLength}
+				chunk.add(0,32)//replaced later
+			}
+			chunkSectionCount[ckey].count++
+			
+			chunk.add(x/8,1)
+			chunk.add(y/8,8)
+			chunk.add(z/8,1)
+			chunk.add(orientation,3)
+
+			let runs = reader.read(8)
+			let singles = reader.read(9)
+			chunk.add(runs,8)
+			chunk.add(singles,9)
+			for (let j = 0; j < runs; j++) {
+				let index = reader.read(9)
+				let types = reader.read(9)
+				let lenSize = reader.read(4)
+				chunk.add(index,9)
+				chunk.add(types,9)
+				chunk.add(lenSize,4)
+				for (let k = 0; k < types; k++) {
+					chunk.add(reader.read(lenSize),lenSize)
+					chunk.add(reader.read(paletteBits),paletteBits)
+				}
+			}
+			for (let j = 0; j < singles; j++) {
+				chunk.add(reader.read(9),9)
+				chunk.add(reader.read(paletteBits),paletteBits)
+			}
+			let tagsCount = reader.read(9)
+			chunk.add(tagsCount,9)
+			for(let j=0; j<tagsCount; j++){
+				let index = reader.read(9)
+				chunk.add(index,9)
+				if(reader.read(1)){
+					chunk.addString(reader.readString(16),16)
+				}else{
+					chunk.add(reader.read(32),32)
+				}
+			}
+		}
+		for(let i in chunks){
+			let bab = chunks[i]
+			bab.add(0,32)//entities
+			bab.bitLength = chunkSectionCount[i].bit //go back and replace
+			bab.add(chunkSectionCount[i].count,32)
+			chunks[i] = bab.array
+		}
+		this.loadFrom = chunks
 	}
 	getBlockConvert(){
 		const oldSLAB     = 0x100 // 9th bit
@@ -33955,7 +33985,6 @@ class World{
 		}
 
 		this.loadFrom = chunks
-		this.loadKeys = Object.keys(chunks)
 
 		this.spawnPoint.y = this.superflat ? 6 : (round(this.noiseProfile.noise(8 * generator.smooth, 8 * generator.smooth) * generator.height) + 2 + generator.extra)
 		Object.assign(this.settings, defaultWorldSettings)
@@ -34054,7 +34083,6 @@ class World{
 		}
 
 		this.loadFrom = chunks
-		this.loadKeys = Object.keys(chunks)
 
 		this.spawnPoint.y = this.superflat ? 6 : (round(this.noiseProfile.noise(8 * generator.smooth, 8 * generator.smooth) * generator.height) + 2 + generator.extra)
 		Object.assign(this.settings, defaultWorldSettings)
