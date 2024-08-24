@@ -871,13 +871,17 @@ const blockData = [
 		biomeTintWest:true,
 		biomeTintNorth:true,
 		biomeTintSouth:true,
+		randomRotate:true,
+		randomRotateTop:true,
+		randomRotateBottom:true,
 	},
 	{ name: "dirt", Name:"Dirt", hardness:0.5, blastResistance:0.5, type:"ground",category:"nature",
 		digSound: ["dirt.dig1", "dirt.dig2", "dirt.dig3", "dirt.dig4"],
-		stepSound: ["dirt.step1", "dirt.step2","dirt.step3","dirt.step4"]
+		stepSound: ["dirt.step1", "dirt.step2","dirt.step3","dirt.step4"],
+	 	randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true,
 	},
-	{ name: "stone", Name:"Stone", drop:"cobblestone", type:"rock1",category:"nature", hardness:5, blastResistance:6, stoneSound:true, craftSlabs:true, craftStairs:true},
-	{ name: "bedrock", Name:"Bedrock", category:"nature", hardness:1000, blastResistance:3600000, stoneSound:true, pistonPush:false, pistonPull:false},
+	{ name: "stone", Name:"Stone", drop:"cobblestone", type:"rock1",category:"nature", hardness:5, blastResistance:6, stoneSound:true, craftSlabs:true, craftStairs:true,randomRotate:"flip",randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true},
+	{ name: "bedrock", Name:"Bedrock", category:"nature", hardness:1000, blastResistance:3600000, stoneSound:true, pistonPush:false, pistonPull:false,randomRotate:"flip",randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true},
 	{ name: "sand", Name:"Sand", hardness:0.5, blastResistance:0.5,fallingDust:[212/255, 195/255, 148/255], category:"nature",
 		onupdate: function(x,y,z,b,world,sx,sy,sz,dimension){
 			fall(x,y,z,b,world,false,dimension)
@@ -17030,10 +17034,26 @@ win.shapes = shapes
 
 for(var shape = 0; shape < 8; shape ++){
 	shapes["layer"+(shape+1)] = {
-		verts: layerShape((shape+1)*2)
+		verts: layerShape((shape+1)*2),
+		cull: {
+			top: 0,
+			bottom: 3,
+			north: 1,
+			south: 1,
+			east: 1,
+			west: 1
+		}
 	}
 	shapes["liquidLayer"+(shape+1)] = {
-		verts: liquidLayerShape((shape+1)*2)
+		verts: liquidLayerShape((shape+1)*2),
+		cull: {
+			top: 0,
+			bottom: 3,
+			north: 0,
+			south: 0,
+			east: 0,
+			west: 0
+		}
 	}
 }
 
@@ -17923,6 +17943,7 @@ function initShapes() {
 		}
 		
 		// Populate the vertex coordinates
+		let {texWidth = 16, texHeight = 16} = obj
 		for (let i = 0; i < verts.length; i++) {
 			let side = verts[i]
 			let texArr = []
@@ -17930,7 +17951,7 @@ function initShapes() {
 			let normal = obj.normal[i] = []
 			for (let j = 0; j < side.length; j++) {
 				let face = side[j]
-				let mapped = mapCoords(face, i)
+				let mapped = mapCoords(face, i, texWidth,texHeight)
 				side[j] = mapped.pos
 				texArr.push(mapped.tex)
 				normal[j] = mapped.normal
@@ -18564,9 +18585,6 @@ function initShapes() {
 			current.x /= mag
 			current.z /= mag
 			return current
-		},
-		isThisLocalHere:function(x,y,z,dimension,blocks,func,world){
-			return blockData[func.call(world, x, y, z, (func === getBlock ? blocks : dimension))].id === this.id
 		},
 		trySpawnFlow:function(x,y,z,dimension,world,level,spread,fromSource=false){
 			let block = world.getBlock(x,y,z,dimension)

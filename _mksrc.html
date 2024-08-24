@@ -8680,7 +8680,8 @@ if time is 0, it will update every time
 	let {blockIds} = win
   let inventoryBlocks = {all:[],search:[],items:[],hidden:[]}
 	let liquidIds = {}
-  blockData.forEach(block => {
+  for(let i=0; i<BLOCK_COUNT; i++){
+		let block = blockData[i]
     if(!block.hidden){
       inventoryBlocks.all.push(block.id)
       if(block.category){
@@ -8697,7 +8698,7 @@ if time is 0, it will update every time
 		if(block.inLiquid){
 			liquidIds[block.inLiquid] = block.id
 		}
-  })
+  }
   win.inventoryBlocks = inventoryBlocks
   
   win.eachFrame = null, win.eachTick = null
@@ -11535,7 +11536,10 @@ Comments starts with # and ends at the end of the line.</span><br>
 					if((face === "north" || face === "south") && this.isThisLocalHere(x,y,z+1,dimension,blocks,getBlock,world) && this.isThisLocalHere(x,y,z-1,dimension,blocks,getBlock,world)) return true
 					if((face === "east" || face === "west") && this.isThisLocalHere(x+1,y,z,dimension,blocks,getBlock,world) && this.isThisLocalHere(x-1,y,z,dimension,blocks,getBlock,world)) return true
 				}
-			}
+			},
+			isThisLocalHere:function(x,y,z,dimension,blocks,func,world){
+				return blockData[func.call(world, x, y, z, (func === getBlock ? blocks : dimension))].id === this.id
+			},
 		}
 
 		var itemFrameSet = function(x,y,z,dimension,block,itemFrameBlock,world){
