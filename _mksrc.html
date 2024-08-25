@@ -74,13 +74,13 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
       height:var(--vh);
       z-index:10;
       background:darkblue;
-      color:red;
+      color:white;
       padding:8px;
-      font:32px monospace;
+      font-family: monospace;
       overflow:auto;
       box-sizing:border-box;
-			font-style:italic;
-			text-decoration: underline overline wavy red;
+			/*font-style:italic;
+			text-decoration: underline overline wavy red;*/
     }
     button, canvas, #loader{
 		  /*get rid of user select*/
@@ -310,7 +310,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 			width: auto;
 			max-width: 400px;
 			position: absolute;
-			z-index: 1;
+			z-index: 10;
 			padding: 10px;
 			cursor: default;
 		}
@@ -935,7 +935,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 	<canvas id="overlay" tabindex="0" width="600" height="600" style="position: absolute; top: 0px; left: 0px; outline:none; width:100%; height:100%;"></canvas>
 	<input type="text" id="savebox" class="hidden" spellcheck="false" style="position: absolute; top: 10px; left: 10px; z-index: 1;">
 	<input type="text" id="boxcentertop" class="hidden" spellcheck="false">
-	<input type="text" id="seedBox" class="hidden" spellcheck="false" placeholder="Enter seed">
+	<input type="text" id="seedBox" spellcheck="false" placeholder="Enter seed">
   <input type="file" id="uploadWorld" class="hidden" accept=".minekhan" title="Upload a world">
 	<div id="quota" class="hidden"></div>
   <!--<div id="editworld" class="hidden">
@@ -4629,6 +4629,22 @@ function MineKhan() {
 		el.style.width = x2-x+"px"
 		el.style.height = y2-y+"px"
 	}
+	function placeElementScrollable(el,x,y,w,h,scrollable){
+		/*if(el.whenScrollableScrolled) scrollable.el.removeEventListener("scroll",el.whenScrollableScrolled)
+		el.whenScrollableScrolled = () => {
+			el.style.left = x-w/2+scrollable.x+"px"
+			el.style.top = y-h/2+scrollable.y+"px"
+			el.style.width = w+"px"
+			el.style.height = h+"px"
+		}
+		el.whenScrollableScrolled()
+		scrollable.el.addEventListener("scroll",el.whenScrollableScrolled)*/
+		el.style.left = x-w/2+"px"
+		el.style.top = y-h/2+"px"
+		el.style.width = w+"px"
+		el.style.height = h+"px"
+		scrollable.el.appendChild(el)
+	}
   
 	let setPixel, getPixels;
   
@@ -8248,7 +8264,6 @@ if time is 0, it will update every time
 				}else if(code === "r"){
 					ctx.font = ctx.font.replace("bold","")
 					ctx.font = ctx.font.replace("italic","")
-					ctx.fillStyle = fillStyle
 				}
 				tw += ctx.measureText(codes[j].substring(1)).width
 			}
@@ -8293,6 +8308,7 @@ if time is 0, it will update every time
 					}else if(code === "r"){
 						ctx.font = ctx.font.replace("bold","")
 						ctx.font = ctx.font.replace("italic","")
+						ctx.fillStyle = fillStyle
 					}else ctx.fillStyle = colors.css[code]
           str = str.substring(1)
           ctx.fillText(str, x, y+h*i)
@@ -8347,7 +8363,7 @@ if time is 0, it will update every time
 	const ARROW = "arrow"
 	const HAND = "pointer"
 	let cursor = function(type) {
-		canvas.style.cursor = type
+		document.body.style.cursor = type
 	}
 
 	async function createDatabase() {
@@ -9034,6 +9050,9 @@ ROTATION = 0x1800 // Mask for the direction bits
 	window.message.className = "hidden darklinks"
 	window.message.style = "position: absolute; top: 10px; right: 10px; z-index: 1; text-align: right; background-color: rgba(255, 255, 255, 0.3);"
 	doc.body.appendChild(message)
+	
+	let creationMenuScrollable = createScrollable(), inventoryScrollable = createScrollable()
+	
 	// Callback functions for all the screens; will define them further down the page
 	let thisSceneCurrent = true
 	let drawScreens = {}
@@ -9089,11 +9108,11 @@ ROTATION = 0x1800 // Mask for the direction bits
       onenter: initServersMenu
 		},
 		"creation menu": {
-			enter: [window.boxCenterTop, window.seedBox],
-			exit: [window.boxCenterTop, window.seedBox],
+			enter: [window.boxCenterTop, creationMenuScrollable.el],
+			exit: [window.boxCenterTop, creationMenuScrollable.el],
 			onenter: () => {
 				window.boxCenterTop.placeholder = "Enter World Name"
-				if(screen !== "options worldSettings" && screen !== "seed templates"){
+				if(screen !== "worldSettings" && screen !== "seed templates"){
 					window.boxCenterTop.value = ""
 					seedBox.value = ""
 					worldSettings = Object.assign({}, defaultWorldSettings)
@@ -9154,7 +9173,8 @@ ROTATION = 0x1800 // Mask for the direction bits
       }
     },
     inventory:{
-      exit:[invTextbox],
+			enter:[inventoryScrollable.el],
+      exit:[invTextbox, inventoryScrollable.el],
       onenter: function(){
         invTextbox.oninput = function(){
           let b = inventoryBlocks.search, v = this.value
@@ -10584,7 +10604,7 @@ Comments starts with # and ends at the end of the line.</span><br>
   }
   window.Messages = Messages
   window.messagesScroll.onclick = () => canvas.focus()
-  messagesHolder.onmousedown = e => canvas.onmousedown(e) //make buttons work
+  //messagesHolder.onmousedown = e => canvas.onmousedown(e) //make buttons work
   messageInput.onkeydown = e => {
 		let hintObj = Messages.hints.get(messageInput)
     if(e.key === "Tab"){
@@ -11410,8 +11430,7 @@ Comments starts with # and ends at the end of the line.</span><br>
 				if(ent.type === "Sign" && ent.x === x && ent.y === y && ent.z === z && ent.dimension === dimension) return
 			}
 			block = block || world.getBlock(x,y,z,dimension)
-			var signBlock = (block & STAIR) === STAIR ? (this.id | CROSS) : (this.id | SLAB)
-			world.addEntity(new entities[entityIds.Sign](x,y,z,signBlock,block),false,dimension)
+			world.addEntity(new entities[entityIds.Sign](x,y,z,this.id,block),false,dimension)
 		}
     
 		for (let i = 0; i < BLOCK_COUNT; i++) {
@@ -14740,7 +14759,7 @@ return//*/
 			let prevBlock = world.getBlock(pos[0],pos[1],pos[2],p.dimension)
 			world.setBlock(pos[0],pos[1],pos[2], 0, false,true,true,false,p.dimension)
 			p.lastBreak = Date.now()
-      world.serverChangeBlock(pos[0],pos[1],pos[2],p.dimension,false,hitBox.face)
+      world.serverChangeBlock(pos[0],pos[1],pos[2],p.dimension,false,hitBox.face,0)
 		}
 	}
   /*function replaceItem(id){
@@ -14822,7 +14841,7 @@ return//*/
       item = true
     }
 		if(item){
-			world.serverChangeBlock(pos ? pos[0] : p2.x, pos ? pos[1] : p2.y, pos ? pos[2] : p2.z, p.dimension,true,hitBox.face)
+			world.serverChangeBlock(pos ? pos[0] : p2.x, pos ? pos[1] : p2.y, pos ? pos[2] : p2.z, p.dimension,true,hitBox.face,0)
 			p.lastPlace = Date.now()
 			if(blockData[holding].onuse && pos) blockData[holding].onuse(x,y,z, cblock,p.dimension)
 			return
@@ -18867,44 +18886,13 @@ r 11 y  n  n  n
   
   entities[entities.length] = class Sign extends Entity{
 		static name2 = "Sign"
-    constructor(x,y,z,block,base){
-      const shape = blockData[block].shape
-      const shapeVerts = shape.verts
-			const shapeTexVerts = shape.texVerts
-      const originalVerts = shape.originalVerts
-			const size = shape.size
-			let blockSides = Object.keys(Block)
-			let texture = []
-			let index = 0
-			for (let n = 0; n < 6; n++) {
-				let side = blockSides[n]
-				let directionalFaces = shapeVerts[n]
-				for (let facei = 0; facei < directionalFaces.length; facei++) {
-					let texShapeVerts = shapeTexVerts[n][facei]
-          let texName = blockData[block].textures[0]
-          let texTag = originalVerts[n][facei] && originalVerts[n][facei].t
-          if(blockData[block][texTag]) texName = blockData[block][texTag]
-					let texVerts = textureCoords[textureMap[texName]]
-					let tx = texVerts[0]
-					let ty = texVerts[1]
-					let tw = texVerts[2]-tx
-					let th = texVerts[5]-ty
-					texture[index    ] = tx + texShapeVerts[0]*tw
-					texture[index + 1] = ty + texShapeVerts[1]*th
-					texture[index + 2] = tx + texShapeVerts[2]*tw
-					texture[index + 3] = ty + texShapeVerts[3]*th
-					texture[index + 4] = tx + texShapeVerts[4]*tw
-					texture[index + 5] = ty + texShapeVerts[5]*th
-					texture[index + 6] = tx + texShapeVerts[6]*tw
-					texture[index + 7] = ty + texShapeVerts[7]*th
-					index += 8
-				}
-			}
-			super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, new Float32Array(shapeVerts.flat(Infinity)), new Float32Array(texture), size, Infinity)
+    constructor(x,y,z,base,block){
+			let signBlock = (block & STAIR) === STAIR ? (base | CROSS) : (base | SLAB)
+      const v = generateBlockVAO(signBlock)
+			super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, null,null, v.size, Infinity, v.vao)
       this.width = this.height = this.depth = 16/24
       this.offsetY = -0.15
       this.from = p.id
-      this.block = block
       this.baseBlock = base
       this.noHitbox = true
       this.textEnt = null, this.textEnt2 = null
@@ -18914,7 +18902,17 @@ r 11 y  n  n  n
       this.gravityStength = 0
     }
     update() {
-      if(this.world.getBlock(this.x,this.y,this.z,this.dimension) !== this.baseBlock) this.canDespawn = true
+			let block = this.world.getBlock(this.x,this.y,this.z,this.dimension)
+			if(block != this.baseBlock){
+      	if((block&isCube) !== this.baseBlock) this.canDespawn = true
+				else{
+					let base = this.baseBlock
+					let signBlock = (block & STAIR) === STAIR ? (base | CROSS) : (base | SLAB)
+					let v = generateBlockVAO(signBlock)
+		      this.faces = v.size
+					this.vao = v.vao
+				}
+			}
       //if(host && this.canDespawn) return blockParticles(this.block,this.x,this.y,this.z,30, "break",this.world,this.dimension)
       
       let tags = this.world.getTags(this.x,this.y,this.z,this.dimension)
@@ -18951,7 +18949,7 @@ r 11 y  n  n  n
             this.textEnt.setText(tags.text)
           }else{
             this.textEnt = this.world.generateTextForEntity(tags.text,this,1/8,[0,0,0],null)
-            if((this.baseBlock & STAIR) === STAIR){
+            if((block & isState) === STAIR){
               this.textEnt.offsetZ = -5.5/16
             }else{
               this.textEnt.offsetZ = 1/16
@@ -18965,7 +18963,7 @@ r 11 y  n  n  n
             this.textEnt2.setText(tags.text2)
           }else{
             this.textEnt2 = this.world.generateTextForEntity(tags.text2,this,1/8,[0,0,0],null)
-            if((this.baseBlock & STAIR) === STAIR){
+            if((block & isState) === STAIR){
               this.textEnt2.offsetZ = 7.25/16
             }else{
               this.textEnt2.offsetZ = 1.25/16
@@ -26143,6 +26141,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			this.draw = func
 		}
 		setSize(s){this.size = s}
+		setScrollable(s){this.scrollable = s}
 
 		mouseIsOver(useMouse) {
 			return touchScreen && !useMouse ? Boolean(this.touch) : (mouseX >= this.x - this.w / 2 && mouseX <= this.x + this.w / 2 && mouseY >= this.y - this.h / 2 && mouseY <= this.y + this.h / 2)
@@ -26162,9 +26161,16 @@ p.camera.transformation.elements.set(matrix)//*/
         this.index = this.setIndex()
       }
 
+			this.x = this.originalX, this.y = this.originalY
+			this.w = this.originalW, this.h = this.originalH
+
 			if(changeSceneAnimation !== null){
 				if(thisSceneCurrent) this.x += (1-animationAmount)*width/4, ctx.globalAlpha = animationAmount
 				else this.w *= 1-animationAmount, this.h *= 1-animationAmount, ctx.globalAlpha = 1-animationAmount
+			}
+			if(this.scrollable){
+				this.x += this.scrollable.x
+				this.y += this.scrollable.y
 			}
 
 			let size = this.size || 12 //text size
@@ -26275,8 +26281,6 @@ p.camera.transformation.elements.set(matrix)//*/
       }
       this.previousHovering = hovering
 			if(changeSceneAnimation !== null){
-				if(thisSceneCurrent) this.x = this.originalX
-				else this.w = this.originalW, this.h = this.originalH
 				ctx.globalAlpha = 1
 			}
 		}
@@ -26403,6 +26407,43 @@ p.camera.transformation.elements.set(matrix)//*/
 			lastAddedButton.appendChild(span)
 		}
 	}
+	function createScrollable(){
+		let el = document.createElement("div")
+		el.addEventListener("click", e => {canvas.focus(); canvas.dispatchEvent(new e.constructor(e.type,e))})
+		el.addEventListener("mousedown", e => {canvas.focus(); canvas.dispatchEvent(new e.constructor(e.type,e))})
+		el.addEventListener("mouseup", e => {canvas.focus(); canvas.dispatchEvent(new e.constructor(e.type,e))})
+		el.addEventListener("mousemove", e => {canvas.dispatchEvent(new e.constructor(e.type,e))})
+		el.addEventListener("touchstart", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; canvas.focus(); canvas.dispatchEvent(e)})
+		el.addEventListener("touchend", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; canvas.focus(); canvas.dispatchEvent(e)})
+		el.addEventListener("touchmove", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; canvas.focus(); canvas.dispatchEvent(e)})
+		el.addEventListener("touchcancel", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; canvas.focus(); canvas.dispatchEvent(e)})
+		el.style.position = "absolute"
+		el.style.zIndex = canvas.zIndex
+		el.style.overflow = "auto"
+		el.className = "hidden"
+		let tallEl = document.createElement("div")
+		el.appendChild(tallEl)
+		document.body.appendChild(el)
+		el.addEventListener("scroll", () => {
+			trackMouse(null,true)
+		})
+		let ax,ay
+		return {
+			setPos(x,y,w,h){
+				ax = x, ay = y
+				el.style.left = x+"px"
+				el.style.top = y+"px"
+				el.style.width = w+"px"
+				el.style.height = h+"px"
+			},
+			setScrollSize(h){
+				tallEl.style.height = h+"px"
+			},
+			get x(){return ax-el.scrollLeft},
+			get y(){return ay-el.scrollTop},
+			el,
+		}
+	}
   
 	var initEverything
 	function initButtons() {
@@ -26449,7 +26490,8 @@ p.camera.transformation.elements.set(matrix)//*/
 		window.quota.style.top = worldSelectBottom+"px"
 
 		// Creation menu buttons
-		Button.add(width / 2-155*ss, 120*ss, 300*ss, 40*ss, ["World Type: Alpha", "World Type: Normal", "World Type: Superflat", "World Type: Island", "World Type: Void"], "creation menu", r => {
+		creationMenuScrollable.setPos(width / 2-320*ss,90*ss, 640*ss, height - 200*ss)
+		Button.add(165*ss, 30*ss, 300*ss, 40*ss, ["World Type: Alpha", "World Type: Normal", "World Type: Superflat", "World Type: Island", "World Type: Void"], "creation menu", r => {
 			superflat = r === "World Type: Superflat"
 			if(r==="World Type: Island") superflat="island"
 			if(r==="World Type: Void") superflat="void"
@@ -26461,38 +26503,53 @@ p.camera.transformation.elements.set(matrix)//*/
 			if(superflat === "void") return 4
 			if(superflat) return 2
 			return preBeta ? 0 : 1//if you change this, change /know/newWorld
-		})
-		Button.add(width / 2-155*ss, 170*ss, 300*ss, 40*ss, ["Trees: On", "Trees: Off"], "creation menu", r => trees = r === "Trees: On", function() {
+		}).setScrollable(creationMenuScrollable)
+		Button.add(165*ss, 80*ss, 300*ss, 40*ss, ["Trees: On", "Trees: Off"], "creation menu", r => trees = r === "Trees: On", function() {
 			if (superflat === true || superflat === "void") {
 				trees = false
 			}else if(!cheats){
         trees = true
       }
 			return superflat === true || superflat === "void" || !cheats
-		}, null, () => trees ? 0 : 1)
-		Button.add(width / 2-155*ss, 220*ss, 300*ss, 40*ss, ["Caves: On", "Caves: Off"], "creation menu", r => caves = r === "Caves: On", function() {
+		}, null, () => trees ? 0 : 1).setScrollable(creationMenuScrollable)
+		Button.add(165*ss, 130*ss, 300*ss, 40*ss, ["Caves: On", "Caves: Off"], "creation menu", r => caves = r === "Caves: On", function() {
 			if (superflat === true || superflat === "void") {
 				caves = false
 			}else if(!cheats){
         caves = true
       }
 			return superflat === true || superflat === "void" || !cheats
-		}, null, () => caves ? 0 : 1)
-		placeElement(seedBox, width / 2-155*ss, 270*ss, 300*ss, 40*ss)
-		Button.add(width / 2+155*ss, 120*ss, 300*ss, 40*ss, "More Settings", "creation menu", r => changeScene("options worldSettings"))
-		Button.add(width / 2+155*ss, 170*ss, 300*ss, 40*ss, "Difficulty: Normal", "creation menu", nothing, always, "Normal mode only")
+		}, null, () => caves ? 0 : 1).setScrollable(creationMenuScrollable)
+		placeElementScrollable(seedBox, 165*ss, 180*ss, 300*ss, 40*ss, creationMenuScrollable)
+		Button.add(165*ss, 230*ss, 300*ss, 40*ss, ["Game Mode: Creative", "Game Mode: Survival", "Game Mode: Hardcore"], "creation menu", r => {
+			p.gameMode = r === "Game Mode: Survival" && "survival" || !inWorld && r === "Game Mode: Hardcore" && "hardcore" || "creative"
+			if(p.survival) cheats = false
+			else cheats = true
+		}, null, () => "Default game mode", () => {let s = p.gameMode; return s === "survival" ? 1 : (s === "hardcore" ? 2 : 0)}).setScrollable(creationMenuScrollable)
+		Button.add(165*ss, 280*ss, 300*ss, 40*ss, ["Cheats: On", "Cheats: Off"], "creation menu", r => {
+			cheats = r === "Cheats: On"
+		}, () => {
+			if(p.gameMode === "creative"){cheats = true; return true}
+			else if(p.gameMode === "hardcore"){cheats = false; return true}
+		}, () => {
+			let s = p.gameMode
+			return "Cheats allow you to use many commands but disables achievments. Default cheats. May be inaccurate if you are not the host. "+(s === "creative" ? " You cannot turn off cheats in creative mode." : (s === "hardcore" ? " You cannot turn on cheats in hardcore mode." : ""))
+		}, () => cheats ? 0 : 1).setScrollable(creationMenuScrollable)
+		Button.add(475*ss, 30*ss, 300*ss, 40*ss, "More Settings", "creation menu", r => changeScene("worldSettings")).setScrollable(creationMenuScrollable)
+		Button.add(475*ss, 80*ss, 300*ss, 40*ss, "Difficulty: Normal", "creation menu", nothing, always, "Normal mode only").setScrollable(creationMenuScrollable)
     /*Button.add(width / 2+155*ss, 100+135*ss, 300*ss, 40*ss, ["Cheats: On", "Cheats: Off"], "creation menu", r => cheats = r === "Cheats: On", () => {
       if(!survival) cheats = true
 			else if(survival === "hardcore") cheats = false
       return !survival || survival === "hardcore"
     }, () => "Cheats allow you to use many commands but disables achievments."+(!survival ? " You cannot turn off cheats in creative mode." : (survival === "hardcore" ? " You cannot turn on cheats in hardcore mode." : "")), () => cheats ? 0 : 1)*/
-		Button.add(width / 2+155*ss, 220*ss, 300*ss, 40*ss, ["Fancy Rivers: On", "Fancy Rivers: Off"], "creation menu", r => fancyRivers = r === "Fancy Rivers: On", function() {
+		Button.add(475*ss, 130*ss, 300*ss, 40*ss, ["Fancy Rivers: On", "Fancy Rivers: Off"], "creation menu", r => fancyRivers = r === "Fancy Rivers: On", function() {
 			if (superflat || preBeta) {
 				fancyRivers = false
 			}
 			return superflat || preBeta
-		}, "Rivers that flow down! May slow down world generation. Requires normal world type.", () => fancyRivers ? 0 : 1)
-		Button.add(width / 2+155*ss, 270*ss, 300*ss, 40*ss, "Seed Templates", "creation menu", () => changeScene("seed templates"), null, "Choose a specific seed to control how the world generates.")
+		}, "Rivers that flow down! May slow down world generation. Requires normal world type.", () => fancyRivers ? 0 : 1).setScrollable(creationMenuScrollable)
+		Button.add(475*ss, 180*ss, 300*ss, 40*ss, "Seed Templates", "creation menu", () => changeScene("seed templates"), null, "Choose a specific seed to control how the world generates.").setScrollable(creationMenuScrollable)
+		creationMenuScrollable.setScrollSize(200*ss +1000)
 		Button.add(width / 2, height - 90*ss, 300*ss, 40*ss, "Create New World", "creation menu", r => {
       createNewWorld()
 		})
@@ -26681,6 +26738,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		}, () => !websocket, () => "Invite someone to this world if it is multiplayer.")
     //Button.add(width/2+110*ss, height / 2 + -125*ss, 200*ss, 40*ss, "Packet Viewer", "pause", r => changeScene("packetViewer raw"), null, "View data from multiplayer packets.")
     Button.add(width/2+110*ss, height / 2 + -125*ss, 200*ss, 40*ss, "Achievments", "pause", r => changeScene("achievments"), () => cheats)
+		Button.add(width/2+110*ss, height / 2 + -75*ss, 200*ss, 40*ss, "World Options", "pause", r => changeScene("worldSettings"), () => !inWorld)
 		Button.add(width/2, height / 2 + 125*ss, 420*ss, 40*ss, "Exit Without Saving", "pause", r => {
 			/*if(!host){
 				multiplayer.sendInvStuff()
@@ -26793,7 +26851,6 @@ p.camera.transformation.elements.set(matrix)//*/
 				}
 			}, null, "Are you really that lazy???"),
 			Button.add(0,0, width / 3, 40*ss, "Resource Packs", "options", r => changeScene("options resourcePacks"), () => !inWorld, "Change how things look."),
-			Button.add(0,0, width / 3, 40*ss, "World Options", "options", r => changeScene("options worldSettings"), () => !inWorld),
 			Button.add(0,0, width / 3, 40*ss, "Help", "options", r => changeScene("options help")),
 			Button.add(0,0, width / 3, 40*ss, ["Graphics: Normal","Graphics: Fast","Graphics: More Realistic"], "options", r => {
 				let prevMoreReal = settings.graphics === "morereal"
@@ -26837,11 +26894,11 @@ p.camera.transformation.elements.set(matrix)//*/
 		Button.add(30*ss, height/2, 30*ss,30*ss,"◀","options 2", r => changeScene("options"))
     
     // World settings buttons
-    Button.add(width / 4, height/2 + -185*ss, width / 3, 40*ss, ["TNT Explodes: On","TNT Explodes: Off"], "options worldSettings", r => worldSettings.tntExplode = r === "TNT Explodes: On", null, null, () => worldSettings.tntExplode ? 0 : 1)
-    Button.add(width / 4, height/2 + -125*ss, width / 3, 40*ss, ["Kill command enabled","Kill command disabled"], "options worldSettings", r => worldSettings.killCmdOff = r === "Kill command disabled", null, null, () => worldSettings.killCmdOff ? 1 : 0)
-    Button.add(width / 4, height/2 + -65*ss, width / 3, 40*ss, ["Day/Night Cycle: On", "Day/Night Cycle: Off"], "options worldSettings", r => worldSettings.dayNightCycle = r === "Day/Night Cycle: On", needsCheats, noCheatsThenSayIt("dayNightCycle",true), () => worldSettings.dayNightCycle ? 0 : 1)
-    Button.add(width / 4, height/2 + -5*ss, width / 3, 40*ss, ["Blocks Fall: On", "Blocks Fall: Off"], "options worldSettings", r => worldSettings.blocksFall = r === "Blocks Fall: On", needsCheats, noCheatsThenSayIt("blocksFall",true), () => worldSettings.blocksFall ? 0 : 1)
-		Button.add(width / 4, height/2 + 55*ss, width / 3, 40*ss, ["Default Game Mode: Creative", "Default Game Mode: Survival", "Default Game Mode: Hardcore"], "options worldSettings", r => {
+    Button.add(width / 4, height/2 + -185*ss, width / 3, 40*ss, ["TNT Explodes: On","TNT Explodes: Off"], "worldSettings", r => worldSettings.tntExplode = r === "TNT Explodes: On", null, null, () => worldSettings.tntExplode ? 0 : 1)
+    Button.add(width / 4, height/2 + -125*ss, width / 3, 40*ss, ["Kill command enabled","Kill command disabled"], "worldSettings", r => worldSettings.killCmdOff = r === "Kill command disabled", null, null, () => worldSettings.killCmdOff ? 1 : 0)
+    Button.add(width / 4, height/2 + -65*ss, width / 3, 40*ss, ["Day/Night Cycle: On", "Day/Night Cycle: Off"], "worldSettings", r => worldSettings.dayNightCycle = r === "Day/Night Cycle: On", needsCheats, noCheatsThenSayIt("dayNightCycle",true), () => worldSettings.dayNightCycle ? 0 : 1)
+    Button.add(width / 4, height/2 + -5*ss, width / 3, 40*ss, ["Blocks Fall: On", "Blocks Fall: Off"], "worldSettings", r => worldSettings.blocksFall = r === "Blocks Fall: On", needsCheats, noCheatsThenSayIt("blocksFall",true), () => worldSettings.blocksFall ? 0 : 1)
+		Button.add(width / 4, height/2 + 55*ss, width / 3, 40*ss, ["Default Game Mode: Creative", "Default Game Mode: Survival", "Default Game Mode: Hardcore"], "worldSettings", r => {
 			if(!inWorld){
 				p.gameMode = r === "Default Game Mode: Survival" && "survival" || !inWorld && r === "Default Game Mode: Hardcore" && "hardcore" || "creative"
 				if(p.survival) cheats = false
@@ -26850,7 +26907,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				serverWorld.gameMode = r === "Default Game Mode: Survival" && "survival" || !inWorld && r === "Default Game Mode: Hardcore" && "hardcore" || "creative"
 			}
 		}, () => inWorld && (!host || !cheats), () => (inWorld && !cheats && "This requires cheats. " || "") + "Default Game Mode for new players joining. Own game mode can be changed with commands after world creation. May be inaccurate if you are not the host.", () => {let s = inWorld && host ? serverWorld.gameMode : p.gameMode; return s === "survival" ? 1 : (s === "hardcore" ? 2 : 0)})
-		Button.add(width / 4, height/2 + 115*ss, width / 3, 40*ss, ["Default Cheats: On", "Default Cheats: Off"], "options worldSettings", r => {
+		Button.add(width / 4, height/2 + 115*ss, width / 3, 40*ss, ["Default Cheats: On", "Default Cheats: Off"], "worldSettings", r => {
 			if(!inWorld){
 				cheats = r === "Default Cheats: On"
 			}else if(host){
@@ -26869,12 +26926,12 @@ p.camera.transformation.elements.set(matrix)//*/
 			let s = inWorld && host ? serverWorld.gameMode : p.gameMode
 			return "Cheats allow you to use many commands but disables achievments. Default cheats for new players joining. May be inaccurate if you are not the host. "+(s === "creative" ? " You cannot turn off cheats in creative mode." : (s === "hardcore" ? " You cannot turn on cheats in hardcore mode." : ""))
 		}, () => (inWorld && host ? serverWorld.cheats : cheats) ? 0 : 1)
-    Button.add(width * 0.75, height/2 + -185*ss, width / 3, 40*ss, ["Attack: On","Attack: Off"], "options worldSettings", r => worldSettings.attack = r === "Attack: On", null, null, () => worldSettings.attack ? 0 : 1)
-    Button.add(width * 0.75, height/2 + -125*ss, width / 3, 40*ss, ["Fire spreads: On","Fire spreads: Off"], "options worldSettings", r => worldSettings.fireSpreads = r === "Fire spreads: On", null, null, () => worldSettings.fireSpreads ? 0 : 1)
-		Button.add(width * 0.75, height/2 + -65*ss, width / 3, 40*ss, ["Weather Cycle: On", "Weather Cycle: Off"], "options worldSettings", r => worldSettings.weatherCycle = r === "Weather Cycle: On", needsCheats, noCheatsThenSayIt("weatherCycle",true), () => worldSettings.weatherCycle ? 0 : 1)
-    Button.add(width * 0.75, height/2 + -5*ss, width / 3, 40*ss, ["Mob Spawning: On", "Mob Spawning: Off"], "options worldSettings", r => worldSettings.mobSpawning = r === "Mob Spawning: On", null, null, () => worldSettings.mobSpawning ? 0 : 1)
-    Button.add(width * 0.75, height/2 + 55*ss, width / 3, 40*ss, ["Autosave: On", "Autosave: Off"], "options worldSettings", r => worldSettings.autosave = r === "Autosave: On", null, null, () => worldSettings.autosave ? 0 : 1)
-    Button.add(width / 2, height - 50*ss, width / 3, 40*ss, "Back", "options worldSettings", r => changeScene(previousScreen))
+    Button.add(width * 0.75, height/2 + -185*ss, width / 3, 40*ss, ["Attack: On","Attack: Off"], "worldSettings", r => worldSettings.attack = r === "Attack: On", null, null, () => worldSettings.attack ? 0 : 1)
+    Button.add(width * 0.75, height/2 + -125*ss, width / 3, 40*ss, ["Fire spreads: On","Fire spreads: Off"], "worldSettings", r => worldSettings.fireSpreads = r === "Fire spreads: On", null, null, () => worldSettings.fireSpreads ? 0 : 1)
+		Button.add(width * 0.75, height/2 + -65*ss, width / 3, 40*ss, ["Weather Cycle: On", "Weather Cycle: Off"], "worldSettings", r => worldSettings.weatherCycle = r === "Weather Cycle: On", needsCheats, noCheatsThenSayIt("weatherCycle",true), () => worldSettings.weatherCycle ? 0 : 1)
+    Button.add(width * 0.75, height/2 + -5*ss, width / 3, 40*ss, ["Mob Spawning: On", "Mob Spawning: Off"], "worldSettings", r => worldSettings.mobSpawning = r === "Mob Spawning: On", null, null, () => worldSettings.mobSpawning ? 0 : 1)
+    Button.add(width * 0.75, height/2 + 55*ss, width / 3, 40*ss, ["Autosave: On", "Autosave: Off"], "worldSettings", r => worldSettings.autosave = r === "Autosave: On", null, null, () => worldSettings.autosave ? 0 : 1)
+    Button.add(width / 2, height - 50*ss, width / 3, 40*ss, "Back", "worldSettings", r => changeScene(previousScreen))
     
     // Control menu buttons
 		Button.add(mid - x2, height - 30, w2, 40, "Done", "options controls", r => {
@@ -28726,12 +28783,12 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
 	}
 
-  window.invScroll = 0;
-  let draggingInvBar = false
+  /*window.invScroll = 0;
+  let draggingInvBar = false*/
   let invHeight = 0
-  var barW = 20
+  /*var barW = 20
   var invBarOffset = 0
-  var barH = 0
+  var barH = 0*/
 	function startDrawInv(){
 		defineWorld()
 		ctx.drawImage(gl.canvas,0,0, width,height)//image of inventory overwrites webgl canvas
@@ -28773,10 +28830,12 @@ p.camera.transformation.elements.set(matrix)//*/
 
     // Scrollbar
     if(p.survival || inventory.category === 0){
-      invScroll = 0
+      inventoryScrollable.setScrollSize(0)
       inventory.category = 0
     }else{
-      barH = height * (invWinH/invHeight);
+			inventoryScrollable.setPos(50.5 - s2, 50.5 - s2, perRow*s+24, invWinH)
+			inventoryScrollable.setScrollSize(invHeight)
+      /*barH = height * (invWinH/invHeight);
       if(draggingInvBar){
         invScroll = map(mouseY-invBarOffset, (barH/2), height-(barH/2), 0, invHeight) || 0;
       }
@@ -28787,8 +28846,9 @@ p.camera.transformation.elements.set(matrix)//*/
       fill(100)
       ctx.fillRect(width-barW-2, 0, barW+2, height)
       fill(200)
-      ctx.fillRect(width-barW, barTop, barW-2, barH)
+      ctx.fillRect(width-barW, barTop, barW-2, barH)*/
     }
+		let invScroll = inventoryScrollable.el.scrollTop
 
 		// Draw the grid
 		ctx.lineWidth = 1
@@ -29030,6 +29090,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		let s2 = s / 2
 		let perRow = Math.floor(width/s)-8
 		let rows = 8
+		let invScroll = inventoryScrollable.el.scrollTop
 		let over = Math.round((mouseY + invScroll - 50) / s) * perRow + Math.round((mouseX - 50) / s)
     
     let count = inventory.category === 0 ? 27 : inventoryBlocks[inventory.category].length
@@ -30249,17 +30310,19 @@ p.camera.transformation.elements.set(matrix)//*/
 		mmoveY += e.movementX * mouseS
     //more stuff in controls
 	}
-	function trackMouse(e) {
+	function trackMouse(e, mouseNotMoved) {
     var redraw = false
 		if (screen !== "play") {
 			cursor("")
-			mouseX = e.x
-			mouseY = e.y
+			if(!mouseNotMoved){
+				mouseX = e.x
+				mouseY = e.y
+			}
       if((screen !== "main menu" || performFast) && !autoDrawScreens.includes(screen) && changeSceneAnimation === null){
 				hoverbox.classList.add("hidden")
         drawScreens[screen]()
         redraw = true
-        Slider.drag(e)
+        if(!mouseNotMoved) Slider.drag(e)
       }
 		}
     if(screen === "inventory" || screen === "crafting" || screen === "furnace" || screen === "chest" || screen === "anvil" || screen === "dispenser" || screen === "hopper"){
@@ -30499,10 +30562,10 @@ p.camera.transformation.elements.set(matrix)//*/
         return
 			}
       if (screen === "inventory" || screen === "crafting" || screen === "furnace" || screen === "chest" || screen === "anvil" || screen === "dispenser" || screen === "hopper") {
-        if(mouseDown && mouseX >= width-barW){
+        /*if(mouseDown && mouseX >= width-barW){
           draggingInvBar = true
           invBarOffset = mouseY-map(invScroll, 0, invHeight, (barH/2), height-(barH/2))
-        }
+        }*/
         if(screen === "crafting")clickCrafting(e.button)
         else if(screen === "furnace")clickFurnace(e.button)
         else if(screen === "chest") clickChest(e.button)
@@ -30738,7 +30801,7 @@ p.camera.transformation.elements.set(matrix)//*/
       mouseDown = false
       Button.mouseup(e)
       Slider.release(e)
-      draggingInvBar = false
+      //draggingInvBar = false
       if(screen === "inventory" || screen === "crafting" || screen === "furnace" || screen === "chest" || screen === "anvil" || screen === "dispenser" || screen === "hopper") releaseInv()
     }else if(e.type === "controlName"){
 			k = controlMap[e.key].key
@@ -30808,13 +30871,13 @@ p.camera.transformation.elements.set(matrix)//*/
       inventory.showName = 1.5
       updateHUD = true
     }
-    if(screen === "inventory" || screen === "crafting" || screen === "furnace" || screen === "chest" || screen === "anvil" || screen === "dispenser" || screen === "hopper"){
+    /*if(screen === "inventory" || screen === "crafting" || screen === "furnace" || screen === "chest" || screen === "anvil" || screen === "dispenser" || screen === "hopper"){
       invScroll += e.deltaY
       if(invScroll < 0) invScroll = 0
       if(invScroll > invHeight) invScroll = invHeight
       drawScreens[screen]()
       redraw = true
-    }
+    }*/
     if(redraw){
       Button.draw()
       Slider.draw()
@@ -33226,10 +33289,10 @@ p.camera.transformation.elements.set(matrix)//*/
 		const nosound = urlParams.has("nosound")
 		async function loadSounds(){
 			if(!nosound){
-				let f = await fetch("assets/sounds.epk")
+				let f = await fetch("assets/sounds.txt")
 				if(f.ok){
 					let soundData = await loadEPK(await f.arrayBuffer())
-					loadDone("Loaded sounds.epk","",f.status)
+					loadDone("Loaded sounds","",f.status)
 					for(let s in soundData){
 						let newName = s.replace(".ogg","").replaceAll("/",".")
 						sounds[newName] = await audioCtx.decodeAudioData(soundData[s])
@@ -33422,41 +33485,6 @@ p.camera.transformation.elements.set(matrix)//*/
   }
   win.blockSound = blockSound
   
-  var explodeSounds = ["random.explode1", "random.explode2", "random.explode3", "random.explode4"]
-  function explodeSound(x,y,z, power = 1){
-    var sound, soundPower
-    //explodeSounds[Math.floor(Math.random()*explodeSounds.length)]
-    if(power >= 10) {sound = explodeSounds[0], soundPower = 10}
-    else if(power >= 8) {sound = explodeSounds[1], soundPower = 8}
-    else if(power >= 4) {sound = explodeSounds[2], soundPower = 4}
-    else {sound = explodeSounds[3], soundPower = 1}
-    
-    var pitch = 1 - ((power - soundPower) / 10)
-    if(pitch <= 0) return
-    
-    playSound(sound, 0, 1, pitch, posSound(x,y,z))
-    if(multiplayer) send({type:"playSound", data:sound, x:x,y:y,z:z, pitch:pitch})
-  }
-  win.explodeSound = explodeSound
-	let doorSounds = {
-		fence_gateOpen:2,
-		fence_gateClose:2,
-		wooden_doorOpen:4,
-		wooden_doorClose:6,
-		iron_doorOpen:4,
-		iron_doorClose:4,
-		wooden_trapdoorOpen:5,
-		wooden_trapdoorClose:3,
-		iron_trapdoorOpen:4,
-		iron_trapdoorClose:4
-	}
-	function doorSound(x,y,z,type,open){
-		let a = doorSounds[type+(open?"Open":"Close")]
-    var i = type+"."+(open?"open":"close")+Math.ceil(Math.random()*a)
-    playSound(i, 0,1,1, posSound(x,y,z))
-    if(multiplayer) send({type:"playSound", data:i, x,y,z})
-	}
-	win.doorSound = doorSound
   function posSound(x,y,z, hearDist = 16,mono){
     if(mono){
       var volume = 1
@@ -35309,7 +35337,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		drawScreens.options = drawScreens["options 2"] = () => {
       if(changeSceneAnimation === null || !thisSceneCurrent) clear()
 		}
-    drawScreens["options worldSettings"] = () => {
+    drawScreens.worldSettings = () => {
       if(changeSceneAnimation === null || !thisSceneCurrent) clear()
 			if(previousScreen === "creation menu") dirt()
     }
@@ -35632,6 +35660,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				}
 				if(screen === "main menu"){
 					if(tick) renderMainBG()
+					hoverbox.classList.add("hidden")
 					drawScreens[screen]()
 					Button.draw()
 					Slider.draw()

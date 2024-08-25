@@ -2140,7 +2140,7 @@ const blockData = [
 		Name:"Oak Door",
 		transparent: true,
 		shadow: false,
-		textures: "oakDoor",
+		textures: "oakDoorConnected",
 		door:true,
 		woodSound:true,
 		hardness:3,
@@ -2152,7 +2152,7 @@ const blockData = [
 		Name:"Spruce Door",
 		transparent: true,
 		shadow: false,
-		textures:"spruceDoor",
+		textures:"spruceDoorConnected",
 		door:true,
 		woodSound:true,
 		hardness:3,
@@ -2164,7 +2164,7 @@ const blockData = [
 		Name:"Iron Door",
 		transparent: true,
 		shadow: false,
-		textures:"ironDoor",
+		textures:"ironDoorConnected",
 		door:true,
 		stoneSound:true,
 		hardness:3,
@@ -2176,7 +2176,7 @@ const blockData = [
 		Name:"Dark Oak Door",
 		transparent: true,
 		shadow: false,
-		textures:"darkOakDoor",
+		textures:"darkOakDoorConnected",
 		door:true,
 		woodSound:true,
 		hardness:3,
@@ -2188,7 +2188,7 @@ const blockData = [
 		Name:"Birch Door",
 		transparent: true,
 		shadow: false,
-		textures:"birchDoor",
+		textures:"birchDoorConnected",
 		door:true,
 		woodSound:true,
 		hardness:3,
@@ -2200,7 +2200,7 @@ const blockData = [
 		Name:"Jungle Door",
 		transparent: true,
 		shadow: false,
-		textures:"jungleDoor",
+		textures:"jungleDoorConnected",
 		door:true,
 		woodSound:true,
 		hardness:3,
@@ -2212,7 +2212,7 @@ const blockData = [
 		Name:"Acacia Door",
 		transparent: true,
 		shadow: false,
-		textures:"acaciaDoor",
+		textures:"acaciaDoorConnected",
 		door:true,
 		woodSound:true,
 		hardness:3,
@@ -2224,7 +2224,7 @@ const blockData = [
 		Name:"Warped Door",
 		transparent: true,
 		shadow: false,
-		textures:"warpedDoor",
+		textures:"warpedDoorConnected",
 		door:true,
 		woodSound:true,
 		hardness:3,
@@ -2236,7 +2236,7 @@ const blockData = [
 		Name:"Crimson Door",
 		transparent: true,
 		shadow: false,
-		textures:"crimsonDoor",
+		textures:"crimsonDoorConnected",
 		door:true,
 		woodSound:true,
 		hardness:3,
@@ -9018,7 +9018,7 @@ const blockData = [
 		Name:"Mangrove Door",
 		transparent: true,
 		shadow: false,
-		textures: "mangroveDoor",
+		textures: "mangroveDoorConnected",
 		door:true,
 		woodSound:true,
 		hardness:3,
@@ -11436,7 +11436,7 @@ const blockData = [
 		Name:"Bamboo Door",
 		transparent: true,
 		shadow: false,
-		textures: "bambooDoor",
+		textures: "bambooDoorConnected",
 		door:true,
 		woodSound:true,
 		hardness:3,
@@ -11515,7 +11515,7 @@ const blockData = [
 		Name:"Cherry Door",
 		transparent: true,
 		shadow: false,
-		textures: "cherryDoor",
+		textures: "cherryDoorConnected",
 		door:true,
 		woodSound:true,
 		hardness:3,
@@ -12768,6 +12768,7 @@ const craftTypes = {
 	_log: ["oakLog","birchLog","spruceLog","jungleLog","darkOakLog","acaciaLog","mangroveLog","crimsonStem","warpedStem","cherryLog","bambooBlock"],
 	_strippedLog: ["strippedOakLog","strippedBirchLog","strippedSpruceLog","strippedJungleLog","strippedDarkOakLog","strippedAcaciaLog","strippedMangroveLog","strippedCrimsonStem","strippedWarpedStem","strippedCherryLog","strippedBambooBlock"],
 }
+win.craftTypes = craftTypes
 let smelts = {
 	rawIron: {name:"ironIngot", time:200, xp:0.7},
 	rawCopper: {name:"copperIngot", time:200, xp:0.7},
@@ -12805,6 +12806,7 @@ let smeltFuel = { //time is in seconds
 }
 
 let craftArrays = {}
+win.craftArrays = craftArrays
 function checkCraftType(a,b){
 	return craftTypes[a] && craftTypes[a].includes(b) || a === b
 }
@@ -19650,7 +19652,7 @@ function initShapes() {
 		if(baseBlock.shape.rotate || baseBlock.shape.flip){
 			let t = baseBlock.textures
 			v = baseBlock.shape.varients
-			for (let j = 0; j < v.length; j++) {
+			for (let j = 1/*don't overwrite existing one*/; j < v.length; j++) {
 				if (v[j]) {
 					let block = Object.create(baseBlock)
 					block.shape = v[j]
