@@ -9051,7 +9051,7 @@ ROTATION = 0x1800 // Mask for the direction bits
 	window.message.style = "position: absolute; top: 10px; right: 10px; z-index: 1; text-align: right; background-color: rgba(255, 255, 255, 0.3);"
 	doc.body.appendChild(message)
 	
-	let creationMenuScrollable = createScrollable(), inventoryScrollable = createScrollable()
+	let creationMenuScrollable = createScrollable(), inventoryScrollable = createScrollable(), optionsScrollable = createScrollable()
 	
 	// Callback functions for all the screens; will define them further down the page
 	let thisSceneCurrent = true
@@ -9364,6 +9364,10 @@ ROTATION = 0x1800 // Mask for the direction bits
 			exit:[window.resourcePacks],
 			onenter: () => initResourcePacksMenu()
 		},
+		options:{
+			enter:[optionsScrollable.el],
+			exit:[optionsScrollable.el]
+		},
 		"main menu":{
 			onenter: () => {
 				if(performFast) renderMainBG()
@@ -9404,7 +9408,7 @@ ROTATION = 0x1800 // Mask for the direction bits
   let beforeOptionsScreen = screen
 	let changeSceneAnimation = null, animationAmount = 0, prevAnimationAmount = 0
 	function changeScene(newScene) {
-		if (screen === "options" || screen === "options 2") {
+		if (screen === "options") {
 			saveSettings()
 		}
     if(!(screen === "play" || screen === "chat") && (newScene === "play" || newScene === "chat")) Messages.onfocus(true)
@@ -25906,6 +25910,7 @@ p.camera.transformation.elements.set(matrix)//*/
       this.previousHovering = false
       this.touch = null
 		}
+		setScrollable(s){this.scrollable = s}
 		draw() {
 			let thisScreen = thisSceneCurrent ? screen : previousScreen
 			if (!this.scenes.includes(thisScreen)) {
@@ -25914,10 +25919,16 @@ p.camera.transformation.elements.set(matrix)//*/
 			let current = (settings[this.name] - this.min) / (this.max - this.min)
       let hovering = this.sliding || this.mouseCollided()
       let disabled = false
-			
+
+			this.x = this.originalX, this.y = this.originalY
+			this.w = this.originalW, this.h = this.originalH
 			if(changeSceneAnimation !== null){
 				if(thisSceneCurrent) this.x += (1-animationAmount)*width/4, ctx.globalAlpha = animationAmount
 				else this.w *= 1-animationAmount, this.h *= 1-animationAmount, ctx.globalAlpha = 1-animationAmount
+			}
+			if(this.scrollable){
+				this.x += this.scrollable.x
+				this.y += this.scrollable.y
 			}
 
 			// Outline
@@ -26014,8 +26025,6 @@ p.camera.transformation.elements.set(matrix)//*/
       this.previousHovering = hovering
 			
 			if(changeSceneAnimation !== null){
-				if(thisSceneCurrent) this.x = this.originalX
-				else this.w = this.originalW, this.h = this.originalH
 				ctx.globalAlpha = 1
 			}
 		}
@@ -26023,7 +26032,7 @@ p.camera.transformation.elements.set(matrix)//*/
       return touchScreen && !useMouse ? Boolean(this.touch) : (mouseX > this.x - this.w / 2 && mouseX < this.x + this.w / 2 && mouseY > this.y - this.h / 2 && mouseY < this.y + this.h / 2)
     }
 		click(e) {
-			if (!mouseDown || !this.scenes.includes(screen)) {
+			if (!mouseDown || !this.scenes.includes(screen) || (this.scrollable && !this.scrollable.mouseIsIn())) {
 				return false
 			}
 
@@ -26285,7 +26294,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			}
 		}
 		click(e) {
-			if (!mouseDown || !this.scenes.includes(screen) || this.disabled()) {
+			if (!mouseDown || !this.scenes.includes(screen) || this.disabled() || (this.scrollable && !this.scrollable.mouseIsIn())) {
 				return false
 			}
 
@@ -26409,14 +26418,14 @@ p.camera.transformation.elements.set(matrix)//*/
 	}
 	function createScrollable(){
 		let el = document.createElement("div")
-		el.addEventListener("click", e => {canvas.focus(); canvas.dispatchEvent(new e.constructor(e.type,e))})
-		el.addEventListener("mousedown", e => {canvas.focus(); canvas.dispatchEvent(new e.constructor(e.type,e))})
-		el.addEventListener("mouseup", e => {canvas.focus(); canvas.dispatchEvent(new e.constructor(e.type,e))})
-		el.addEventListener("mousemove", e => {canvas.dispatchEvent(new e.constructor(e.type,e))})
-		el.addEventListener("touchstart", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; canvas.focus(); canvas.dispatchEvent(e)})
-		el.addEventListener("touchend", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; canvas.focus(); canvas.dispatchEvent(e)})
-		el.addEventListener("touchmove", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; canvas.focus(); canvas.dispatchEvent(e)})
-		el.addEventListener("touchcancel", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; canvas.focus(); canvas.dispatchEvent(e)})
+		el.addEventListener("click", e => {if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(new e.constructor(e.type,e))})
+		el.addEventListener("mousedown", e => {if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(new e.constructor(e.type,e))})
+		el.addEventListener("mouseup", e => {if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(new e.constructor(e.type,e))})
+		el.addEventListener("mousemove", e => {if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(new e.constructor(e.type,e))})
+		el.addEventListener("touchstart", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(e)})
+		el.addEventListener("touchend", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(e)})
+		el.addEventListener("touchmove", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(e)})
+		el.addEventListener("touchcancel", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(e)})
 		el.style.position = "absolute"
 		el.style.zIndex = canvas.zIndex
 		el.style.overflow = "auto"
@@ -26427,10 +26436,11 @@ p.camera.transformation.elements.set(matrix)//*/
 		el.addEventListener("scroll", () => {
 			trackMouse(null,true)
 		})
-		let ax,ay
+		let ax,ay,aw,ah
 		return {
 			setPos(x,y,w,h){
 				ax = x, ay = y
+				aw = w, ah = h
 				el.style.left = x+"px"
 				el.style.top = y+"px"
 				el.style.width = w+"px"
@@ -26442,6 +26452,9 @@ p.camera.transformation.elements.set(matrix)//*/
 			get x(){return ax-el.scrollLeft},
 			get y(){return ay-el.scrollTop},
 			el,
+			mouseIsIn(){
+				return mouseX >= ax && mouseX <= ax+aw && mouseY >= ay && mouseY <= ay+ah
+			}
 		}
 	}
   
@@ -26549,7 +26562,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			return superflat || preBeta
 		}, "Rivers that flow down! May slow down world generation. Requires normal world type.", () => fancyRivers ? 0 : 1).setScrollable(creationMenuScrollable)
 		Button.add(475*ss, 180*ss, 300*ss, 40*ss, "Seed Templates", "creation menu", () => changeScene("seed templates"), null, "Choose a specific seed to control how the world generates.").setScrollable(creationMenuScrollable)
-		creationMenuScrollable.setScrollSize(200*ss +1000)
+		creationMenuScrollable.setScrollSize(300*ss)
 		Button.add(width / 2, height - 90*ss, 300*ss, 40*ss, "Create New World", "creation menu", r => {
       createNewWorld()
 		})
@@ -26829,7 +26842,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				}
 			}
 		}
-		let optionsPage1 = [
+		let optionsPage = [
 			Slider.add(0,0, width / 3, 40*ss, "options", "Render Distance", 1, 32, "renderDistance", val => settings.renderDistance = round(val)),
 			Slider.add(0,0, width / 3, 40*ss, "options", "FOV", 30, 110, "fov", val => {
 				p.camera.FOV(val)
@@ -26860,38 +26873,28 @@ p.camera.transformation.elements.set(matrix)//*/
 				if(prevMoreReal !== moreReal) initWebglPrograms()
 			}, null,"Setting to fast will disable certain particles, disable certain animations, and more.", () => settings.graphics === "fast" ? 1 : (settings.graphics === "morereal" ? 2 : 0)),
 			Button.add(0,0, width / 3, 40*ss, ["Resolution: Maximum","Resolution: Default","Resolution: Low"], "options", r => {settings.resolution = (r === "Resolution: Maximum") ? "max" : ((r === "Resolution: Low") ? "low" : ""); onresize(); if(world) world.render()}, null,null, () => settings.resolution === "max" ? 0 : (settings.resolution === "low" ? 2 : 1)),
-		]
-		let optionsPage2 = [
-			Button.add(0,0, width / 3, 40*ss, "Narrator Options", "options 2", r => changeScene("options narrator")),
-			Button.add(0,0, width / 3, 40*ss, "Languages", "options 2", r => changeScene("options languages")),
-			Button.add(0,0, width / 3, 40*ss, ["Auto adjust brightness: On","Auto adjust brightness: Off"], "options 2", r => settings.adjustBrightness = r === "Auto adjust brightness: On", null,null, () => settings.adjustBrightness ? 0 : 1),
-			Button.add(0,0, width / 3, 40*ss, ["View: First person","View: Third person back","View: Third person front"], "options 2", toggleView, null,null, () => p.thirdPerson === "front" ? 2 : (p.thirdPerson ? 1 : 0)),
-			Button.add(0,0, width / 3, 40*ss, ["Touchscreen Controls: Arrows","Touchscreen Controls: Joystick"], "options 2", r => settings.joystick = r === "Touchscreen Controls: Joystick", null,null, () => settings.joystick ? 1 : 0),
+			Button.add(0,0, width / 3, 40*ss, "Narrator Options", "options", r => changeScene("options narrator")),
+			Button.add(0,0, width / 3, 40*ss, "Languages", "options", r => changeScene("options languages")),
+			Button.add(0,0, width / 3, 40*ss, ["Auto adjust brightness: On","Auto adjust brightness: Off"], "options", r => settings.adjustBrightness = r === "Auto adjust brightness: On", null,null, () => settings.adjustBrightness ? 0 : 1),
+			Button.add(0,0, width / 3, 40*ss, ["View: First person","View: Third person back","View: Third person front"], "options", toggleView, null,null, () => p.thirdPerson === "front" ? 2 : (p.thirdPerson ? 1 : 0)),
+			Button.add(0,0, width / 3, 40*ss, ["Touchscreen Controls: Arrows","Touchscreen Controls: Joystick"], "options", r => settings.joystick = r === "Touchscreen Controls: Joystick", null,null, () => settings.joystick ? 1 : 0),
 		]
     //Button.add(width * 0.75, height/2 + -5, width / 3, 40, ["Start sending audio","Stop sending audio"], "options", r => recordingAudio ? stopRecordAudio() : startRecordAudio(), () => true||!multiplayer,"Sends audio from your microphone to other players. Only works in multiplayer.", () => recordingAudio ? 1 : 0)
-		let y = -185-60, x = false
-		for(let b of optionsPage1){
-			y += 60
-			if(y > 115){
-				y = -185
-				x = true
+		let y = 20, x = false
+		for(let b of optionsPage){
+			b.originalX = b.x = x ? width*0.75 : width*0.25
+			b.originalY = b.y = y*ss
+			b.setScrollable(optionsScrollable)
+			x = !x
+			if(!x){
+				y += 60
 			}
-			b.originalX = b.x = x ? width * 0.75 : width * 0.25
-			b.originalY = b.y = height/2 + y*ss
 		}
-		y = -185-60, x = false
-		for(let b of optionsPage2){
-			y += 60
-			if(y > 115){
-				y = -185
-				x = true
-			}
-			b.originalX = b.x = x ? width * 0.75 : width * 0.25
-			b.originalY = b.y = height/2 + y*ss
-		}
-    Button.add(width / 2, height - 50*ss, width / 3, 40*ss, "Back", ["options","options 2"], r => changeScene(beforeOptionsScreen))
-		Button.add(width-30*ss, height/2, 30*ss,30*ss,"▶","options", r => changeScene("options 2"))
-		Button.add(30*ss, height/2, 30*ss,30*ss,"◀","options 2", r => changeScene("options"))
+		optionsScrollable.setPos(0, 80*ss, width, height-200*ss)
+		optionsScrollable.setScrollSize(y)
+    Button.add(width / 2, height - 50*ss, width / 3, 40*ss, "Back", ["options"], r => changeScene(beforeOptionsScreen))
+		/*Button.add(width-30*ss, height/2, 30*ss,30*ss,"▶","options", r => changeScene("options 2"))
+		Button.add(30*ss, height/2, 30*ss,30*ss,"◀","options 2", r => changeScene("options"))*/
     
     // World settings buttons
     Button.add(width / 4, height/2 + -185*ss, width / 3, 40*ss, ["TNT Explodes: On","TNT Explodes: Off"], "worldSettings", r => worldSettings.tntExplode = r === "TNT Explodes: On", null, null, () => worldSettings.tntExplode ? 0 : 1)
@@ -35334,7 +35337,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			ctx.globalAlpha = 1
 		}
 
-		drawScreens.options = drawScreens["options 2"] = () => {
+		drawScreens.options = () => {
       if(changeSceneAnimation === null || !thisSceneCurrent) clear()
 		}
     drawScreens.worldSettings = () => {
@@ -35655,7 +35658,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				}
 			}
 			if(!performFast){
-				if((screen === "options" || screen === "options 2") && beforeOptionsScreen === "main menu"){
+				if((screen === "options") && beforeOptionsScreen === "main menu"){
 					if(tick) renderMainBG()
 				}
 				if(screen === "main menu"){
