@@ -22071,7 +22071,7 @@ class Player extends Entity{
 		this.targetY = this.y = y
 		this.targetZ = this.z = z
 		this.dimension = dimension
-		this.connection.send({type:"tp",x,y,z,dimension})
+		if(this.connection) this.connection.send({type:"tp",x,y,z,dimension})
 	}
 	addXP(amount){
     this.lastXP = now
@@ -22108,10 +22108,10 @@ class Player extends Entity{
     }
   }
 	sendHealth(){
-		this.connection.send({type:"health",health:this.health,food:this.food,foodSaturation:this.foodSaturation,oxygen:this.oxygen,burning:this.burning,freezeEffect:this.freezeEffect,XP:this.XP,level:this.level,nextLevel:this.nextLevel})
+		if(this.connection) this.connection.send({type:"health",health:this.health,food:this.food,foodSaturation:this.foodSaturation,oxygen:this.oxygen,burning:this.burning,freezeEffect:this.freezeEffect,XP:this.XP,level:this.level,nextLevel:this.nextLevel})
 	}
 	sendEffects(){
-		this.connection.send({type:"effects",data:this.effects})
+		if(this.connection) this.connection.send({type:"effects",data:this.effects})
 	}
 	saveInv(){
 		let inv = this.world.playersInv[this.host ? ":host" : this.username]
@@ -22704,7 +22704,7 @@ class Player extends Entity{
     this.dieMessage = why
     this.world.sendAll({type:"harmEffect",id:this.id})
 		this.sendHealth()
-		this.connection.send({type:"damage",x,y,z,lastHealth:prevHealth,velx,vely,velz})
+		if(this.connection) this.connection.send({type:"damage",x,y,z,lastHealth:prevHealth,velx,vely,velz})
   }
 }
 entities[entities.length] = class Item extends Entity {
@@ -25745,6 +25745,8 @@ class Chunk {
 		this.caves = this.type !== "" || !this.world.caves
 		this.entities = new Map()
 		this.columnHashs = new Uint8Array(16 * 16)//used to detect when column changes
+		this.canSendClient = false
+		this.allGenerated = false
 	}
 	getBlock(x, y, z) {
 		y -= minHeight
@@ -29788,7 +29790,7 @@ Remember to balance optimization with maintainability and readability. Sometimes
 		let ax, ay, az, idx
 		let blockSet = new Set()
 		let sections = []
-		let sectionMap = [], sectionTags = [], sectionTagsLength = [], sectionSkyLights = [], sectionBlockLights = []
+		let sectionMap = [], sectionTags = [], sectionTagsLength = []//, sectionSkyLights = [], sectionBlockLights = []
 		for (let y = 0; y < this.sections.length; y++) {
 			const section = this.sections[y], blocks = section.blocks, tags = section.tags, skyLight = section.skyLight, blockLight = section.blockLight
 			for (let i = 0; i < blocks.length; i++) {
@@ -29819,7 +29821,7 @@ Remember to balance optimization with maintainability and readability. Sometimes
 						sectionTagsLength[idx]++
 					}
 				}
-				lightcheck:if(skyLight[i]){
+				/*if(skyLight[i]){
 					ax = (i >> 8)
 					ay = (i >> 4 & 15) + section.y - minHeight
 					az = (i & 15)
@@ -29836,7 +29838,7 @@ Remember to balance optimization with maintainability and readability. Sometimes
 					sectionSkyLights[idx][4][(az & 7) << 6 | (ax & 7) << 3 | ay & 7] = skyLight[i]
 					sectionSkyLights[idx][5][(az & 7) << 6 | (ay & 7) << 3 | ax & 7] = skyLight[i]
 				}
-				lightcheck:if(blockLight[i]){
+				if(blockLight[i]){
 					ax = (i >> 8)
 					ay = (i >> 4 & 15) + section.y - minHeight
 					az = (i & 15)
@@ -29852,7 +29854,7 @@ Remember to balance optimization with maintainability and readability. Sometimes
 					sectionBlockLights[idx][3][(ax & 7) << 6 | (az & 7) << 3 | ay & 7] = blockLight[i]
 					sectionBlockLights[idx][4][(az & 7) << 6 | (ax & 7) << 3 | ay & 7] = blockLight[i]
 					sectionBlockLights[idx][5][(az & 7) << 6 | (ay & 7) << 3 | ax & 7] = blockLight[i]
-				}
+				}*/
 			}
 			await yieldThread()
 		}
@@ -29871,7 +29873,7 @@ Remember to balance optimization with maintainability and readability. Sometimes
 			bab.add(sx, 1).add(sy, 8).add(sz, 1)
 
 			// Determine the most compact orientation by checking all 6!
-			let bestLength = Infinity, bestRuns, bestSingles, bestDir, bestSkyLightRuns, bestBlockLightRuns
+			let bestLength = Infinity, bestRuns, bestSingles, bestDir//, bestSkyLightRuns, bestBlockLightRuns
 			for (let i = 0; i < 6; i++) {
 				let blocks = sectionMap[coords] && sectionMap[coords][i]
 				let thisLength = 0
@@ -29904,7 +29906,7 @@ Remember to balance optimization with maintainability and readability. Sometimes
 					thisLength += singles.length*(9+paletteBits)
 				}
 
-				let slights = sectionSkyLights[coords] && sectionSkyLights[coords][i], blights = sectionBlockLights[coords] && sectionBlockLights[coords][i]
+				/*let slights = sectionSkyLights[coords] && sectionSkyLights[coords][i], blights = sectionBlockLights[coords] && sectionBlockLights[coords][i]
 				let skyLightRuns = [], blockLightRuns = []
 				if(slights){
 					let run = null, run2 = null
@@ -29951,15 +29953,15 @@ Remember to balance optimization with maintainability and readability. Sometimes
 						thisLength += run[1].length*(lenBits+4+9)
 						run[2] = lenBits
 					}
-				}
+				}*/
 
 				if (thisLength < bestLength) {
 					bestLength = thisLength
 					bestRuns = runs
 					bestSingles = singles
 					bestDir = i
-					bestSkyLightRuns = skyLightRuns
-					bestBlockLightRuns = blockLightRuns
+					//bestSkyLightRuns = skyLightRuns
+					//bestBlockLightRuns = blockLightRuns
 				}
 				await yieldThread()
 			}
@@ -29985,7 +29987,7 @@ Remember to balance optimization with maintainability and readability. Sometimes
 					bab.addString(tags,16)
 				}
 			}
-			bab.add(bestSkyLightRuns.length, 9)
+			/*bab.add(bestSkyLightRuns.length, 9)
 			for (let [start, blocks, lenBits] of bestSkyLightRuns) {
 				bab.add(start, 9).add(blocks.length, 9).add(lenBits, 4)
 				for (let [count, level, gradDir] of blocks) bab.add(count - 1, lenBits).add(level, 8).add(gradDir, 9)
@@ -29994,7 +29996,7 @@ Remember to balance optimization with maintainability and readability. Sometimes
 			for (let [start, blocks, lenBits] of bestBlockLightRuns) {
 				bab.add(start, 9).add(blocks.length, 9).add(lenBits, 4)
 				for (let [count, level, gradDir] of blocks) bab.add(count - 1, lenBits).add(level, 4).add(gradDir, 5)
-			}
+			}*/
 			await yieldThread()
 		}
 		return bab.array
@@ -33342,7 +33344,10 @@ class World{
 	}
 	async tick() {
 		let tickStart = performance.now()
-		if(this.loadedUpdate) this.loadChunks()
+		if(this.loadedUpdate){
+			this.loadChunks()
+			this.loadedUpdate = false
+		}
 		now = tickStart
 
 		let sleep = 0, sleepTotal = 0
@@ -33503,6 +33508,7 @@ class World{
 			}
 		}
 		let chunk = this.getChunk(x*16,z*16,dimension)
+		if(done) chunk.canSendClient = true
 		if (!chunk.lit && !this.lightingQueue.includes(chunk)) {
 			this.lightingQueue.push(chunk)
 			done = false
@@ -33645,7 +33651,9 @@ class World{
 			let survivLength = reader.read(8)
 			if(survivLength){
 				inv.survivStr = reader.readToArrayBits(survivLength)
-				let asdf = {}
+				let asdf = new Player()
+				asdf.world = this
+				asdf.respawn()
 				this.loadSurvivStr(new BitArrayReader(inv.survivStr,true),preBetaVersion,asdf)
 				this.cheats = asdf.cheats
 				this.gameMode = asdf.survival ? "survival" : "creative"
@@ -34802,7 +34810,7 @@ window.parent.postMessage({ready:true}, "*")
 				if(this.updateingLoadedI !== id) break
 				let x = p.loadChunks[i], z = p.loadChunks[i+1]
 				let chunk = world.getChunk(x*16,z*16,p.dimension)
-				if(chunk && chunk.allGenerated){
+				if(chunk && chunk.canSendClient){
 					if(host) c.send({type:"chunkData",x,z})
 					else c.send({
 						type:"chunkData",

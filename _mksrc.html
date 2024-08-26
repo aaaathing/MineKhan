@@ -15978,14 +15978,14 @@ r 11 y  n  n  n
 		optimize(){
 			let {world} = this
 			let localBlocks = world.getAdjacentSubchunks(this.x, this.y, this.z, 0, this.type)
-			let xLoaded = world.getChunk(this.x-16,this.z,this.type); xLoaded = xLoaded&&xLoaded.loaded ? null : 0
+			/*let xLoaded = world.getChunk(this.x-16,this.z,this.type); xLoaded = xLoaded&&xLoaded.loaded ? null : 0
 			let XLoaded = world.getChunk(this.x+16,this.z,this.type); XLoaded = XLoaded&&XLoaded.loaded ? null : 16
 			let zLoaded = world.getChunk(this.x,this.z-16,this.type); zLoaded = zLoaded&&zLoaded.loaded ? null : 0
-			let ZLoaded = world.getChunk(this.x,this.z+16,this.type); ZLoaded = ZLoaded&&ZLoaded.loaded ? null : 16
+			let ZLoaded = world.getChunk(this.x,this.z+16,this.type); ZLoaded = ZLoaded&&ZLoaded.loaded ? null : 16*/
 			for (let x = 0; x < 16; x++) for (let z = 0; z < 16; z++) for (let y = 0; y < 16; y++){
 				let block = this.blocks[x * 256 + y * 16 + z]
 				if(block){
-					this.optimizeBlock(x,y,z,localBlocks,block, 3 | (z!==ZLoaded)<<2 | (z!==zLoaded)<<3 | (x!==XLoaded)<<4 | (x!==xLoaded)<<5)
+					this.optimizeBlock(x,y,z,localBlocks,block/*, 3 | (z!==ZLoaded)<<2 | (z!==zLoaded)<<3 | (x!==XLoaded)<<4 | (x!==xLoaded)<<5*/)
 				}
 			}
 			/*//Check all the blocks in the subchunk to see if they're visible.
@@ -16579,6 +16579,99 @@ r 11 y  n  n  n
 			if (!this.sections[y >> 4]) return (blockLight !== 1 || fullOutside) * 15
 			return this.sections[y >> 4].getLight(x, y & 15, z, blockLight)
 		}
+		fillLight() {
+			if(host){
+				let otherChunk = serverWorld.getChunk(this.x*16,this.z*16,this.type)
+				if(otherChunk && otherChunk.lit){
+					this.loadCopyLight()
+					let n = this.world.getChunk(this.x*16+16,this.z*16,this.type)
+					if(n && n.loaded) n.loadCopyLight()
+					n = this.world.getChunk(this.x*16-16,this.z*16,this.type)
+					if(n && n.loaded) n.loadCopyLight()
+					n = this.world.getChunk(this.x*16,this.z*16+16,this.type)
+					if(n && n.loaded) n.loadCopyLight()
+					n = this.world.getChunk(this.x*16,this.z*16-16,this.type)
+					if(n && n.loaded) n.loadCopyLight()
+					n = this.world.getChunk(this.x*16+16,this.z*16+16,this.type)
+					if(n && n.loaded) n.loadCopyLight()
+					n = this.world.getChunk(this.x*16-16,this.z*16+16,this.type)
+					if(n && n.loaded) n.loadCopyLight()
+					n = this.world.getChunk(this.x*16+16,this.z*16-16,this.type)
+					if(n && n.loaded) n.loadCopyLight()
+					n = this.world.getChunk(this.x*16-16,this.z*16-16,this.type)
+					if(n && n.loaded) n.loadCopyLight()
+					this.lit = true
+				}
+			}
+			
+			let max = this.sections.length * 16 - 1 + minHeight
+			let blockSpread = []
+	
+			// Set virtical columns of light to level 15
+			for (let x = 0; x < 16; x++) {
+				for (let z = 0; z < 16; z++) {
+					let light = 15, stop = false
+					for (let y = max; y >= minHeight; y--) {
+						let data = blockData[this.getBlock(x, y, z)]
+						if (data.lightLevel) {
+							if (!blockSpread[data.lightLevel]) blockSpread[data.lightLevel] = []
+							blockSpread[data.lightLevel].push(x + this.x, y, z + this.z)
+							this.setLight(x, y, z, data.lightLevel, 1)
+						}
+						if (!stop && !data.transparent) {
+							this.tops[z * 16 + x] = y
+							light = 0
+							stop = true
+						} else if (light) {
+							if(data.decreaseLight) light = Math.max(light-data.decreaseLight,0)
+							this.setLight(x, y, z, light, 2)
+							this.setLight(x, y, z, light, 0)
+						}
+					}
+				}
+			}
+	
+			// Spread the light to places where the virtical columns stopped earlier, plus chunk borders
+			let spread = []
+			for (let x = 0; x < 16; x++) {
+				for (let z = 0; z < 16; z++) {
+					for (let y = this.tops[z * 16 + x] + 1; y <= max; y++) {
+						let light = this.getLight(x, y+1, z, 2)
+						if(!spread[light]) spread[light] = []
+						if (this.getLight(x+1,y,z,2) < light) {
+							spread[light].push(x + this.x, y, z + this.z)
+							continue
+						}
+						if (this.getLight(x-1,y,z,2) < light) {
+							spread[light].push(x + this.x, y, z + this.z)
+							continue
+						}
+						if (this.getLight(x,y,z+1,2) < light) {
+							spread[light].push(x + this.x, y, z + this.z)
+							continue
+						}
+						if (this.getLight(x,y,z-z,2) < light) {
+							spread[light].push(x + this.x, y, z + this.z)
+							continue
+						}
+						break
+					}
+				}
+			}
+			
+			for(let i = spread.length - 1; i > 0; i--){
+				if(spread[i]) this.spreadLight(spread[i], i - 1)
+			}
+	
+			for (let i = blockSpread.length - 1; i > 0; i--) {
+				let blocks = blockSpread[i]
+				if (blocks && blocks.length) {
+					this.spreadLight(blocks, i - 1, false, 1)
+				}
+			}
+	
+			this.lit = true
+		}
 		trySpread(x, y, z, level, spread, blockLight, update = false) {
       if(y < minHeight) return
       
@@ -16684,7 +16777,7 @@ r 11 y  n  n  n
 			}*/
 			this.optimized = true
 		}
-		reoptimizeXPos(){
+		/*reoptimizeXPos(){
 			let x = 15
 			for (let i = 0; i < this.sections.length; i++){
 				for(let y=0;y<16;y++) for(let z=0;z<16;z++){
@@ -16715,7 +16808,7 @@ r 11 y  n  n  n
 					if(this.sections[i].getBlock(x,y,z)) this.sections[i].updateBlock(x, y, z, true, x,y,z)
 				}
 			}
-		}
+		}*/
 		render() {
 			if (!this.buffer) {
 				return
@@ -16952,7 +17045,7 @@ r 11 y  n  n  n
 				let section = this.sections[sy]
 				if(!section) section = this.sections[sy] = new Section(this.x, sy*16+minHeight, this.z, this)
 				maxSectionY = max(maxSectionY,sy)
-				let blocks = section.blocks, tagss = section.tags, slights = section.skyLight, blights = section.blockLight
+				let blocks = section.blocks, tagss = section.tags//, slights = section.skyLight, blights = section.blockLight
 
 				let runs = reader.read(8)
 				let singles = reader.read(9)
@@ -16994,7 +17087,7 @@ r 11 y  n  n  n
 						tagss[getIndex[0](index, x, y, z)] = reader.read(32)
 					}
 				}
-				let slightRuns = reader.read(9)
+				/*let slightRuns = reader.read(9)
 				for (let j = 0; j < slightRuns; j++) {
 					let index = reader.read(9)
 					let types = reader.read(9)
@@ -17025,7 +17118,7 @@ r 11 y  n  n  n
 							index++
 						}
 					}
-				}
+				}*/
 
 				for(let i=0; i<importants.length; i+=2){
 					let idx = importants[i]
@@ -17048,8 +17141,8 @@ r 11 y  n  n  n
 			this.caveBiomes = data.caveBiomes
 
 			this.loaded = true
-			this.lit = true
-			//Update neighbour chunks
+			//this.lit = true
+			/*//Update neighbour chunks
 			let otherChunk = this.world.getChunk(this.x,this.z+16,this.type)
 			if(otherChunk && otherChunk.optimized){
 				otherChunk.reoptimizeZNeg()
@@ -17065,7 +17158,7 @@ r 11 y  n  n  n
 			otherChunk = this.world.getChunk(this.x-16,this.z,this.type)
 			if(otherChunk && otherChunk.optimized){
 				otherChunk.reoptimizeXPos()
-			}
+			}*/
 		}
 		loadCopy(){
 			let serverChunk = serverWorld.getChunk(this.x,this.z,this.type)
@@ -17090,8 +17183,6 @@ r 11 y  n  n  n
 					}
 					importants.length = 0
 				}
-				this.sections[s].skyLight.set((serverChunk.sections[s] || emptySection).skyLight)
-				this.sections[s].blockLight.set((serverChunk.sections[s] || emptySection).blockLight)
 				let tagss = serverChunk.sections[s].tags
 				for(let i in tagss){
 					if(typeof tagss[i] === "number") this.sections[s].tags[i] = tagss[i]
@@ -17111,8 +17202,8 @@ r 11 y  n  n  n
 			this.caveBiomes = new Uint8Array(serverChunk.caveBiomes)
 
 			this.loaded = true
-			this.lit = true
-			//Update neighbour chunks
+			//this.lit = true
+			/*//Update neighbour chunks
 			let otherChunk = this.world.getChunk(this.x,this.z+16,this.type)
 			if(otherChunk && otherChunk.optimized){
 				otherChunk.reoptimizeZNeg()
@@ -17128,6 +17219,14 @@ r 11 y  n  n  n
 			otherChunk = this.world.getChunk(this.x-16,this.z,this.type)
 			if(otherChunk && otherChunk.optimized){
 				otherChunk.reoptimizeXPos()
+			}*/
+		}
+		loadCopyLight(){
+			let serverChunk = serverWorld.getChunk(this.x,this.z,this.type)
+			let importants = []
+			for(let s = 0; s < serverChunk.sections.length; s++){
+				this.sections[s].skyLight.set((serverChunk.sections[s] || emptySection).skyLight)
+				this.sections[s].blockLight.set((serverChunk.sections[s] || emptySection).blockLight)
 			}
 		}
 	}
@@ -23277,21 +23376,25 @@ r 11 y  n  n  n
 		let dy2 = p.z - c2.z - 8
 		return dx1 * dx1 + dy1 * dy1 - (dx2 * dx2 + dy2 * dy2)
 	}
-	/*function fillReqs(x, z, dimension) {
+	function fillReqs(x, z, dimension) {
 		// Chunks must all be loaded first.
 		if(dimension !== p.dimension) return
 		let done = true
-		for (let i = x - 1; i <= x + 1; i++) {
-			for (let j = z - 1; j <= z + 1; j++) {
+		for (let i = x - 2; i <= x + 2; i++) {
+			for (let j = z - 2; j <= z + 2; j++) {
 				let chunk = world.getChunk(i*16,j*16,dimension)//world.loaded[(i + world.offsetX) * world.lwidth + j + world.offsetZ]
-				if (!chunk || !chunk.loaded){
+				if (!chunk.loaded){
 					done = false
 					continue
+				}
+				if (!chunk.lit && i >= x - 1 && i <= x + 1 && j >= z - 1 && j <= z + 1) {
+					world.lightingQueue.push(chunk)
+					done = false
 				}
 			}
 		}
 		return done
-	}*/
+	}
 	function maxDist(x, z, x2, z2) {
 		let ax = abs(x2 - x)
 		let az = abs(z2 - z)
@@ -24195,48 +24298,7 @@ r 11 y  n  n  n
 					if(inWorld){
 						world.deleteEntity(data.id, true)
 					}
-				}else/* if(data.type === "entEvent"){
-					var ent = world && world.getEntity(data.id)
-					if(!ent) return
-					if(data.event === "itemAmount"){
-						ent.amount = data.data
-						ent.willUpdateShape = true
-					}else if(data.event === "damageMob"){
-						ent.onhit(data.data.damage,true,data.data.vx,data.data.vz,data.data.from)
-					}else if(data.event === "creeperForceExplode"){
-						ent.forceExplode(true)
-					}else if(data.event === "sheepFur"){
-						ent.fur = data.data
-					}else if(data.event === "sheepEat"){
-						ent.eating = 1
-					}else if(data.event === "sheepColor"){
-						ent.color = data.data.color
-						ent.wool = data.data.wool
-					}else if(data.event === "mobAttack"){
-						ent.attackCooldown = ent.maxAttackCooldown
-					}else if(data.event === "tame"){
-						ent.tame = true
-						ent.owner = data.data
-					}else if(data.event === "wolfCollarColor"){
-						ent.color = data.data
-						ent.updateShape()
-					}else if(data.event === "sit"){
-						ent.sitting = data.data
-					}else if(data.event === "tp"){
-						ent.x = data.data.x
-						ent.y = data.data.y
-						ent.z = data.data.z
-						ent.lastY = 0
-						if(ent.path) ent.path = null
-					}else if(data.event === "wolfTarget"){
-						ent.target = data.data
-						ent.updateShape()
-					}else if(data.event === "healthAdd"){
-						ent.health += data.data
-					}else if(data.event === "name"){
-						ent.name = data.data
-					}
-				}else */if(data.type === "particles"){
+				}else if(data.type === "particles"){
 					if(inWorld) world.createParticles(data)
 				}else if(data.type === "achievment"){
 					if(data.data&256){
@@ -24248,34 +24310,7 @@ r 11 y  n  n  n
 						sideMessage("Achievment Made: "+a.name, a.description)
 					}
 					achievments.push(data.data)
-				}/*else if(data.type === "hit"){
-					if(data.damageType === "neutral"){
-						if(p.survival) damage(data.damage,data.message+(p.attackedBy ? " while being attacked by "+p.attackedBy+"." : "."),null,"hit",data.x,data.y,data.z)
-						p.velocity.x += data.velx
-						p.velocity.z += data.velz
-						p.velocity.y += data.vely
-						p.onGround = false
-					}else if(data.damageType === "mobHit"){
-						damage(data.damage || 1, data.message || p.username+" died from hostile mob.",null,"hit",data.x,data.y,data.z)
-						p.velocity.x += data.velx || 0
-						p.velocity.z += data.velz || 0
-						p.velocity.y += min(max(0.5-p.velocity.y,0),0.5)
-						p.onGround = false
-						p.attackedBy = data.username
-						p.attackedById = data.id
-						p.attackedTime = Date.now()
-					}else if(p.survival && worldSettings.attack){
-						damage(data.damage || 1, data.message || (data.username+" killed "+p.username+(data.holding && data.holding.id && blockData[data.holding.id].attackDamage ? " with "+(data.holding.customName || blockData[data.holding.id].Name) : "")+"."),null,"hit",data.x,data.y,data.z)
-						p.velocity.x += data.velx || 0
-						p.velocity.z += data.velz || 0
-						p.velocity.y += min(max(0.5-p.velocity.y,0),0.5)
-						p.onGround = false
-						p.attackedBy = data.username
-						p.attackedById = data.id
-						p.attackedTime = Date.now()
-						if(data.burn) p.burnTimer += data.burn
-					}
-				}*/else if(data.type === "harmEffect"){
+				}else if(data.type === "harmEffect"){
 					if(players[data.id]) players[data.id].harmEffect = 30
 				}else if(data.type === "effects"){
 					p.effects = data.data
@@ -24566,6 +24601,7 @@ r 11 y  n  n  n
 			this.chunkGenQueue = []
 			this.meshQueue = []
 			this.weatherMeshQueue = []
+			this.lightingQueue = []
 			this.alwaysRenderEntities = []
 			this.waitingEntities = [] //entities waiting to have their chunk loaded
       this.textEntities = [] //Text to draw
@@ -24835,23 +24871,6 @@ r 11 y  n  n  n
 			let south = this.getLight(x, y, z-1, 0, dimension)
 			let east = this.getLight(x+1, y, z, 0, dimension)
 			let west = this.getLight(x-1, y, z, 0, dimension)
-
-			/*if(place){ //set vertical column to 15
-				let spread = []
-				for(let x2 = x-1; x2 <= x+1; x2++) for(let z2 = z-1; z2 <= z+1; z2++){
-					//spread around side too so the sides won't get dark
-					let i = chunk.sections.length * 16 - 1
-					let cx2 = x2 & 15, cz2 = z2 & 15
-					for(; i >= 0; i--){
-						if(!blockData[chunk.getBlock(cx2,i,cz2)].transparent) break
-						if(chunk.getLight(cx2,i,cz2,0) !== 15){
-							chunk.setLight(cx2,i,cz2,15,0)
-							spread.push(x2,i,z2)
-						}
-					}
-				}
-				if(spread.length) chunk.spreadLight(spread, 14, true)
-			}*/
 
 			let spread = []
 			for (let i = 0; i <= 15; i++) spread[i] = []
@@ -25337,12 +25356,20 @@ r 11 y  n  n  n
 					doneWork = true
 					debug("Weather Meshes")
 				}
+				// Spread light
+				if (!doneWork && this.lightingQueue.length) {
+					let chunk = this.lightingQueue[this.lightingQueue.length-1]
+					chunk.fillLight()
+					if(chunk.lit){
+						this.lightingQueue.pop()
+						doneWork = true
+					}
+				}
 
 				if (this.chunkGenQueue.length && !doneWork) {
 					let chunk = this.chunkGenQueue[0]
-					//if (!fillReqs(chunk.x >> 4, chunk.z >> 4, chunk.type)) {
-					if(!chunk.loaded){
-					} else if (!chunk.optimized) {
+					if (!fillReqs(chunk.x >> 4, chunk.z >> 4, chunk.type)) {
+			 		} else if (!chunk.optimized) {
 						await chunk.optimize()
 						debug("Optimize")
 						doneWork = true
@@ -25730,7 +25757,8 @@ p.camera.transformation.elements.set(matrix)//*/
       this.textEntities.push(e)
     }
 		loadChunks() {
-			let renderDistance = settings.renderDistance
+			let actualRenderDistance = settings.renderDistance
+			let renderDistance = settings.renderDistance + 2
 			if(host) serverWorld.loadDistance = renderDistance
 			let cx = p.x >> 4
 			let cz = p.z >> 4
@@ -25753,6 +25781,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			this.offsetZ = -minChunkZ
 			this.lwidth = renderDistance * 2 + 1
 			this.chunkGenQueue.length = 0
+			this.lightingQueue.length = 0
 			this.neededChunks.length = 0
 
       if (this.loaded.length > this.lwidth * this.lwidth) {
@@ -25770,7 +25799,7 @@ p.camera.transformation.elements.set(matrix)//*/
 					let chunk = pX >= 0 && pX < plwidth && pZ >= 0 && pZ < plwidth && this.prevLoaded[pX * plwidth + pZ]
 					if(!chunk) chunk = new Chunk(x * 16, z * 16, d, this)
 					this.loaded[X * this.lwidth + Z] = chunk
-					if (!chunk.buffer && !this.chunkGenQueue.includes(chunk)) {
+					if (!chunk.buffer && maxDist(cx, cz, x, z) <= actualRenderDistance && !this.chunkGenQueue.includes(chunk)) {
 						this.chunkGenQueue.push(chunk)
 					}
 					if(!chunk.loaded) this.neededChunks.push(chunk)
@@ -26089,10 +26118,8 @@ p.camera.transformation.elements.set(matrix)//*/
 			}
 		}
 		static drag(e) {
-			if (mouseDown) {
-				for (let slider of this.all) {
-					slider.drag(e)
-				}
+			for (let slider of this.all) {
+				slider.drag(e)
 			}
 		}
 		static add() {
@@ -26744,7 +26771,7 @@ p.camera.transformation.elements.set(matrix)//*/
 					enableMultiplayer()
 				}
 			}
-		}, () => !host || preVersion && !(userInfo&&userInfo.admin), () => "Allows anyone to join your world unless you use a whitelist.", () => websocket ? 1 : 0)
+		}, () => !host || preVersion && !(userInfo&&userInfo.admin), () => "Enabling multiplayer enables others to join.", () => websocket ? 1 : 0)
     Button.add(width/2-110*ss, height / 2 + 75*ss, 200*ss, 40*ss, "Invite", "pause", r => {
       savebox.classList.remove("hidden")
 			savebox.value = "https://thingmaker.us.eu.org/minekhan/?target="+world.id
@@ -28787,12 +28814,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
 	}
 
-  /*window.invScroll = 0;
-  let draggingInvBar = false*/
   let invHeight = 0
-  /*var barW = 20
-  var invBarOffset = 0
-  var barH = 0*/
 	function startDrawInv(){
 		defineWorld()
 		ctx.drawImage(gl.canvas,0,0, width,height)//image of inventory overwrites webgl canvas
@@ -28839,18 +28861,6 @@ p.camera.transformation.elements.set(matrix)//*/
     }else{
 			inventoryScrollable.setPos(50.5 - s2, 50.5 - s2, perRow*s+24, invWinH)
 			inventoryScrollable.setScrollSize(invHeight)
-      /*barH = height * (invWinH/invHeight);
-      if(draggingInvBar){
-        invScroll = map(mouseY-invBarOffset, (barH/2), height-(barH/2), 0, invHeight) || 0;
-      }
-      if(invScroll > invHeight) invScroll = invHeight
-      if(invScroll < 0) invScroll = 0
-      var barYCent = map(invScroll, 0, invHeight, (barH/2), height-(barH/2));
-      var barTop = barYCent - (barH/2);
-      fill(100)
-      ctx.fillRect(width-barW-2, 0, barW+2, height)
-      fill(200)
-      ctx.fillRect(width-barW, barTop, barW-2, barH)*/
     }
 		let invScroll = inventoryScrollable.el.scrollTop
 
@@ -28880,15 +28890,6 @@ p.camera.transformation.elements.set(matrix)//*/
 			ctx.lineTo(x + i * s, y + s)
 		}
 		ctx.stroke()
-
-		/*let overHot = (mouseX - x) / s | 0
-		if (mouseX < x + 9 * s && mouseX > x && mouseY > y && mouseY < y + s) {
-			x += s * overHot
-			ctx.lineWidth = 2
-			ctx.strokeStyle = "white"
-			ctx.beginPath()
-			ctx.strokeRect(x, y, s, s)
-		}*/
     
 		//Box highlight in inv
 		let overInv = Math.round(((mouseY + invScroll) - 50) / s) * perRow + Math.round((mouseX - 50) / s)
@@ -28907,21 +28908,6 @@ p.camera.transformation.elements.set(matrix)//*/
 		if (inventory.slots[inventory.slotIds.holding]) {
 			drawIcon(mouseX, mouseY, inventory.slots[inventory.slotIds.holding].id, inventory.slots[inventory.slotIds.holding], !p.survival)
 		}
-    /*if(inventory.category === 0){
-      for (let i = 0; i < invLength; i++) {
-        if(invItems[i]){
-          x = (i) % perRow * s + 50
-          y = ((i) / perRow | 0) * s + 50
-          let noAmount = false
-          if(inventory.spreadPlace === "invSpace" && inventory.spreaded.length && inventory.spreaded.includes(i)){
-            ctx.fillStyle = "rgb(180,180,180)"
-            ctx.fillRect(x+1-s2,y+1-s2,s-2,s-2)
-            noAmount = true
-          }
-          drawIcon(x, y - invScroll, invItems[i].id, invItems[i], noAmount)
-        }
-      }
-    }else*/
 		if(inventory.category !== 0){
       for (let i = Math.floor(invScroll / s)*perRow; i < (Math.floor(invScroll / s)+rows)*perRow && i < inventoryBlocks[inventory.category].length; i++) {
         x = i % perRow * s + 50
@@ -28951,61 +28937,11 @@ p.camera.transformation.elements.set(matrix)//*/
       }
       ctx.stroke()
 
-      /*//icons
-      ctx2.font = "14px thefont"
-      ctx2.textAlign = "right"
-      ctx2.fillStyle = "white"
-      for(y=0; y<2; y++){
-        for(x=0; x<2; x++){
-          let idx = (y*3) + x
-          if(inventory.crafting[idx]){
-            let X = x*s+offX, Y = y*s+offY
-            let noAmount = false
-            if(inventory.spreadPlace === "crafting" && inventory.spreaded.length && inventory.spreaded.includes(idx)){
-              ctx.fillStyle = "rgb(180,180,180)"
-              ctx.fillRect(X+1,Y+1,s-2,s-2)
-              noAmount = true
-            }
-            drawIcon(X+s2,Y+s2, inventory.crafting[idx].id, inventory.crafting[idx], noAmount)
-          }
-        }
-      }
-
-      x = Math.floor((mouseX - offX) / s)
-      y = Math.floor((mouseY - offY) / s)
-      let over = (y * 3) + x
-      if(!(x >= 0 && x < 2 && y >= 0 && y < 2)){
-        over = -1
-      }else if(over > -1 && over < 9){
-        ctx.lineWidth = 2
-        ctx.strokeStyle = "white"
-        ctx.strokeRect(x*s+offX, y*s+offY, s,s)
-      }*/
-
       x = offX + (s/2)
       y = offY + (s*3)
       ctx.lineWidth = 1
       ctx.strokeStyle = "black"
       ctx.strokeRect(x,y, s,s)
-      /*over = mouseX>x && mouseX<x+s && mouseY>y && mouseY<y+s
-      ctx.lineWidth = over?2:1
-      ctx.strokeStyle = over?"white":"black"
-      ctx.strokeRect(x,y, s,s)
-      if(inventory.craftingRes && inventory.craftingRes.id){
-        drawIcon(x+s2, y+s2, inventory.craftingRes.id, inventory.craftingRes)
-      }
-
-      ctx.drawImage(gl.canvas,0,0, width,height)
-
-      if(inventory.craftingRes && inventory.craftingRes.id){
-        let name = "block."+inventory.craftingRes.id
-        if(name !== "" && over){
-          ctx.textAlign = "left"
-          ctx.font = "16px thefont";
-          fill(255)
-          text(name, mouseX, mouseY, 16, 1);
-        }
-      }*/
 
       x = 50.5-s2
       y = 50.5-s2+s*rows+s*1.5
@@ -29031,23 +28967,6 @@ p.camera.transformation.elements.set(matrix)//*/
 			}
     }
     
-		/*hotbar()
-		//hud()
-		ctx.drawImage(gl.canvas, 0, 0, width,height)*/
-    
-    /*//show name on hover for hotbar
-    x = width / 2 - inventory.hotbar.length / 2 * s + 0.5 + 25
-		y = height - s * 1.5 + 0.5
-    if (mouseX < x + 9 * s && mouseX > x && mouseY > y && mouseY < y + s) {
-      let slot = inventory.hotbar[overHot]
-      let name = slot && slot.id && (slot.customName || "block."+slot.id)
-      name = name || ""
-      if(name !== ""){
-        ctx.font = "16px thefont";
-        fill(255)
-        text(name, mouseX, mouseY, 16, 1);
-      }
-		}*/
 		let showName
 		if (inventory.category !== 0 && overInv >= 0 && overInv < count && mouseX < 50 - s2 + perRow * s && mouseX > 50 - s2 && mouseY<s*rows+50.5-s2) {
 			x = overInv % perRow
@@ -29082,9 +29001,6 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
 		ctx.drawImage(gl.canvas,0,0, width,height)
     if(showName){
-			/*ctx.font = "16px thefont";
-			fill(255)
-			text(showName, mouseX, mouseY, 16, 1);*/
 			showHoverbox(showName)
 		}
     ctx.drawImage(canvas2, 0,0), ctx.globalAlpha = 1
@@ -29099,16 +29015,6 @@ p.camera.transformation.elements.set(matrix)//*/
     
     let count = inventory.category === 0 ? 27 : inventoryBlocks[inventory.category].length
     
-    /*//for crafting
-    let offX = width - s*4
-    let offY = s * 2
-    let craftResX = offX+(s/2)
-    let craftResY = offY+(s*3)
-		if(screen === "crafting"){
-			craftResX = offX+s
-			craftResY = offY+s*4
-		}*/
-
 		let armorX = 50.5-s2
     let armorY = 50.5-s2+s*rows+s*1.5
 		let armorOver = floor((mouseX - armorX)/s)
@@ -29168,138 +29074,6 @@ p.camera.transformation.elements.set(matrix)//*/
 			inventory.slots[inventory.slotIds.holding] = null
 			send({type:"containerChange",data:[null],idxs:[inventory.slotIds.holding]})
 		}
-		/*let x = width / 2 - 9 / 2 * s + 25
-		let y = height - s * 1.5
-		let overHot = (mouseX - x) / s | 0
-		if (mouseX < x + 9 * s && mouseX > x && mouseY > y && mouseY < y + s) {
-			let temp = inventory.hotbar[overHot]
-			inventory.hotbar[overHot] = inventory.holding
-			inventory.holding = temp
-		} else if (over >= 0 && over < count && mouseX < 50 - s2 + perRow * s && mouseX > 50 - s2 && mouseY < s*rows+50.5-s2) {
-      if(inventory.category === 0){
-        //if(!invItems[over]) invItems[over] = {id:0,amount:0}
-        if(mouse === 2 && inventory.holding.amount > 1){
-          let holding = inventory.holding
-          let slot = invItems[over]
-          if(holding){
-            var canSplit = slot && holding.id === slot && (!holding.customName && !slot.customName || holding.customName === slot.customName) && slot.amount < blockData[slot.id].stackSize
-            if(!slot){
-              canSplit = true
-							slot = invItems[over] = {id:holding.id,amount:0,customName:holding.customName}
-            }
-            if(canSplit){
-              slot.amount ++
-              holding.amount --
-              if(holding.amount <= 0) holding = inventory.holding = 0
-            }
-          }
-        }else{
-          if(invItems[over]){
-            let temp = inventory.holding
-            if(temp.id === invItems[over].id && (!temp.customName && !invItems[over].customName || temp.customName === invItems[over].customName) && temp.amount < blockData[temp.id].stackSize && invItems[over].amount < blockData[invItems[over].id].stackSize){ //stacking together
-              let stackSize = blockData[invItems[over].id].stackSize
-              while(temp.amount > 0){
-                temp.amount--
-                invItems[over].amount ++
-                if(invItems[over].amount >= blockData[invItems[over].id].stackSize) break
-              }
-              if(temp.amount <= 0){
-                temp = inventory.holding = 0
-              }
-            }else{
-              inventory.holding = invItems[over]
-              if(temp && temp.id){
-                invItems[over] = temp
-              }else invItems[over] = 0
-            }
-          }else if(inventory.holding){
-            invItems[over] = inventory.holding
-            inventory.holding = 0
-            inventory.spreadStart = over
-            inventory.spreadPlace = "invSpace"
-          }
-        }
-      }else{
-			  inventory.holding = {id:inventoryBlocks[inventory.category][over], amount:blockData[inventoryBlocks[inventory.category][over]].stackSize}
-      }
-		} else if(screen === "inventory" && mouseX>offX && mouseX<offX+(s*2) && mouseY>offY && mouseY<offY+(s*2)){
-      //inv crafting grid
-      let X = Math.floor((mouseX - offX) / s)
-      let Y = Math.floor((mouseY - offY) / s)
-      let idx = (Y*3)+X
-      if(mouse === 2 && inventory.holding.amount > 1){
-        if(!inventory.crafting[idx]) inventory.crafting[idx] = {id:0,amount:0}
-        let holding = inventory.holding
-        let slot = inventory.crafting[idx]
-        if(holding){
-          var canSplit = slot && holding.id === slot.id && (!holding.customName && !slot.customName || holding.customName === slot.customName) && slot.amount < blockData[slot.id].stackSize
-          if(!slot.id){
-            canSplit = true
-						slot = inventory.crafting[idx] = {id:holding.id,amount:0,customName:holding.customName}
-          }
-          if(canSplit){
-            slot.amount ++
-            holding.amount --
-            if(holding.amount <= 0) holding = inventory.holding = 0
-          }
-        }
-      }else{
-        let empty = !inventory.crafting[idx]
-        let temp = inventory.holding
-        inventory.holding = inventory.crafting[idx]
-        inventory.crafting[idx] = temp
-        if(empty){
-          inventory.spreadStart = idx
-          inventory.spreadPlace = "crafting"
-        }
-      }
-      
-      updateCraftingGrid()
-    }else if((screen === "inventory" || screen === "crafting") && mouseX>craftResX && mouseX<craftResX+s && mouseY>craftResY && mouseY<craftResY+s && inventory.craftingRes && inventory.craftingRes.id){
-      //crafting output
-      let res = inventory.craftingRes
-			inventory.holding = {id:res.id,amount:res.amount}
-      for(let i=0; i<9; i++){
-        let block = inventory.crafting[i]
-        if(block && block.id){
-          if(res.replace && res.replace[blockData[block.id].name]){
-            block.id = blockIds[res.replace[blockData[block.id].name]]
-          }else{
-            block.amount --
-            if(block.amount < 1) inventory.crafting[i] = 0
-          }
-        }
-      }
-      let r = inventory.holding && inventory.holding.id
-      if(r === blockIds.craftingTable){
-        achievment("Benchmaking")
-      }else if(r && blockData[r].pickaxe){
-        achievment("Time to Mine!")
-      }else if(r === blockIds.stonePickaxe){
-        achievment("Getting an Upgrade")
-      }else if(r === blockIds.bread){
-        achievment("Bake Bread")
-      }else if(r && blockData[r].sword){
-        achievment("Time to Strike!")
-      }else if(r && blockData[r].hoe){
-        achievment("Time to Farm!")
-      }else if(r && blockData[r].bed){
-				achievment("Make a bed")
-			}
-			discovery(r)
-      updateCraftingGrid()
-    }else if(screen === "crafting" && mouseX>offX && mouseX<offX+(s*3) && mouseY>offY && mouseY<offY+(s*3)){
-			//crafting grid
-		}else if(screen === "inventory" && mouseX > armorX && mouseX < armorX+s*armorSlots.length && mouseY > armorY && mouseY < armorY+s){
-			changeScene("comingsoon menu")
-			dontRedraw = true
-		}else{
-			if(p.survival && inventory.holding){
-        let d = p.direction
-        world.addItems(p.x,p.y,p.z,p.dimension,d.x/4,d.y/4,d.z/4,inventory.holding.id,false, inventory.holding.amount,inventory.holding.durability,inventory.holding.customName,p.id)
-      }
-      inventory.holding = 0
-		}*/
 
 		if(!dontRedraw)drawScreens.inventory()
 	}
@@ -29335,64 +29109,6 @@ p.camera.transformation.elements.set(matrix)//*/
 				break
 			}
 		}
-		/*let perRow = inventory.category === 0 ? 9 : Math.floor(width/s)-8
-		let over = Math.round((mouseY + invScroll - 50) / s) * perRow + Math.round((mouseX - 50) / s)
-    
-    if(inventory.category !== 0){
-      over = inventoryBlocks[inventory.category][over]
-    }
-    
-    let count = inventory.category === 0 ? 27 : inventoryBlocks[inventory.category].length
-    
-    //for crafting
-    let offX = width - s*4
-    let offY = s * 2
-    let craftResX = offX+(s/2)
-    let craftResY = offY+(s*3)
-    
-		let x = width / 2 - 9 / 2 * s + 25
-		let y = height - s * 1.5
-		let overHot = (mouseX - x) / s | 0
-		if (mouseX < x + 9 * s && mouseX > x && mouseY > y && mouseY < y + s) {
-			//hotbar
-		} else if (over >= 0 && over < count && mouseX < 50 - s2 + perRow * s && mouseX > 50 - s2 && mouseY < s*9+50.5-s2 && inventory.spreadPlace === "invSpace") {
-      if(inventory.category === 0){
-        //if(!invItems[over]) invItems[over] = {id:0,amount:0}
-        if(inventory.spreadStart > -1 && invItems[inventory.spreadStart].amount > 1 && mouseDown){
-          inventory.spreading = true
-        }
-        if(inventory.spreading && !invItems[over] && over !== inventory.spreadStart && inventory.spreaded.length < invItems[inventory.spreadStart].amount){
-          if(inventory.spreaded.length){
-            invItems[over] = invItems[inventory.spreadStart]
-            inventory.spreaded.push(over)
-          }else{
-            invItems[over] = invItems[inventory.spreadStart]
-            inventory.spreaded.push(inventory.spreadStart, over)
-          }
-        }
-      }
-		}else if((
-      (screen === "inventory" && mouseX > offX && mouseY > offY && mouseX < offX + s*2 && mouseY < offY + s*2) ||
-      (screen === "crafting" && mouseX > offX && mouseY > offY && mouseX < offX + s*3 && mouseY < offY + s*3)
-    ) && inventory.spreadPlace === "crafting"){
-      let X = Math.floor((mouseX - offX) / s)
-      let Y = Math.floor((mouseY - offY) / s)
-      let idx = (Y*3)+X
-      let c = inventory.crafting
-      //if(!c[idx]) c[idx] = {id:0,amount:0}
-      if(inventory.spreadStart > -1 && c[inventory.spreadStart].amount > 1 && mouseDown){
-        inventory.spreading = true
-      }
-      if(inventory.spreading && !c[idx] && idx !== inventory.spreadStart && inventory.spreaded.length < c[inventory.spreadStart].amount){
-        if(inventory.spreaded.length){
-          c[idx] = c[inventory.spreadStart]
-          inventory.spreaded.push(idx)
-        }else{
-          c[idx] = c[inventory.spreadStart]
-          inventory.spreaded.push(inventory.spreadStart, idx)
-        }
-      }
-    }*/
   }
   function releaseInv(){
     let s = inventory.size
@@ -29423,76 +29139,6 @@ p.camera.transformation.elements.set(matrix)//*/
 			send({type:"containerChange",data,idxs})
 		}
 		inventory.spreadStart = -1
-		/*let perRow = inventory.category === 0 ? 9 : Math.floor(width/s)-8
-		let over = Math.round((mouseY + invScroll - 50) / s) * perRow + Math.round((mouseX - 50) / s)
-    
-    if(inventory.category !== 0){
-      over = inventoryBlocks[inventory.category][over]
-    }
-    
-    let count = inventory.category === 0 ? 27 : inventoryBlocks[inventory.category].length
-    
-    //for crafting
-    let offX = width - s*4
-    let offY = s * 2
-    let craftResX = offX+(s/2)
-    let craftResY = offY+(s*3)
-    
-		let x = width / 2 - 9 / 2 * s + 25
-		let y = height - s * 1.5
-		let overHot = (mouseX - x) / s | 0
-		if (mouseX < x + 9 * s && mouseX > x && mouseY > y && mouseY < y + s) {
-			//hotbar
-		} else if (over >= 0 && over < count && mouseX < 50 - s2 + perRow * s && mouseX > 50 - s2 && mouseY < s*9+50.5-s2) {
-      if(inventory.category === 0){
-        //if(!invItems[over]) invItems[over] = {id:0,amount:0}
-        if(inventory.spreadPlace === "invSpace" && inventory.spreaded.length){
-          //a/b with remainder
-          let a=invItems[inventory.spreadStart].amount
-          let b=inventory.spreaded.length
-          let n=floor(a/b)
-          let r=a%b
-          //n = result   r = remainder
-          
-          var id = invItems[inventory.spreadStart].id
-          
-          for(var i=0; i<inventory.spreaded.length; i++){
-            invItems[inventory.spreaded[i]] = {id:id, amount:n, customName:invItems[inventory.spreadStart].customName}
-          }
-          if(r) inventory.holding = {id:id, amount:r}
-          
-          inventory.spreaded = []
-        }
-        inventory.spreadStart = -1
-        inventory.spreading = false
-      }
-		}else if(
-      (screen === "inventory" && mouseX > offX && mouseY > offY && mouseX < offX + s*2 && mouseY < offY + s*2) ||
-      (screen === "crafting" && mouseX > offX && mouseY > offY && mouseX < offX + s*3 && mouseY < offY + s*3)
-    ){
-      let c = inventory.crafting
-      //if(!c[inventory.spreadStart]) c[inventory.spreadStart] = {id:0,amount:0}
-      if(inventory.spreadPlace === "crafting" && inventory.spreaded.length){
-        //a/b with remainder
-				let a=c[inventory.spreadStart].amount
-				let b=inventory.spreaded.length
-				let n=floor(a/b)
-				let r=a%b
-				//n = result   r = remainder
-
-        var id = c[inventory.spreadStart].id
-
-        for(var i=0; i<inventory.spreaded.length; i++){
-          c[inventory.spreaded[i]] = {id:id, amount:n, customName:c[inventory.spreadStart].customName}
-        }
-        if(r) inventory.holding = {id:id, amount:r}
-
-        inventory.spreaded = []
-      }
-      inventory.spreadStart = -1
-      inventory.spreading = false
-      updateCraftingGrid()
-    }*/
   }
 
   function drawCrafting() {
@@ -29519,60 +29165,12 @@ p.camera.transformation.elements.set(matrix)//*/
     }
     ctx.stroke()
     
-    //icons
-    /*ctx2.font = "14px thefont"
-    ctx2.textAlign = "right"
-    ctx2.fillStyle = "white"
-    for(y=0; y<3; y++){
-      for(x=0; x<3; x++){
-        let idx = (y*3) + x
-        if(inventory.crafting[idx]){
-          let X = x*s+offX, Y = y*s+offY
-          let noAmount = false
-          if(inventory.spreadPlace === "crafting" && inventory.spreaded.length && inventory.spreaded.includes(idx)){
-            ctx.fillStyle = "rgb(180,180,180)"
-            ctx.fillRect(X+1,Y+1,s-2,s-2)
-            noAmount = true
-          }
-          drawIcon(X+s2,Y+s2, inventory.crafting[idx].id, inventory.crafting[idx], noAmount)
-        }
-      }
-    }
-    
-    x = Math.floor((mouseX - offX) / s)
-    y = Math.floor((mouseY - offY) / s)
-    let over = (y * 3) + x
-    if(!(x >= 0 && x < 3 && y >= 0 && y < 3)){
-      over = -1
-    }else if(over > -1 && over < 9){
-      ctx.lineWidth = 2
-      ctx.strokeStyle = "white"
-      ctx.strokeRect(x*s+offX, y*s+offY, s,s)
-    }*/
     
     x = offX + (s)
     y = offY + (s*4)
-    //over = mouseX>x && mouseX<x+s && mouseY>y && mouseY<y+s
     ctx.lineWidth = 1
     ctx.strokeStyle = "black"
     ctx.strokeRect(x,y, s,s)
-    /*if(inventory.craftingRes && inventory.craftingRes.id){
-      drawIcon(x+s2, y+s2, inventory.craftingRes.id, inventory.craftingRes)
-    }
-    
-    ctx.drawImage(gl.canvas,0,0, width,height)
-    
-    if(inventory.craftingRes && inventory.craftingRes.id){
-      let name = "block."+inventory.craftingRes.id
-      if(name !== "" && over){
-        ctx.textAlign = "left"
-        ctx.font = "16px thefont";
-        fill(255)
-        text(name, mouseX, mouseY, 16, 1);
-      }
-    }
-    
-    ctx.drawImage(canvas2,0,0)*/
 		drawInv(true)
   }
   
@@ -29583,41 +29181,6 @@ p.camera.transformation.elements.set(matrix)//*/
     let offX = width - s*4
     let offY = s * 2
     
-    /*//grid
-    if(mouseX>offX && mouseX<offX+(s*3) && mouseY>offY && mouseY<offY+(s*3)){
-      let X = Math.floor((mouseX - offX) / s)
-      let Y = Math.floor((mouseY - offY) / s)
-      let idx = (Y*3)+X
-      let temp = inventory.holding
-      
-      if(mouse === 2 && inventory.holding.amount > 1){
-        //if(!inventory.crafting[idx]) inventory.crafting[idx] = {id:0,amount:0}
-        let holding = inventory.holding
-        let slot = inventory.crafting[idx]
-        if(holding){
-          var canSplit = slot && holding.id === slot.id && (!holding.customName && !slot.customName || holding.customName === slot.customName) && slot.amount < blockData[slot.id].stackSize
-          if(!slot){
-            canSplit = true
-						slot = inventory.crafting[idx] = {id:holding.id,amount:0,customName:holding.customName}
-          }
-          if(canSplit){
-            slot.amount ++
-            holding.amount --
-            if(holding.amount <= 0) holding = inventory.holding = 0
-          }
-        }
-      }else{
-        let empty = !inventory.crafting[idx]
-        inventory.holding = inventory.crafting[idx]
-        inventory.crafting[idx] = temp
-        if(empty){
-          inventory.spreadStart = idx
-          inventory.spreadPlace = "crafting"
-        }
-      }
-    }
-    
-		updateCraftingGrid()*/
     drawScreens.crafting()
   }
   
@@ -29625,26 +29188,6 @@ p.camera.transformation.elements.set(matrix)//*/
     startDrawInv()
     let s = inventory.size
     let s2 = s/2
-    
-    /*gl.clearColor(0, 0, 0, 0)
-		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
-    
-    var toPlay
-    
-    var data = world.getTags(containerData.x, containerData.y, containerData.z,containerData.dimension)
-    if(!data || !(data&&data.furnace)){
-      var block = world.getBlock(containerData.x, containerData.y, containerData.z,containerData.dimension)
-      if(blockData[block].name === "furnace"){
-        data = blockData[block].setContents(containerData.x,containerData.y,containerData.z,containerData.dimension,world)
-      }else toPlay = true //furnace doesn't exsist here
-    }
-    containerData.data = data
-    
-    if(toPlay){
-      play()
-      return
-    }
-    updateFurnace(data, containerData.x,containerData.y,containerData.z,containerData.dimension,world)*/
     
     let offX = width - s*4
     let offY = s * 2
@@ -29703,77 +29246,9 @@ p.camera.transformation.elements.set(matrix)//*/
     ctx.strokeStyle = "black"
     ctx.strokeRect(x,y, s,s)
     
-    /*if(over && data.output && data.output.id){ //this is right aligned so you can see it
-      let name = "block."+data.output.id
-      if(name !== "" && over){
-        ctx.textAlign = "right"
-        ctx.font = "16px thefont";
-        fill(255)
-        text(name, mouseX, mouseY, 16, 1);
-      }
-    }
-    
-    ctx.drawImage(canvas2,0,0)
-		ctx.globalAlpha = 1*/
 		drawInv(true)
   }
   function clickFurnace(mouse){
-    /*let s = inventory.size
-    let s2 = s/2
-    
-    let offX = width - s*4
-    let offY = s * 2
-    
-    var data = containerData.data
-    let temp
-    
-    var clicked
-    
-    //input
-    let x = offX
-    let y = offY
-    let over = mouseX>x && mouseX<x+s && mouseY>y && mouseY<y+s
-    if(over){
-      temp = data.input
-      data.input = inventory.holding
-      inventory.holding = temp
-      data.smeltStart = Date.now()
-      data.burnStart = Date.now()
-      clicked = true
-    }
-    
-    //fuel
-    x = offX
-    y = offY + (s*2)
-    over = mouseX>x && mouseX<x+s && mouseY>y && mouseY<y+s
-    if(over){
-      temp = data.fuel
-      data.fuel = inventory.holding
-      inventory.holding = temp
-      data.burnStart = Date.now()
-      data.smeltStart = Date.now()
-      clicked = true
-    }
-    
-    //output
-    x = offX + (s*2)
-    y = offY + s
-    over = mouseX>x && mouseX<x+s && mouseY>y && mouseY<y+s
-    if(over){
-      if(data.output && data.output.id){
-      	inventory.holding = data.output
-        let xp = data.xp
-        data.xp = 0
-        world.addEntity(new entities[entityIds.ExperienceOrb](p.x,p.y,p.z, xp),false,p.dimension)
-				discovery(data.output.id)
-      }
-      data.output = 0
-      clicked = true
-    }
-    
-    if(clicked){
-      world.updateTags(containerData.x,containerData.y,containerData.z,containerData.dimension)
-    }else{*/
 		clickInv(true, mouse)
     drawScreens.furnace()
   }
@@ -29786,22 +29261,8 @@ p.camera.transformation.elements.set(matrix)//*/
     var h = 3
     var length = 27
     
-    //var toPlay
-    
     var block = world.getBlock(containerData.x, containerData.y, containerData.z,containerData.dimension)
     var containerType = blockData[block].Name
-    /*var data = world.getTags(containerData.x, containerData.y, containerData.z,containerData.dimension)
-    if(!data || !(data&&data.chest)){
-      if(blockData[block].name === "chest" || blockData[block].name === "barrel"){
-        data = blockData[block].setContents(containerData.x,containerData.y,containerData.z,containerData.dimension,world)
-      }else toPlay = true //chest doesn't exsist here
-    }
-    containerData.data = data
-    
-    if(toPlay){
-      play()
-      return
-    }*/
     
     var x = 50.5 - s2
     var y = 50.5 + 8.7*s
@@ -29818,65 +29279,14 @@ p.camera.transformation.elements.set(matrix)//*/
     }
     ctx.stroke()
     
-    /*var over = mouseX > x && mouseY > y && mouseX < x+w*s && mouseY < y+h*s ? (floor((mouseX-x)/s) + floor((mouseY-y)/s)*w) : -1
-    if(over >= 0 && over < length){
-      var ox = ((over%w)*s)+x
-      var oy = (floor(over/w)*s)+y
-      ctx.strokeStyle = "white"
-      ctx.lineWidth = 2
-      ctx.strokeRect(ox,oy,s,s)
-    }*/
-    
     ctx.fillStyle = "white"
     ctx.font = "16px thefont"
     ctx.textAlign = "left"
     ctx.fillText(containerType, x, y-4)
     
-    /*if(data.contents){
-      for(var i=0; i<length; i++){
-        var item = data.contents[i]
-        if(!item) continue
-        var ix = i%w
-        var iy = floor(i/w)
-        ix = x + ix*s
-        iy = y + iy*s
-        drawIcon(ix+s2,iy+s2, item.id, item)
-      }
-    }
-    
-    ctx.drawImage(gl.canvas,0,0, width,height)
-    
-    if(over >= 0 && over < length && data.contents){
-      var item = data.contents[over]
-      let name = item ? (item.customName || "block."+item.id) : ""
-      if(name !== ""){
-        ctx.textAlign = "left"
-        ctx.font = "16px thefont";
-        fill(255)
-        text(name, mouseX, mouseY, 16, 1);
-      }
-    }
-    
-    ctx.drawImage(canvas2,0,0)
-		ctx.globalAlpha = 1*/
 		drawInv(true)
   }
   function clickChest(mouse){
-    /*let s = inventory.size
-    let s2 = s/2
-    var w = 9
-    var h = 3
-    var length = w*h
-    var x = 50.5 - s2
-    var y = 10.2*s
-    var over = mouseX > x && mouseY > y && mouseX < x+w*s && mouseY < y+h*s ? (floor((mouseX-x)/s) + floor((mouseY-y)/s)*w) : -1
-    var c = containerData.data.contents
-    if(over >= 0 && over < length && c){
-      let temp = c[over]
-			c[over] = inventory.holding
-			inventory.holding = temp
-      world.updateTags(containerData.x,containerData.y,containerData.z,containerData.dimension)
-    }else */
 		clickInv(true, mouse)
     
     drawChest()
@@ -29940,93 +29350,13 @@ p.camera.transformation.elements.set(matrix)//*/
       y = offY+s+20
       ctx.fillText("Cost: "+containerData.anvilCost+" levels",x,y)
     }
-    
-    /*if(over && inventory.anvilOutput && inventory.anvilOutput.id){ //right aligned
-      var item = inventory.anvilOutput
-      let name = inventory.anvilOutput.customName || "block."+inventory.anvilOutput.id
-      if(name !== "" && over){
-        ctx.textAlign = "right"
-        ctx.font = "16px thefont";
-        fill(255)
-        text(name, mouseX, mouseY, 16, 1);
-      }
-    }
-    
-    ctx.drawImage(canvas2,0,0)
-		ctx.globalAlpha = 1*/
+
 		drawInv(true)
   }
 	anvilTextbox.onchange = function(){
 		send({type:"containerChangeAnvil",rename:this.value,cost:0})
 	}
   function clickAnvil(mouse){
-    /*let s = inventory.size
-    let s2 = s/2
-    let s4 = s/4
-    let offX = width - s*5
-    let offY = s * 2
-    let clicked
-    
-    let x = offX
-    let y = offY
-    let over = mouseX>x && mouseX<x+s && mouseY>y && mouseY<y+s
-    let temp
-    if(over){
-      temp = inventory.anvilInput
-      inventory.anvilInput = inventory.holding
-      inventory.holding = temp
-      let item = inventory.anvilInput
-      anvilTextbox.value = item ? (item.customName || blockData[item.id].Name) : ""
-      clicked = true
-    }
-    
-    x = offX+s*1.5
-    over = mouseX>x && mouseX<x+s && mouseY>y && mouseY<y+s
-    if(over){
-      temp = inventory.anvilMaterial
-      inventory.anvilMaterial = inventory.holding
-      inventory.holding = temp
-      clicked = true
-    }
-    
-    x = offX+s*3.5
-    over = mouseX>x && mouseX<x+s && mouseY>y && mouseY<y+s
-    if(over && (inventory.anvilCost <= p.level || !p.survival)){
-      if(inventory.anvilInput && inventory.anvilInput.durability && inventory.anvilInput.durability !== inventory.anvilOutput.durability){
-        inventory.anvilMaterial.amount--
-        if(inventory.anvilMaterial.amount <= 0) inventory.anvilMaterial = 0
-      }
-      inventory.holding = inventory.anvilOutput
-      inventory.anvilOutput = inventory.anvilInput = 0
-      if(p.survival){
-        p.level -= inventory.anvilCost
-        setLevel()
-      }
-      playSound("anvil.land",0)
-      playSound("anvil.land",500)
-      playSound("anvil.land",1000)
-      clicked = true
-    }
-    
-    inventory.anvilCost = 0
-    if(inventory.anvilInput && inventory.anvilInput.id){
-      let {id,amount,durability} = inventory.anvilInput
-      inventory.anvilOutput = {id,amount,durability}
-      if(anvilTextbox.value !== blockData[inventory.anvilOutput.id].Name){
-        inventory.anvilOutput.customName = anvilTextbox.value
-        inventory.anvilCost++
-      }
-      if(blockData[id].durability && blockData[id].material && inventory.anvilMaterial && inventory.anvilMaterial.id){
-        let materialName = blockData[inventory.anvilMaterial.id].name
-        let maxDurability = blockData[id].durability
-        if(blockData[id].material === materialName){
-          inventory.anvilOutput.durability += maxDurability/4
-          if(inventory.anvilOutput.durability > maxDurability) inventory.anvilOutput.durability = maxDurability
-          inventory.anvilCost++
-        }
-      }
-    }else inventory.anvilOutput = 0, anvilTextbox.value = ""*/
-    
     clickInv(true, mouse)
     drawAnvil()
   }
@@ -30036,25 +29366,6 @@ p.camera.transformation.elements.set(matrix)//*/
     let s = inventory.size
     let s2 = s/2
     
-    /*gl.clearColor(0, 0, 0, 0)
-		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
-    
-    var toPlay
-    
-    var data = world.getTags(containerData.x, containerData.y, containerData.z,containerData.dimension)
-    if(!data || !data.dispenser){
-      var block = world.getBlock(containerData.x, containerData.y, containerData.z,containerData.dimension)
-      if(blockData[block].name === "dispenser" || blockData[block].name === "dropper"){
-        data = blockData[block].setContents(containerData.x, containerData.y, containerData.z, containerData.dimension,world)
-      }else toPlay = true
-    }
-    containerData.data = data
-    
-    if(toPlay){
-      play()
-      return
-    }
-    */
     let offX = width - s*4
     let offY = s * 2
     //draw grid
@@ -30074,40 +29385,6 @@ p.camera.transformation.elements.set(matrix)//*/
     }
     ctx.stroke()
     
-    /*//icons
-    ctx2.font = "14px thefont"
-    ctx2.textAlign = "right"
-    ctx2.fillStyle = "white"
-    for(y=0; y<3; y++){
-      for(x=0; x<3; x++){
-        let idx = (y*3) + x
-        if(data.contents[idx]){
-          let X = x*s+offX, Y = y*s+offY
-          let noAmount = false
-          if(inventory.spreadPlace === "dispenser" && inventory.spreaded.length && inventory.spreaded.includes(idx)){
-            ctx.fillStyle = "rgb(180,180,180)"
-            ctx.fillRect(X+1,Y+1,s-2,s-2)
-            noAmount = true
-          }
-          drawIcon(X+s2,Y+s2, data.contents[idx].id, data.contents[idx], noAmount)
-        }
-      }
-    }
-    
-    x = Math.floor((mouseX - offX) / s)
-    y = Math.floor((mouseY - offY) / s)
-    let over = (y * 3) + x
-    if(!(x >= 0 && x < 3 && y >= 0 && y < 3)){
-      over = -1
-    }else if(over > -1 && over < 9){
-      ctx.lineWidth = 2
-      ctx.strokeStyle = "white"
-      ctx.strokeRect(x*s+offX, y*s+offY, s,s)
-    }
-    
-    ctx.drawImage(gl.canvas,0,0, width,height)
-    ctx.drawImage(canvas2,0,0, width,height)
-		ctx.globalAlpha = 1*/
 		drawInv(true)
   }
   
@@ -30116,42 +29393,6 @@ p.camera.transformation.elements.set(matrix)//*/
     let s2 = s/2
     let offX = width - s*4
     let offY = s * 2
-    /*var data = world.getTags(containerData.x, containerData.y, containerData.z,containerData.dimension)
-    
-    //grid
-    if(mouseX>offX && mouseX<offX+(s*3) && mouseY>offY && mouseY<offY+(s*3)){
-      let X = Math.floor((mouseX - offX) / s)
-      let Y = Math.floor((mouseY - offY) / s)
-      let idx = (Y*3)+X
-      let temp = inventory.holding
-      
-      if(mouse === 2 && inventory.holding.amount > 1){
-        if(!data.contents[idx]) data.contents[idx] = {id:0,amount:0}
-        let holding = inventory.holding
-        let slot = data.contents[idx]
-        if(holding){
-          var canSplit = slot && holding.id === slot.id && (!holding.customName && !slot.customName || holding.customName === slot.customName) && slot.amount < blockData[slot.id].stackSize
-          if(!slot){
-            canSplit = true
-						slot = {id:holding.id,amount:0,customName:holding.customName}
-          }
-          if(canSplit){
-            slot.amount ++
-            holding.amount --
-            if(holding.amount <= 0) holding = inventory.holding = 0
-          }
-        }
-      }else{
-        let empty = !data.contents[idx]
-        inventory.holding = data.contents[idx]
-        data.contents[idx] = temp
-        if(empty){
-          inventory.spreadStart = idx
-          inventory.spreadPlace = "dispenser"
-        }
-      }
-      world.updateTags(containerData.x,containerData.y,containerData.z,containerData.dimension)
-    }else */
 		clickInv(true, mouse)
     
     drawDispenser()
@@ -30162,22 +29403,6 @@ p.camera.transformation.elements.set(matrix)//*/
     let s = inventory.size
     let s2 = s/2
     var length = 5
-    
-    /*gl.clearColor(0, 0, 0, 0)
-		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
-    
-    var toPlay
-    
-    var data = world.getTags(containerData.x, containerData.y, containerData.z,containerData.dimension)
-    if(!data || !(data&&data.hopper)){
-      var block = world.getBlock(containerData.x, containerData.y, containerData.z,containerData.dimension)
-      if(blockData[block].name === "hopper"){
-        data = blockData[block].setContents(containerData.x,containerData.y,containerData.z,containerData.dimension,world)
-      }else toPlay = true
-    }
-    containerData.data = data
-    
-    if(toPlay) return play()*/
     
     var x = 50.5 - s2
     var y = 11*s
@@ -30194,58 +29419,14 @@ p.camera.transformation.elements.set(matrix)//*/
     ctx.lineTo(x + length*s, y+s)
     ctx.stroke()
     
-    /*var over = mouseX > x && mouseY > y && mouseX < x+length*s && mouseY < y+s ? floor((mouseX-x)/s) : -1
-    if(over >= 0 && over < length){
-      var ox = over*s+x
-      ctx.strokeStyle = "white"
-      ctx.lineWidth = 2
-      ctx.strokeRect(ox,y,s,s)
-    }*/
-    
     ctx.fillStyle = "white"
     ctx.font = "16px thefont"
     ctx.textAlign = "left"
     ctx.fillText("Item Hopper", x, y-4)
     
-    /*if(data.contents){
-      for(var i=0; i<length; i++){
-        var item = data.contents[i]
-        if(!item) continue
-        drawIcon(x+i*s+s2,y+s2, item.id, item)
-      }
-    }
-    
-    ctx.drawImage(gl.canvas,0,0, width,height)
-    
-    if(over >= 0 && over < length && data.contents){
-      var item = data.contents[over]
-      let name = item ? (item.customName || "block."+item.id) : ""
-      if(name !== ""){
-        ctx.textAlign = "left"
-        ctx.font = "16px thefont";
-        fill(255)
-        text(name, mouseX, mouseY, 16, 1);
-      }
-    }
-    
-    ctx.drawImage(canvas2,0,0)
-		ctx.globalAlpha = 1*/
 		drawInv(true)
   }
   function clickHopper(mouse){
-    /*let s = inventory.size
-    let s2 = s/2
-    var length = 5
-    var x = 50.5 - s2
-    var y = 11*s
-    var over = mouseX > x && mouseY > y && mouseX < x+length*s && mouseY < y+s ? floor((mouseX-x)/s) : -1
-    var c = containerData.data.contents
-    if(over >= 0 && over < length && c){
-      let temp = c[over]
-			c[over] = inventory.holding
-			inventory.holding = temp
-      world.updateTags(containerData.x,containerData.y,containerData.z,containerData.dimension)
-    }else */
 		clickInv(true, mouse)
     
     drawHopper()
@@ -30326,8 +29507,8 @@ p.camera.transformation.elements.set(matrix)//*/
 				hoverbox.classList.add("hidden")
         drawScreens[screen]()
         redraw = true
-        if(!mouseNotMoved) Slider.drag(e)
       }
+			if(!mouseNotMoved) Slider.drag(e)
 		}
     if(screen === "inventory" || screen === "crafting" || screen === "furnace" || screen === "chest" || screen === "anvil" || screen === "dispenser" || screen === "hopper"){
 			hoverbox.classList.add("hidden")
@@ -30843,8 +30024,8 @@ p.camera.transformation.elements.set(matrix)//*/
 		for (let key in Key) {
 			Key[key] = false
 		}
-		mouseDown = false
-		Slider.release()
+		/*mouseDown = false
+		Slider.release()*/
 	}
 	canvas.oncontextmenu = function(e) {
 		e.preventDefault()
@@ -32437,700 +31618,6 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
 	}
 
-  /*let sounds = {
-    click: "click.ogg",
-		shoot: "random/shoot.ogg",
-    damage: {
-      bigfall: "damage/fallbig.ogg",
-      smallfall: "damage/fallsmall.ogg",
-      hit1: "damage/hit1.ogg",
-      hit2: "damage/hit2.ogg",
-      hit3: "damage/hit3.ogg",
-      drown1: "damage/drown1.ogg",
-      drown2: "damage/drown2.ogg",
-      drown3: "damage/drown3.ogg",
-      drown4: "damage/drown4.ogg",
-      freeze1: "damage/freeze1.ogg",
-      freeze2: "damage/freeze2.ogg",
-      freeze3: "damage/freeze3.ogg",
-      freeze4: "damage/freeze4.ogg",
-      freeze5: "damage/freeze5.ogg",
-      fire1: "damage/fire1.ogg",
-      fire2: "damage/fire2.ogg",
-      fire3: "damage/fire3.ogg",
-      berrybush1: "damage/berrybush1.ogg",
-      berrybush2: "damage/berrybush2.ogg",
-      classic_hurt: "damage/classic_hurt.ogg",
-    },
-    block: {
-      grass: {
-        dig1: "grass/dig1.ogg",
-        dig2: "grass/dig2.ogg",
-        dig3: "grass/dig3.ogg",
-        dig4: "grass/dig4.ogg",
-        step1: "grass/step1.ogg",
-        step2: "grass/step2.ogg",
-        step3: "grass/step3.ogg",
-        step4: "grass/step4.ogg",
-        step5: "grass/step5.ogg",
-        step6: "grass/step6.ogg",
-      },
-      stone: {
-        dig1: "stone/dig1.ogg",
-        dig2: "stone/dig2.ogg",
-        dig3: "stone/dig3.ogg",
-        dig4: "stone/dig4.ogg",
-        step1: "stone/step1.ogg",
-        step2: "stone/step2.ogg",
-        step3: "stone/step3.ogg",
-        step4: "stone/step4.ogg",
-        step5: "stone/step5.ogg",
-        step6: "stone/step6.ogg",
-      },
-      gravel: {
-        dig1: "gravel/dig1.ogg",
-        dig2: "gravel/dig2.ogg",
-        dig3: "gravel/dig3.ogg",
-        dig4: "gravel/dig4.ogg",
-        step1: "gravel/step1.ogg",
-        step2: "gravel/step2.ogg",
-        step3: "gravel/step3.ogg",
-        step4: "gravel/step4.ogg",
-      },
-			dirt: {
-        dig1: "refer:gravel",
-        dig2: "refer:gravel",
-        dig3: "refer:gravel",
-        dig4: "refer:gravel",
-        step1: "refer:gravel",
-        step2: "refer:gravel",
-        step3: "refer:gravel",
-        step4: "refer:gravel",
-      },
-      sand: {
-        dig1: "sand/dig1.ogg",
-        dig2: "sand/dig2.ogg",
-        dig3: "sand/dig3.ogg",
-        dig4: "sand/dig4.ogg",
-        step1: "sand/step1.ogg",
-        step2: "sand/step2.ogg",
-        step3: "sand/step3.ogg",
-        step4: "sand/step4.ogg",
-        step5: "sand/step5.ogg",
-      },
-      basalt: {
-        dig1: "basalt/dig1.ogg",
-        dig2: "basalt/dig2.ogg",
-        dig3: "basalt/dig3.ogg",
-        dig4: "basalt/dig4.ogg",
-        dig5: "basalt/dig5.ogg",
-        step1: "basalt/step1.ogg",
-        step2: "basalt/step2.ogg",
-        step3: "basalt/step3.ogg",
-        step4: "basalt/step4.ogg",
-        step5: "basalt/step5.ogg",
-        step6: "basalt/step6.ogg",
-      },
-      chain: {
-        dig1: "chain/dig1.ogg",
-        dig2: "chain/dig2.ogg",
-        dig3: "chain/dig3.ogg",
-        dig4: "chain/dig4.ogg",
-        step1: "chain/step1.ogg",
-        step2: "chain/step2.ogg",
-        step3: "chain/step3.ogg",
-        step4: "chain/step4.ogg",
-        step5: "chain/step5.ogg",
-        step6: "chain/step6.ogg",
-      },
-      cloth: {
-        dig1: "cloth/dig1.ogg",
-        dig2: "cloth/dig2.ogg",
-        dig3: "cloth/dig3.ogg",
-        dig4: "cloth/dig4.ogg",
-        step1: "cloth/step1.ogg",
-        step2: "cloth/step2.ogg",
-        step3: "cloth/step3.ogg",
-        step4: "cloth/step4.ogg",
-      },
-      fungus: {
-        dig1: "fungus/dig1.ogg",
-        dig2: "fungus/dig2.ogg",
-        dig3: "fungus/dig3.ogg",
-        dig4: "fungus/dig4.ogg",
-        dig5: "fungus/dig3.ogg",
-        dig6: "fungus/dig4.ogg",
-      },
-      glass: {
-        dig1: "glass/dig1.ogg",
-        dig2: "glass/dig2.ogg",
-        dig3: "glass/dig3.ogg",
-      },
-      lantern: {
-        dig1: "lantern/dig1.ogg",
-        dig2: "lantern/dig2.ogg",
-        dig3: "lantern/dig3.ogg",
-        dig4: "lantern/dig4.ogg",
-        dig5: "lantern/dig5.ogg",
-        dig6: "lantern/dig6.ogg",
-        place1: "lantern/place1.ogg",
-        place2: "lantern/place2.ogg",
-        place3: "lantern/place3.ogg",
-        place4: "lantern/place4.ogg",
-        place5: "lantern/place5.ogg",
-        place6: "lantern/place6.ogg",
-      },
-      nether_bricks: {
-        dig1: "nether_bricks/dig1.ogg",
-        dig2: "nether_bricks/dig2.ogg",
-        dig3: "nether_bricks/dig3.ogg",
-        dig4: "nether_bricks/dig4.ogg",
-        dig5: "nether_bricks/dig5.ogg",
-        dig6: "nether_bricks/dig6.ogg",
-        step1: "nether_bricks/step1.ogg",
-        step2: "nether_bricks/step2.ogg",
-        step3: "nether_bricks/step3.ogg",
-        step4: "nether_bricks/step4.ogg",
-        step5: "nether_bricks/step5.ogg",
-        step6: "nether_bricks/step6.ogg",
-      },
-      nether_ore: {
-        dig1: "nether_ore/dig1.ogg",
-        dig2: "nether_ore/dig2.ogg",
-        dig3: "nether_ore/dig3.ogg",
-        dig4: "nether_ore/dig4.ogg",
-        step1: "nether_ore/step1.ogg",
-        step2: "nether_ore/step2.ogg",
-        step3: "nether_ore/step3.ogg",
-        step4: "nether_ore/step4.ogg",
-        step5: "nether_ore/step5.ogg",
-      },
-      nether_sprouts: {
-        dig1: "nether_sprouts/dig1.ogg",
-        dig2: "nether_sprouts/dig2.ogg",
-        dig3: "nether_sprouts/dig3.ogg",
-        dig4: "nether_sprouts/dig4.ogg",
-        step1: "nether_sprouts/step1.ogg",
-        step2: "nether_sprouts/step2.ogg",
-        step3: "nether_sprouts/step3.ogg",
-        step4: "nether_sprouts/step4.ogg",
-        step5: "nether_sprouts/step5.ogg",
-      },
-      netherite: {
-        dig1: "netherite/dig1.ogg",
-        dig2: "netherite/dig2.ogg",
-        dig3: "netherite/dig3.ogg",
-        dig4: "netherite/dig4.ogg",
-        step1: "netherite/step1.ogg",
-        step2: "netherite/step2.ogg",
-        step3: "netherite/step3.ogg",
-        step4: "netherite/step4.ogg",
-        step5: "netherite/step5.ogg",
-        step6: "netherite/step6.ogg",
-      },
-      netherrack: {
-        dig1: "netherrack/dig1.ogg",
-        dig2: "netherrack/dig2.ogg",
-        dig3: "netherrack/dig3.ogg",
-        dig4: "netherrack/dig4.ogg",
-        dig5: "netherrack/dig5.ogg",
-        dig6: "netherrack/dig6.ogg",
-        step1: "netherrack/step1.ogg",
-        step2: "netherrack/step2.ogg",
-        step3: "netherrack/step3.ogg",
-        step4: "netherrack/step4.ogg",
-        step5: "netherrack/step5.ogg",
-        step6: "netherrack/step6.ogg",
-      },
-      netherwart: {
-        dig1: "netherwart/dig1.ogg",
-        dig2: "netherwart/dig2.ogg",
-        dig3: "netherwart/dig3.ogg",
-        dig4: "netherwart/dig4.ogg",
-        dig5: "netherwart/dig5.ogg",
-        dig6: "netherwart/dig6.ogg",
-        step1: "netherwart/step1.ogg",
-        step2: "netherwart/step2.ogg",
-        step3: "netherwart/step3.ogg",
-        step4: "netherwart/step4.ogg",
-        step5: "netherwart/step5.ogg",
-      },
-      nylium: {
-        dig1: "nylium/dig1.ogg",
-        dig2: "nylium/dig2.ogg",
-        dig3: "nylium/dig3.ogg",
-        dig4: "nylium/dig4.ogg",
-        dig5: "nylium/dig5.ogg",
-        dig6: "nylium/dig6.ogg",
-        step1: "nylium/step1.ogg",
-        step2: "nylium/step2.ogg",
-        step3: "nylium/step3.ogg",
-        step4: "nylium/step4.ogg",
-        step5: "nylium/step5.ogg",
-        step6: "nylium/step6.ogg",
-      },
-      roots: {
-        dig1: "roots/dig1.ogg",
-        dig2: "roots/dig2.ogg",
-        dig3: "roots/dig3.ogg",
-        dig4: "roots/dig4.ogg",
-        dig5: "roots/dig5.ogg",
-        dig6: "roots/dig6.ogg",
-        step1: "roots/step1.ogg",
-        step2: "roots/step2.ogg",
-        step3: "roots/step3.ogg",
-        step4: "roots/step4.ogg",
-        step5: "roots/step5.ogg",
-      },
-      shroomlight: {
-        dig1: "shroomlight/dig1.ogg",
-        dig2: "shroomlight/dig2.ogg",
-        dig3: "shroomlight/dig3.ogg",
-        dig4: "shroomlight/dig4.ogg",
-        dig5: "shroomlight/dig5.ogg",
-        step1: "shroomlight/step1.ogg",
-        step2: "shroomlight/step2.ogg",
-        step3: "shroomlight/step3.ogg",
-        step4: "shroomlight/step4.ogg",
-        step5: "shroomlight/step5.ogg",
-        step6: "shroomlight/step6.ogg",
-      },
-      soul_sand: {
-        dig1: "soul_sand/dig1.ogg",
-        dig2: "soul_sand/dig2.ogg",
-        dig3: "soul_sand/dig3.ogg",
-        dig4: "soul_sand/dig4.ogg",
-        dig5: "soul_sand/dig5.ogg",
-        dig6: "soul_sand/dig6.ogg",
-        dig7: "soul_sand/dig7.ogg",
-        dig8: "soul_sand/dig8.ogg",
-        dig9: "soul_sand/dig9.ogg",
-        step1: "soul_sand/step1.ogg",
-        step2: "soul_sand/step2.ogg",
-        step3: "soul_sand/step3.ogg",
-        step4: "soul_sand/step4.ogg",
-        step5: "soul_sand/step5.ogg",
-      },
-      stem: {
-        dig1: "stem/dig1.ogg",
-        dig2: "stem/dig2.ogg",
-        dig3: "stem/dig3.ogg",
-        dig4: "stem/dig4.ogg",
-        dig5: "stem/dig5.ogg",
-        dig6: "stem/dig6.ogg",
-        step1: "stem/step1.ogg",
-        step2: "stem/step2.ogg",
-        step3: "stem/step3.ogg",
-        step4: "stem/step4.ogg",
-        step5: "stem/step5.ogg",
-        step6: "stem/step6.ogg",
-      },
-      wood: {
-        dig1: "wood/dig1.ogg",
-        dig2: "wood/dig2.ogg",
-        dig3: "wood/dig3.ogg",
-        dig4: "wood/dig4.ogg",
-        step1: "wood/step1.ogg",
-        step2: "wood/step2.ogg",
-        step3: "wood/step3.ogg",
-        step4: "wood/step4.ogg",
-        step5: "wood/step5.ogg",
-        step6: "wood/step6.ogg",
-      },
-      anvil: {
-        land: "random/anvil_land.ogg"
-      },
-      amethyst: {
-        dig1: "amethyst/break1.ogg",
-        dig2: "amethyst/break2.ogg",
-        dig3: "amethyst/break3.ogg",
-        dig4: "amethyst/break4.ogg",
-        place1: "amethyst/place1.ogg",
-        place2: "amethyst/place2.ogg",
-        place3: "amethyst/place3.ogg",
-        place4: "amethyst/place4.ogg",
-        step1: "amethyst/step1.ogg",
-        step2: "amethyst/step2.ogg",
-        step3: "amethyst/step3.ogg",
-        step4: "amethyst/step4.ogg",
-        step5: "amethyst/step5.ogg",
-        step6: "amethyst/step6.ogg",
-        step7: "amethyst/step7.ogg",
-        step8: "amethyst/step8.ogg",
-        step9: "amethyst/step9.ogg",
-        step10: "amethyst/step10.ogg",
-        step11: "amethyst/step11.ogg",
-        step12: "amethyst/step12.ogg",
-        step13: "amethyst/step13.ogg",
-        step14: "amethyst/step14.ogg",
-      },
-      amethyst_cluster: {
-        dig1: "amethyst_cluster/break1.ogg",
-        dig2: "amethyst_cluster/break2.ogg",
-        dig3: "amethyst_cluster/break3.ogg",
-        dig4: "amethyst_cluster/break4.ogg",
-        place1: "amethyst_cluster/place1.ogg",
-        place2: "amethyst_cluster/place2.ogg",
-        place3: "amethyst_cluster/place3.ogg",
-        place4: "amethyst_cluster/place4.ogg",
-      },
-      deepslate:{
-        dig1:"deepslate/break1.ogg",
-        dig2:"deepslate/break2.ogg",
-        dig3:"deepslate/break3.ogg",
-        dig4:"deepslate/break4.ogg",
-        place1:"deepslate/place1.ogg",
-        place2:"deepslate/place2.ogg",
-        place3:"deepslate/place3.ogg",
-        place4:"deepslate/place4.ogg",
-        place5:"deepslate/place5.ogg",
-        place6:"deepslate/place6.ogg",
-        step1:"deepslate/step1.ogg",
-        step2:"deepslate/step2.ogg",
-        step3:"deepslate/step3.ogg",
-        step4:"deepslate/step4.ogg",
-        step5:"deepslate/step5.ogg",
-        step6:"deepslate/step6.ogg",
-      },
-      deepslate_bricks:{
-        place1:"deepslate_bricks/place1.ogg",
-        place2:"deepslate_bricks/place2.ogg",
-        place3:"deepslate_bricks/place3.ogg",
-        place4:"deepslate_bricks/place4.ogg",
-        place5:"deepslate_bricks/place5.ogg",
-        place6:"deepslate_bricks/place6.ogg",
-        step1:"deepslate_bricks/step1.ogg",
-        step2:"deepslate_bricks/step2.ogg",
-        step3:"deepslate_bricks/step3.ogg",
-        step4:"deepslate_bricks/step4.ogg",
-        step5:"deepslate_bricks/step5.ogg",
-      },
-      mud:{
-        break1:"mud/break1.ogg",
-        break2:"mud/break2.ogg",
-        break3:"mud/break3.ogg",
-        break4:"mud/break4.ogg",
-        break5:"mud/break5.ogg",
-        break6:"mud/break6.ogg",
-        step1:"mud/step1.ogg",
-        step2:"mud/step2.ogg",
-        step3:"mud/step3.ogg",
-        step4:"mud/step4.ogg",
-        step5:"mud/step5.ogg",
-        step6:"mud/step6.ogg"
-      },
-			fence_gate:{
-				close1:"fence_gate/close1.ogg",
-				close2:"fence_gate/close2.ogg",
-				open1:"fence_gate/open1.ogg",
-				open2:"fence_gate/open2.ogg",
-			},
-			iron_door:{
-				close1:"iron_door/close1.ogg",
-				close2:"iron_door/close2.ogg",
-				close3:"iron_door/close3.ogg",
-				close4:"iron_door/close4.ogg",
-				open1:"iron_door/open1.ogg",
-				open2:"iron_door/open2.ogg",
-				open3:"iron_door/open3.ogg",
-				open4:"iron_door/open4.ogg",
-			},
-			wooden_door:{
-				close1:"wooden_door/close.ogg",
-				close2:"wooden_door/close2.ogg",
-				close3:"wooden_door/close3.ogg",
-				close4:"wooden_door/close4.ogg",
-				close5:"wooden_door/close5.ogg",
-				close6:"wooden_door/close6.ogg",
-				open1:"wooden_door/open.ogg",
-				open2:"wooden_door/open2.ogg",
-				open3:"wooden_door/open3.ogg",
-				open4:"wooden_door/open4.ogg",
-			},
-			iron_trapdoor:{
-				close1:"iron_trapdoor/close1.ogg",
-				close2:"iron_trapdoor/close2.ogg",
-				close3:"iron_trapdoor/close3.ogg",
-				close4:"iron_trapdoor/close4.ogg",
-				open1:"iron_trapdoor/open1.ogg",
-				open2:"iron_trapdoor/open2.ogg",
-				open3:"iron_trapdoor/open3.ogg",
-				open4:"iron_trapdoor/open4.ogg",
-			},
-			wooden_trapdoor:{
-				close1:"wooden_trapdoor/close1.ogg",
-				close2:"wooden_trapdoor/close2.ogg",
-				close3:"wooden_trapdoor/close3.ogg",
-				open1:"wooden_trapdoor/open1.ogg",
-				open2:"wooden_trapdoor/open2.ogg",
-				open3:"wooden_trapdoor/open3.ogg",
-				open4:"wooden_trapdoor/open4.ogg",
-				open5:"wooden_trapdoor/open5.ogg",
-			},
-      end_portal:{
-        eyeplace1:"end_portal/eyeplace1.ogg",
-        eyeplace2:"end_portal/eyeplace2.ogg",
-        eyeplace3:"end_portal/eyeplace3.ogg",
-				endportal:"end_portal/endportal.ogg"
-      },
-      portal:{
-        portal:"portal/portal.ogg",
-        travel:"portal/travel.ogg",
-        trigger:"portal/trigger.ogg",
-      },
-      fire:{
-        fire:"fire/fire.ogg",
-        ignite:"fire/ignite.ogg"
-      },
-			coral:{
-				dig1:"coral/dig1.ogg",
-				dig2:"coral/dig2.ogg",
-				dig3:"coral/dig3.ogg",
-				dig4:"coral/dig4.ogg",
-				step1:"coral/step1.ogg",
-				step2:"coral/step2.ogg",
-				step3:"coral/step3.ogg",
-				step4:"coral/step4.ogg",
-				step5:"coral/step5.ogg",
-				step6:"coral/step6.ogg",
-			},
-			wetgrass:{
-				dig1:"wetgrass/dig1.ogg",
-				dig2:"wetgrass/dig2.ogg",
-				dig3:"wetgrass/dig3.ogg",
-				dig4:"wetgrass/dig4.ogg",
-				step1:"wetgrass/step1.ogg",
-				step2:"wetgrass/step2.ogg",
-				step3:"wetgrass/step3.ogg",
-				step4:"wetgrass/step4.ogg",
-				step5:"wetgrass/step5.ogg",
-				step6:"wetgrass/step6.ogg",
-			}
-    },
-    entity: {
-      generic: {
-        explode1: "random/explode1.ogg",
-        explode2: "random/explode2.ogg",
-        explode3: "random/explode3.ogg",
-        explode4: "random/explode4.ogg",
-      },
-      tnt: {
-        fuse: "random/fuse.ogg"
-      },
-      item: {
-        pickup: "random/plop.ogg",
-        break: "random/break.ogg"
-      },
-      cow:{
-        hurt1:"cow/hurt1.ogg",
-        hurt2:"cow/hurt2.ogg",
-        hurt3:"cow/hurt3.ogg",
-        say1:"cow/say1.ogg",
-        say2:"cow/say2.ogg",
-        say3:"cow/say3.ogg",
-        say4:"cow/say4.ogg",
-        step1:"cow/step1.ogg",
-        step2:"cow/step2.ogg",
-        step3:"cow/step3.ogg",
-        step4:"cow/step4.ogg",
-      },
-      pig:{
-        say1:"pig/say1.ogg",
-        say2:"pig/say2.ogg",
-        say3:"pig/say3.ogg",
-        step1:"pig/step1.ogg",
-        step2:"pig/step2.ogg",
-        step3:"pig/step3.ogg",
-        step4:"pig/step4.ogg",
-        step5:"pig/step5.ogg",
-        death:"pig/death.ogg",
-      },
-      creeper:{
-        say1:"creeper/say1.ogg",
-        say2:"creeper/say2.ogg",
-        say3:"creeper/say3.ogg",
-        say4:"creeper/say4.ogg",
-        death:"creeper/death.ogg",
-      },
-      sheep:{
-        say1:"sheep/say1.ogg",
-        say2:"sheep/say2.ogg",
-        say3:"sheep/say3.ogg",
-        shear:"sheep/shear.ogg",
-        step1:"sheep/step1.ogg",
-        step2:"sheep/step2.ogg",
-        step3:"sheep/step3.ogg",
-        step4:"sheep/step4.ogg",
-        step5:"sheep/step5.ogg",
-      },
-      chicken:{
-        say1:"chicken/say1.ogg",
-        say2:"chicken/say2.ogg",
-        say3:"chicken/say3.ogg",
-        step1:"chicken/step1.ogg",
-        step2:"chicken/step2.ogg",
-        hurt1:"chicken/hurt1.ogg",
-        hurt2:"chicken/hurt2.ogg",
-        plop:"chicken/plop.ogg",
-      },
-			zombie:{
-				death:"zombie/death.ogg",
-				hurt1:"zombie/hurt1.ogg",
-				hurt2:"zombie/hurt2.ogg",
-				say1:"zombie/say1.ogg",
-				say2:"zombie/say2.ogg",
-				say3:"zombie/say3.ogg",
-				step1:"zombie/step1.ogg",
-				step2:"zombie/step2.ogg",
-				step3:"zombie/step3.ogg",
-				step4:"zombie/step4.ogg",
-				step5:"zombie/step5.ogg",
-			},
-			skeleton:{
-				death:"skeleton/death.ogg",
-				hurt1:"skeleton/hurt1.ogg",
-				hurt2:"skeleton/hurt2.ogg",
-				hurt3:"skeleton/hurt3.ogg",
-				hurt4:"skeleton/hurt4.ogg",
-				say1:"skeleton/say1.ogg",
-				say2:"skeleton/say2.ogg",
-				say3:"skeleton/say3.ogg",
-				step1:"skeleton/step1.ogg",
-				step2:"skeleton/step2.ogg",
-				step3:"skeleton/step3.ogg",
-				step4:"skeleton/step4.ogg",
-			},
-			spider:{
-				death:"spider/death.ogg",
-				say1:"spider/say1.ogg",
-				say2:"spider/say2.ogg",
-				say3:"spider/say3.ogg",
-				say4:"spider/say4.ogg",
-				step1:"spider/step1.ogg",
-				step2:"spider/step2.ogg",
-				step3:"spider/step3.ogg",
-				step4:"spider/step4.ogg",
-			},
-			wolf:{
-				bark1:"wolf/bark1.ogg",
-				bark2:"wolf/bark2.ogg",
-				bark3:"wolf/bark3.ogg",
-				death:"wolf/death.ogg",
-				growl1:"wolf/growl1.ogg",
-				growl2:"wolf/growl2.ogg",
-				growl3:"wolf/growl3.ogg",
-				howl1:"wolf/howl1.ogg",
-				howl2:"wolf/howl2.ogg",
-				hurt1:"wolf/hurt1.ogg",
-				hurt2:"wolf/hurt2.ogg",
-				hurt3:"wolf/hurt3.ogg",
-				panting:"wolf/panting.ogg",
-				shake:"wolf/shake.ogg",
-				step1:"wolf/step1.ogg",
-				step2:"wolf/step2.ogg",
-				step3:"wolf/step3.ogg",
-				step4:"wolf/step4.ogg",
-				step5:"wolf/step5.ogg",
-				whine:"wolf/whine.ogg",
-			},
-      witch:{
-        ambient1:"witch/ambient1.ogg",
-        ambient2:"witch/ambient2.ogg",
-        ambient3:"witch/ambient3.ogg",
-        ambient4:"witch/ambient4.ogg",
-        ambient5:"witch/ambient5.ogg",
-        celebrate:"witch/celebrate.ogg",
-      },
-			blaze:{
-				breathe1:"blaze/breathe1.ogg",
-				breathe2:"blaze/breathe2.ogg",
-				breathe3:"blaze/breathe3.ogg",
-				breathe4:"blaze/breathe4.ogg",
-				death:"blaze/death.ogg",
-				hit1:"blaze/hit1.ogg",
-				hit2:"blaze/hit2.ogg",
-				hit3:"blaze/hit3.ogg",
-				hit4:"blaze/hit4.ogg",
-			},
-			endermen:{
-				idle1:"endermen/idle1.ogg",
-				idle2:"endermen/idle2.ogg",
-				idle3:"endermen/idle3.ogg",
-				idle4:"endermen/idle4.ogg",
-				idle5:"endermen/idle5.ogg",
-				hit1:"endermen/hit1.ogg",
-				hit2:"endermen/hit2.ogg",
-				hit3:"endermen/hit3.ogg",
-				hit4:"endermen/hit4.ogg",
-				death:"endermen/death.ogg",
-				portal1:"endermen/portal.ogg",
-				portal2:"endermen/portal2.ogg",
-				scream1:"endermen/scream1.ogg",
-				scream2:"endermen/scream2.ogg",
-				scream3:"endermen/scream3.ogg",
-				scream4:"endermen/scream4.ogg",
-				stare:"endermen/stare.ogg",
-			},
-      ender_dragon:{
-        end:"ender_dragon/end.ogg",
-      },
-    },
-    item:{
-      spyglass:{
-        use:"spyglass/use.ogg",
-        stop:"spyglass/stop.ogg"
-      }
-    },
-    experience:{
-      orb:"random/orb.ogg",
-      levelup:"random/levelup.ogg"
-    },
-    liquid:{
-      enter: "liquid/enter.ogg",
-      exit: "liquid/exit.ogg",
-      splash: "liquid/splash.ogg",
-			water:"liquid/water.ogg",
-			lava:"liquid/lava.ogg",
-			lavapop:"liquid/lavapop.ogg",
-    },
-    eat: {
-      1: "random/eat1.ogg",
-      2: "random/eat2.ogg",
-      3: "random/eat3.ogg",
-      burp:"random/burp.ogg"
-    },
-    note: {
-      banjo: "note/banjo.ogg",
-      bass: "note/bass.ogg",
-      bd: "note/bd.ogg",
-      bell: "note/bell.ogg",
-      bit: "note/bit.ogg",
-      cow_bell: "note/cow_bell.ogg",
-      didgeridoo: "note/didgeridoo.ogg",
-      flute: "note/flute.ogg",
-      guitar: "note/guitar.ogg",
-      harp: "note/harp.ogg",
-      hat: "note/hat.ogg",
-      icechime: "note/icechime.ogg",
-      iron_xylophone: "note/iron_xylophone.ogg",
-      pling: "note/pling.ogg",
-      snare: "note/snare.ogg",
-      xylobone: "note/xylobone.ogg",
-    },
-		weather:{
-			rain1:"weather/rain1.ogg",
-			rain2:"weather/rain2.ogg",
-			rain3:"weather/rain3.ogg",
-			rain4:"weather/rain4.ogg",
-			rain5:"weather/rain5.ogg",
-			rain6:"weather/rain6.ogg",
-			rain7:"weather/rain7.ogg",
-			rain8:"weather/rain8.ogg",
-			thunder1:"weather/thunder1.ogg",
-			thunder2:"weather/thunder2.ogg",
-			thunder3:"weather/thunder3.ogg"
-		},
-  }*/
 	let sounds = {
 		"dirt.dig1":"refer:gravel.dig1",
 		"dirt.dig2":"refer:gravel.dig2",
@@ -33626,8 +32113,8 @@ p.camera.transformation.elements.set(matrix)//*/
   }*/
 	let recording = false, recorder, recordStream
 	async function startRecord(){
-		recordStream = await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:"browser"},preferCurrentTab:true})
-		recorder = new MediaRecorder(recordStream,{mimeType:"video/mp4",bitsPerSecond:10000000})
+		recordStream = await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:"browser",width:{max:400},height:{max:400}},preferCurrentTab:true})
+		recorder = new MediaRecorder(recordStream,{mimeType:"video/mp4"})
 		recording = true
 		let chunks = []
 		recorder.onstop = async e => {
@@ -33637,6 +32124,8 @@ p.camera.transformation.elements.set(matrix)//*/
 			a.download = "Screen recording "+(new Date().toString())
 			a.click()
 			URL.revokeObjectURL(a.href)
+			//savebox.classList.remove("hidden")
+			//savebox.value = r.url
 			recording = false
 		}
 		recorder.ondataavailable = (e) => {
@@ -34794,6 +33283,12 @@ p.camera.transformation.elements.set(matrix)//*/
 			text("MineKhan-thingmaker " + version, 2, lerp(ctx.globalAlpha,height+16,height - 2 - 16))
       ctx.textAlign = "right"
 			text("Press Ctrl+H to hide window. Press Ctrl+J to undo hide.", width - 2, height - 2 - 16)
+
+			fill(0)
+			ctx.fillRect(0,0,width,48)
+			fill(255)
+			ctx.textAlign = 'left'
+			text("You can help make MineKhan more popular.\nTo do it, send the link to at least one other person. (https://thingmaker.us.eu.org/minekhan) Or login and enable multiplayer more.\nThis can make multiplayer worlds more common.", 0,0,16)
 			ctx.globalAlpha = 1
 		}
 		drawScreens["comingsoon menu"] = () => {
@@ -35046,7 +33541,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
     function drawChunkMap(cx,cz){
 			let loadAmount = 0
-			let w2 = 6, w = w2*2+1
+			let w2 = settings.renderDistance+8, w = w2*2+1
       let s = min(width,height)/4/w
       for (let x = cx - w2; x <= cx + w2; x++) {
         for (let z = cz - w2; z <= cz + w2; z++) {
@@ -35055,8 +33550,7 @@ p.camera.transformation.elements.set(matrix)//*/
 					if(host){
 						let chunk = serverWorld.getChunk(x*16,z*16,p.dimension)
 						if (chunk) {
-            	if(chunk.lit) ctx.fillStyle = "#880", chunkLoadAmount = 4
-							else if(chunk.populated && chunk.generated) ctx.fillStyle = "#080", chunkLoadAmount = 3
+            	if(chunk.populated && chunk.generated) ctx.fillStyle = "#080", chunkLoadAmount = 3
 							else if(chunk.caves && chunk.generated) ctx.fillStyle = "#666", chunkLoadAmount = 2
 							else if(chunk.generated) ctx.fillStyle = "#444", chunkLoadAmount = 1
 						}
@@ -35072,7 +33566,8 @@ p.camera.transformation.elements.set(matrix)//*/
             else if(chunk.generated) ctx.fillStyle = "#D1D1D1"*/
             if(chunk.buffer) ctx.fillStyle = "#fff", chunkLoadAmount = 7
             else if(chunk.optimized) ctx.fillStyle = "#ccc", chunkLoadAmount = 6
-            else if(chunk.loaded) ctx.fillStyle = "#aaa", chunkLoadAmount = 5
+						else if(chunk.lit) ctx.fillStyle = "#aa0", chunkLoadAmount = 5
+            else if(chunk.loaded) ctx.fillStyle = "#888", chunkLoadAmount = 4
           }
           ctx.fillRect(floor(width/2 + (x-cx)*s), floor(height*0.65 + (z-cz)*s), ceil(s),ceil(s))
 					if(maxDist(cx,cz,x,z) <= 1) loadAmount += chunkLoadAmount/7
