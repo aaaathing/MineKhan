@@ -21814,9 +21814,9 @@ class Entity {
 			this.chunkX = chunkX
 			this.chunkZ = chunkZ
 			this.chunkDimension = this.dimension
-			if(oldChunk && oldChunk.entities[this.id]){
-				delete oldChunk.entities[this.id]
-				chunk.entities[this.id] = this
+			if(oldChunk && oldChunk.entities.has(this.id)){
+				oldChunk.entities.delete(this.id)
+				chunk.entities.set(this.id, this)
 			}
 		}
 	}
@@ -25294,8 +25294,7 @@ class Section {
 		let under = this.chunk.getBlock(x,y+this.y-1,z,0,true)
 		if(this.type === "" && !block && light > 10 && under === blockIds.grass){
 			for(let x2=minChunkX; x2<=maxChunkX; x2++) for(let z2=minChunkZ; z2<=maxChunkZ; z2++){
-				if(chunks[x2] && chunks[x2][z2]) for(let i in chunks[x2][z2].entities){
-					let ent = chunks[x2][z2].entities[i]
+				if(chunks[x2] && chunks[x2][z2]) for(let [i,ent] of chunks[x2][z2].entities){
 					if(ent.mob && max(abs(this.x+x-ent.x),abs(this.y+y-ent.y),abs(this.z+z-ent.z)) < 32) return
 				}
 			}
@@ -25304,8 +25303,7 @@ class Section {
 			for(let i=0; i<amount; i++) blockData[blockIds["spawn"+mob]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),this.type,world)
 		}else if(this.type === "" && !block && light > 10 && this.world.getBiome(this.x+x,this.y+y,this.z+z,this.type) === "snowyPlains" && (under === blockIds.grass || blockData[under].name === "snow")){
 			for(let x2=minChunkX; x2<=maxChunkX; x2++) for(let z2=minChunkZ; z2<=maxChunkZ; z2++){
-				if(chunks[x2] && chunks[x2][z2]) for(let i in chunks[x2][z2].entities){
-					let ent = chunks[x2][z2].entities[i]
+				if(chunks[x2] && chunks[x2][z2]) for(let [i,ent] of chunks[x2][z2].entities){
 					if(ent.mob && max(abs(this.x+x-ent.x),abs(this.y+y-ent.y),abs(this.z+z-ent.z)) < 32) return
 				}
 			}
@@ -25323,8 +25321,7 @@ class Section {
 			}
 			if(!within) return
 			for(let x2=minChunkX; x2<=maxChunkX; x2++) for(let z2=minChunkZ; z2<=maxChunkZ; z2++){
-				if(chunks[x2] && chunks[x2][z2]) for(let i in chunks[x2][z2].entities){
-					let ent = chunks[x2][z2].entities[i]
+				if(chunks[x2] && chunks[x2][z2]) for(let [i,ent] of chunks[x2][z2].entities){
 					if(ent.mob && ent.hostile && max(abs(this.x+x-ent.x),abs(this.y+y-ent.y),abs(this.z+z-ent.z)) < 32) return
 				}
 			}
@@ -25332,8 +25329,7 @@ class Section {
 			blockData[blockIds["spawn"+mob]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),this.type,world)
 		}else if(this.type === "nether" && !block && this.world.getBiome(this.x+x,this.y+y,this.z+z,this.type) === "netherWastes" && under === blockIds.netherrack){
 			for(let x2=minChunkX; x2<=maxChunkX; x2++) for(let z2=minChunkZ; z2<=maxChunkZ; z2++){
-				if(chunks[x2] && chunks[x2][z2]) for(let i in chunks[x2][z2].entities){
-					let ent = chunks[x2][z2].entities[i]
+				if(chunks[x2] && chunks[x2][z2]) for(let [i,ent] of chunks[x2][z2].entities){
 					if(ent.mob && max(abs(this.x+x-ent.x),abs(this.y+y-ent.y),abs(this.z+z-ent.z)) < 32) return
 				}
 			}
@@ -25342,8 +25338,7 @@ class Section {
 			for(let i=0; i<amount; i++) blockData[blockIds["spawn"+mob]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),this.type,world)
 		}else if(this.type === "end" && !block && blockData[under].solid){
 			for(let x2=minChunkX; x2<=maxChunkX; x2++) for(let z2=minChunkZ; z2<=maxChunkZ; z2++){
-				if(chunks[x2] && chunks[x2][z2]) for(let i in chunks[x2][z2].entities){
-					let ent = chunks[x2][z2].entities[i]
+				if(chunks[x2] && chunks[x2][z2]) for(let [i,ent] of chunks[x2][z2].entities){
 					if(ent.mob && max(abs(this.x+x-ent.x),abs(this.y+y-ent.y),abs(this.z+z-ent.z)) < 32) return
 				}
 			}
@@ -25375,8 +25370,7 @@ class Section {
 		let hostileMobs = biomeData[biome][3]
 		if(passiveMobs && light > 10 && under){
 			for(let x2=minChunkX; x2<=maxChunkX; x2++) for(let z2=minChunkZ; z2<=maxChunkZ; z2++){
-				if(chunks[x2] && chunks[x2][z2]) for(let i in chunks[x2][z2].entities){
-					let ent = chunks[x2][z2].entities[i]
+				if(chunks[x2] && chunks[x2][z2]) for(let [i,ent] of chunks[x2][z2].entities){
 					if(ent.mob && max(abs(this.x+x-ent.x),abs(this.y+y-ent.y),abs(this.z+z-ent.z)) < 32) return
 				}
 			}
@@ -25395,8 +25389,7 @@ class Section {
 			}
 			if(!within) return
 			for(let x2=minChunkX; x2<=maxChunkX; x2++) for(let z2=minChunkZ; z2<=maxChunkZ; z2++){
-				if(chunks[x2] && chunks[x2][z2]) for(let i in chunks[x2][z2].entities){
-					let ent = chunks[x2][z2].entities[i]
+				if(chunks[x2] && chunks[x2][z2]) for(let [i,ent] of chunks[x2][z2].entities){
 					if(ent.mob && ent.hostile && max(abs(this.x+x-ent.x),abs(this.y+y-ent.y),abs(this.z+z-ent.z)) < 32) return
 				}
 			}
@@ -25750,7 +25743,7 @@ class Chunk {
 		this.type = type || ""
 		this.world = world
 		this.caves = this.type !== "" || !this.world.caves
-		this.entities = {}
+		this.entities = new Map()
 		this.columnHashs = new Uint8Array(16 * 16)//used to detect when column changes
 	}
 	getBlock(x, y, z) {
@@ -29630,8 +29623,7 @@ class Chunk {
 				}
 			}
 		}
-		if(this.allGenerated) for (let i in this.entities) {
-			const entity = this.entities[i]
+		if(this.allGenerated) for (let [i,entity] of this.entities) {
 			entity.update()
 			if (entity.canDespawn || (entity.y <= minEntityY)) {
 				world.deleteEntity(i)
@@ -30053,7 +30045,7 @@ Remember to balance optimization with maintainability and readability. Sometimes
 		}
 		
 		let sections = Object.entries(sectionMap)
-		if(!sections.length) return
+		if(!sections.length && !this.entities.size) return
 
 		let blocks = Array.from(blockSet)
 		let palette = {}
@@ -30128,7 +30120,7 @@ Remember to balance optimization with maintainability and readability. Sometimes
 			bab.append(bestBAB)
 		}
 
-		let entities = Object.values(this.entities).filter(r => !r.remote)
+		let entities = [...this.entities.values()].filter(r => !r.remote)
 		bab.add(entities.length,32)
 		let now = performance.now()
 		for(let i of entities){
@@ -32515,7 +32507,7 @@ class World{
 		this.entities.push(ent)
 		//if(ent.alwaysRender) this.alwaysRenderEntities.push(ent)
 		let chunk = this.getOrNewChunk(ent.chunkX<<4,ent.chunkZ<<4,ent.dimension)
-		chunk.entities[ent.id] = ent
+		chunk.entities.set(ent.id, ent)
 	}
 	deleteEntity(id, remote, i){
 		i = (i || i===0) ? i : this.getEntity(id)
@@ -32532,7 +32524,7 @@ class World{
 		}*/
 		const {chunkX, chunkZ} = ent
 		let chunk = this.getChunk(chunkX<<4,chunkZ<<4,ent.dimension)
-		if(chunk) delete chunk.entities[id]
+		if(chunk) delete chunk.entities.delete(id)
 	}
 	posEntity(p, m, preBetaVersion/*preBetaVersion only used in loadsave*/){
 		if (typeof p === "string") {
@@ -32894,10 +32886,10 @@ class World{
 			for (z = minChunkZ; z <= maxChunkZ; z++) {
 				if (chunks[x] && chunks[x][z]) {
 					let chunk = chunks[x][z]
-					for(let i in chunk.entities){
+					for(let [i,ent] of chunk.entities){
 						let now = performance.now()
 						//if(ent.remote) return
-						arr.push(this.getEntPos(chunk.entities[i],now).array)
+						arr.push(this.getEntPos(ent,now).array)
 					}
 				}
 			}
@@ -32919,8 +32911,8 @@ class World{
 			for (z = minChunkZ; z <= maxChunkZ; z++) {
 				if (chunks[x] && chunks[x][z]) {
 					let ents = chunks[x][z].entities
-					for(let i in ents){
-						ret.push(ents[i])
+					for(let [i,ent] of ents){
+						ret.push(ent)
 					}
 				}
 			}

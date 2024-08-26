@@ -26751,7 +26751,8 @@ p.camera.transformation.elements.set(matrix)//*/
 		}, () => !websocket, () => "Invite someone to this world if it is multiplayer.")
     //Button.add(width/2+110*ss, height / 2 + -125*ss, 200*ss, 40*ss, "Packet Viewer", "pause", r => changeScene("packetViewer raw"), null, "View data from multiplayer packets.")
     Button.add(width/2+110*ss, height / 2 + -125*ss, 200*ss, 40*ss, "Achievments", "pause", r => changeScene("achievments"), () => cheats)
-		Button.add(width/2+110*ss, height / 2 + -75*ss, 200*ss, 40*ss, "World Options", "pause", r => changeScene("worldSettings"), () => !inWorld)
+		Button.add(width/2+110*ss, height / 2 + -75*ss, 200*ss, 40*ss, "World Options", "pause", r => changeScene("worldSettings"))
+		Button.add(width/2+110*ss, height / 2 + -25*ss, 200*ss, 40*ss, ["Start record","Stop record"], "pause", r => recording ? stopRecord() : startRecord(), null, "Record video of screen", () => recording?1:0)
 		Button.add(width/2, height / 2 + 125*ss, 420*ss, 40*ss, "Exit Without Saving", "pause", r => {
 			/*if(!host){
 				multiplayer.sendInvStuff()
@@ -30527,6 +30528,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
 	}
   function keydown(e){
+		if(e instanceof MouseEvent && touchScreen) return
     let k, redraw = false
     if(e.type === "keydown"){
       k = e.key.toLowerCase()
@@ -33622,6 +33624,31 @@ p.camera.transformation.elements.set(matrix)//*/
       
     }
   }*/
+	let recording = false, recorder, recordStream
+	async function startRecord(){
+		recordStream = await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:"browser"},preferCurrentTab:true})
+		recorder = new MediaRecorder(recordStream,{mimeType:"video/mp4",bitsPerSecond:10000000})
+		recording = true
+		let chunks = []
+		recorder.onstop = async e => {
+			const blob = new Blob(chunks, {type:recorder.mimeType.split(";")[0]})
+			let a = document.createElement("a")
+			a.href = URL.createObjectURL(blob)
+			a.download = "Screen recording "+(new Date().toString())
+			a.click()
+			URL.revokeObjectURL(a.href)
+			recording = false
+		}
+		recorder.ondataavailable = (e) => {
+		  chunks.push(e.data);
+		}
+		recorder.start()
+	}
+	function stopRecord(){
+		if(recording){
+			for(let t of recordStream.getTracks()) t.stop()
+		}
+	}
   
   let maxStartLoad = 0, loaded = 0
   win.allLoaded = false
