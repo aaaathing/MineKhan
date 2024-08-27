@@ -1000,7 +1000,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		<div id="countdown" style="font-size:24px;position:absolute;top:50%;left:50%;transform:translateX(-50%) translateY(-50%);"></div>
 		<button id="hideCountdown" style="margin:8px;">Hide and possibly get MineKhan blocked</button>
 	</div>-->
-	<div id="loginContainer" class="hidden" style="position:absolute;background:white;z-index:10;width:50vw;height:50vh;top:25vh;left:25vw;overflow:auto;padding:16px;box-sizing:border-box;">
+	<!--<div id="loginContainer" class="hidden" style="position:absolute;background:white;z-index:10;width:50vw;height:50vh;top:25vh;left:25vw;overflow:auto;padding:16px;box-sizing:border-box;">
 		<h1>Login hosted by thingmaker.</h1>
 		<p>It is recommended to login <a href="/login">here</a> if you are on thingmaker's website. Logging in with this will keep you logged in for some time.</p>
 		<p>If you want to register, put username and password and click register, else if you want to login to account, put username and password and click login.</p>
@@ -1050,7 +1050,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 				})
 			}
 		</script>
-	</div>
+	</div>-->
   <div id="help" class="hidden">
     <div class="nav">
       <a onclick="scrollToEl('help_about')">About</a>
@@ -21113,28 +21113,32 @@ r 11 y  n  n  n
 		eval(str)
 	}
   
-  /*function login(){
+  function login(){
     return new Promise((resolve, reject) => {
-      var w = width / 2
+      /*var w = width / 2
       var h = height / 2
       var x = w - (w/2)
-      var y = h - (h/2)
-      var w = window.open("/login", "login","resizable=no,width="+w+",height="+h+",top="+y+",left="+x)
+      var y = h - (h/2)*/
+			let frame = document.createElement("iframe")
+			frame.src = "/login"
+			frame.style = "position:absolute;top:10vh;left:10vw;width:80vw;height:80vh;"
+			document.body.appendChild(frame)
+      var w = frame.contentWindow//window.open("/login", "login","resizable=no,width="+w+",height="+h+",top="+y+",left="+x)
       function onmsg(event){
         if (event.source !== w) return;
-        if (event.data.startsWith("logged:")){
-          w.close()
+        if (event.data.logged){
+          frame.remove()
           window.removeEventListener("message", onmsg);
-          resolve(event.data.replace("logged:",''))
-        }else if(event.data === "canceled"){
-          w.close()
+          resolve(event.data.logged)
+        }else if(event.data.canceled){
+          frame.remove()
           window.removeEventListener("message", onmsg);
           reject()
         }
       }
       window.addEventListener("message", onmsg);
     })
-  }*/
+  }
 
   async function loggedIn(){
     var logged = false;
@@ -24118,7 +24122,7 @@ p.camera.transformation.elements.set(matrix)//*/
 
 		// Creation menu buttons
 		creationMenuScrollable.setPos(width / 2-320*ss,90*ss, 640*ss, height - 200*ss)
-		Button.add(165*ss, 30*ss, 300*ss, 40*ss, ["World Type: Alpha", "World Type: Normal", "World Type: Superflat", "World Type: Island", "World Type: Void"], "creation menu", r => {
+		Button.add(165*ss, 30*ss, 300*ss, 40*ss, ["World Type: Alpha", "World Type: Large", "World Type: Superflat", "World Type: Island", "World Type: Void"], "creation menu", r => {
 			superflat = r === "World Type: Superflat"
 			if(r==="World Type: Island") superflat="island"
 			if(r==="World Type: Void") superflat="void"
@@ -24174,7 +24178,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				fancyRivers = false
 			}
 			return superflat || preBeta
-		}, "Rivers that flow down! May slow down world generation. Requires normal world type.", () => fancyRivers ? 0 : 1).setScrollable(creationMenuScrollable)
+		}, "Rivers that flow down! May slow down world generation. Requires large world type.", () => fancyRivers ? 0 : 1).setScrollable(creationMenuScrollable)
 		Button.add(475*ss, 180*ss, 300*ss, 40*ss, "Seed Templates", "creation menu", () => changeScene("seed templates"), null, "Choose a specific seed to control how the world generates.").setScrollable(creationMenuScrollable)
 		creationMenuScrollable.setScrollSize(300*ss)
 		Button.add(width / 2, height - 90*ss, 300*ss, 40*ss, "Create New World", "creation menu", r => {
@@ -24358,7 +24362,7 @@ p.camera.transformation.elements.set(matrix)//*/
 					enableMultiplayer()
 				}
 			}
-		}, () => !host || preVersion && !(userInfo&&userInfo.admin), () => "Enabling multiplayer enables others to join.", () => websocket ? 1 : 0)
+		}, () => !host || preVersion && !(userInfo&&userInfo.admin), () => "Enabling multiplayer enables others to join. Use whitelist command to allow only some people to join. /whitelist enable /whitelist add username1234", () => websocket ? 1 : 0)
     Button.add(width/2-110*ss, height / 2 + 75*ss, 200*ss, 40*ss, "Invite", "pause", r => {
       savebox.classList.remove("hidden")
 			savebox.value = "https://thingmaker.us.eu.org/minekhan/?target="+world.id
@@ -30016,7 +30020,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			seeds:[621763252]
 		},
 
-		"Seeds for normal world type",
+		"Seeds for large world type",
 		/*/*{
 			name:"Ocean cliff",
 			seeds:[1736025286,1469176549]
@@ -30218,7 +30222,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		if(superflat === "island") worldType = "island"
 		if(superflat === "void") worldType = "void"
 		if(superflat) worldType = "superflat"
-		else worldType = preBeta ? "alpha" : "normal"//if you change this, change /know/newWorld
+		else worldType = preBeta ? "alpha" : "large"//if you change this, change /know/newWorld
 		fetch("/server/know/newWorld",{
 			method:"POST",
 			body:serverWorld.name+";"+serverWorld.worldSeed+";"+worldType+";"+p.gameMode,
