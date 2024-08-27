@@ -5101,6 +5101,9 @@ if time is 0, it will update every time
 	    }*/
 	  },
 	  redstoneDust:{
+			clientTick:function(block,x,y,z,dimension,world){
+        if(!performFast && world.getPower(x,y,z,dimension)) world.addParticle(new entities[entityIds.RedstoneParticle](x,y-0.49,z,null,(block&FLIP)===FLIP),dimension)
+      },
 	    alwaysCustomTexture:true,
 	    customTexture:function(x,y,z,dimension,block,side,originalShapeVerts,tags){
 	      const up = getTagBits(tags,"up",this.id), down = getTagBits(tags,"down",this.id)
@@ -5114,6 +5117,62 @@ if time is 0, it will update every time
 	      return tex ? "redstoneDustLine" : false
 	    }
 	  },
+		torch:{
+			clientTick:function(block,x,y,z,dimension){
+				if(performFast) return
+        let wall = this.id | SLAB
+        let pix = 1/16
+        switch(block){
+          case wall | NORTH:
+            z += pix*5
+            y += pix*6
+            break
+          case wall | SOUTH:
+            z -= pix*5
+            y += pix*6
+            break
+          case wall | EAST:
+            x += pix*5
+            y += pix*6
+            break
+          case wall | WEST:
+            x -= pix*5
+            y += pix*6
+            break
+          default:
+            y += pix*2
+        }
+        world.addParticle(new entities[entityIds.FlameParticle](x,y,z),dimension)
+      },
+		},
+		soulTorch:{
+			 clientTick:function(block,x,y,z,dimension){
+				if(performFast) return
+        let wall = this.id | SLAB
+        let pix = 1/16
+        switch(block){
+          case wall | NORTH:
+            z += pix*5
+            y += pix*6
+            break
+          case wall | SOUTH:
+            z -= pix*5
+            y += pix*6
+            break
+          case wall | EAST:
+            x += pix*5
+            y += pix*6
+            break
+          case wall | WEST:
+            x -= pix*5
+            y += pix*6
+            break
+          default:
+            y += pix*2
+        }
+        world.addParticle(new entities[entityIds.FlameParticle](x,y,z,"soul"),dimension)
+      },
+		},
 	  sandstone:{
 	    customTexture:function(x,y,z,dimension,block,side){
 	      if(world.getBlock(x,y+1,z,dimension) === block) return "sandstoneBottom"
@@ -5158,7 +5217,14 @@ if time is 0, it will update every time
 	    getY:function(x,y,z,dimension){
 	      var block = world.getBlock(x,y,z,dimension)
 	      return (min((this.getLevel(block))*2,14.5)/16)-0.5
-	    }
+	    },
+			clientTick:function(block,x,y,z,dimension,world){
+				let b = world.getBlock(x,y+1,z,dimension)
+				if(!b && !b.liquid && !performFast && rand() < 0.05){
+					world.addParticle(new entities[entityIds.LavaParticle](x,y+0.5,z),dimension)
+					playSound("liquid.lavapop",0,1,1,posSound(x,y+0.5,z))
+				}
+			},
 	  },
 	  oil:{
 	    getY:function(x,y,z,dimension){
@@ -5189,6 +5255,34 @@ if time is 0, it will update every time
 	      changeScene("furnace")
 	      releasePointer()
 	    },
+			clientTick:function(block,x,y,z,dimension,world){
+				if(performFast) return
+        let tags = world.getTags(x,y,z,dimension)
+        let pix = 1/16
+        let on = this.id | SLAB
+        y -= rand(4,8)*pix
+        switch(block){
+          case on | NORTH:
+            z -= 0.51
+            x += rand(-5,5)*pix
+            break
+          case on | SOUTH:
+            z += 0.51
+            x += rand(-5,5)*pix
+            break
+          case on | EAST:
+            x -= 0.51
+            z += rand(-5,5)*pix
+            break
+          case on | WEST:
+            x += 0.51
+            z += rand(-5,5)*pix
+            break
+          default:
+            return
+        }
+        world.addParticle(new entities[entityIds.FlameParticle](x,y,z),dimension)
+      }
 	  },
 	  barrel:{
 	    onclientclick:function(x,y,z,dimension){
@@ -5285,7 +5379,35 @@ if time is 0, it will update every time
 	      }while(!blockData[block|state])
 	      world.setBlock(x,y,z,base|state,false,true,false,true,dimension)
 	    }
-	  }
+	  },
+		redstoneTorch:{
+			clientTick:function(block,x,y,z,dimension,world){
+        if(performFast || !world.getPower(x,y,z,dimension)) return
+        let wall = this.id | SLAB
+        let pix = 1/16
+        switch(block){
+          case wall | NORTH:
+            z += pix*5
+            y += pix*6
+            break
+          case wall | SOUTH:
+            z -= pix*5
+            y += pix*6
+            break
+          case wall | EAST:
+            x += pix*5
+            y += pix*6
+            break
+          case wall | WEST:
+            x -= pix*5
+            y += pix*6
+            break
+          default:
+            y += pix*2
+        }
+        world.addParticle(new entities[entityIds.RedstoneParticle](x,y,z),dimension)
+      },
+		}
 	}
 
 	const {BLOCK_COUNT, blockData} = window
@@ -6241,7 +6363,7 @@ if time is 0, it will update every time
 		//Actually offhand//shield:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAbUlEQVQ4y62TURJAEQhF24Y/Y/97zI/e1JXk0Uw/6h4XIWammwyLpTYeGQN0KBE7INNsHHgNpbYvcQPjQGxmQzQTIAvxAEcu9MW+AejF3wApZMTTMz4F7I6xA4QQrK0A5g/AeFMIwPFF4RJwkx12yiHWwRBgCAAAAABJRU5ErkJggg==",
 		elytra:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAGFJREFUOE9jZKAQMFKonwHDAEkFpf/4DH3+4B6KHjgHphGmAN0gdHEYH2wASDG6ychi+ORHDbjHSJ0wwBYT+GIBWQ4lHSBHJckGILsCX7yjy6EkS/TUiJ6ksclTPzORmjsBcJ+oEcgNm4wAAAAASUVORK5CYII=",
     minekhan: "assets/images/minekhan.png",
-    panorama: /*"https://i.servimg.com/u/f48/18/06/99/75/fr-min10.jpg"//*/"assets/images/panorama/dec-29-2023.jpg",
+    panorama: "assets/images/panorama/aug-26-2024.jpg",
 		loadbar: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAAICAYAAABpsU6/AAAABGdBTUEAALGPC/xhBQAAAPpJREFUeNrt20EOgjAQBVCa9P5XRo0rkYUSOmln3iybSPiPoS2ibX/W9lltU6/iwoULFy5cuPBK6dIB/p2TCxcTCxcuXLjwWtqlAy/fiK7nWJdsvly4mF/0C68ELl8bwNbenz++Gf5hfD+Mt4vHCR2/Mf+S4wH5p+6L4w20St8GXP8SLhf6P5XLQvP/kOOb/6Zb/0K9Zsp/dm6jXa58A+gJRX6Vpy9m608u+la/5O9f99fJZi/6PxldA8gvPxfe03tHn6c+5MIruUtfCKb6bx3kt2GW30Jyt0tWVy6xucxPC65bvSD8Xrzx5JdffguSDfN52bjUehAvnf8Ba86fI1AtGCgAAAAASUVORK5CYII=",
 		autosave:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKIAAAAeCAYAAACv+sUVAAADdUlEQVR42u3av2sTYRzH8XfONOkPqrGl1F8VXRqklFIcxKGDm0Na0KlQaSeRjgrqvyAKdtOhk6KlFLFgOwm6ODk4FAdJHULpYGtKGikmJqk5hyNHr7m73B1PW5N8vxBIk+PVb57nc7nn7hLCoRKJMd3u9eXldyGkpGqU3/yE3bCll7ctf49Ozh54Q1L1FSBV+QkfxoeTQDdugFRVuJ4GuxEDXe8BasogNmqg6zlAEsQGCbSUUZoMgZQEUUrK7tDstO5x2kbOWKVU5Sdca93j9J7bekgC3TwBUpWf8P4zvtFJdDesgtQKjwS6OQKkKj9hv5iXEEqgmydAqvITchsIu8sTfibJzvBruRleLS+GF2t/gGpdvnFzVPSjanxUzpfK/FgwPbOk65kl3cteXMsIatkZfi03w6vlxVBpqfhsKsZaxdwHNQB0QE8kxipI5eHbsWlIb+ZA/+cBUjJffvMTcgCYme7jXCxmvlgoFAG49TRZ87Bu57z4ehGA8f5kYOfD+rB5OBydnGW8P+nbSSTGcDhkeHbsDBvr0PpROT4q58tPfkL7gVf34qTzObq1CABtx9st/6VQKJLO57j7fN2psQN1FtYGAJgaTAV2FtYGLBM2NZjy7eyd9L0BGu9PHkk/KsfnKOa9gukz0330tLXbRjydz5nvRaMRM917wLpz5lfjlj0+iDO/Gq/6BjrKfup5vkzodG8XAA9udlSB5cIuWjRsPgd4+GYbgB+bGUtDzebsD5CMTzDHhK4PdQKwstFigoCJpvM5AB6//Q3AjSHjNvWz91uWhsQRJ4hTleihUyUL+GSih3Q+VwUsrpRd9wxxxPHjmHdWznf9BeDC1QlGRkbIPboDwP3XaVvgWr+xGJ3btK4HxBEniGMG8WTE2CCVSpHNZvn+09hwuC/E5o7G4spfC9AVs/9NrTjiBHGq1K2tLQDOxI5VlpoWINa2S1lroVz443oxSRxx/DiWIGotEXpKq7CxSm9nxLJhrM0429GirWhAuVBybEYccfw6ZhC3ixoUd+nuiFAuFSmXiiZuPRU3kpzdLds2I444QZxKEEOfv/3SAa5cOgFo5jHfkvhoK5mskey5Txt2V9jFESeQ43iv2QChuyPM5o5G/Kyx2Jz7mPF1z1Eccbw4oVrg5XgPAF+Saa+NiCOOSscCBv4tmTjieHH+ASOfDpJpNy6QAAAAAElFTkSuQmCC",
     error:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAABhJREFUGFdj/M/w/z8jAwgyMPz/z/CfAQA5DAX/rY1o3wAAAABJRU5ErkJggg==",
@@ -13846,8 +13968,8 @@ r 11 y  n  n  n
 				if(d && under && blockData[under].solid && !(under2 && (blockData[under2].solid || blockData[under2].liquid))){
 					world.addParticle(new entities[entityIds.DripParticle](x+rand(-0.5,0.5),y-1.51,z+rand(-0.5,0.5),d, blockData[block].name === "Water"),this.type)
 				}
-				if(blockData[block].tick){
-					blockData[block].tick(block,x,y,z,this.type,this.world)
+				if(blockData[block].clientTick){
+					blockData[block].clientTick(block,x,y,z,this.type,this.world)
 				}
 				if(dr){
 					if(!(under && blockData[under].solid)) world.addParticle(new entities[entityIds.DripParticle](x+rand(-0.5,0.5),y-0.51,z+rand(-0.5,0.5),dr),this.type)
