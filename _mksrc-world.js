@@ -11,11 +11,12 @@ try{
 let workerCount, workerURL
 if(isNode){
 	workerCount = 1//require("os").cpus()
-	workerURL = __dirname+"/worker.js"
+	workerURL = require("path").join(require("os").tmpdir(), "mkServerWorkerTemp.js")
+	require("fs").writeFileSync(workerURL, "("+webWorkerCode.toString()+")()")
 	win.Worker = require("worker_threads").Worker
 }else{
 	workerCount = navigator.hardwareConcurrency
-	workerURL = URL.createObjectURL(new Blob([document.querySelector("#workerCode").text], { type: "text/javascript" }))
+	workerURL = URL.createObjectURL(new Blob(["("+webWorkerCode.toString()+")()"], { type: "text/javascript" }))
 }
 win.version = version
 workerCount = (workerCount || 4) - 1 || 1
@@ -22223,7 +22224,7 @@ class Player extends Entity{
 					}
 					if(blockData[block].getCurrent && !this.spectator){
 						var me = blockData[block]
-						var c = me.getCurrent(x,y,z,this.dimension,undefined,undefined,world)
+						var c = me.getCurrent(x,y,z,this.dimension,undefined,undefined,this.world)
 						this.velx += (c.x||0)/64
 						this.velz += (c.z||0)/64
 						var under = this.world.getBlock(x,y-1,z,this.dimension)
@@ -22262,8 +22263,8 @@ class Player extends Entity{
       this.damage(takeDamage, msg, false, type, damageX, damageY, damageZ)
     }
     this.touchingBurnBlock = damageBlock && damageBlock.burnEnt && true
-		let blockAtFeet = world.getBlock(round(this.x), ceil(this.y-this.height*0.5), round(this.z), this.dimension)
-		let blockAtTop = world.getBlock(round(this.x), floor(this.y+this.height*0.5), round(this.z), this.dimension)
+		let blockAtFeet = this.world.getBlock(round(this.x), ceil(this.y-this.height*0.5), round(this.z), this.dimension)
+		let blockAtTop = this.world.getBlock(round(this.x), floor(this.y+this.height*0.5), round(this.z), this.dimension)
 		if(blockAtTop && blockData[blockAtTop].ladder || blockAtFeet && blockData[blockAtFeet].ladder){
 			this.lastY = this.y
 		}
@@ -24603,7 +24604,7 @@ entities[entities.length] = class Wolf extends Mob{
 			for(let x2=-5;x2<5;x2++) for(let z2=-5;z2<5;z2++) for(let y2=-5;y2<5;y2++){
 				if(!blockData[this.world.getBlock(owner.x+x2,owner.y+y2,owner.z+z2)].solid){
 					let dist = max(abs(x2),abs(y2),abs(z2))
-					if(dist < closest && blockData[world.getBlock(owner.x+x2,owner.y+y2-1,owner.z+z2)].solid) closest = dist, cx = x2, cy = y2, cz = z2
+					if(dist < closest && blockData[this.world.getBlock(owner.x+x2,owner.y+y2-1,owner.z+z2)].solid) closest = dist, cx = x2, cy = y2, cz = z2
 				}
 			}
 			if(isFinite(closest)){
@@ -35104,4 +35105,2539 @@ function initServerEverything(logInitialized){
 	sendAllWorkers({blockIds:generateBlockIds,biomeIds,blockStates:{CROSS,LAYER1,LAYER2,LAYER3,LAYER4,LAYER5,LAYER6,LAYER7,LAYER8,isCube}})
 }
 win.initServerEverything = initServerEverything
+}
+
+function webWorkerCode(){
+"use strict"
+let parentAndStuff, isNode = false
+if(typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope){
+	parentAndStuff = self//webworker
+}else{
+	parentAndStuff = require("node:worker_threads").parentPort//nodejs worker threads
+	isNode = true
+}
+
+// implementation of xxHash
+const {
+	seedHash,
+	hash, hash3
+} = (() => {
+	// closure around mutable `seed`; updated via calls to `seedHash`
+
+	let seed = Math.random() * 2100000000 | 0;
+
+	const PRIME32_2 = 1883677709;
+	const PRIME32_3 = 2034071983;
+	const PRIME32_4 = 668265263;
+	const PRIME32_5 = 374761393;
+
+	const seedHash = s => {
+		seed = s | 0;
+	}
+
+	const { imul } = Math;
+
+	const hash = (x, y) => {
+		let h32 = 0;
+
+		h32 = seed + PRIME32_5 | 0;
+		h32 += 8;
+
+		h32 += imul(x, PRIME32_3);
+		h32 = imul(h32 << 17 | h32 >> 32 - 17, PRIME32_4);
+		h32 += imul(y, PRIME32_3);
+		h32 = imul(h32 << 17 | h32 >> 32 - 17, PRIME32_4);
+
+		h32 ^= h32 >> 15;
+		h32 *= PRIME32_2;
+		h32 ^= h32 >> 13;
+		h32 *= PRIME32_3;
+		h32 ^= h32 >> 16;
+
+		return h32 / 2147483647;
+	};
+	const hash3 = (x, y, z) => {
+		let h32 = 0;
+
+		h32 = seed + PRIME32_5 | 0;
+		h32 += 8;
+
+		h32 += imul(x, PRIME32_3);
+		h32 = imul(h32 << 17 | h32 >> 32 - 17, PRIME32_4);
+		h32 += imul(y, PRIME32_3);
+		h32 = imul(h32 << 17 | h32 >> 32 - 17, PRIME32_4);
+		h32 += imul(z, PRIME32_3);
+		h32 = imul(h32 << 17 | h32 >> 32 - 17, PRIME32_4);
+
+		h32 ^= h32 >> 15;
+		h32 *= PRIME32_2;
+		h32 ^= h32 >> 13;
+		h32 *= PRIME32_3;
+		h32 ^= h32 >> 16;
+
+		return h32 / 2147483647;
+	};
+
+	return {
+		seedHash,
+		hash, hash3
+	};
+})();
+class Marsaglia {
+	// from http://www.math.uni-bielefeld.de/~sillke/ALGORITHMS/random/marsaglia-c
+
+	nextInt() {
+		const { z, w } = this;
+
+		this.z = 36969 * (z & 65535) + (z >>> 16) & 0xFFFFFFFF;
+		this.w = 18000 * (w & 65535) + (w >>> 16) & 0xFFFFFFFF;
+
+		return ((this.z & 0xFFFF) << 16 | this.w & 0xFFFF) & 0xFFFFFFFF;
+	}
+
+	nextDouble() {
+		const i = this.nextInt() / 4294967296;
+
+		const is_less_than_zero = (i < 0) | 0; // cast to 1 or 0
+
+		return is_less_than_zero + i;
+	}
+
+	constructor(i1, i2) { // better param names
+		this.z = (i1 | 0) || 362436069;
+		this.w = i2 || hash(521288629, this.z) * 2147483647 | 0;
+	}
+}
+
+class PerlinNoise {
+	// http://www.noisemachine.com/talk1/17b.html
+	// http://mrl.nyu.edu/~perlin/noise/
+
+	static grad3d(i, x, y, z) {
+		const h = i & 15; // convert into 12 gradient directions
+
+		const u = h < 8
+			? x
+			: y;
+
+		const v = h < 4
+			? y
+			: h === 12 || h === 14
+				? x
+				: z;
+
+		return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v)
+	}
+
+	static grad2d(i, x, y) {
+		const v = (i & 1) === 0
+			? x
+			: y;
+
+		return (i & 2) === 0
+			? -v
+			: v;
+	}
+
+	static grad1d(i, x) {
+		return (i & 1) === 0
+			? -x
+			: x;
+	}
+
+	static lerp(t, a, b) {
+		return a + t * (b - a);
+	}
+
+	// end of statics
+
+	// permutation
+	perm = new Uint8Array(0x200);
+
+	// prototype functions:
+	noise3d(x, y, z) {
+		const { floor } = Math;
+
+		const X = floor(x) & 0xff;
+		const Y = floor(y) & 0xff;
+		const Z = floor(z) & 0xff;
+
+		x -= floor(x);
+		y -= floor(y);
+		z -= floor(z);
+
+		const fx = (3 - 2 * x) * x * x;
+		const fy = (3 - 2 * y) * y * y;
+		const fz = (3 - 2 * z) * z * z;
+
+		const { perm } = this;
+
+		const p0 = perm[X] + Y;
+		const p00 = perm[p0] + Z;
+		const p01 = perm[p0 + 1] + Z;
+		const p1 = perm[X + 1] + Y;
+		const p10 = perm[p1] + Z;
+		const p11 = perm[p1 + 1] + Z;
+
+		const { lerp, grad3d } = PerlinNoise;
+
+		return lerp(
+			fz,
+			lerp(
+				fy,
+				lerp(
+					fx,
+					grad3d(perm[p00], x, y, z),
+					grad3d(perm[p10], x - 1, y, z)
+				),
+				lerp(
+					fx,
+					grad3d(perm[p01], x, y - 1, z),
+					grad3d(perm[p11],x - 1, y - 1, z)
+				)
+			),
+			lerp(
+				fy,
+				lerp(
+					fx,
+					grad3d(perm[p00 + 1], x, y, z - 1),
+					grad3d(perm[p10 + 1], x - 1, y, z - 1)
+				),
+				lerp(
+					fx,
+					grad3d(perm[p01 + 1], x, y - 1, z - 1),
+					grad3d(perm[p11 + 1], x - 1, y - 1, z - 1)
+				)
+			)
+		);
+	}
+
+	noise2d(x, y) {
+		const { floor } = Math;
+
+		const X = floor(x) & 0xff;
+		const Y = floor(y) & 0xff;
+
+		x -= floor(x);
+		y -= floor(y);
+
+		const { perm } = this;
+		const fx = (3 - 2 * x) * x * x;
+		const fy = (3 - 2 * y) * y * y;
+		const p0 = perm[X] + Y;
+		const p1 = perm[X + 1] + Y;
+
+		const { lerp, grad2d } = PerlinNoise;
+
+		return lerp(
+			fy,
+			lerp(
+				fx,
+				grad2d(
+					perm[p0],
+					x,
+					y
+				),
+				grad2d(
+					perm[p1],
+					x - 1,
+					y
+				)
+			),
+			lerp(
+				fx,
+				grad2d(
+					perm[p0 + 1],
+					x,
+					y - 1
+				),
+				grad2d(
+					perm[p1 + 1],
+					x - 1,
+					y - 1
+				)
+			)
+		);
+	}
+
+	noise1d(x) {
+		const { floor } = Math;
+
+		const X = floor(x) & 0xff;
+
+		x -= floor(x);
+
+		const fx = (3 - 2 * x) * x * x;
+
+		const { lerp, grad1d } = PerlinNoise;
+
+		return lerp(
+			fx,
+			grad1d(perm[X], x),
+			grad1d(perm[X + 1], x - 1)
+		);
+	}
+
+	constructor(seed) {
+		if (seed === undefined) {
+			throw new TypeError("A value for `seed` parameter was not provided to `PerlinNoise`");
+		}
+
+		const rnd = new Marsaglia(seed);
+
+		// generate permutation
+		const { perm } = this;
+
+		// fill 0x0..0x100
+		for (let i = 0; i < 0x100; ++i) {
+			perm[i] = i;
+		}
+
+		for (let i = 0; i < 0x100; ++i) {
+			const j = rnd.nextInt() & 0xFF;
+			const t = perm[j];
+			perm[j] = perm[i];
+			perm[i] = t;
+		}
+
+		// copy to avoid taking mod in perm[0]
+		// copies from first half of array, into the second half
+		perm.copyWithin(0x100, 0x0, 0x100);
+	}
+}
+
+let noises = {}, noiseProfile, baseSimplexNoise
+function newNoise(seed){
+	seedHash(seed)
+	const noiseProfile = {
+		generator: new PerlinNoise(seed),
+		octaves: 4,
+		fallout: 0.5,
+		offsets: []//offsets for different noise ids to make biomes vary at spawn
+	};
+	for(let i=0; i<8; i++){ //loop through ids
+		let arr = noiseProfile.offsets[i] = []
+		for(let j=0; j<18; j++){ //loop through octaves
+			//every two numbers is a octave
+			arr[j] = hash3(i,j,seed)*10000
+		}
+	}
+	const baseSimplexNoise = simplexNoise()//openSimplexNoise(seed)
+	if(!noises[seed]){
+		noises[seed] = {noiseProfile,baseSimplexNoise,used:1}
+	}else noises[seed].used++
+}
+function useNoise(seed){
+	({noiseProfile, baseSimplexNoise} = noises[seed])
+	seedHash(seed)
+}
+function deleteNoise(seed){
+	noises[seed].used--
+	if(!noises[seed].used) delete noises[seed]
+}
+let noise = function(x, y, z) {
+	let generator = noiseProfile.generator
+	let effect = 1, k = 1, sum = 0
+	for(let i = 0; i < noiseProfile.octaves; ++i) {
+		effect *= noiseProfile.fallout
+		switch (arguments.length) {
+			case 1:
+				sum += effect * (1 + generator.noise1d(k*x))/2; break
+			case 2:
+				sum += effect * (1 + generator.noise2d(k*x, k*y))/2; break
+			case 3:
+				sum += effect * (1 + generator.noise3d(k*x, k*y, k*z))/2; break
+		}
+		k *= 2
+	}
+	return sum
+}
+function halfNegative(x){
+	return x<0 ? x/2 : x
+}
+function quadruplePositive(x){
+	return x>0 ? x*4 : x
+}
+function quadrupleNegative(x){
+	return x>0 ? x : x*4
+}
+function idk4of5(x){
+	return x<-0.6 ? map(x,-1,-0.6,-1,0) : map(x,-0.6,1,0,1)
+}
+let noise3d = function(x, y, z, add) {
+	if(add>0) add *= 4
+	const offsets = noiseProfile.offsets[5]
+	const select = mapClamped(baseSimplexNoise(x*0.04+offsets[6], y*0.02+offsets[7], z*0.04+offsets[8]),-0.3,0.3)
+	const low = select < 1 ? baseSimplexNoise(x*0.01+offsets[0], y*0.005+offsets[1], z*0.01+offsets[2]) : 0
+	const high = select > 0 ? baseSimplexNoise(x*0.01+offsets[3], y*0.005+offsets[4], z*0.01+offsets[5]) : 0
+	const extraDetail = baseSimplexNoise(x*0.2, y*0.02, z*0.2)*0.15
+	return lerp(select,low,high) + extraDetail + add
+}
+let noise2d = function(x, y, octaves = noiseProfile.octaves, id = 0) {
+	let generator = noiseProfile.generator
+	let effect = 1, k = 1, sum = 0
+	let offsets = noiseProfile.offsets[id]
+	for(let i = 0, oi = 0; i < octaves; ++i, oi+=2) {
+		effect *= noiseProfile.fallout
+		sum += effect * (1 + generator.noise2d(k*x+offsets[oi], k*y+offsets[oi+1]))/2
+		k *= 2
+	}
+	return sum
+}
+let noise2dDouble = function(x, y, octaves) {
+	let effect = 1, k = 1, sum = 0
+	for(let i = 0; i < octaves; ++i) {
+		effect *= 0.75
+		sum += effect * baseSimplexNoise(k*x, i+0.5, k*y)
+		k *= 2
+	}
+	return sum
+}
+let noise3d2 = function(x, y, z, octaves = noiseProfile.octaves) {
+	let generator = noiseProfile.generator
+	let effect = 1, k = 1, sum = 0
+	for(let i = 0; i < octaves; ++i) {
+		effect *= noiseProfile.fallout
+		sum += effect * (1 + generator.noise3d(k*x, k*y, k*z))/2
+		k *= 2
+	}
+	return sum
+}
+let complicatedNoise = function(x,y,settings){
+	const offsets = noiseProfile.offsets[settings.useOffset]
+	let {amplitudes, startFrequency:freq, startAmplitude:effect, noAverage} = settings
+	let sum = 0, sum2 = 0
+	const inputFactor = 1.0181268882175227//why is this needed???
+	for(let i=0, oi = 0; i<amplitudes.length; i++, oi += 2){
+		if(amplitudes[i]){
+			sum += baseSimplexNoise(freq*x+offsets[oi], 0, freq*y+offsets[oi+1]) * amplitudes[i] * effect
+			sum2 += baseSimplexNoise((freq*x+offsets[oi])*inputFactor, 0, (freq*y+offsets[oi+1])*inputFactor) * amplitudes[i] * effect
+		}
+		freq *= 2
+		effect *= 0.5
+	}
+	return (sum+sum2)*settings.valueFactor
+}
+function mapClamped(v, min, max){
+	return Math.min(Math.max(((v - min) / (max - min)),0),1);
+}
+function mapFrom(v, min, max){
+		return (v - min) / (max - min)
+}
+function mapTo(v, min2, max2){
+		return min2 + (max2 - min2) * v;
+}
+function map(v, min, max, min2, max2){
+		return min2 + (max2 - min2) * ((v - min) / (max - min));
+}
+function lerp(t, a, b) {
+		return a + t * (b - a);
+}
+function clamp(a,b,c){
+		return Math.min(Math.max(a,b),c)
+}
+
+//from https://gist.github.com/esimov/9be66c7c9d02cf6fc1cb#file-simplexnoise-js and modified
+function simplexNoise() {
+	// Skewing and unskewing factors for 2, 3, and 4 dimensions
+	const F3 = 1.0 / 3.0;
+	const G3 = 1.0 / 6.0;
+	let perm = new Uint8Array(512);
+	let permMod12 = new Uint8Array(512);
+	let p = new Uint8Array(256);
+	// Prepopulate the permutation table with values from lookup table
+	// To remove the need for index wrapping, double the permutation table length
+	const grad3 = new Float32Array([
+			1,1,0, -1,1,0, 1,-1,0, -1,-1,0,
+			1,0,1, -1,0,1, 1,0,-1, -1,0,-1,
+			0,1,1, 0,-1,1, 0,1,-1, 0,-1,-1
+	]);
+	for (let i = 0; i < 256; i++) {
+			p[i] = 256*hash(i,4789);
+	}
+	// To remove the need for index wrapping, double the permutation table length 
+	for (let i=0; i < 512; i++) {
+			perm[i] = p[i & 255];
+			permMod12[i] = perm[i] % 12;
+	}
+	return function (xin, yin, zin) {
+		xin *= 0.5, yin *= 0.5, zin *= 0.5
+		// Noise contribution from the four corners
+		let n0, n1, n2, n3;
+
+		// Skew the input space to determine which simplex cell we are in
+		let s = (xin+yin+zin) * F3; // Simple skew factor for 3D
+		let i = Math.floor(xin + s);
+		let j = Math.floor(yin + s);
+		let k = Math.floor(zin + s);
+		let t = (i + j + k) * G3;
+		let X0 = i - t;
+		let Y0 = j - t;
+		let Z0 = k - t;
+
+		// The x, y, z distances from the cell origin
+		let x0 = xin - X0;
+		let y0 = yin - Y0;
+		let z0 = zin - Z0;
+
+		// For the 3D case, the simplex shape is a slightly irregular tetrahedron.
+		// Determine which simplex we are in.
+		let i1, j1, k1,
+				i2, j2, k2;
+
+		if (x0 >= y0) {
+				if (y0 >= z0) {
+						i1=1; j1=0; k1=0; i2=1; j2=1; k2=0; // XYZ order
+				} else if (x0 >= z0) {
+						i1=1; j1=0; k1=0; i2=1; j2=0; k2=1; // XZY order
+				} else {
+						i1=0; j1=0; k1=1; i2=1; j2=0; k2=1; // ZXY order
+				}
+		} else {// x0<y0
+				if (y0 < z0) {
+						i1=0; j1=0; k1=1; i2=0; j2=1; k2=1; // ZYX order
+				} else if (x0 < z0) {
+						i1=0; j1=1; k1=0; i2=0; j2=1; k2=1; // YZX order
+				} else {
+						i1=0; j1=1; k1=0; i2=1; j2=1; k2=0; // YXZ order
+				}
+		}
+
+		// A step of (1,0,0) in (i,j,k) means a step of (1-c,-c,-c) in (x,y,z),
+		// a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
+		// a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
+		// c = 1/6.
+
+		let x1 = x0 - i1 + G3;
+		let y1 = y0 - j1 + G3;
+		let z1 = z0 - k1 + G3;
+
+		let x2 = x0 - i2 + 2.0 * G3; // Offsets for third corner in (x,y,z) coords
+		let y2 = y0 - j2 + 2.0 * G3;
+		let z2 = z0 - k2 + 2.0 * G3;
+
+		let x3 = x0 - 1.0 + 3.0 * G3;
+		let y3 = y0 - 1.0 + 3.0 * G3;
+		let z3 = z0 - 1.0 + 3.0 * G3;
+
+		// Work out the hashed gradient indices of the four simplex corners
+		let ii = i & 255;
+		let jj = j & 255;
+		let kk = k & 255;
+
+		let t0 = 0.6 - x0*x0 - y0*y0 - z0*z0;
+		if (t0 < 0) n0 = 0.0;
+		else {
+				t0 *= t0;
+				let gi0 = permMod12[ii+perm[jj+perm[kk]]];
+				n0 = t0 * t0 * (grad3[gi0]*x0 + grad3[gi0+1]*y0 + grad3[gi0+2]*z0);
+		}
+		let t1 = 0.6 - x1*x1 - y1*y1 - z1*z1;
+		if (t1 < 0) n1 = 0.0;
+		else {
+				t1 *= t1;
+				let gi1 = permMod12[ii+i1+perm[jj+j1+perm[kk+k1]]];
+				n1 = t1 * t1 * (grad3[gi1]*x1 + grad3[gi1+1]*y1 + grad3[gi1+2]*z1);
+		}
+		let t2 = 0.6 - x2*x2 - y2*y2 - z2*z2;
+		if (t2 < 0) n2 = 0.0;
+		else {
+				t2 *= t2;
+				let gi2 = permMod12[ii+i2+perm[jj+j2+perm[kk+k2]]];
+				n2 = t2 * t2 * (grad3[gi2]*x2 + grad3[gi2+1]*y2 + grad3[gi2+2]*z2);
+		}
+		let t3 = 0.6 - x3*x3 - y3*y3 - z3*z3;
+		if (t3 < 0) n3 = 0.0;
+		else {
+				t3 *= t3;
+				let gi3 = permMod12[ii+1+perm[jj+1+perm[kk+1]]];
+				n3 = t3 * t3 * (grad3[gi3]*x3 + grad3[gi3+1]*y3 + grad3[gi3+2]*z3);
+		}
+
+		// Add contributions from each corner to get the final noise value.
+		// The result is scaled to stay just inside [-1,1]
+		return 32.0 * (n0 + n1 + n2 + n3)
+	}
+}
+//Note: simplex noise is not the same as opensimplex noise
+
+// Copied and modified from https://github.com/blindman67/SimplexNoiseJS
+function openSimplexNoise(clientSeed) {
+	const {floor} = Math
+	const SQ4 = 2
+	const toNums = function(s) { return s.split(",").map(function(s) { return new Uint8Array(s.split("").map(function(v) { return Number(v) })) }) }
+	const decode = function(m, r, s) { return new Int8Array(s.split("").map(function(v) { return parseInt(v, r) + m })) }
+	const toNumsB32 = function(s) { return s.split(",").map(function(s) { return parseInt(s, 32) }) }
+	const NORM_3D = 1.0 / 206.0
+	const SQUISH_3D = 1 / 3
+	const STRETCH_3D = -1 / 6
+	var base3D = toNums("0000110010101001,2110210120113111,110010101001211021012011")
+	const gradients3D = decode(-11, 23, "0ff7mf7fmmfffmfffm07f70f77mm7ff0ff7m0f77m77f0mf7fm7ff0077707770m77f07f70")
+	var lookupPairs3D = function() { return new Uint16Array(toNumsB32("0,2,1,1,2,2,5,1,6,0,7,0,10,2,12,2,41,1,45,1,50,5,51,5,g6,0,g7,0,h2,4,h6,4,k5,3,k7,3,l0,5,l1,5,l2,4,l5,3,l6,4,l7,3,l8,d,l9,d,la,c,ld,e,le,c,lf,e,m8,k,ma,i,p9,l,pd,n,q8,k,q9,l,15e,j,15f,m,16a,i,16e,j,19d,n,19f,m,1a8,f,1a9,h,1aa,f,1ad,h,1ae,g,1af,g,1ag,b,1ah,a,1ai,b,1al,a,1am,9,1an,9,1bg,b,1bi,b,1eh,a,1el,a,1fg,8,1fh,8,1qm,9,1qn,9,1ri,7,1rm,7,1ul,6,1un,6,1vg,8,1vh,8,1vi,7,1vl,6,1vm,7,1vn,6")) }
+	var p3D = decode(-1, 5, "112011210110211120110121102132212220132122202131222022243214231243124213241324123222113311221213131221123113311112202311112022311112220342223113342223311342223131322023113322023311320223113320223131322203311322203131")
+	const setOf = function(count) { var a = [],i = 0; while (i < count) { a.push(i++) } return a }
+	const doFor = function(count, cb) { var i = 0; while (i < count && cb(i++) !== true) {} }
+
+	function shuffleSeed(seed,count){
+		seed = seed * 1664525 + 1013904223 | 0
+		count -= 1
+		return count > 0 ? shuffleSeed(seed, count) : seed
+	}
+	const types = {
+		_3D : {
+			base : base3D,
+			squish : SQUISH_3D,
+			dimensions : 3,
+			pD : p3D,
+			lookup : lookupPairs3D,
+		}
+	}
+
+	function createContribution(type, baseSet, index) {
+		var i = 0
+		const multiplier = baseSet[index ++]
+		const c = { next : undefined }
+		while(i < type.dimensions) {
+			const axis = ("xyzw")[i]
+			c[axis + "sb"] = baseSet[index + i]
+			c["d" + axis] = - baseSet[index + i++] - multiplier * type.squish
+		}
+		return c
+	}
+
+	function createLookupPairs(lookupArray, contributions){
+		var i
+		const a = lookupArray()
+		const res = new Map()
+		for (i = 0; i < a.length; i += 2) { res.set(a[i], contributions[a[i + 1]]); }
+		return res
+	}
+
+	function createContributionArray(type) {
+		const conts = []
+		const d = type.dimensions
+		const baseStep = d * d
+		var k, i = 0
+		while (i < type.pD.length) {
+			const baseSet = type.base[type.pD[i]]
+			let previous, current
+			k = 0
+			do {
+				current = createContribution(type, baseSet, k)
+				if (!previous) { conts[i / baseStep] = current; }
+				else { previous.next = current; }
+				previous = current
+				k += d + 1
+			} while(k < baseSet.length)
+
+			current.next = createContribution(type, type.pD, i + 1)
+			if (d >= 3) { current.next.next = createContribution(type, type.pD, i + d + 2) }
+			if (d === 4) { current.next.next.next = createContribution(type, type.pD, i + 11) }
+			i += baseStep
+		}
+		const result = [conts, createLookupPairs(type.lookup, conts)]
+		type.base = undefined
+		type.lookup = undefined
+		return result
+	}
+
+	let temp = createContributionArray(types._3D)
+	const contributions3D = temp[0], lookup3D = temp[1]
+	const perm = new Uint8Array(256)
+	const perm3D = new Uint8Array(256)
+	const source = new Uint8Array(setOf(256))
+	var seed = shuffleSeed(clientSeed, 3)
+	doFor(256, function(i) {
+		i = 255 - i
+		seed = shuffleSeed(seed, 1)
+		var r = (seed + 31) % (i + 1)
+		r += r < 0 ? i + 1 : 0
+		perm[i] = source[r]
+		perm3D[i] = (perm[i] % 24) * 3
+		source[r] = source[i]
+	})
+	base3D = undefined
+	lookupPairs3D = undefined
+	p3D = undefined
+
+	return function(x, y, z) {
+		const pD = perm3D
+		const p = perm
+		const g = gradients3D
+		const stretchOffset = (x + y + z) * STRETCH_3D
+		const xs = x + stretchOffset, ys = y + stretchOffset, zs = z + stretchOffset
+		const xsb = floor(xs), ysb = floor(ys), zsb = floor(zs)
+		const squishOffset	= (xsb + ysb + zsb) * SQUISH_3D
+		const dx0 = x - (xsb + squishOffset), dy0 = y - (ysb + squishOffset), dz0 = z - (zsb + squishOffset)
+		const xins = xs - xsb, yins = ys - ysb, zins = zs - zsb
+		const inSum = xins + yins + zins
+		var c = lookup3D.get(
+			(yins - zins + 1) |
+			((xins - yins + 1) << 1) |
+			((xins - zins + 1) << 2) |
+			(inSum << 3) |
+			((inSum + zins) << 5) |
+			((inSum + yins) << 7) |
+			((inSum + xins) << 9)
+		)
+		var i, value = 0
+		while (c !== undefined) {
+			const dx = dx0 + c.dx, dy = dy0 + c.dy, dz = dz0 + c.dz
+			let attn = 2 - dx * dx - dy * dy - dz * dz
+			if (attn > 0) {
+				i = pD[(((p[(xsb + c.xsb) & 0xFF] + (ysb + c.ysb)) & 0xFF) + (zsb + c.zsb)) & 0xFF]
+				attn *= attn
+				value += attn * attn * (g[i++] * dx + g[i++] * dy + g[i] * dz)
+			}
+			c = c.next
+		}
+		return value * NORM_3D + 0.5
+	}
+}
+
+function caveNoise2(x, y, z, id, id2){
+	const offsets = noiseProfile.offsets[id]
+	return baseSimplexNoise(x+offsets[id2], y+offsets[id2+1], z+offsets[id2+2])*0.5+0.5
+}
+function caveNoise(x, y, z, id, id2){
+	const offsets = noiseProfile.offsets[id]
+	return baseSimplexNoise(x+offsets[id2], y+offsets[id2+1], z+offsets[id2+2])
+}
+function caveNoiseWeirdScale(input, x, y, z, id, id2){
+	const offsets = noiseProfile.offsets[id]
+	return(
+		baseSimplexNoise(x+offsets[id2], y+offsets[id2+1], z+offsets[id2+2])*(1-input)
+		+baseSimplexNoise(x+offsets[id2]*2, y+offsets[id2+1]*2, z+offsets[id2+2]*2)*input
+	)
+}
+
+function approxCbrt(x){
+	if(x<0.001)x=map(x,0,0.001,0,0.1)
+	else if(x<0.005)x=map(x,0.001,0.005,0.1,0.17)
+	else if(x<0.01)x=map(x,0.005,0.01,0.17,0.22)
+	else if(x<0.03)x=map(x,0.01,0.03,0.22,0.31)
+	else if(x<0.0625)x=map(x,0.03,0.0625,0.31,0.4)
+	else if(x<0.125)x=map(x,0.0625,0.125,0.4,0.5)
+	else if(x<0.25)x=map(x,0.125,0.25,0.5,0.63)
+	else if(x<0.5)x=map(x,0.25,0.5,0.63,0.8)
+	else if(x<0.75)x=map(x,0.5,0.75,0.8,0.9)
+	else x=map(x,0.75,1,0.9,1)
+	return x
+}
+function approx8rt(x){
+	if(x<0.0001)x=map(x,0,0.0001,0,0.316)
+	else if(x<0.0002)x=map(x,0.0001,0.0002,0.316,0.36)
+	else if(x<0.001)x=map(x,0.0002,0.001,0.36,0.42)
+	else if(x<0.005)x=map(x,0.001,0.005,0.42,0.52)
+	else if(x<0.02)x=map(x,0.005,0.02,0.52,0.61)
+	else if(x<0.1)x=map(x,0.02,0.1,0.61,0.75)
+	else if(x<0.2)x=map(x,0.1,0.2,0.75,0.82)
+	else if(x<0.2)x=map(x,0.1,0.2,0.75,0.82)
+	else if(x<0.4)x=map(x,0.2,0.4,0.82,0.89)
+	else if(x<0.7)x=map(x,0.4,0.7,0.89,0.96)
+	else x=map(x,0.7,1,0.96,1)
+	return x
+}
+
+function xyArrayHas(arr,x,y){
+	for(let i=0; i<arr.length; i+=2){
+		if(arr[i] === x && arr[i+1] === y){
+			return true
+		}
+	}
+}
+
+let generateRiverChunk, riverHeights = new Float32Array(256), riverLoweredHeight = new Float32Array(256), riverFinalDists = new Float32Array(256), riverFinalNormalDists = new Float32Array(256)
+{//------- River Generator
+//Warning: very messy!!!!!
+
+const center = 5, lwidth = center*2+1
+function getHeightmap(cx,cz,heightmaps,rcx,rcz,scale,riverLowers,empty){
+		heightmaps[(cx+center)*lwidth+(cz+center)] = null
+    /*let grid = empty ? null : []
+    if(!empty) for(let x=0; x<16; x++){
+        for(let z=0; z<16; z++){
+            grid[z*16+x] = getBottomHeight((x+rcx*16)*scale,(z+rcz*16)*scale,scale)
+            //extraGrid[z*16+x] = (noise2d((x+rcx*16)*0.4,(rcz*16+z)*0.4, 2)-0.25)*0.1
+        }
+    }
+    if(!empty && riverLowers){
+        for(let x=0; x<16; x++){
+            for(let z=0; z<16; z++){
+                grid[z*16+x] *= 1-(getRiver(x+cx*16,z+cz*16,riverLowers)||0)*0.5
+            }
+        }
+    }
+    heightmaps[(cx+center)*lwidth+(cz+center)] = grid;*/
+}
+function getHeight(x,z,heightmaps,extra,top=0){
+	/*
+		extra = true: extraHeightmap
+		top = 1: top height
+		other (extra = riverLowers): bottom height
+	*/
+    let chunk = heightmaps[((x>>4)+center)*lwidth+((z>>4)+center)];
+    if(!chunk) chunk = heightmaps[((x>>4)+center)*lwidth+((z>>4)+center)] = []
+    if(chunk[(z&15)*16+(x&15)] === undefined){
+			let scale = getHeight.scale
+			if(extra === true) chunk[(z&15)*16+(x&15)] = 0//(noise2d((x+getHeight.offsetX)*0.4,(z+getHeight.offsetZ)*0.4, 2)-0.25)*0.04*iteration
+			else{
+				chunk[(z&15)*16+(x&15)] = getBottomHeight((x+getHeight.offsetX)*scale,(z+getHeight.offsetZ)*scale,scale) * (1-getRiver(x,z,extra)*0.5)
+				chunk[(z&15)*16+(x&15)+256] = getBottomHeight.topHeight
+				chunk[(z&15)*16+(x&15)+512] = getBottomHeight.cantSpawnRiver
+			}
+		}
+		return chunk[(z&15)*16+(x&15) + top*256]
+}
+/*Chunk format: 11 by 11 grid
+
+`````
+`|||`
+`|m|`
+`|||`
+`````
+
+`  only heightmaps
+|  heightmaps + generate rivers
+m  heightmaps + generate rivers + include neighbour chunk rivers
+*/
+function setRiver(x,z,rivers,value){
+	let cx = x>>4, cz = z>>4
+	let grid = rivers[(cx+center)*lwidth+(cz+center)] || (rivers[(cx+center)*lwidth+(cz+center)] = new Uint16Array(256))
+	grid[(z&15)*16+(x&15)] = value
+}
+function setGridFloat(x,z,rivers,value=1){
+	let cx = x>>4, cz = z>>4
+	let grid = rivers[(cx+center)*lwidth+(cz+center)] || (rivers[(cx+center)*lwidth+(cz+center)] = new Float32Array(256))
+	grid[(z&15)*16+(x&15)] = value
+}
+function getRiver(x,z,rivers){
+    let cx = x>>4, cz = z>>4
+    let grid = rivers[(cx+center)*lwidth+(cz+center)]
+    if(!grid) return 0
+    return grid[(z&15)*16+(x&15)]
+}
+function maxLower(x,z,rivers,value){
+    let cx = x>>4, cz = z>>4
+    let grid = rivers[(cx+center)*lwidth+(cz+center)] || (rivers[(cx+center)*lwidth+(cz+center)] = new Float32Array(256))
+    grid[(z&15)*16+(x&15)] = Math.max(value,(grid[(z&15)*16+(x&15)]||0))
+}
+function addGridXZ(x,z,rivers,value,xOrZ=0){//if xOrZ=0, x    if xOrZ=1, z
+	let cx = x>>4, cz = z>>4
+	let grid = rivers[(cx+center)*lwidth+(cz+center)] || (rivers[(cx+center)*lwidth+(cz+center)] = new Float32Array(512))
+	grid[(z&15)*32+(x&15)*2+xOrZ] += value
+}
+function setGridXZ(x,z,rivers,value,xOrZ=0){//if xOrZ=0, x    if xOrZ=1, z
+	let cx = x>>4, cz = z>>4
+	let grid = rivers[(cx+center)*lwidth+(cz+center)] || (rivers[(cx+center)*lwidth+(cz+center)] = new Float32Array(512))
+	grid[(z&15)*32+(x&15)*2+xOrZ] = value
+}
+function getGridXZ(x,z,rivers,xOrZ=0){
+	let cx = x>>4, cz = z>>4
+	let grid = rivers[(cx+center)*lwidth+(cz+center)]
+	if(!grid) return 0
+	return grid[(z&15)*32+(x&15)*2+xOrZ]
+}
+function copyGridFloat(cx,cz,rivers,arr){
+	let idx = (cx+center)*lwidth+(cz+center)
+	let grid = rivers[idx] || (rivers[idx] = new Float32Array(512))
+	if(arr[idx]) grid.set(arr[idx])
+	else grid.fill(0)
+}
+function dirToInt(x){return x===1?1:(x===-1?2:0)}
+function intToDir(i){return i===1?1:(i===2?-1:0)}
+
+const diagonalMult = 1, diagonal2Mult = 0.8
+let tempRiverArr = []
+function generateBaseRivers(cx,cz,rcx,rcz,rivers,heightmaps,prevRivers,iteration,riverLowers,scale,riverDists,prevRiverDists){
+	let river = tempRiverArr
+	let random = new Marsaglia(hash3(rcx,rcz,iteration))
+	getHeight.scale = scale
+	getHeight.iteration = iteration
+	getHeight.offsetX = (rcx-cx)*16
+	getHeight.offsetZ = (rcz-cz)*16
+	const tries = iteration===1 ? 16 : 8//Math.round(2/iteration + random.nextDouble()*0.5)
+	//const scaleHigher = 1-(1-scale)**2
+	const minDist = 4*4/iteration
+	main:for(let i=0; i<tries; i++){
+			let ox = random.nextDouble(), oz = random.nextDouble()
+			if(iteration===1){
+				//for more even distribution
+				ox = ((i&3)+ox)*0.25
+				oz = ((i>>2)+oz)*0.25
+			}
+			ox = Math.floor(ox*16)+cx*16;
+			oz = Math.floor(oz*16)+cz*16;
+			//getTemperatureAndRainfall((getHeight.offsetX+ox)*scale/generateRiverChunk.riverScale,(getHeight.offsetZ+oz)*scale/generateRiverChunk.riverScale,true)
+			//if(random.nextDouble()*(4-rainfallHere)>iteration*0.25+0.75) continue//dryer places have less big rivers
+			let height = getHeight(ox,oz,heightmaps,riverLowers)
+			if(height<0 || getHeight(ox,oz,heightmaps,riverLowers,2)) continue
+			let x = ox, z = oz
+			let thisheight, heightdiff
+			river.length = 0
+			let topHeight = getHeight(x,z,heightmaps,riverLowers,1)
+			let maxUpHeight, upMode = false, pdx, pdz, pdouble2, pnx, pnz, upModeDownEnd
+			//upMode happens when river stuck and makes them keep going in the same direction until it can go down
+			while(topHeight>0 && !getRiver(x,z,prevRivers)){
+					let nx, nz//next position
+					let dx = 0, dz = 0, double2 //position for diagonal if diagonal
+					let maxHeightDiff = 0
+					
+					if(upMode){
+						nx = pnx, nz = pnz, dx = pdx, dz = pdz, double2 = pdouble2
+						if(nx === undefined) continue main
+						let thisheight = getHeight(x+nx,z+nz,heightmaps,riverLowers)
+						if(thisheight > maxUpHeight) continue main//it can't go up that much
+						if(thisheight < height){
+							if(upModeDownEnd === undefined) upModeDownEnd = height-0.025//it has to go down a certain amount to count
+							if(thisheight < upModeDownEnd){
+								upMode = false//going down place found
+								upModeDownEnd = undefined
+							}
+						}else upModeDownEnd = undefined
+						height = thisheight
+					}else{
+						//4 basic directions
+						thisheight = getHeight(x+1,z,heightmaps,riverLowers), heightdiff = height-thisheight//+getHeight(x+1,z,extraNoisemaps,1)
+						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 1, nz = 0
+						thisheight = getHeight(x-1,z,heightmaps,riverLowers), heightdiff = height-thisheight//+getHeight(x-1,z,extraNoisemaps,1)
+						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -1, nz = 0
+						thisheight = getHeight(x,z+1,heightmaps,riverLowers), heightdiff = height-thisheight//+getHeight(x,z+1,extraNoisemaps,1)
+						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 0, nz = 1
+						thisheight = getHeight(x,z-1,heightmaps,riverLowers), heightdiff = height-thisheight//+getHeight(x,z-1,extraNoisemaps,1)
+						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 0, nz = -1
+						
+						//between directions
+						thisheight = getHeight(x+1,z+1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x+1,z+1,extraNoisemaps,1)*/)*diagonalMult
+						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 1, nz = 1, dx = 1, dz = 0
+						thisheight = getHeight(x+1,z-1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x+1,z-1,extraNoisemaps,1)*/)*diagonalMult
+						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 1, nz = -1, dx = 0, dz = -1
+						thisheight = getHeight(x-1,z+1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x-1,z+1,extraNoisemaps,1)*/)*diagonalMult
+						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -1, nz = 1, dx = 0, dz = 1
+						thisheight = getHeight(x-1,z-1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x-1,z-1,extraNoisemaps,1)*/)*diagonalMult
+						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -1, nz = -1, dx = -1, dz = 0
+						
+						//between between directions
+						//thisheight = getHeight(x-1,z+2,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x-1,z+2,extraNoisemaps,1)*/)*diagonal2Mult
+						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -1, nz = 2, dx = 0, dz = 1, double2 = true
+						//thisheight = getHeight(x+1,z+2,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x+1,z+2,extraNoisemaps,1)*/)*diagonal2Mult
+						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 1, nz = 2, dx = 0, dz = 1, double2 = true
+						//thisheight = getHeight(x+2,z+1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x+2,z+1,extraNoisemaps,1)*/)*diagonal2Mult
+						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 2, nz = 1, dx = 1, dz = 0, double2 = true
+						//thisheight = getHeight(x+2,z-1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x+2,z-1,extraNoisemaps,1)*/)*diagonal2Mult
+						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 2, nz = -1, dx = 1, dz = 0, double2 = true
+						//thisheight = getHeight(x+1,z-2,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x+1,z-2,extraNoisemaps,1)*/)*diagonal2Mult
+						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 1, nz = -2, dx = 0, dz = -1, double2 = true
+						//thisheight = getHeight(x-1,z-2,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x-1,z-2,extraNoisemaps,1)*/)*diagonal2Mult
+						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -1, nz = -2, dx = 0, dz = -1, double2 = true
+						//thisheight = getHeight(x-2,z-1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x-2,z-1,extraNoisemaps,1)*/)*diagonal2Mult
+						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -2, nz = -1, dx = -1, dz = 0, double2 = true
+						//thisheight = getHeight(x-2,z+1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x-2,z+1,extraNoisemaps,1)*/)*diagonal2Mult
+						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -2, nz = 1, dx = -1, dz = 0, double2 = true
+
+						if(nx === undefined || xyArrayHas(river,x+nx,z+nz)) {
+							upMode = true //river is stuck
+							maxUpHeight = height+0.025
+							continue
+						}
+					}
+					/*if(dx || dz){
+							river.push(x+dx,z+dz)
+							if(double2) river.push(x+nx-dx,z+nz-dz)
+					}*/
+					x += nx, z += nz
+					river.push(x,z)
+					pnx = nx, pnz = nz, pdx = dx, pdz = dz, pdouble2 = double2
+					topHeight = getHeight(x,z,heightmaps,riverLowers,1)
+					if(river.length>1600 || Math.max(Math.abs(x-ox),Math.abs(z-oz)) > 32 || getHeight(x,z,heightmaps,riverLowers,2)) continue main
+					if((dx || dz) && (getRiver(x+dx,z,prevRivers)||getRiver(x,z+dz,prevRivers))) break//prevent diagonal going through another diagonal
+			}
+			if((x-ox)**2+(z-oz)**2<minDist) continue main//too short
+			//startt if(topHeight > 0 && random.nextDouble() < getRiver(x,z,prevRiverStartDists)) continue main //if not connecting to start, it is rarer
+			//if(topHeight <= 0 && iteration>3 && random.nextDouble()*iteration>3) continue main //prevent small rivers going into ocean to much
+			for(let j=0, f=0; j<river.length; j+=2, f++){
+				if(j<river.length-2){
+					let riverWidth = (maxZoom-iteration+1)*384//1 to 4096
+					let prevRiverWidth = getRiver(river[j],river[j+1],rivers)>>>4
+					if(prevRiverWidth) riverWidth = riverWidth+prevRiverWidth
+					setRiver(river[j],river[j+1],rivers, (riverWidth-1)<<4 | dirToInt(river[j+2]-river[j])<<2 | dirToInt(river[j+3]-river[j+1]))
+				}
+				for(let x=-1;x<=1;x++){
+						for(let z=-1;z<=1;z++){
+								const d = Math.abs(x/1)+Math.abs(z/1)//(x/16)**2+(z/16)**2
+								if(d>=1) continue
+								const lower = 1-d //1-approxCbrt(d*d) //Math.max((d-riverFlatDist),0)*riverFlatMult
+								maxLower(river[j]+x,river[j+1]+z,riverDists,lower)
+						}
+				}
+				//startt let startDist = scaleHigher*Math.min(f*0.125,1)*0.25
+				//maxLower(river[j],river[j+1],riverStartDists,startDist)//start of river has lower value, other parts are higher
+				//maxLower(river[j]+1,river[j+1],riverStartDists,startDist)
+				//maxLower(river[j]-1,river[j+1],riverStartDists,startDist)
+				//maxLower(river[j],river[j+1]+1,riverStartDists,startDist)
+				//maxLower(river[j],river[j+1]-1,riverStartDists,startDist)
+			}
+			//if(rivlog<1)console.log("river at",(ox+(rcx-cx)*16)*scale/generateRiverChunk.riverScale,(oz+(rcz-cz)*16)*scale/generateRiverChunk.riverScale),rivlog++
+	}
+	getHeight.scale = null
+}
+//let rivlog=0,aaa={stuck:0,nom:0,short:0,total:0}
+const riverFlatDist = (1/8)**2, riverFlatMult = 1/(1-riverFlatDist)
+function interpolateRivers(cx,cz,scaleBy,prevRivers,newRivers,newPrevRivers,offsetX,offsetZ,prevRiverLowers,newRiverLowers,prevRiverDists,prevPrevRiverDists,newPrevRiverDists,scale,riverNormalDists,prevRiverNormalDists,prevRiverTwists,newRiverTwists){
+    //let pcx = Math.round(rcx*scaleBy), pcz = Math.round(rcz*scaleBy)
+    //let offsetX = cx*scaleBy - pcx + cx, offsetZ = cz*scaleBy - pcz + cz
+    offsetX *= 16, offsetZ *= 16
+		let lowerAmount = scale//1-(1-scale)**2
+    for(let x=0;x<16;x++){
+        for(let z=0;z<16;z++){
+            let rx = Math.floor(x*scaleBy+offsetX), rz = Math.floor(z*scaleBy+offsetZ)
+            let ix = x*scaleBy+offsetX-rx, iz = z*scaleBy+offsetZ-rz
+						let newX = x+cx*16, newZ = z+cz*16
+
+						if(!ix && !iz){
+							let river = getRiver(rx,rz,prevRivers)
+							//make rivers in previous scale longer in new scale
+							if(river){
+								let dirX = intToDir((river>>>2)&3), dirZ = intToDir(river&3)
+								for(let i=0, rx=0, rz=0; i<1; i+=scaleBy, rx+=dirX, rz+=dirZ){
+									setRiver(newX+rx,newZ+rz,newRivers,river)
+									setRiver(newX+rx,newZ+rz,newPrevRivers,river)
+								}
+							}
+						}
+            let lower = lerp(ix,
+                lerp(iz,
+                    getRiver(rx,rz,prevRiverLowers),
+                    getRiver(rx,rz+1,prevRiverLowers)
+                ),
+                lerp(iz,
+                    getRiver(rx+1,rz,prevRiverLowers),
+                    getRiver(rx+1,rz+1,prevRiverLowers)
+                )
+            )
+						let prevDist = lerp(ix, //prevPrevRiverDists is from before the previous ones set
+							lerp(iz,
+								getRiver(rx,rz,prevPrevRiverDists),
+								getRiver(rx,rz+1,prevPrevRiverDists)
+							),
+							lerp(iz,
+								getRiver(rx+1,rz,prevPrevRiverDists),
+								getRiver(rx+1,rz+1,prevPrevRiverDists)
+							)
+						)
+						let newDist = lerp(ix, //prevRiverDists is the newly set ones
+							lerp(iz,
+								getRiver(rx,rz,prevRiverDists),
+								getRiver(rx,rz+1,prevRiverDists)
+							),
+							lerp(iz,
+								getRiver(rx+1,rz,prevRiverDists),
+								getRiver(rx+1,rz+1,prevRiverDists)
+							)
+						)
+						let prevRiverNormalDist = lerp(ix,
+							lerp(iz,
+									getRiver(rx,rz,riverNormalDists),
+									getRiver(rx,rz+1,riverNormalDists)
+							),
+							lerp(iz,
+									getRiver(rx+1,rz,riverNormalDists),
+									getRiver(rx+1,rz+1,riverNormalDists)
+							)
+						)
+						let twistX = lerp(ix,
+							lerp(iz,
+								getGridXZ(rx,rz,prevRiverTwists),
+								getGridXZ(rx,rz+1,prevRiverTwists)
+							),
+							lerp(iz,
+								getGridXZ(rx+1,rz,prevRiverTwists),
+								getGridXZ(rx+1,rz+1,prevRiverTwists)
+							)
+						)
+						let twistZ = lerp(ix,
+							lerp(iz,
+								getGridXZ(rx,rz,prevRiverTwists,1),
+								getGridXZ(rx,rz+1,prevRiverTwists,1)
+							),
+							lerp(iz,
+								getGridXZ(rx+1,rz,prevRiverTwists,1),
+								getGridXZ(rx+1,rz+1,prevRiverTwists,1)
+							)
+						)
+						lower = lerp(prevDist,lowerAmount*newDist/*scale controls deepness*/,lower)
+            setGridFloat(newX,newZ,newRiverLowers,lower)
+            setGridFloat(newX,newZ,newPrevRiverDists,Math.max(newDist,prevDist))
+						setGridFloat(newX,newZ,prevRiverNormalDists, Math.max((newDist*2)-1,(prevRiverNormalDist/scaleBy)-(1/scaleBy-1),0))
+            setGridXZ(newX,newZ,newRiverTwists,twistX/scaleBy)
+            setGridXZ(newX,newZ,newRiverTwists,twistZ/scaleBy,1)
+        }
+    }
+}
+const blocksPerFinalChunk = 2
+let maxZoom = 2//5
+let zoomScaleBy = 0.5
+const twistIterations = 2, twistAmount = zoomScaleBy**(maxZoom-1)*0.45/*will be scaled up in interpolate*/
+function twistRivers(cx,cz,prevRiverTwists,rivers,scale,riverTwists,maxDist){
+	maxDist *= 16
+	copyGridFloat(cx,cz,riverTwists,prevRiverTwists)
+	for(let x=0;x<16;x++){
+		for(let z=0;z<16;z++){
+			let newX = x+cx*16, newZ = z+cz*16
+			let river = getRiver(newX,newZ,rivers)
+			if(river){
+				let dirX = intToDir((river>>>2)&3), dirZ = intToDir(river&3)
+				let strength = twistAmount/scale/twistIterations
+				let pullX = dirX ? strength*(getGridXZ(newX+dirX,newZ+dirZ,prevRiverTwists)+dirX-getGridXZ(newX,newZ,prevRiverTwists)) : 0
+				let pullZ = dirZ ? strength*(getGridXZ(newX+dirX,newZ+dirZ,prevRiverTwists,1)+dirZ-getGridXZ(newX,newZ,prevRiverTwists,1)) : 0
+				addGridXZ(newX,newZ,riverTwists, pullX)//pull this one closer to other
+				addGridXZ(newX,newZ,riverTwists, pullZ, 1)//pull this one closer to other
+				if(getRiver(newX+dirX,newZ+dirZ,rivers) && newX+dirX<maxDist+16 && newX+dirX>=-maxDist && newZ+dirZ<maxDist+16 && newZ+dirZ>=-maxDist){
+					addGridXZ(newX+dirX,newZ+dirZ,riverTwists, -pullX)//pull other one closer to this
+					addGridXZ(newX+dirX,newZ+dirZ,riverTwists, -pullZ, 1)//pull other one closer to this
+				}
+			}else{//keep space between nodes equal
+				setGridXZ(newX,newZ,riverTwists, (getGridXZ(newX+1,newZ,prevRiverTwists)+getGridXZ(newX-1,newZ,prevRiverTwists)+getGridXZ(newX,newZ+1,prevRiverTwists)+getGridXZ(newX,newZ-1,prevRiverTwists))*0.25)
+				setGridXZ(newX,newZ,riverTwists, (getGridXZ(newX,newZ+1,prevRiverTwists,1)+getGridXZ(newX,newZ-1,prevRiverTwists,1)+getGridXZ(newX+1,newZ,prevRiverTwists,1)+getGridXZ(newX-1,newZ,prevRiverTwists,1))*0.25, 1)
+			}
+			/*if(dirZ){
+				addGridXZ(newX,newZ+dirZ,riverTwists, -dirZ*strength,1)//pull other one closer to this
+				addGridXZ(newX,newZ,riverTwists, dirZ*strength,1)//pull this one closer to other
+			}*/
+		}
+	}
+}
+function limitTwistRivers(cx,cz,riverTwists){
+	for(let x=0;x<16;x++){
+		for(let z=0;z<16;z++){
+			let newX = x+cx*16, newZ = z+cz*16
+			let twistX = getGridXZ(newX,newZ,riverTwists), twistZ = getGridXZ(newX,newZ,riverTwists,1)
+			let changed
+			if(twistX<-0.45) twistX = -0.45, twistZ *= -0.45/twistX, changed = true
+			else if(twistX>0.45) twistX = 0.45, twistZ *= 0.45/twistX, changed = true
+			if(twistZ<-0.45) twistZ = -0.45, twistX *= -0.45/twistZ, changed = true
+			else if(twistZ>0.45) twistZ = 0.45, twistX *= 0.45/twistZ, changed = true
+			if(changed){
+				setGridXZ(newX,newZ,riverTwists,twistX)
+				setGridXZ(newX,newZ,riverTwists,twistZ,1)
+			}
+		}
+	}
+}
+//One chunk is 1 unit
+//code to convert chunk idx to position: a=60; ((a%lwidth)-center)+","+Math.floor(a/lwidth-center)
+let rivers = [], prevRivers = [], newRivers = [], temp, riverLowers = [], newRiverLowers = [], riverDists = [], prevRiverDists = [], newPrevRiverDists = [], riverNormalDists = [], prevRiverNormalDists = [], riverTwists = [], newRiverTwists = []
+let isRiverWithWidth = new Float32Array(256)
+function generateChunk(x,z,seed){
+    x*=generateChunk.riverScale, z*=generateChunk.riverScale
+    let heightmaps = []
+    let Scale = 1, prevScale;
+    
+		for(let i of rivers){
+			if(i) i.fill(0)
+		}
+		for(let i of prevRivers){
+			if(i) i.fill(0)
+		}
+		for(let i of riverLowers){
+			if(i) i.fill(0)
+		}
+		for(let i of riverDists){
+			if(i) i.fill(0)
+		}
+		for(let i of prevRiverDists){
+			if(i) i.fill(0)
+		}
+		for(let i of riverNormalDists){
+			if(i) i.fill(0)
+		}
+		for(let i of prevRiverNormalDists){
+			if(i) i.fill(0)
+		}
+		for(let i of riverTwists){
+			if(i) i.fill(0)
+		}
+    for(let zoom=0; zoom<maxZoom; zoom++){
+        if(zoom){
+            //Zoom in and generate smaller rivers connecting to the previous rivers
+						for(let i of newRivers){
+								if(i) i.fill(0)
+						}
+						for(let i of prevRivers){
+								if(i) i.fill(0)
+						}
+						for(let i of newRiverLowers){
+								if(i) i.fill(0)
+						}
+            prevScale = Scale;
+            let scaleBy = zoomScaleBy;
+            Scale *= scaleBy;
+            for(let cx=-3; cx<=3; cx++){
+                for(let cz=-3; cz<=3; cz++){
+                    let offsetX = Math.floor(x/Scale)*scaleBy - Math.floor(x/prevScale)+cx*scaleBy
+                    let offsetZ = Math.floor(z/Scale)*scaleBy - Math.floor(z/prevScale)+cz*scaleBy
+                    interpolateRivers(cx,cz,scaleBy,rivers,newRivers,prevRivers,offsetX,offsetZ,riverLowers,newRiverLowers,riverDists,prevRiverDists,newPrevRiverDists,Scale,riverNormalDists,prevRiverNormalDists,riverTwists,newRiverTwists)
+                }
+            }
+						temp = rivers
+            rivers = newRivers
+						newRivers = temp
+						temp = riverLowers
+            riverLowers = newRiverLowers
+						newRiverLowers = temp
+						for(let i of riverDists){
+							if(i) i.fill(0)
+						}
+						temp = prevRiverDists
+						prevRiverDists = newPrevRiverDists
+						newPrevRiverDists = temp
+						temp = prevRiverNormalDists
+						prevRiverNormalDists = riverNormalDists
+						riverNormalDists = temp
+						temp = riverTwists
+						riverTwists = newRiverTwists
+						newRiverTwists = temp
+        }
+        
+        //Create a heightmap for the rivers to flow down
+				//done only if needed
+        for(let cx=-5; cx<=5; cx++){
+            for(let cz=-5; cz<=5; cz++){
+                getHeightmap(cx,cz,heightmaps,(Math.floor(x/Scale)+cx),(Math.floor(z/Scale)+cz),Scale,riverLowers,true);
+            }
+        }
+       	for(let cx=-3; cx<=3; cx++){
+            for(let cz=-3; cz<=3; cz++){
+                generateBaseRivers(cx,cz,Math.floor(x/Scale)+cx,Math.floor(z/Scale)+cz,rivers,heightmaps,prevRivers,zoom+1,riverLowers,Scale,riverDists,prevRiverDists)
+            }
+        }
+				for(let i=0; i<twistIterations; i++){
+					for(let cx=-1; cx<=1; cx++){
+						for(let cz=-1; cz<=1; cz++){
+							twistRivers(cx,cz,riverTwists,rivers,Scale,newRiverTwists,1)
+						}
+					}
+					for(let cx=-1; cx<=1; cx++){
+						for(let cz=-1; cz<=1; cz++){
+							limitTwistRivers(cx,cz,newRiverTwists)
+						}
+					}
+					let temp = riverTwists
+					riverTwists = newRiverTwists
+					newRiverTwists = temp
+				}
+				/*let riverThreshold = 5-(zoom/2)
+				for(let cx=-3; cx<=3; cx++){
+					for(let cz=-3; cz<=3; cz++){
+						let w = wetness[(cx+center)*lwidth+cz+center]
+						if(w) for(let i=0; i<w.length; i++){
+							if(w[i] > riverThreshold){
+								setRiver(cx+(i&15),cz+(i>>4),rivers)
+								let rx = i&15, rz = i>>4
+								for(let bx=-16;bx<=16;bx++){
+									for(let bz=-16;bz<=16;bz++){
+										const d = Math.abs(bx/16)+Math.abs(bz/16)//(x/16)**2+(z/16)**2
+										if(d>=1) continue
+										const lower = 1-approxCbrt(d/*Math.max((d-riverFlatDist),0)*riverFlatMult*-/)
+										maxLower(rx+bx,rz+bz,riverDists,lower)
+									}
+								}
+							}
+						}
+					}
+				}*/
+    }
+    
+		//getHeightmap(0,0,heightmaps,Math.floor(x/Scale),Math.floor(z/Scale),Scale,riverLowers);//Create a heightmap for the result
+		let scaleBy = blocksPerFinalChunk/16
+		prevScale = Scale, Scale *= scaleBy
+		let offsetX = (Math.floor(x/Scale)*scaleBy - Math.floor(x/prevScale))*16
+		let offsetZ = (Math.floor(z/Scale)*scaleBy - Math.floor(z/prevScale))*16
+		let drawRivers = []
+		for(let bx=offsetX-3; bx<offsetX+blocksPerFinalChunk+3; bx++){
+			for(let bz=offsetZ-3; bz<offsetZ+blocksPerFinalChunk+3; bz++){
+				let river = getRiver(bx,bz,rivers)
+				if(!river) continue
+				let pointingX = intToDir((river>>>2)&3), pointingZ = intToDir(river&3)
+				let riverWidth = ((river>>>4)+1)/4096*16/blocksPerFinalChunk //1.5**(maxZoom-(river>>>4))-0.5
+				let riverPrevWidth = riverWidth*blocksPerFinalChunk/16
+				let twistX = getGridXZ(bx,bz,riverTwists), twistZ = getGridXZ(bx,bz,riverTwists,1)
+				let twistPointingX = getGridXZ(bx+pointingX,bz+pointingZ,riverTwists), twistPointingZ = getGridXZ(bx+pointingX,bz+pointingZ,riverTwists,1)
+				if(
+					(bx+pointingX+twistPointingX+riverPrevWidth<offsetX || bx+pointingX+twistPointingX-riverPrevWidth>offsetX+blocksPerFinalChunk || bz+pointingZ+twistPointingZ+riverPrevWidth<offsetZ || bz+pointingZ+twistPointingZ-riverPrevWidth>offsetZ+blocksPerFinalChunk) &&
+					(bx+twistX+riverPrevWidth<offsetX || bx+twistX-riverPrevWidth>offsetX+blocksPerFinalChunk || bz+twistZ+riverPrevWidth<offsetZ || bz+twistZ-riverPrevWidth>offsetZ+blocksPerFinalChunk)
+				) continue
+				let fcs = 16/blocksPerFinalChunk
+				drawRivers.push((bx-offsetX+twistX)*fcs,(bz-offsetZ+twistZ)*fcs,(bx-offsetX+twistPointingX+pointingX)*fcs,(bz-offsetZ+twistPointingZ+pointingZ)*fcs, riverWidth)
+			}
+		}
+		/*for(let cx=-1; cx<=1; cx++){
+			for(let cz=-1; cz<=1; cz++){
+				for(let bx=0;bx<16;bx++){
+					for(let bz=0;bz<16;bz++){
+						let bx2 = bx+cx*16, bz2 = bz+cz*16
+						let river = getRiver(bx2,bz2,rivers)
+						if(river){
+							let riverWidth = 1.5**(maxZoom-(river>>>4))-0.75
+							let deepness = 1-(river>>>4)/maxZoom
+							if(bx2<-riverWidth || bx2>riverWidth+16 || bz2<-riverWidth || bz2>riverWidth+16) continue
+							for(let rx=Math.round(Math.min(Math.max(bx2-riverWidth,0),15)); rx<=Math.round(Math.min(Math.max(bx2+riverWidth,0),15)); rx++){//this clamps so it only sets in current chunk
+								for(let rz=Math.round(Math.min(Math.max(bz2-riverWidth,0),15)); rz<=Math.round(Math.min(Math.max(bz2+riverWidth,0),15)); rz++){
+									let dist = (rx-bx2)*(rx-bx2)/riverWidth + (rz-bz2)*(rz-bz2)/riverWidth
+									if(dist<1) isRiverWithWidth[rx*16+rz] = Math.max(isRiverWithWidth[rx*16+rz], (1-dist)*deepness)
+								}
+							}
+						}
+					}
+				}
+			}
+		}*/
+    for(let bx=0;bx<16;bx++){
+        for(let bz=0;bz<16;bz++){
+						//let finalHeight = getHeight(bx,bz,heightmaps)
+						let river = 0//isRiverWithWidth[bx*16+bz]
+						let riverSize = 0
+						for(let di=0; di<drawRivers.length; di+=5){
+							let thisriver = 1-lineToPointSq(bx,bz, drawRivers[di],drawRivers[di+1],drawRivers[di+2],drawRivers[di+3])/drawRivers[di+4]
+							river = Math.max(river, thisriver)
+							if(thisriver>0) riverSize = Math.max(riverSize, drawRivers[di+4]*thisriver)
+						}
+						//isRiverWithWidth[bx*16+bz] = 0
+						//rivers[center*lwidth+center/*middle*/]&&rivers[center*lwidth+center/*middle*/][bz*16+bx]||0
+						let btx, btz, btlax, btlaz//before twist, before twist lerp amount
+						btloop:for(btx=offsetX-2; btx<offsetX+blocksPerFinalChunk+2; btx++){
+							for(btz=offsetZ-2; btz<offsetZ+blocksPerFinalChunk+2; btz++){
+								let x1 = btx+getGridXZ(btx,btz,riverTwists), z1 = btz+getGridXZ(btx,btz,riverTwists,1)
+								let x2 = btx+1+getGridXZ(btx+1,btz,riverTwists), z2 = btz+getGridXZ(btx+1,btz,riverTwists,1)
+								let x3 = btx+1+getGridXZ(btx+1,btz+1,riverTwists), z3 = btz+1+getGridXZ(btx+1,btz+1,riverTwists,1)
+								let x4 = btx+getGridXZ(btx,btz+1,riverTwists), z4 = btz+1+getGridXZ(btx,btz+1,riverTwists,1)
+								if(pointInQuad(x1,z1,x2,z2,x3,z3,x4,z4, bx*scaleBy+offsetX, bz*scaleBy+offsetZ)){
+									transformQuadri(x1,z1,x2,z2,x3,z3,x4,z4, bx*scaleBy+offsetX, bz*scaleBy+offsetZ)
+									btlax = transformQuadri.xc
+									btlaz = transformQuadri.yc
+									break btloop
+								}
+							}
+						}
+						//if(isNaN(btlax)) throw new Error("river twisted grid node not found")
+						//let lower = getRiver(bx,bz,riverLowers)||0, dist = Math.max(getRiver(bx,bz,riverDists)||0,getRiver(bx,bz,prevRiverDists)||0)
+						/*if(river){
+							riverHeight = river//mapFrom(getRiver(bx,bz,riverScales)||0, Scale*0.8,1)//mapFrom(r,0.4,1)*255
+							//finalHeight = Math.max(finalHeight,0)-0.025
+						}*/
+						//if(dist>0.8) finalHeight -= map(dist,0.8,1,0,0.01)
+						getHeight.scale = prevScale
+						getHeight.offsetX = Math.floor(x/prevScale)*16
+						getHeight.offsetZ = Math.floor(z/prevScale)*16
+						riverHeights[bz*16+bx] = riverSize/2
+						/*riverFinalLowers[bz*16+bx] = lerp(btlax,
+							lerp(btlaz,
+								getRiver(btx,btz,riverLowers),
+								getRiver(btx,btz+1,riverLowers)
+							),
+							lerp(btlaz,
+								getRiver(btx+1,btz,riverLowers),
+								getRiver(btx+1,btz+1,riverLowers)
+							)
+						)*/
+						riverLoweredHeight[bz*16+bx] = lerp(btlax,
+							lerp(btlaz,
+								getHeight(btx,btz,heightmaps,riverLowers),
+								getHeight(btx,btz+1,heightmaps,riverLowers)
+							),
+							lerp(btlaz,
+								getHeight(btx+1,btz,heightmaps,riverLowers),
+								getHeight(btx+1,btz+1,heightmaps,riverLowers)
+							)
+						)
+						riverFinalDists[bz*16+bx] = lerp(btlax,
+							lerp(btlaz,
+								Math.max(getRiver(btx,btz,riverDists),getRiver(btx,btz,prevRiverDists)),
+								Math.max(getRiver(btx,btz+1,riverDists),getRiver(btx,btz+1,prevRiverDists))
+							),
+							lerp(btlaz,
+								Math.max(getRiver(btx+1,btz,riverDists),getRiver(btx+1,btz,prevRiverDists)),
+								Math.max(getRiver(btx+1,btz+1,riverDists),getRiver(btx+1,btz+1,prevRiverDists))
+							)
+						)
+						riverFinalNormalDists[bz*16+bx] = lerp(btlax,
+							lerp(btlaz,
+								getRiver(btx,btz,riverNormalDists),
+								getRiver(btx,btz+1,riverNormalDists)
+							),
+							lerp(btlaz,
+								getRiver(btx+1,btz,riverNormalDists),
+								getRiver(btx+1,btz+1,riverNormalDists)
+							)
+						)
+						//if(btlax<0.1 || btlax>0.9 || btlaz<0.1||btlaz>0.9)finalHeight=-1
+						//if(btlax!==undefined)riverLoweredHeight[bz*16+bx]=-hash(btx,btz)
+        }
+    }
+}
+generateChunk.riverScale = blocksPerFinalChunk/16 * zoomScaleBy**(maxZoom-1)
+generateRiverChunk = generateChunk
+}
+//below function from https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment  and modified
+function lineToPointSq(x, y, x1, y1, x2, y2) {
+  var A = x - x1;
+  var B = y - y1;
+  var C = x2 - x1;
+  var D = y2 - y1;
+
+  var dot = A * C + B * D;
+  var len_sq = C * C + D * D;
+  var param = -1;
+  if (len_sq !== 0){ //in case of 0 length line
+      param = dot / len_sq;
+  }
+
+  var xx, yy;
+
+  if (param < 0) {
+    xx = x1;
+    yy = y1;
+  }
+  else if (param > 1) {
+    xx = x2;
+    yy = y2;
+  }
+  else {
+    xx = x1 + param * C;
+    yy = y1 + param * D;
+  }
+
+  var dx = x - xx;
+  var dy = y - yy;
+  lineToPointSq.xx = xx;
+  lineToPointSq.yy = yy;
+  return dx * dx + dy * dy;
+}
+
+function transformQuadri(x1,y1,x2,y2,x3,y3,x4,y4, x, y) {
+	//from https://gitlab.com/gaelysam/mapgen_rivers/-/blob/master/geometry.lua and modified
+	// To index points in an irregular quadrilateral, giving x and y between 0 (one edge) and 1 (opposite edge)
+	// X, Y 4-vectors giving the coordinates of the 4 vertices
+	// x, y position to index.
+	// Compare distance to 2 opposite edges, they give the X coordinate
+	//more effecient & accurate to use cross product than distance to segment
+	var d23 = (x3 - x2)*(y - y2) - (y3 - y2)*(x - x2)
+	var d41 = (x1 - x4)*(y - y4) - (y1 - y4)*(x - x4)
+	var xc = d41 / (d23+d41);
+	// Same for the 2 other edges, they give the Y coordinate
+	var d12 = (x2 - x1)*(y - y1) - (y2 - y1)*(x - x1)
+	var d34 = (x4 - x3)*(y - y3) - (y4 - y3)*(x - x3)
+	var yc = d12 / (d12+d34);
+	transformQuadri.xc = xc
+	transformQuadri.yc = yc
+}
+function pointInQuad(x1,y1,x2,y2,x3,y3,x4,y4, x, y){
+	return (
+		(x2 - x1)*(y - y1) - (y2 - y1)*(x - x1) >= 0 &&
+		(x3 - x2)*(y - y2) - (y3 - y2)*(x - x2) >= 0 &&
+		(x4 - x3)*(y - y3) - (y4 - y3)*(x - x3) >= 0 &&
+		(x1 - x4)*(y - y4) - (y1 - y4)*(x - x4) >= 0 )
+}
+		
+const splineData = {
+	"offset":{"coordinate":"continents","points":[
+		{"location":-1.1,"value":0.044,"derivative":0},
+		{"location":-1.02,"value":-0.2222,"derivative":0},
+		{"location":-0.51,"value":-0.2222,"derivative":0},
+		{"location":-0.44,"value":-0.12,"derivative":0},
+		{"location":-0.2,"value":-0.12,"derivative":0},
+		{"location":-0.16,"value":{"coordinate":"erosion","points":[
+			{"location":-0.85,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.08880186,"derivative":0.38940096},{"location":1,"value":0.69000006,"derivative":0.38940096}]},"derivative":0},
+			{"location":-0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.115760356,"derivative":0.37788022},{"location":1,"value":0.6400001,"derivative":0.37788022}]},"derivative":0},
+			{"location":-0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.2222,"derivative":0},{"location":-0.75,"value":-0.2222,"derivative":0},{"location":-0.65,"value":0,"derivative":0},{"location":0.5954547,"value":2.9802322e-8,"derivative":0},{"location":0.6054547,"value":2.9802322e-8,"derivative":0.2534563},{"location":1,"value":0.05,"derivative":0.2534563}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.3,"derivative":0.5},{"location":-0.4,"value":0.025,"derivative":0},{"location":0,"value":0.025,"derivative":0},{"location":0.4,"value":0.025,"derivative":0},{"location":1,"value":0.03,"derivative":0.007000001}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.15,"derivative":0.5},{"location":-0.4,"value":0,"derivative":0},{"location":0,"value":0,"derivative":0},{"location":0.4,"value":0.025,"derivative":0.1},{"location":1,"value":0.03,"derivative":0.007000001}]},"derivative":0},
+			{"location":0.2,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.15,"derivative":0.5},{"location":-0.4,"value":0,"derivative":0},{"location":0,"value":0,"derivative":0},{"location":0.4,"value":0,"derivative":0},{"location":1,"value":0,"derivative":0}]},"derivative":0},
+			{"location":0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.02,"derivative":0},{"location":-0.4,"value":-0.03,"derivative":0},{"location":0,"value":-0.03,"derivative":0},{"location":0.4,"value":0,"derivative":0.06},{"location":1,"value":0,"derivative":0}]},"derivative":0}
+		]},"derivative":0},
+		{"location":-0.125,"value":{"coordinate":"erosion","points":[
+			{"location":-0.85,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.08880186,"derivative":0.38940096},{"location":1,"value":0.69000006,"derivative":0.38940096}]},"derivative":0},
+			{"location":-0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.115760356,"derivative":0.37788022},{"location":1,"value":0.6400001,"derivative":0.37788022}]},"derivative":0},
+			{"location":-0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.2222,"derivative":0},{"location":-0.75,"value":-0.2222,"derivative":0},{"location":-0.65,"value":0,"derivative":0},{"location":0.5954547,"value":2.9802322e-8,"derivative":0},{"location":0.6054547,"value":2.9802322e-8,"derivative":0.2534563},{"location":1,"value":0.05,"derivative":0.2534563}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.3,"derivative":0.5},{"location":-0.4,"value":0.025,"derivative":0},{"location":0,"value":0.025,"derivative":0},{"location":0.4,"value":0.025,"derivative":0},{"location":1,"value":0.03,"derivative":0.007000001}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.15,"derivative":0.5},{"location":-0.4,"value":0,"derivative":0},{"location":0,"value":0,"derivative":0},{"location":0.4,"value":0.025,"derivative":0.1},{"location":1,"value":0.03,"derivative":0.007000001}]},"derivative":0},
+			{"location":0.2,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.15,"derivative":0.5},{"location":-0.4,"value":0,"derivative":0},{"location":0,"value":0,"derivative":0},{"location":0.4,"value":0,"derivative":0},{"location":1,"value":0,"derivative":0}]},"derivative":0},
+			{"location":0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.02,"derivative":0},{"location":-0.4,"value":-0.03,"derivative":0},{"location":0,"value":-0.03,"derivative":0},{"location":0.4,"value":0,"derivative":0.06},{"location":1,"value":0,"derivative":0}]},"derivative":0}
+		]},"derivative":0},
+		{"location":-0.1,"value":{"coordinate":"erosion","points":[
+			{"location":-0.85,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.08880186,"derivative":0.38940096},{"location":1,"value":0.69000006,"derivative":0.38940096}]},"derivative":0},
+			{"location":-0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.115760356,"derivative":0.37788022},{"location":1,"value":0.6400001,"derivative":0.37788022}]},"derivative":0},
+			{"location":-0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.2222,"derivative":0},{"location":-0.75,"value":-0.2222,"derivative":0},{"location":-0.65,"value":0,"derivative":0},{"location":0.5954547,"value":2.9802322e-8,"derivative":0},{"location":0.6054547,"value":2.9802322e-8,"derivative":0.2534563},{"location":1,"value":0.100000024,"derivative":0.2534563}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.25,"derivative":0.5},{"location":-0.4,"value":0.05,"derivative":0},{"location":0,"value":0.05,"derivative":0},{"location":0.4,"value":0.05,"derivative":0},{"location":1,"value":0.060000002,"derivative":0.007000001}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.001,"derivative":0.01},{"location":0,"value":0.003,"derivative":0.01},{"location":0.4,"value":0.05,"derivative":0.094000004},{"location":1,"value":0.060000002,"derivative":0.007000001}]},"derivative":0},
+			{"location":0.2,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},
+			{"location":0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.02,"derivative":0},{"location":-0.4,"value":-0.03,"derivative":0},{"location":0,"value":-0.03,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.12},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0}
+		]},"derivative":0},
+		{"location":0.25,"value":{"coordinate":"erosion","points":[
+			{"location":-0.85,"value":{"coordinate":"ridgesBig","points":[{"location":-1,"value":0.20235021,"derivative":0},{"location":0,"value":0.5,"derivative":0.5138249},{"location":1,"value":0.8,"derivative":0.5138249}]},"derivative":0},
+			{"location":-0.7,"value":{"coordinate":"ridgesBig","points":[{"location":-1,"value":0.2,"derivative":0},{"location":0,"value":0.44682026,"derivative":0.43317974},{"location":1,"value":0.78,"derivative":0.43317974}]},"derivative":0},
+			{"location":-0.4,"value":{"coordinate":"ridgesBig","points":[{"location":-1,"value":0.2,"derivative":0},{"location":0,"value":0.30829495,"derivative":0.3917051},{"location":1,"value":0.70000005,"derivative":0.3917051}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.25,"derivative":0.5},{"location":-0.4,"value":0.35,"derivative":0},{"location":0,"value":0.35,"derivative":0},{"location":0.4,"value":0.35,"derivative":0},{"location":1,"value":0.42000002,"derivative":0.049000014}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.0069999998,"derivative":0.07},{"location":0,"value":0.021,"derivative":0.07},{"location":0.4,"value":0.35,"derivative":0.658},{"location":1,"value":0.42000002,"derivative":0.049000014}]},"derivative":0},
+			{"location":0.2,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},
+			{"location":0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},
+			{"location":0.45,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0},{"location":-0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},{"location":0,"value":0.17,"derivative":0}]},"derivative":0},
+			{"location":0.55,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0},{"location":-0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},{"location":0,"value":0.17,"derivative":0}]},"derivative":0},
+			{"location":0.58,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},
+			{"location":0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.02,"derivative":0},{"location":-0.4,"value":-0.03,"derivative":0},{"location":0,"value":-0.03,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.12},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0}
+		]},"derivative":0},
+		{"location":1,"value":{"coordinate":"erosion","points":[
+			{"location":-0.85,"value":{"coordinate":"ridgesBig","points":[{"location":-1,"value":0.34792626,"derivative":0},{"location":0,"value":0.5,"derivative":0.5760369},{"location":1,"value":1,"derivative":0.5760369}]},"derivative":0},
+			{"location":-0.7,"value":{"coordinate":"ridgesBig","points":[{"location":-1,"value":0.2,"derivative":0},{"location":0,"value":0.45,"derivative":0.4608295},{"location":1,"value":0.8,"derivative":0.4608295}]},"derivative":0},
+			{"location":-0.4,"value":{"coordinate":"ridgesBig","points":[{"location":-1,"value":0.2,"derivative":0},{"location":0,"value":0.45,"derivative":0.4608295},{"location":1,"value":0.8,"derivative":0.4608295}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.2,"derivative":0.5},{"location":-0.4,"value":0.5,"derivative":0},{"location":0,"value":0.5,"derivative":0},{"location":0.4,"value":0.5,"derivative":0},{"location":1,"value":0.6,"derivative":0.070000015}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0.099999994},{"location":0,"value":0.03,"derivative":0.099999994},{"location":0.4,"value":0.5,"derivative":0.94},{"location":1,"value":0.6,"derivative":0.070000015}]},"derivative":0},
+			{"location":0.2,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},
+			{"location":0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},
+			{"location":0.45,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0},{"location":-0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},{"location":0,"value":0.17,"derivative":0}]},"derivative":0},
+			{"location":0.55,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0},{"location":-0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},{"location":0,"value":0.17,"derivative":0}]},"derivative":0},
+			{"location":0.58,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},
+			{"location":0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.02,"derivative":0.015},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0}
+		]},"derivative":0}
+	]},
+	"factor":{"coordinate":"continents","points":[
+		{"location":-0.2,"value":3.95,"derivative":0},
+		{"location":-0.16,"value":{"coordinate":"erosion","points":[
+			{"location":-0.6,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":6.25,"derivative":0}]},"derivative":0},
+			{"location":-0.5,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":6.3,"derivative":0},{"location":0.05,"value":2.67,"derivative":0}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":8.3,"derivative":0},{"location":0.2,"value":8.25,"derivative":0}]},"derivative":0},
+			{"location":-0.25,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":8.3,"derivative":0},{"location":0.2,"value":8.25,"derivative":0}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":4.67,"derivative":0},{"location":0.05,"value":8.3,"derivative":0}]},"derivative":0},
+			{"location":0.03,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":8.3,"derivative":0},{"location":0.2,"value":8.25,"derivative":0}]},"derivative":0},
+			{"location":0.35,"value":8.25,"derivative":0},
+			{"location":0.45,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":8.25,"derivative":0},{"location":-0.69,"value":{"coordinate":"weirdness","points":[{"location":0,"value":8.25,"derivative":0},{"location":0.1,"value":0.625,"derivative":0}]},"derivative":0}]},"derivative":0},
+			{"location":0.55,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":8.25,"derivative":0},{"location":-0.69,"value":{"coordinate":"weirdness","points":[{"location":0,"value":8.25,"derivative":0},{"location":0.1,"value":0.625,"derivative":0}]},"derivative":0}]},"derivative":0},
+			{"location":0.62,"value":8.25,"derivative":0}
+		]},"derivative":0},
+		{"location":-0.1,"value":{"coordinate":"erosion","points":[
+			{"location":-0.6,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":5.47,"derivative":0}]},"derivative":0},
+			{"location":-0.5,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":6.3,"derivative":0},{"location":0.05,"value":2.67,"derivative":0}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":8.3,"derivative":0},{"location":0.2,"value":7.47,"derivative":0}]},"derivative":0},
+			{"location":-0.25,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":8.3,"derivative":0},{"location":0.2,"value":7.47,"derivative":0}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":4.67,"derivative":0},{"location":0.05,"value":8.3,"derivative":0}]},"derivative":0},
+			{"location":0.03,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":8.3,"derivative":0},{"location":0.2,"value":7.47,"derivative":0}]},"derivative":0},
+			{"location":0.35,"value":5.47,"derivative":0},
+			{"location":0.45,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":7.47,"derivative":0},{"location":-0.69,"value":{"coordinate":"weirdness","points":[{"location":0,"value":7.47,"derivative":0},{"location":0.1,"value":0.625,"derivative":0}]},"derivative":0}]},"derivative":0},
+			{"location":0.55,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":7.47,"derivative":0},{"location":-0.69,"value":{"coordinate":"weirdness","points":[{"location":0,"value":7.47,"derivative":0},{"location":0.1,"value":0.625,"derivative":0}]},"derivative":0}]},"derivative":0},
+			{"location":0.62,"value":7.47,"derivative":0}
+		]},"derivative":0},
+		{"location":0.03,"value":{"coordinate":"erosion","points":[
+			{"location":-0.6,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":5.08,"derivative":0}]},"derivative":0},
+			{"location":-0.5,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":6.3,"derivative":0},{"location":0.05,"value":2.67,"derivative":0}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":5.08,"derivative":0}]},"derivative":0},
+			{"location":-0.25,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":5.08,"derivative":0}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":2.67,"derivative":0},{"location":0.05,"value":6.3,"derivative":0}]},"derivative":0},
+			{"location":0.03,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":5.08,"derivative":0}]},"derivative":0},
+			{"location":0.35,"value":5.08,"derivative":0},
+			{"location":0.45,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":5.08,"derivative":0},{"location":-0.69,"value":{"coordinate":"weirdness","points":[{"location":0,"value":5.08,"derivative":0},{"location":0.1,"value":0.625,"derivative":0}]},"derivative":0}]},"derivative":0},
+			{"location":0.55,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":5.08,"derivative":0},{"location":-0.69,"value":{"coordinate":"weirdness","points":[{"location":0,"value":5.08,"derivative":0},{"location":0.1,"value":0.625,"derivative":0}]},"derivative":0}]},"derivative":0},
+			{"location":0.62,"value":5.08,"derivative":0}
+		]},"derivative":0},
+		{"location":0.06,"value":{"coordinate":"erosion","points":[
+			{"location":-0.6,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},
+			{"location":-0.5,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":6.3,"derivative":0},{"location":0.05,"value":2.67,"derivative":0}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},
+			{"location":-0.25,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":2.67,"derivative":0},{"location":0.05,"value":6.3,"derivative":0}]},"derivative":0},
+			{"location":0.03,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},
+			{"location":0.05,"value":{"coordinate":"ridges","points":[{"location":0.45,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},{"location":0.7,"value":1.56,"derivative":0}]},"derivative":0},
+			{"location":0.4,"value":{"coordinate":"ridges","points":[{"location":0.45,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},{"location":0.7,"value":1.56,"derivative":0}]},"derivative":0},
+			{"location":0.45,"value":{"coordinate":"ridges","points":[{"location":-0.7,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},{"location":-0.15,"value":1.37,"derivative":0}]},"derivative":0},
+			{"location":0.55,"value":{"coordinate":"ridges","points":[{"location":-0.7,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},{"location":-0.15,"value":1.37,"derivative":0}]},"derivative":0},
+			{"location":0.58,"value":4.69,"derivative":0}
+		]},"derivative":0}
+	]},
+	"jaggedness":{"coordinate":"continents","points":[
+		{"location":-0.11,"value":0,"derivative":0},
+		{"location":0.03,"value":{"coordinate":"erosion","points":[
+			{"location":-1,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":0,"derivative":0},{"location":1,"value":{"coordinate":"weirdness","points":[{"location":-0.1,"value":0.5,"derivative":0},{"location":0.1,"value":0.25,"derivative":0}]},"derivative":0.2}]},"derivative":0},
+			{"location":-0.78,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":0,"derivative":0},{"location":1,"value":{"coordinate":"weirdness","points":[{"location":-0.1,"value":0.4,"derivative":0},{"location":0.1,"value":0.2,"derivative":0}]},"derivative":0.2}]},"derivative":0},
+			{"location":-0.5775,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":0,"derivative":0},{"location":1,"value":{"coordinate":"weirdness","points":[{"location":-0.01,"value":0.4,"derivative":0},{"location":0.01,"value":0.2,"derivative":0}]},"derivative":0.2}]},"derivative":0},
+			{"location":-0.375,"value":0,"derivative":0}
+		]},"derivative":0},
+		{"location":0.65,"value":{"coordinate":"erosion","points":[
+			{"location":-1,"value":{"coordinate":"ridgesBig","points":[{"location":-0.9,"value":0,"derivative":0},{"location":1,"value":{"coordinate":"weirdness","points":[{"location":-0.1,"value":1,"derivative":0},{"location":0.1,"value":0.5,"derivative":0}]},"derivative":0.3}]},"derivative":0},
+			{"location":-0.78,"value":{"coordinate":"ridgesBig","points":[{"location":-0.9,"value":0,"derivative":0},{"location":1,"value":{"coordinate":"weirdness","points":[{"location":-0.1,"value":1,"derivative":0},{"location":0.1,"value":0.5,"derivative":0}]},"derivative":0.3}]},"derivative":0},
+			{"location":-0.5775,"value":{"coordinate":"ridgesBig","points":[{"location":-0.9,"value":0,"derivative":0},{"location":1,"value":{"coordinate":"weirdness","points":[{"location":-0.1,"value":1,"derivative":0},{"location":0.1,"value":0.5,"derivative":0}]},"derivative":0.3}]},"derivative":0},
+			{"location":-0.375,"value":0,"derivative":0}
+		]},"derivative":0}
+	]}
+}
+/*attempt at better mountains below
+{
+	"offset":{"coordinate":"continents","points":[
+		{"location":-1.1,"value":0.044,"derivative":0},
+		{"location":-1.02,"value":-0.2222,"derivative":0},
+		{"location":-0.51,"value":-0.2222,"derivative":0},
+		{"location":-0.44,"value":-0.12,"derivative":0},
+		{"location":-0.2,"value":-0.12,"derivative":0},
+		{"location":-0.16,"value":{"coordinate":"erosion","points":[
+			{"location":-0.85,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.08880186,"derivative":0.38940096},{"location":1,"value":0.19,"derivative":0}]},"derivative":0},
+			{"location":-0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.115760356,"derivative":0.37788022},{"location":1,"value":0.17,"derivative":0}]},"derivative":0},
+			{"location":-0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.2222,"derivative":0},{"location":-0.75,"value":-0.2222,"derivative":0},{"location":-0.65,"value":0,"derivative":0},{"location":0.5954547,"value":2.9802322e-8,"derivative":0},{"location":0.6054547,"value":2.9802322e-8,"derivative":0.2534563},{"location":1,"value":0.05,"derivative":0.2534563}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.3,"derivative":0.5},{"location":-0.4,"value":0.025,"derivative":0},{"location":0,"value":0.025,"derivative":0},{"location":0.4,"value":0.025,"derivative":0},{"location":1,"value":0.03,"derivative":0.007000001}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.15,"derivative":0.5},{"location":-0.4,"value":0,"derivative":0},{"location":0,"value":0,"derivative":0},{"location":0.4,"value":0.025,"derivative":0.1},{"location":1,"value":0.03,"derivative":0.007000001}]},"derivative":0},
+			{"location":0.2,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.15,"derivative":0.5},{"location":-0.4,"value":0,"derivative":0},{"location":0,"value":0,"derivative":0},{"location":0.4,"value":0,"derivative":0},{"location":1,"value":0,"derivative":0}]},"derivative":0},
+			{"location":0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.02,"derivative":0},{"location":-0.4,"value":-0.03,"derivative":0},{"location":0,"value":-0.03,"derivative":0},{"location":0.4,"value":0,"derivative":0.06},{"location":1,"value":0,"derivative":0}]},"derivative":0}
+		]},"derivative":0},
+		{"location":-0.125,"value":{"coordinate":"erosion","points":[
+			{"location":-0.85,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.08880186,"derivative":0.38940096},{"location":1,"value":0.2,"derivative":0}]},"derivative":0},
+			{"location":-0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.115760356,"derivative":0.37788022},{"location":1,"value":0.19,"derivative":0}]},"derivative":0},
+			{"location":-0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.2222,"derivative":0},{"location":-0.75,"value":-0.2222,"derivative":0},{"location":-0.65,"value":0,"derivative":0},{"location":0.5954547,"value":2.9802322e-8,"derivative":0},{"location":0.6054547,"value":2.9802322e-8,"derivative":0.2534563},{"location":1,"value":0.05,"derivative":0.2534563}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.3,"derivative":0.5},{"location":-0.4,"value":0.025,"derivative":0},{"location":0,"value":0.025,"derivative":0},{"location":0.4,"value":0.025,"derivative":0},{"location":1,"value":0.03,"derivative":0.007000001}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.15,"derivative":0.5},{"location":-0.4,"value":0,"derivative":0},{"location":0,"value":0,"derivative":0},{"location":0.4,"value":0.025,"derivative":0.1},{"location":1,"value":0.03,"derivative":0.007000001}]},"derivative":0},
+			{"location":0.2,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.15,"derivative":0.5},{"location":-0.4,"value":0,"derivative":0},{"location":0,"value":0,"derivative":0},{"location":0.4,"value":0,"derivative":0},{"location":1,"value":0,"derivative":0}]},"derivative":0},
+			{"location":0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.02,"derivative":0},{"location":-0.4,"value":-0.03,"derivative":0},{"location":0,"value":-0.03,"derivative":0},{"location":0.4,"value":0,"derivative":0.06},{"location":1,"value":0,"derivative":0}]},"derivative":0}
+		]},"derivative":0},
+		{"location":-0.1,"value":{"coordinate":"erosion","points":[
+			{"location":-0.85,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.08880186,"derivative":0.38940096},{"location":1,"value":0.3,"derivative":0}]},"derivative":0},
+			{"location":-0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.115760356,"derivative":0.37788022},{"location":1,"value":0.25,"derivative":0}]},"derivative":0},
+			{"location":-0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.2222,"derivative":0},{"location":-0.75,"value":-0.2222,"derivative":0},{"location":-0.65,"value":0,"derivative":0},{"location":0.5954547,"value":2.9802322e-8,"derivative":0},{"location":0.6054547,"value":2.9802322e-8,"derivative":0.2534563},{"location":1,"value":0.100000024,"derivative":0.2534563}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.25,"derivative":0.5},{"location":-0.4,"value":0.05,"derivative":0},{"location":0,"value":0.05,"derivative":0},{"location":0.4,"value":0.05,"derivative":0},{"location":1,"value":0.060000002,"derivative":0.007000001}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.001,"derivative":0.01},{"location":0,"value":0.003,"derivative":0.01},{"location":0.4,"value":0.05,"derivative":0.094000004},{"location":1,"value":0.060000002,"derivative":0.007000001}]},"derivative":0},
+			{"location":0.2,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},
+			{"location":0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.02,"derivative":0},{"location":-0.4,"value":-0.03,"derivative":0},{"location":0,"value":-0.03,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.12},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0}
+		]},"derivative":0},
+		{"location":0.25,"value":{"coordinate":"erosion","points":[
+			{"location":-0.85,"value":{"coordinate":"ridgesBig","points":[{"location":-1,"value":0.2,"derivative":0},{"location":0,"value":0.28,"derivative":0},{"location":1,"value":0.425,"derivative":0}]},"derivative":0},
+			{"location":-0.7,"value":{"coordinate":"ridgesBig","points":[{"location":-1,"value":0.19,"derivative":0},{"location":0,"value":0.27,"derivative":0},{"location":1,"value":0.425,"derivative":0}]},"derivative":0},
+			{"location":-0.4,"value":{"coordinate":"ridgesBig","points":[{"location":-1,"value":0.1,"derivative":0},{"location":0,"value":0.2,"derivative":0},{"location":1,"value":0.3,"derivative":0}]},"derivative":0},
+			{"location":-0.25,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.25,"derivative":0.5},{"location":-0.4,"value":0.1,"derivative":0},{"location":0,"value":0.1,"derivative":0},{"location":0.4,"value":0.1,"derivative":0},{"location":1,"value":0.2,"derivative":0.049000014}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.0069999998,"derivative":0.07},{"location":0,"value":0.021,"derivative":0.07},{"location":0.4,"value":0.1,"derivative":0.658},{"location":1,"value":0.2,"derivative":0.049000014}]},"derivative":0},
+			{"location":0.2,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},
+			{"location":0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},
+			{"location":0.45,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0},{"location":-0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},{"location":0,"value":0.17,"derivative":0}]},"derivative":0},
+			{"location":0.55,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0},{"location":-0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},{"location":0,"value":0.17,"derivative":0}]},"derivative":0},
+			{"location":0.58,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.1,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},
+			{"location":0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.02,"derivative":0},{"location":-0.4,"value":-0.03,"derivative":0},{"location":0,"value":-0.03,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.12},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0}
+		]},"derivative":0},
+		{"location":1,"value":{"coordinate":"erosion","points":[
+			{"location":-0.85,"value":{"coordinate":"ridgesBig","points":[{"location":-1,"value":0.2,"derivative":0},{"location":0,"value":0.3,"derivative":0.1},{"location":1,"value":0.45,"derivative":0}]},"derivative":0},
+			{"location":-0.7,"value":{"coordinate":"ridgesBig","points":[{"location":-1,"value":0.19,"derivative":0},{"location":0,"value":0.29,"derivative":0.1},{"location":1,"value":0.45,"derivative":0}]},"derivative":0},
+			{"location":-0.4,"value":{"coordinate":"ridgesBig","points":[{"location":-1,"value":0.1,"derivative":0},{"location":0,"value":0.2,"derivative":0.3},{"location":1,"value":0.4,"derivative":0}]},"derivative":0},
+			{"location":-0.25,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.2,"derivative":0.5},{"location":-0.4,"value":0.15,"derivative":0},{"location":0,"value":0.15,"derivative":0},{"location":0.4,"value":0.15,"derivative":0},{"location":1,"value":0.25,"derivative":0.070000015}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0.099999994},{"location":0,"value":0.03,"derivative":0.099999994},{"location":0.4,"value":0.15,"derivative":0.94},{"location":1,"value":0.25,"derivative":0.070000015}]},"derivative":0},
+			{"location":0.2,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},
+			{"location":0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},
+			{"location":0.45,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0},{"location":-0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},{"location":0,"value":0.17,"derivative":0}]},"derivative":0},
+			{"location":0.55,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0},{"location":-0.4,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},{"location":0,"value":0.17,"derivative":0}]},"derivative":0},
+			{"location":0.58,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.05,"derivative":0.5},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0},
+			{"location":0.7,"value":{"coordinate":"ridges","points":[{"location":-1,"value":-0.02,"derivative":0.015},{"location":-0.4,"value":0.01,"derivative":0},{"location":0,"value":0.01,"derivative":0},{"location":0.4,"value":0.03,"derivative":0.04},{"location":1,"value":0.1,"derivative":0.049}]},"derivative":0}
+		]},"derivative":0}
+	]},
+	"factor":{"coordinate":"continents","points":[
+		{"location":-0.2,"value":3.95,"derivative":0},
+		{"location":-0.16,"value":{"coordinate":"erosion","points":[
+			{"location":-0.6,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":6.25,"derivative":0}]},"derivative":0},
+			{"location":-0.5,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":6.3,"derivative":0},{"location":0.05,"value":2.67,"derivative":0}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":8.3,"derivative":0},{"location":0.2,"value":8.25,"derivative":0}]},"derivative":0},
+			{"location":-0.25,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":8.3,"derivative":0},{"location":0.2,"value":8.25,"derivative":0}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":4.67,"derivative":0},{"location":0.05,"value":8.3,"derivative":0}]},"derivative":0},
+			{"location":0.03,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":8.3,"derivative":0},{"location":0.2,"value":8.25,"derivative":0}]},"derivative":0},
+			{"location":0.35,"value":8.25,"derivative":0},
+			{"location":0.45,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":8.25,"derivative":0},{"location":-0.69,"value":{"coordinate":"weirdness","points":[{"location":0,"value":8.25,"derivative":0},{"location":0.1,"value":0.625,"derivative":0}]},"derivative":0}]},"derivative":0},
+			{"location":0.55,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":8.25,"derivative":0},{"location":-0.69,"value":{"coordinate":"weirdness","points":[{"location":0,"value":8.25,"derivative":0},{"location":0.1,"value":0.625,"derivative":0}]},"derivative":0}]},"derivative":0},
+			{"location":0.62,"value":8.25,"derivative":0}
+		]},"derivative":0},
+		{"location":-0.1,"value":{"coordinate":"erosion","points":[
+			{"location":-0.6,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":5.47,"derivative":0}]},"derivative":0},
+			{"location":-0.5,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":6.3,"derivative":0},{"location":0.05,"value":2.67,"derivative":0}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":8.3,"derivative":0},{"location":0.2,"value":7.47,"derivative":0}]},"derivative":0},
+			{"location":-0.25,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":8.3,"derivative":0},{"location":0.2,"value":7.47,"derivative":0}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":4.67,"derivative":0},{"location":0.05,"value":8.3,"derivative":0}]},"derivative":0},
+			{"location":0.03,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":8.3,"derivative":0},{"location":0.2,"value":7.47,"derivative":0}]},"derivative":0},
+			{"location":0.35,"value":5.47,"derivative":0},
+			{"location":0.45,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":7.47,"derivative":0},{"location":-0.69,"value":{"coordinate":"weirdness","points":[{"location":0,"value":7.47,"derivative":0},{"location":0.1,"value":0.625,"derivative":0}]},"derivative":0}]},"derivative":0},
+			{"location":0.55,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":7.47,"derivative":0},{"location":-0.69,"value":{"coordinate":"weirdness","points":[{"location":0,"value":7.47,"derivative":0},{"location":0.1,"value":0.625,"derivative":0}]},"derivative":0}]},"derivative":0},
+			{"location":0.62,"value":7.47,"derivative":0}
+		]},"derivative":0},
+		{"location":0.03,"value":{"coordinate":"erosion","points":[
+			{"location":-0.6,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":5.08,"derivative":0}]},"derivative":0},
+			{"location":-0.5,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":6.3,"derivative":0},{"location":0.05,"value":2.67,"derivative":0}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":5.08,"derivative":0}]},"derivative":0},
+			{"location":-0.25,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":5.08,"derivative":0}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":2.67,"derivative":0},{"location":0.05,"value":6.3,"derivative":0}]},"derivative":0},
+			{"location":0.03,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":5.08,"derivative":0}]},"derivative":0},
+			{"location":0.35,"value":5.08,"derivative":0},
+			{"location":0.45,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":5.08,"derivative":0},{"location":-0.69,"value":{"coordinate":"weirdness","points":[{"location":0,"value":5.08,"derivative":0},{"location":0.1,"value":0.625,"derivative":0}]},"derivative":0}]},"derivative":0},
+			{"location":0.55,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":5.08,"derivative":0},{"location":-0.69,"value":{"coordinate":"weirdness","points":[{"location":0,"value":5.08,"derivative":0},{"location":0.1,"value":0.625,"derivative":0}]},"derivative":0}]},"derivative":0},
+			{"location":0.62,"value":5.08,"derivative":0}
+		]},"derivative":0},
+		{"location":0.06,"value":{"coordinate":"erosion","points":[
+			{"location":-0.6,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},
+			{"location":-0.5,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":6.3,"derivative":0},{"location":0.05,"value":2.67,"derivative":0}]},"derivative":0},
+			{"location":-0.35,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},
+			{"location":-0.25,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},
+			{"location":-0.1,"value":{"coordinate":"weirdness","points":[{"location":-0.05,"value":2.67,"derivative":0},{"location":0.05,"value":6.3,"derivative":0}]},"derivative":0},
+			{"location":0.03,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},
+			{"location":0.05,"value":{"coordinate":"ridges","points":[{"location":0.45,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},{"location":0.7,"value":1.56,"derivative":0}]},"derivative":0},
+			{"location":0.4,"value":{"coordinate":"ridges","points":[{"location":0.45,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},{"location":0.7,"value":1.56,"derivative":0}]},"derivative":0},
+			{"location":0.45,"value":{"coordinate":"ridges","points":[{"location":-0.7,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},{"location":-0.15,"value":1.37,"derivative":0}]},"derivative":0},
+			{"location":0.55,"value":{"coordinate":"ridges","points":[{"location":-0.7,"value":{"coordinate":"weirdness","points":[{"location":-0.2,"value":6.3,"derivative":0},{"location":0.2,"value":4.69,"derivative":0}]},"derivative":0},{"location":-0.15,"value":1.37,"derivative":0}]},"derivative":0},
+			{"location":0.58,"value":4.69,"derivative":0}
+		]},"derivative":0}
+	]},
+	"jaggedness":{"coordinate":"continents","points":[
+		{"location":-0.11,"value":0,"derivative":0},
+		{"location":0.1,"value":{"coordinate":"erosion","points":[
+			{"location":-1,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":0,"derivative":0},{"location":1,"value":{"coordinate":"weirdness","points":[{"location":-0.1,"value":0.5,"derivative":0},{"location":0.1,"value":0.25,"derivative":0}]},"derivative":0.2}]},"derivative":0},
+			{"location":-0.78,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":0,"derivative":0},{"location":1,"value":{"coordinate":"weirdness","points":[{"location":-0.1,"value":0.4,"derivative":0},{"location":0.1,"value":0.2,"derivative":0}]},"derivative":0.2}]},"derivative":0},
+			{"location":-0.5775,"value":{"coordinate":"ridges","points":[{"location":-0.9,"value":0,"derivative":0},{"location":1,"value":{"coordinate":"weirdness","points":[{"location":-0.01,"value":0.4,"derivative":0},{"location":0.01,"value":0.2,"derivative":0}]},"derivative":0.2}]},"derivative":0},
+			{"location":-0.375,"value":0,"derivative":0}
+		]},"derivative":0},
+		{"location":0.6,"value":{"coordinate":"erosion","points":[
+			{"location":-1,"value":{"coordinate":"ridgesBig","points":[{"location":-0.9,"value":0,"derivative":0},{"location":1,"value":{"coordinate":"weirdness","points":[{"location":-0.1,"value":1,"derivative":0},{"location":0.1,"value":0.5,"derivative":0}]},"derivative":0.3}]},"derivative":0},
+			{"location":-0.78,"value":{"coordinate":"ridgesBig","points":[{"location":-0.9,"value":0,"derivative":0},{"location":1,"value":{"coordinate":"weirdness","points":[{"location":-0.1,"value":1,"derivative":0},{"location":0.1,"value":0.5,"derivative":0}]},"derivative":0.3}]},"derivative":0},
+			{"location":-0.5775,"value":{"coordinate":"ridgesBig","points":[{"location":-0.9,"value":0,"derivative":0},{"location":1,"value":{"coordinate":"weirdness","points":[{"location":-0.1,"value":1,"derivative":0},{"location":0.1,"value":0.5,"derivative":0}]},"derivative":0.3}]},"derivative":0},
+			{"location":-0.375,"value":0,"derivative":0}
+		]},"derivative":0}
+	]}
+}*/
+function sortSplineLayer(o){
+		o.points.sort(function(a,b){return a.location-b.location;});
+		for(let j=0; j<o.points.length; j++){
+				const point = o.points[j];
+				if(typeof point.value === "object"){
+						sortSplineLayer(point.value);
+				}
+		}
+}
+for(let i in splineData){
+		sortSplineLayer(splineData[i]);
+}
+function getSplineLayer(o,continents,erosion,ridges,weirdness,ridgesBig){
+	if(typeof o === "number"){return o;}
+	let x;
+	switch(o.coordinate){
+			case "continents": x = continents; break;
+			case "erosion": x = erosion; break;
+			case "ridges": x = ridges; break;
+			case "weirdness": x = weirdness; break;
+			case "ridgesBig": x = ridgesBig; break;
+	}
+	const points = o.points;
+	
+	//binary search
+	let n2 = points.length, n = 0;
+	let n3 = n2;
+	while (n3 > 0) {
+		const n4 = Math.floor(n3 / 2);
+		const n5 = n + n4;
+		if (x < points[n5].location) {
+			n3 = n4;
+			continue;
+		}
+		n = n5 + 1;
+		n3 -= n4 + 1;
+	}
+	
+	//end binary search
+	let idx = n-1;
+		
+	if(idx === points.length-1){
+			const n = points.length-1;
+			return getSplineLayer(points[n].value,continents,erosion,ridges,weirdness,ridgesBig) + points[n].derivative * (x - points[n].location);
+	}
+	if(idx<0){
+			return getSplineLayer(points[0].value,continents,erosion,ridges,weirdness,ridgesBig) + points[0].derivative * (x - points[0].location);
+	}
+	
+	const loc0 = points[idx].location;
+	const loc1 = points[idx+1].location;
+	const der0 = points[idx].derivative;
+	const der1 = points[idx + 1].derivative;
+	const f = (x - loc0) / (loc1 - loc0);
+
+	const val0 = getSplineLayer(points[idx].value,continents,erosion,ridges,weirdness,ridgesBig);
+	const val1 = getSplineLayer(points[idx+1].value,continents,erosion,ridges,weirdness,ridgesBig);
+	const f8 = der0 * (loc1 - loc0) - (val1 - val0);
+	const f9 = -der1 * (loc1 - loc0) + (val1 - val0);
+	const f10 = lerp(f, val0, val1) + f * (1.0 - f) * lerp(f, f8, f9);
+	return f10;
+}
+
+const noiseSettings = {
+	"erosion": {
+		"firstOctave": -9,
+		"amplitudes": [
+				1.0,
+				1.0,
+				0.0,
+				1.0,
+				1.0
+		],
+		"useOffset":0
+	},
+	"weirdness": {
+		"firstOctave": -7,
+		"amplitudes": [
+				1.0,
+				2.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0
+		],
+		"useOffset":1
+	},
+	"weirdnessBig": {
+		"firstOctave": -7,
+		"amplitudes": [
+				1,
+				2,
+				1,
+				1,
+				1,
+				1
+		],
+		"useOffset":1
+	},
+	"temperature": {
+		"firstOctave": -10,
+		"amplitudes": [
+				1.5,
+				0.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0
+		],
+		"useOffset":2
+	},
+	"humidity": {
+		"firstOctave": -8,
+		"amplitudes": [
+				1.0,
+				1.0,
+				0.0,
+				0.0,
+				0.0,
+				0.0
+		],
+		"useOffset":3
+	},
+	"continentalness": {
+		"firstOctave": -9,
+		"amplitudes": [
+				1.0,
+				1.0,
+				2.0,
+				2.0,
+				2.0,
+				1.0,
+				1.0,
+				1.0,
+				1.0
+		],
+		"useOffset":4
+	},
+	"surface":{
+		"firstOctave":-6,
+		"amplitudes":[1,1,1],
+		"useOffset":0
+	}
+}
+for(let j in noiseSettings){
+	let n = noiseSettings[j]  //;n.firstOctave+=4
+	//code in loop from https://github.com/misode/deepslate/blob/main/src/math/noise
+	n.startAmplitude = Math.pow(2, (n.amplitudes.length - 1)) / (Math.pow(2, n.amplitudes.length) - 1)
+	n.startFrequency = 2**n.firstOctave
+
+	let min = +Infinity
+	let max = -Infinity
+	for (let i = 0; i < n.amplitudes.length; i += 1) {
+		if (n.amplitudes[i] !== 0) {
+			min = Math.min(min, i)
+			max = Math.max(max, i)
+		}
+	}
+	const expectedDeviation = 0.1 * (1 + 1 / (max - min + 1))
+	n.valueFactor = (1/6) / expectedDeviation
+}
+let badlandInterpolate, badlandInterpolateEroded
+const biomeGenerator = {
+	middleBiome(temperature,rainfall,weirdness,rainfallFloat,temperatureFloat){
+			switch(temperature){
+					case 0:
+							switch(rainfall){
+									case 0:
+											return weirdness>0?"iceSpikes":"snowyPlains"
+									case 1:
+									case 2:
+											return"snowyPlains"
+									case 3:
+											return "snowyTaiga"
+									case 4:
+											return "taiga"
+							}
+							break
+					case 1:
+						switch(rainfall){
+							case 0:
+								return weirdness>0?"rockyPlains":"plains"
+							case 1:
+								return weirdness>0?"shrubland":"plains"
+							case 2:
+								return "taiga"
+							case 3:
+							case 4:
+								return weirdness>0?"oldPineTaiga":"oldSpruceTaiga"
+						}
+					case 2:
+						switch(rainfall){
+							case 0:
+									return weirdness>0?"flowerForest":"sunflowerPlains"
+							case 1:
+									return "plains"
+							case 2:
+									return weirdness>0?"sparseForest":"forest"
+							case 3:
+									return weirdness>0?"oldBirchForest":"birchForest"
+							case 4:
+									return "darkForest"
+						}
+					case 3:
+						switch(rainfall){
+							case 0:
+								return "rockyPlains"
+							case 1:
+								return weirdness > 0 ? "grassySavanna" : "savanna"
+							case 2:
+								return "forest"//weirdness>0?"basicForest":"forest"
+							case 3:
+								return weirdness>0?"jungle":"sparseJungle"
+							case 4:
+								return weirdness>0?"bambooJungle":"jungle"
+						}
+					case 4:
+						switch(rainfall){
+							case 0:
+							case 1:
+								return "desert"
+							case 2:
+								return temperatureFloat < 3.55 ? "plains" : "desert"
+							case 3:
+							case 4:
+								return temperatureFloat < 3.55 ? "plains" : "dryShrubland"
+						}
+			}
+	},
+	beachBiome(temperature){
+			switch(temperature){
+					case 0:
+							return "snowyBeach"
+					case 4:
+							return "dryShrubland"
+					default:
+							return "beach"
+			}
+	},
+	peakBiome(temperature,rainfall,weirdness,ridges,erosion,jaggedness){
+			switch(temperature){
+					case 0:
+					case 1:
+					case 2:
+							return weirdness < -0.45 && jaggedness > 0.5 ? "jaggedPeaks" : "frozenPeaks"
+					case 3:
+					case 4:
+							return "stonePeaks"
+			}
+			
+	},
+	shatterdBiome(temperature,rainfall,weirdness,rainfallFloat,temperatureFloat){
+			switch(temperature){
+					case 0:
+						switch(rainfall){
+							case 0:
+							case 1:
+								return "windsweptGravellyHills"
+							case 2:
+								return "windsweptHills"
+							case 3:
+							case 4:
+								return "alpineHills"
+						}
+					case 1:
+						switch(rainfall){
+							case 0:
+							case 1:
+								return "windsweptGravellyHills"
+							case 2:
+								return "windsweptHills"
+							case 3:
+							case 4:
+								return "windsweptForest"
+						}
+					case 2:
+							switch(rainfall){
+									case 0:
+									case 1:
+									case 2:
+											return "windsweptHills"
+									case 3:
+									case 4:
+											return "windsweptForest"
+							}
+					case 3:
+					case 4:
+							return this.middleBiome(temperature,rainfall,weirdness,rainfallFloat,temperatureFloat)
+			}
+	},
+	plateauBiome(temperature,rainfall,weirdness,rainfallFloat,temperatureFloat){
+		switch(temperature){
+			case 0:
+				return this.middleBiome(temperature,rainfall,weirdness,rainfallFloat,temperatureFloat)
+			case 1:
+				switch(rainfall){
+					case 0:
+						return weirdness>0 ? "cherryGrove" : "meadow"
+					case 1:
+						return "meadow"
+					case 2:
+						return weirdness>0 ? "meadow" : "alpineHills"
+					case 3:
+						return weirdness>0 ? "meadow" : this.middleBiome(temperature,rainfall,weirdness,rainfallFloat,temperatureFloat)
+					case 4:
+						return this.middleBiome(temperature,rainfall,weirdness,rainfallFloat,temperatureFloat)
+				}
+			case 2:
+				switch(rainfall){
+					case 0:
+					case 1:
+							return weirdness>0 ? "cherryGrove" : "meadow"
+					case 2:
+							return "meadow"
+					case 3:
+					case 4:
+							return weirdness>0 ? "bambooForest" : this.middleBiome(temperature,rainfall,weirdness,rainfallFloat,temperatureFloat)
+				}
+			case 3:
+				switch(rainfall){
+					case 0:
+					case 1:
+							return "savannaPlateau"
+					case 2:
+					case 3:
+					case 4:
+							return this.middleBiome(temperature,rainfall,weirdness,rainfallFloat,temperatureFloat)
+				}
+			case 4:
+				return this.badlandsBiome(rainfall,weirdness)
+		}
+	},
+	badlandsBiome(rainfall,weirdness){
+		switch(rainfall){
+			case 0:
+			case 1:
+					badlandInterpolateEroded = mapClamped(weirdness,-0.05,0.05)
+					return weirdness>0 ? "erodedBadlands" : "badlands"
+			case 2:
+					return "badlands"
+			case 3:
+			case 4:
+					return "woodedBadlands"
+		}
+	},
+	riverBiome(temperature,rainfall,continentalness,erosion){
+		if(temperature===0) return "frozenRiver"
+		else if(erosion > 0 && erosion < 0.4 && continentalness > 0.4) return "rockyRiver"
+		else if(temperature === 3 && rainfall<2 || temperature === 4) return "dryRiver"
+		else return "river"
+	},
+	oceanBiome(temperature,continentalness){
+		switch(temperature){
+			case 0:
+				return continentalness < -0.45 ? "deepFrozenOcean" : "frozenOcean"
+				break
+			case 1:
+				return continentalness < -0.45 ? "deepColdOcean" : "coldOcean"
+				break
+			case 2:
+				return continentalness < -0.45 ? "deepOcean" : "ocean"
+				break
+			case 3:
+				return continentalness < -0.45 ? "deepLukewarmOcean" : "lukewarmOcean"
+				break
+			case 4:
+				return "warmOcean"
+				break
+		}
+	},
+	waterBiome(temperature,rainfall,continentalness,ridges,prevBiome,erosion){
+			return ridges<-0.5 && continentalness > 0 ? this.riverBiome(temperature,rainfall,continentalness,erosion) : (continentalness<-0.1 ? this.oceanBiome(temperature,continentalness) : prevBiome)
+	},
+	get(temperature,rainfall,weirdness,ridges,continentalness,erosion,height,jaggedness,bottom,rainfallFloat,temperatureFloat,jagged,ridgesBig){
+		//*rett*/return "swamp"
+		badlandInterpolate = badlandInterpolateEroded = 0
+		if(continentalness < -1){
+			return "mushroomFields"
+		}else if(continentalness<-0.2){
+			return this.oceanBiome(temperature,continentalness)
+		}else if((jaggedness > 0.3 || jagged > 30) && continentalness<-0.4){
+			return this.peakBiome(temperature,rainfall,weirdness,ridges,erosion,jaggedness)
+		}else if((erosion < -0.6 && temperature<3 || erosion < -0.375 && temperature === 0) && weirdness<0 && ridgesBig>0 && continentalness>-0.12){
+			return rainfall > 1 ? (temperature > 2 ? "alpineHills" : "grove") : "snowySlopes"
+		}else if(erosion > 0.42 && erosion < 0.56 && ridges > -0.5 && continentalness <= 0.2 && weirdness>0 && temperature >= 2 && rainfall < 4){
+			return "windsweptSavanna"
+		}else if(ridges < 0.2 && erosion > 0.6 && continentalness > 0.1 && temperature>0){
+			return temperature>3 || temperature===3&&weirdness>0 ? "mangroveSwamp" : (temperature < 2 ? "marsh" : "swamp")
+		}else if(erosion > 0.42 && erosion < 0.56 && ridges > -0.2 && continentalness > 0.2){
+			return this.shatterdBiome(temperature,rainfall,weirdness,rainfallFloat,temperatureFloat)
+		}else if(continentalness > 0.03 && erosion < 0 && ridges > -0.2){
+			return this.plateauBiome(temperature,rainfall,weirdness,rainfallFloat,temperatureFloat)
+		}else if(continentalness > 0.25 && temperature === 4 && ((ridges*0.5+0.5)+0.25)*0.5-(erosion*0.5+0.5)>0){
+			badlandInterpolate = mapClamped(((ridges*0.5+0.5)+0.25)*0.5-(erosion*0.5+0.5), 0,0.1)*mapClamped(continentalness,0.25,0.3)
+			return this.badlandsBiome(rainfall,weirdness)
+		}else if(continentalness<-0.12){
+			if(erosion>-0.2 || ridges < 0.3) return this.beachBiome(temperature)
+			else return "stonyShore"
+		}/*else if(weirdness > 0.25 && weirdness < 0.35 && continentalness > 0 && factor>4 && !jaggedness && height < 100 && temperature > 2){
+			return "trashland"
+		}*/else return this.middleBiome(temperature,rainfall,weirdness,rainfallFloat,temperatureFloat)
+	},
+	caveBiome(continentalness,temperature,rainfall){
+		if(continentalness > 0.2 && rainfall > 2){
+			return temperature > 2 ? "lushCaves" : "dripstoneCaves"
+		}
+	}
+}
+function interpolateHash(x,y){
+	return lerp(y-Math.floor(y),hash(x,Math.floor(y)),hash(x,Math.floor(y)+1))
+}
+function badlandsBase(x,y,z){
+	const offsets = noiseProfile.offsets[7]
+	if(y<64) return blockIds.stone
+	else if(y<80) return blockIds.redSandstone
+	let shift = Math.round(noiseProfile.generator.noise3d(x*0.00001,y*0.0004,z*0.00001)*40)
+	let base = Math.round(interpolateHash(shift,y*0.25)*4+hash(shift,y)) //Math.abs(Math.round(noiseProfile.generator.noise3d(x*0.00001,y*0.1,z*0.00001)*140))%7
+	base = base-Math.floor(base/5)*5
+	if(y>140 && base>2) base = base%3
+	switch(base){
+		case 0: return blockIds.terracotta
+		case 1: return blockIds.lightGrayTerracotta
+		case 2: return blockIds.whiteTerracotta
+		case 3: return blockIds.yellowTerracotta
+		case 4: return blockIds.orangeTerracotta
+	}
+}
+function stoneLayersBase(x,y,z){
+	let shift = Math.round(noiseProfile.generator.noise3d(x*0.00001,y*0.0004,z*0.00001)*40)
+	let base = hash(shift,y*0.25)*0.75+hash(shift,y)*0.25
+	return base>0.65 ? (base>0.8 ? blockIds.calcite : blockIds.limestone) : blockIds.stone
+}
+let currentBlocks = [], tops, biomes, maxY, minY, waterTops, caveY, caveBiomes
+const minHeight = -64
+function setBlock(x,y,z,id){
+	let py = y
+	y -= minHeight
+	if(!currentBlocks[y>>4]){
+		while (!currentBlocks[y>>4]){
+			currentBlocks.push(new Int32Array(4096))
+		}
+	}
+	currentBlocks[y >> 4][x<<8 | (y & 15)<<4 | z] = id
+	maxY = Math.max(maxY,py)
+	minY = Math.max(minY,py)
+}
+function setBlockSolid(x,y,z,id){
+	if(id !== undefined) setBlock(x,y,z,id)
+}
+function fillChunk(y,id){
+	let py = y
+	y -= minHeight
+	if(!currentBlocks[y>>4]){
+		while (!currentBlocks[y>>4]){
+			currentBlocks.push(new Int32Array(4096))
+		}
+	}
+	currentBlocks[y >> 4].fill(id)
+	maxY = Math.max(maxY,((py>>4)<<4)+16)
+	minY = Math.max(minY,(py>>4)<<4)
+}
+function spawnBlock(x,y,z,id){
+	if(!getBlock(x,y,z)) setBlock(x,y,z,id)
+}
+function getBlock(x,y,z){
+	y -= minHeight
+	if(!currentBlocks[y>>4]) return 0
+	return currentBlocks[y >> 4][x<<8 | (y & 15)<<4 | z]
+}
+const waterHeight = 62
+let blockIds,biomeIds,blockStates,biomeNames
+
+let groundType
+function getGroundType(x,z,s){
+	groundType = mapClamped(
+		noise2d(x*s, z*s, 2)
+	,0.25,0.5)// Used to generate patches of different ground blocks
+}
+function getBase(biome){
+	if(biome === "erodedBadlands" || biome === "badlands" || biome === "woodedBadlands") return "badlands"
+	else if(biome === "snowyBeach" || biome === "beach" || biome === "desert" || biome === "dryShrubland") return "sandstone"
+	else if(biome === "stonePeaks" || biome === "stonyShore") return "stoneLayers"
+}
+function getSurfaceBlocks(biome,x,y,z,surfaceThick){
+	let groundBlock = blockIds.grass, underBlock = blockIds.dirt
+	//steepness calculated in populate
+	if(biome === "snowySlopes" || biome === "grove") getGroundType(x,z,0.01), groundBlock = underBlock = groundType > 0.45 && groundType < 0.5 ? blockIds.powderSnow : blockIds.snowBlock
+	else if(biome === "snowyBeach") groundBlock = underBlock = blockIds.sand
+	else if(biome === "jaggedPeaks") groundBlock = blockIds.snowBlock, underBlock = blockIds.stone
+	else if(biome === "frozenPeaks") getGroundType(x,z,0.01), groundBlock = underBlock = groundType > 0.45 && groundType < 0.5 ? blockIds.packedIce : blockIds.snowBlock
+	else if(biome === "iceSpikes") getGroundType(x,z,0.2), groundBlock = groundType > 0.8 ? blockIds.packedIce : blockIds.snowBlock
+	else if(biome === "desert" || biome === "beach") groundBlock = underBlock = blockIds.sand
+	else if(biome === "stonePeaks") getGroundType(x,z,0.01), groundBlock = underBlock = groundType > 0.45 && groundType < 0.5 ? blockIds.calcite : undefined
+	else if(biome === "stonyShore") getGroundType(x,z,0.01), groundBlock = underBlock = groundType > 0.45 && groundType < 0.5 ? blockIds.gravel : undefined
+	else if(biome === "windsweptGravellyHills") groundBlock = surfaceThick>5 ? (surfaceThick>5.1 ? blockIds.gravel : blockIds.stone) : (surfaceThick<1 ? blockIds.limestone : blockIds.grass), underBlock = surfaceThick>5 ? (surfaceThick>5.1 ? blockIds.gravel : blockIds.stone) : (surfaceThick<1 ? blockIds.limestone : blockIds.dirt)
+	else if(biome === "erodedBadlands" || biome === "badlands") groundBlock = underBlock = y > 80 ? undefined : blockIds.redSand
+	else if(biome === "woodedBadlands") groundBlock = y > 97 ? (surfaceThick>3.5 ? blockIds.coarseDirt : blockIds.grass) : undefined, underBlock = undefined
+	else if(biome === "bambooJungle") getGroundType(x,z,0.1), groundBlock = groundType>0.5 ? blockIds.podzol : blockIds.grass
+	else if(biome === "windsweptHills") groundBlock = surfaceThick>5 ? blockIds.stone : (surfaceThick<1 ? blockIds.limestone : blockIds.grass), underBlock = surfaceThick>5 ? blockIds.stone : (surfaceThick<1 ? blockIds.limestone : blockIds.dirt)
+	else if(biome === "oldSpruceTaiga" || biome === "oldPineTaiga") getGroundType(x,z,0.1), groundBlock = groundType > 0.75 ? (surfaceThick>3.5 ? blockIds.grass : blockIds.rootedDirt) : blockIds.podzol
+	else if(biome === "mushroomFields") groundBlock = blockIds.mycelium
+	else if(biome === "forest" || biome === "birchForest") getGroundType(x,z,0.1), groundBlock = groundType < 0.35 ? blockIds.podzol : (groundType < 0.55 ? blockIds.grass : (groundType < 0.7 ? blockIds.rootedDirt : blockIds.coarseDirt))
+	else if(biome === "alpineHills") groundBlock = surfaceThick>4.5 ? blockIds.coarseDirt : blockIds.grass
+	else if(biome === "rockyPlains") groundBlock = surfaceThick>5.5 ? blockIds.stone : blockIds.grass, underBlock = surfaceThick>5.5 ? blockIds.stone : blockIds.dirt
+	else if(biome === "windsweptSavanna") groundBlock = surfaceThick>4.5 ? (surfaceThick > 6 ? blockIds.stone : blockIds.coarseDirt) : blockIds.grass
+	else if(biome === "sparseForest" || biome === "oldBirchForest") getGroundType(x,z,0.1), groundBlock = groundType > 0.25 ? (groundType > 0.5 ? blockIds.coarseDirt : blockIds.rootedDirt) : blockIds.grass
+	else if(biome === "dryShrubland") getGroundType(x,z,0.1), groundBlock = underBlock = blockIds.sand
+	else if(biome === "bambooForest") getGroundType(x,z,0.1), groundBlock = groundType > 0.5 ? (surfaceThick>3.5 ? blockIds.grass : blockIds.rootedDirt) : blockIds.podzol
+	//else if(biome === "taiga") getGroundType(x,z,0.1), groundBlock = groundType < 0.25 ? blockIds.podzol : (groundType < 0.75 ? blockIds.grass : blockIds.rootedDirt)
+	else if(biome === "marsh") getGroundType(x,z,0.4), groundBlock = groundType > 0.85 ? blockIds.sand : blockIds.grass
+	else if(biome === "shrubland") getGroundType(x,z,0.6), groundBlock = groundType > 0.35 ? blockIds.grass : blockIds.coarseDirt
+	return [groundBlock,underBlock]
+}
+function getBottomHeight(x,z,scale){ //used for river generator
+	x /= generateRiverChunk.riverScale, z /= generateRiverChunk.riverScale
+	scale /= generateRiverChunk.riverScale
+	//let useLowQuality = scale > 0//8//allows more rivers to generate
+	const baseWeirdness = complicatedNoise(x*0.25,z*0.25, noiseSettings.weirdness)
+	const ridges = (Math.abs(Math.abs(baseWeirdness)-0.666666667)-0.333333333)*-3
+	const ridgesBig = (1-Math.abs(complicatedNoise(x*0.25,z*0.25, noiseSettings.weirdnessBig)))*2-1
+	const continentalness = complicatedNoise(x*0.25,z*0.25, /*useLowQuality ? noiseSettings.continentalnessLowQuality : */noiseSettings.continentalness)
+	const erosion = complicatedNoise(x*0.25,z*0.25, /*useLowQuality ? noiseSettings.erosionLowQuality : */noiseSettings.erosion)
+	const offsetValue = getSplineLayer(splineData.offset,continentalness,erosion,ridges,baseWeirdness,ridgesBig)
+	const factorValue = getSplineLayer(splineData.factor,continentalness,erosion,ridges,baseWeirdness,ridgesBig)
+	const jaggedness = getSplineLayer(splineData.jaggedness,continentalness,erosion,ridges,baseWeirdness,ridgesBig)
+	getBottomHeight.topHeight = offsetValue + (1/factorValue)/2.5
+	getBottomHeight.cantSpawnRiver = jaggedness > 0.25 || factorValue<2
+	return offsetValue// - (1/factorValue)/8
+}
+let temperatureHere, rainfallHere
+function getTemperatureAndRainfall(x,z,noTemp){
+	if(!noTemp) temperatureHere = (
+		mapClamped(complicatedNoise(x*0.25, z*0.25, noiseSettings.temperature),-1,1)*4
+		+map(noise2d(x*0.33, z*0.33, 2),0.25,0.5,-1,1)*0.01
+	)//Temperature and Rainfall for biome generation
+	rainfallHere = (
+		mapClamped(complicatedNoise(z*0.25, x*0.25, noiseSettings.humidity),-1,1)*4
+		+map(noise2d(z*0.33, x*0.33, 2),0.25,0.5,-1,1)*0.01
+	)
+}
+function generate(trueX,trueZ,seed,fancyRivers,caves){
+	useNoise(seed)
+	tops = new Int16Array(256)
+	waterTops = new Int16Array(256)//for river
+	currentBlocks.length = 0
+	biomes = new Uint8Array(256)
+	maxY = -Infinity, minY = Infinity
+	fillChunk(-64,blockIds.deepslate)
+	fillChunk(-48,blockIds.deepslate)
+	fillChunk(-32,blockIds.deepslate)
+	fillChunk(-16,blockIds.deepslate)
+	if(fancyRivers) generateRiverChunk(trueX/16,trueZ/16,seed)
+	caveY = new Int16Array(512)
+	caveBiomes = new Uint8Array(256)
+	for (let i = 0; i < 16; i++) {
+		for (let k = 0; k < 16; k++) {
+			const erosion = complicatedNoise((trueX + i)*0.25, (trueZ + k)*0.25, noiseSettings.erosion)
+			const continentalness = complicatedNoise((trueX+i)*0.25,(trueZ+k)*0.25,noiseSettings.continentalness)
+			const baseWeirdness = complicatedNoise((trueX + i)*0.25, (trueZ + k)*0.25, noiseSettings.weirdness)
+			const ridges = (Math.abs(Math.abs(baseWeirdness)-0.666666667)-0.333333333)*-3
+			const ridgesBig = (1-Math.abs(complicatedNoise((trueX + i)*0.25,(trueZ + k)*0.25, noiseSettings.weirdnessBig)))*2-1
+			getTemperatureAndRainfall(trueX + i, trueZ + k)
+			const temperatureFloat = temperatureHere, temperature = Math.round(temperatureFloat)//Temperature and Rainfall for biome generation
+			const rainfallFloat = rainfallHere, rainfall = Math.round(rainfallFloat)
+			let surfaceThick = complicatedNoise(trueX + i, trueZ + k, noiseSettings.surface)*2.75+3+hash(trueX+i,trueZ+k)*0.25
+			/*mapClamped(
+				noise2d((trueX + i) * 0.1, (trueZ + k) * 0.1, 4, 1)
+			,0.25,0.7)*6*/// Determines thickness of surface blocks
+
+			let riverHeight = fancyRivers ? riverHeights[k*16+i] : 0
+			const riverLowerHeight = fancyRivers ? riverLoweredHeight[k*16+i] : 0
+			//const riverLower = fancyRivers ? riverFinalLowers[k*16+i] : 0
+			const riverDist = fancyRivers ? riverFinalDists[k*16+i] : 0, riverNormalDist = fancyRivers ? riverFinalNormalDists[k*16+i] : 0
+			//if(riverLowerHeight<0)setBlock(i,80+Math.round(riverLowerHeight*10),k,blockIds.orangeConcrete),setBlock(i,91,k,blockIds.glass)
+
+			const offsetValue = lerp(riverDist,getSplineLayer(splineData.offset,continentalness,erosion,ridges,baseWeirdness,ridgesBig),riverLowerHeight)
+			const factorValue = 1/lerp(riverNormalDist,1/getSplineLayer(splineData.factor,continentalness,erosion,ridges,baseWeirdness,ridgesBig),0.015625)
+			const jaggedness = getSplineLayer(splineData.jaggedness,continentalness,erosion,ridges,baseWeirdness,ridgesBig)
+			const addFactor = (1/factorValue)*64
+			const adjOffset = offsetValue*128+64
+			let jagged = (jaggedness ? 128*(noise2dDouble((trueX + i) * 0.01, (trueZ + k) * 0.01, 4)*0.5+0.5)*jaggedness : 0)
+			let noiseBottom = Math.max(adjOffset - addFactor*0.25/*because of quadruplePositive*/ + jagged,0)
+			let noiseTop = Math.max(adjOffset + addFactor + jagged,0)
+			let noiseMiddle = Math.max(adjOffset+jagged,0)
+			let biome = biomeGenerator.get(temperature,rainfall,baseWeirdness,ridges,continentalness,erosion,noiseTop,jaggedness,noiseBottom,rainfallFloat,temperatureFloat,jagged,ridgesBig)
+			const badlandInterpolateCache = badlandInterpolate*badlandInterpolateEroded
+			let addErodedBadland = (Math.max(baseSimplexNoise((trueZ + k) * 0.1, 0, (trueX + i) * 0.1),0)*2)**2*badlandInterpolateCache*80
+			if(addErodedBadland > 32) addErodedBadland -= 16
+			else if(addErodedBadland > 16) addErodedBadland = 16
+			if(addErodedBadland > 64) addErodedBadland = 64
+			jagged += addErodedBadland
+			//const noiseSize = lerp(mapClamped(continentalness,0.65,0.75), mapClamped(factorValue,2.6,6), 1)
+			//const hillNoise = noiseSize<1 ? idk4of5(noise2dDouble((trueX + i) * 0.02, (trueZ + k) * 0.02, 2))*(1-noiseSize) : 0
+			noiseBottom += Math.floor(addErodedBadland), noiseTop += Math.ceil(addErodedBadland)
+
+			let top = 0
+			let solid = true
+			let bedrockAdd = Math.round(noise2d((trueX + i) * 0.5, (trueZ + k) * 0.5, 1)*2*6)
+			setBlock(i, -64, k, blockIds.bedrock) //There is always at least 1 layer of bedrock
+			for(let j=0; j<bedrockAdd; j++){
+				setBlock(i, j, k, blockIds.deepslate)
+				setBlock(i, j-63, k, blockIds.bedrock)
+			}
+			const base = getBase(biome)
+			const sandstoneDeepness = Math.max(Math.round(adjOffset-30),10)
+			/*if(base === "badlands"){
+				for(let j=bedrockAdd; j<64; j++){
+					setBlock(i, j, k, blockIds.stone)
+				}
+				for(let j=64; j<Math.floor(noiseBottom); j++){
+					setBlock(i, j, k, badlandsBase(i,j,k))
+				}
+			}else if(base === "sandstone"){
+				for(let j=bedrockAdd; j<sandstoneDeepness; j++){
+					setBlock(i, j, k, blockIds.stone)
+				}
+				for(let j=sandstoneDeepness; j<Math.floor(noiseBottom); j++){
+					setBlock(i, j, k, blockIds.sandstone)
+				}
+			}else if(base === "stoneLayers"){
+				for(let j=bedrockAdd; j<Math.floor(noiseBottom); j++){
+					setBlock(i, j, k, stoneLayersBase(i,j,k))
+				}
+			}else{
+				for(let j=bedrockAdd; j<Math.floor(noiseBottom); j++){//This part is always stone
+					setBlock(i, j, k, blockIds.stone)
+				}
+			}*/
+			//if(badlandInterpolate)setBlock(i,100+badlandInterpolate*16,k,blockIds.glass)
+
+			//for caves
+			let caveBiome = biomeGenerator.caveBiome(continentalness,temperature,rainfall)
+			let grass = noiseBottom - 8
+			let caveMax = minHeight, caveMin = minHeight
+			const riverClosenessHere = 1-(1-Math.max((riverNormalDist-0.8)*10,0))**2 //1-(1-riverCloseness[k*16+i])**2
+			let density, caveDense, wx = trueX+i, wz = trueZ+k
+			let prevNoodle = 0, nextNoodle = 0
+			let caveDepth, caveWaterSurfaceness
+			let cavePrevDense = 1, caveNextDense = 1, caveNextDenseY = minHeight+8
+
+			for (let j = minHeight+bedrockAdd; j < Math.max(noiseTop+1,waterHeight+1); j++) {
+				if(j<noiseBottom) density = 1
+				else if(j>noiseTop+1) density = 0 //ocean above, not solid
+				else{
+					density = Math.min( noise3d((trueX + i), j, (trueZ + k), (adjOffset-j + jagged)/64*factorValue), 1)
+				}
+				caveWaterSurfaceness = Math.max(1-density, Math.min((8-(noiseBottom-j))*0.125,1),0) * Math.min(Math.max((waterHeight+8-j)*0.125,0,riverClosenessHere)*2,1)
+				const caveDenseAdd = -((1-density)**2*0.1)*(1-caveWaterSurfaceness) + caveWaterSurfaceness
+				if(j<=noiseTop+1 && caves){//for caves
+					if(j === caveNextDenseY){
+						caveDepth = Math.max(Math.min((noiseMiddle-j)/30,1),0) //- (1-Math.min((j-(minHeight+4))/20,1))
+						const noodleness = mapClamped(caveNoise(wx*0.00390625,j*0.00390625,wz*0.00390625, 1, 0),-0.2,0)
+						const noodleThick = noodleness && caveNoise(wx*0.00390625,j*0.00390625,wz*0.00390625, 1, 3)
+						const noodleA = noodleness && caveNoise(wx*0.03125,j*0.03125,wz*0.03125, 0, 0)
+						const noodleB = noodleness && (noodleA+noodleThick*-0.025-0.1)*noodleness<0/*before: if noodleA is too big, it won't generate anyway*/ && caveNoise(wx*0.03125,j*0.03125,wz*0.03125, 0, 3)
+						const spaghettiRarity = caveNoise2(wx*0.0009765625,j*0.00048828125,wz*0.0009765625, 1, 6)
+						const spaghettiThick = caveNoise2(wx*0.00390625,j*0.00390625,wz*0.00390625, 1, 9)
+						const spaghettiA = caveNoiseWeirdScale(spaghettiRarity, wx*0.015625,j*0.015625,wz*0.015625, 0, 6)
+						const spaghettiB = caveNoiseWeirdScale(spaghettiRarity, wx*0.015625,j*0.015625,wz*0.015625, 0, 9)
+						let spaghetti = (Math.sqrt((Math.abs(spaghettiA)*8)**2+(Math.abs(spaghettiB)*8)**2)-1)*0.125 + spaghettiThick*0.083
+						//if(spaghetti>0) spaghetti = (Math.sqrt(spaghetti+1)-1)/8
+						const caveLayer = caveNoise(wx*0.004,j*0.008,wz*0.004, 2,0)**2*4
+						const cheese = caveNoise(wx*0.005,j*0.003,wz*0.005, 0, 12)*0.5+0.27+caveLayer+(1-caveDepth)*0.5//depth makes them appear less on surface
+						cavePrevDense = caveDense = caveNextDense
+						caveNextDense = Math.min(spaghetti,cheese) //density + Math.min(spaghetti, cheese) + caveWaterSurfaceness
+						if(caveNextDense < 0) caveNextDense += Math.max(caveNoise(wx*0.1,j*0.0015,wz*0.1, 0,15),0)**2*lerp(caveNoise2(wx*0.04,j*0.0015,wz*0.04, 1,15),0.1,0.75)//pillar
+						caveNextDenseY += 4
+						prevNoodle = nextNoodle
+						nextNoodle = (Math.max(Math.abs(noodleA),Math.abs(noodleB)) + noodleThick*-0.025-0.1)*noodleness + (1-caveDepth)*0.02
+					}else caveDense = lerp((caveNextDenseY-j)*0.25, caveNextDense, cavePrevDense)
+				}
+				if (density > 0) {
+					if(caves && caveDense+caveDenseAdd < 0){
+						if(j < bedrockAdd) setBlock(i,j,k,0)
+						if(solid){
+							if(j>grass){
+								let [groundBlock,underBlock] = getSurfaceBlocks(biome,trueX+i,top,trueZ+k,surfaceThick)
+								if(surfaceThick>0 && groundBlock) setBlock(i, top, k, groundBlock)
+								if(underBlock){//IF you CHANGE this, change one in normal TERRAIN
+									for(let t=1; t<surfaceThick && getBlock(i, top-t, k); t++) setBlock(i, top-t, k, underBlock)
+								}
+							}else caveMin = j-1
+							solid = false
+						}
+					}else if(caves && lerp((caveNextDenseY-j)*0.25, nextNoodle, prevNoodle) + caveWaterSurfaceness < 0){
+						if(j < bedrockAdd) setBlock(i,j,k,0)
+						if(solid){
+							if(j>grass){
+								let [groundBlock,underBlock] = getSurfaceBlocks(biome,trueX+i,top,trueZ+k,surfaceThick)
+								if(surfaceThick>0 && groundBlock) setBlock(i, top, k, groundBlock)
+								if(underBlock){//IF you CHANGE this, change one in normal TERRAIN
+									for(let t=1; t<surfaceThick && getBlock(i, top-t, k); t++) setBlock(i, top-t, k, underBlock)
+								}
+							}
+							solid = false
+						}
+					}else{
+						if(j>=bedrockAdd){
+							setBlock(i, j, k, base === "badlands" ? badlandsBase(i,j,k) : (base === "sandstone" && j>=sandstoneDeepness ? blockIds.sandstone : (base === "stoneLayers" ? stoneLayersBase(i,j,k) : blockIds.stone)))
+						}
+						if(!solid && j<grass) caveMax = j-1
+						solid = true
+						top = j
+					}
+				} else {
+					if(solid && j>=noiseBottom){
+						if (top >= waterHeight && !riverHeight) {
+							let [groundBlock,underBlock] = getSurfaceBlocks(biome,trueX+i,top,trueZ+k,surfaceThick)
+							if(surfaceThick>0 && groundBlock) setBlock(i, top, k, groundBlock)
+							if(underBlock){//IF you CHANGE this, change one in caves
+								for(let t=1; t<surfaceThick && getBlock(i, top-t, k); t++) setBlock(i, top-t, k, underBlock)
+							}
+						}else{
+							biome = biomeGenerator.waterBiome(temperature,rainfall,continentalness,ridges,biome,erosion)
+							let oceanSurfaceBlock = blockIds.dirt
+							if(biome === "warmOcean") oceanSurfaceBlock = blockIds.sand
+							else if(biome.endsWith("Ocean") || biome === "ocean") oceanSurfaceBlock = blockIds.gravel
+							else if(biome === "marsh") oceanSurfaceBlock = blockIds.mud
+							setBlock(i,top,k,oceanSurfaceBlock)
+							setBlock(i,top-1,k,oceanSurfaceBlock)
+							setBlock(i,top-2,k,oceanSurfaceBlock)
+							setBlock(i,top-3,k,oceanSurfaceBlock)
+							setBlock(i,top-4,k,oceanSurfaceBlock)
+							setBlock(i,top-5,k,oceanSurfaceBlock)
+						}
+					}
+					solid = false
+					if(j <= waterHeight){
+						setBlock(i, j, k, blockIds.Water)
+					}
+				}
+			}
+			if(riverHeight){
+				if(top-1 > waterHeight){
+					setBlock(i,top,k,0)
+					waterTops[k*16+i] = top-1
+					let bottom = Math.round(top-1-riverHeight)
+					for(let y=top-1; y>=Math.max(bottom,waterHeight); y--){
+						setBlock(i,y,k,0)
+					}
+					//setBlock(i,top+3,k,blockIds.orangeConcrete)
+					//top = bottom-1
+				}else if(top >= waterHeight){
+					setBlock(i,waterHeight+1,k,0)
+					setBlock(i,waterHeight,k,0)
+					waterTops[k*16+i] = waterHeight
+					//top--
+				}
+			}
+			tops[k*16+i] = top
+			biomes[k * 16 + i] = biomeIds[biome]
+			if(caves && caveBiome && caveMax !== minHeight && caveMin !== minHeight && caveMin < noiseBottom && caveMin < caveMax){
+				caveBiomes[k*16+i] = biomeIds[caveBiome]
+				caveY[k*16+i] = caveMin
+				caveY[k*16+i+256] = caveMax
+			}
+		}
+	}
+}
+function isLand(x,z){
+	const trueX = x*16+8, trueZ = z*16+8
+	const baseWeirdness = complicatedNoise(trueX*0.25, trueZ*0.25, noiseSettings.weirdness)
+	const ridges = (Math.abs(Math.abs(baseWeirdness)-0.666666667)-0.333333333)*-3
+	const ridgesBig = (1-Math.abs(complicatedNoise(x*0.25,z*0.25, noiseSettings.weirdnessBig)))*2-1
+	const continentalness = complicatedNoise(trueX*0.25,trueZ*0.25,noiseSettings.continentalness)
+	const erosion = complicatedNoise(trueX*0.25, trueZ*0.25, noiseSettings.erosion)
+	const offsetValue = getSplineLayer(splineData.offset,continentalness,erosion,ridges,baseWeirdness,ridgesBig)
+	const factorValue = getSplineLayer(splineData.factor,continentalness,erosion,ridges,baseWeirdness,ridgesBig)
+	const jaggedness = getSplineLayer(splineData.jaggedness,continentalness,erosion,ridges,baseWeirdness,ridgesBig)
+	const adjOffset = offsetValue*128+64
+	const addFactor = (1/factorValue)*64
+	const jagged = jaggedness ? 128*(noise2dDouble(trueX * 0.006, trueZ * 0.006, 4)*0.5+0.5)*jaggedness : 0
+	const noiseBottom = Math.max(adjOffset - addFactor*0.25/*because of quadruplePositive*/ + jagged,0)
+	const noiseTop = Math.max(adjOffset + addFactor + jagged,0)
+	/*getTemperatureAndRainfall(trueX, trueZ)
+	const temperatureFloat = temperatureHere, temperature = Math.round(temperatureFloat)//Temperature and Rainfall for biome generation
+	const rainfallFloat = rainfallHere, rainfall = Math.round(rainfallFloat)
+	let biome = biomeGenerator.get(temperature,rainfall,baseWeirdness,ridges,continentalness,erosion,noiseTop,jaggedness,noiseBottom,rainfallFloat,temperatureFloat)*/
+	if(noiseTop<waterHeight) return false
+	let solid = false
+	for (let j = Math.max(Math.floor(noiseBottom),waterHeight); j < noiseTop; j++) {
+		let n = noise3d(trueX, j, trueZ, (adjOffset-j + jagged)/64*factorValue)
+		if(n>=0) solid = true
+		if(n<0 && solid) return j-1
+	}
+	return false
+}
+function findLand(seed){
+	useNoise(seed)
+	let lastProg = Date.now()
+	let i=-1
+	while(i<100){
+		i++
+		for(let x2=0;x2<i*2+1;x2++){
+			let x = ((x2%2)?-(x2+1)/2:x2/2)
+			let z = i-Math.abs(x)
+			let land = isLand(x,z)
+			if(land !== false) return {x:x*16+8,z:z*16+8,y:land}
+			land = isLand(x,-z)
+			if(land !== false) return {x:x*16+8,z:-z*16+8,y:land}
+		}
+		let now = Date.now()
+		if(now - lastProg > 1000){
+			lastProg = now
+			parentAndStuff.postMessage({progress: i/50})
+		}
+	}
+	return {x:8,z:8,y:128,fail:true}
+}
+parentAndStuff.onmessage = function(e) {
+	let msg = e.data
+	if(msg.generate){
+		generate(msg.trueX,msg.trueZ,msg.seed,msg.fancyRivers,msg.caves)
+		parentAndStuff.postMessage({
+			blocks:currentBlocks,
+			tops,biomes,minY,maxY,
+			waterTops,
+			caveBiomes, caveY
+		}, [
+			...currentBlocks.map(r=>r.buffer),
+			tops.buffer,biomes.buffer,
+			waterTops.buffer,
+			caveBiomes.buffer, caveY.buffer
+		])
+	}else if(msg.findLand){
+		parentAndStuff.postMessage(findLand(msg.seed))
+	}else if ("newSeed" in msg) {
+		newNoise(msg.newSeed)
+		parentAndStuff.postMessage("")
+	}else if ("deleteSeed" in msg) {
+		deleteNoise(msg.deleteSeed)
+		parentAndStuff.postMessage("")
+	}else if(msg.blockIds){
+		({blockIds,biomeIds,blockStates} = msg)
+		biomeNames = Object.keys(biomeIds).reduce((ret, key) => {
+			ret[biomeIds[key]] = key;
+			return ret;
+		}, {});
+		parentAndStuff.postMessage("")
+	}
+}
+parentAndStuff.postMessage("started")
 }
