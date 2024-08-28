@@ -854,13 +854,13 @@ const blockData = [
 		drop:"dirt",
 		type:"ground",
 		grassSound: true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			var top = world.getBlock(x,y+1,z,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var top = world.getBlock(x,y+1,z)
 			var isSnow = blockData[top].name === "snow" || blockData[top].name === "snowBlock"
 			if(b === blockIds.grass && isSnow){
-				world.setBlock(x,y,z,blockIds.grass | CROSS,false,false,false,false,dimension)
+				world.setBlock(x,y,z,blockIds.grass | CROSS)
 			}else if(b === (blockIds.grass | CROSS) && !isSnow){
-				world.setBlock(x,y,z,blockIds.grass,false,false,false,false,dimension)
+				world.setBlock(x,y,z,blockIds.grass)
 			}
 		},
 		compostChance:0.3,
@@ -885,20 +885,20 @@ const blockData = [
 	{ name: "stone", Name:"Stone", drop:"cobblestone", type:"rock1",category:"nature", hardness:5, blastResistance:6, stoneSound:true, craftSlabs:true, craftStairs:true,randomRotate:"flip",randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true},
 	{ name: "bedrock", Name:"Bedrock", category:"nature", hardness:1000, blastResistance:3600000, stoneSound:true, pistonPush:false, pistonPull:false,randomRotate:"flip",randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true},
 	{ name: "sand", Name:"Sand", hardness:0.5, blastResistance:0.5,fallingDust:[212/255, 195/255, 148/255], category:"nature",
-		onupdate: function(x,y,z,b,world,sx,sy,sz,dimension){
-			fall(x,y,z,b,world,false,dimension)
+		onupdate: function(x,y,z,b,world,sx,sy,sz){
+			fall(x,y,z,b,world,false)
 		},
-		ongetexploded:function(x,y,z,b,world,dimension){
-			fall(x,y,z,b,world,true,dimension)
+		ongetexploded:function(x,y,z,b,world){
+			fall(x,y,z,b,world,true)
 		},
 		digSound: ["sand.dig1", "sand.dig2", "sand.dig3", "sand.dig4"],
 		stepSound: ["sand.step1", "sand.step2","sand.step3","sand.step4","sand.step5"]},
 	{ name: "gravel", Name:"Gravel", hardness:0.6, blastResistance:0.6, type:"ground",category:"nature",fallingDust:[132/255, 126/255, 124/255],
-		onupdate: function(x,y,z,b,world,sx,sy,sz,dimension){
-			fall(x,y,z,b,world,false,dimension)
+		onupdate: function(x,y,z,b,world,sx,sy,sz){
+			fall(x,y,z,b,world,false)
 		},
-		ongetexploded:function(x,y,z,b,world,dimension){
-			fall(x,y,z,b,world,true,dimension)
+		ongetexploded:function(x,y,z,b,world){
+			fall(x,y,z,b,world,true)
 		},
 		drop: function(){
 			if(round(random(10)) === 1) return "flint"
@@ -961,13 +961,13 @@ const blockData = [
 	{ name: "diamondBlock", Name:"Block of Diamond", hardness:3, type:"metal3",category:"build", stoneSound:true},
 	{
 		name: "redstoneBlock", Name:"Block of Redstone", hardness:5, type:"metal1",category:"redstone", stoneSound:true,
-		onset:function(x,y,z,dimension,world){
-			world.setPower(x,y,z,16,false,dimension)
-			world.spreadPower(x,y,z, 16,dimension)
+		onset:function(x,y,z,world){
+			world.setPower(x,y,z,16,false)
+			world.spreadPower(x,y,z, 16)
 		},
-		ondelete: function(x,y,z,prevTags,prev,dimension,world){
-			world.setPower(x,y,z,0,false,dimension)
-			world.unspreadPower(x,y,z, 16,false,dimension)
+		ondelete: function(x,y,z,prevTags,prev,world){
+			world.setPower(x,y,z,0)
+			world.unspreadPower(x,y,z, 16)
 		},
 		damage:1,
 		dieMessage: () => username+" died from radiation from block of redstone."
@@ -1193,39 +1193,39 @@ const blockData = [
 		//onupdate: function(x,y,z){
 		//  explode(x,y,z,5)
 		//}, flint and steel explodes it
-		explode: function(x,y,z, how,dimension,world){
-			world.setBlock(x,y,z,0,false,false,false,false,dimension)
+		explode: function(x,y,z, how,world){
+			world.setBlock(x,y,z,0)
 			var e = new entities[entityIds.PrimedTNT](x,y,z)
-			world.addEntity(e,false,dimension)
+			world.addEntity(e)
 			world.playSound(x,y,z, "random.fuse")
 			switch(how){
 				case "explosion":
 					e.timeLimit = rand(10,30)
 			}
 		},
-		superTntExplode: function(x,y,z,dimension,world){
-			world.setBlock(x,y,z,0,false,false,false,false,dimension)
+		superTntExplode: function(x,y,z,world){
+			world.setBlock(x,y,z,0)
 			var e = new entities[entityIds.PrimedSuperTNT](x,y,z)
-			world.addEntity(e,false,dimension)
+			world.addEntity(e)
 			world.playSound(x,y,z, "random.fuse")
 		},
-		ultraTntExplode: function(x,y,z,dimension,world){
-			world.setBlock(x,y,z,0,false,false,false,false,dimension)
+		ultraTntExplode: function(x,y,z,world){
+			world.setBlock(x,y,z,0)
 			var e = new entities[entityIds.PrimedUltraTNT](x,y,z)
-			world.addEntity(e,false,dimension)
+			world.addEntity(e)
 			world.playSound(x,y,z, "random.fuse")
 		},
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-			var power = world.getRedstonePower(x,y,z,dimension)
-			if(power > 0) this.explode(x,y,z,null,dimension,world)
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			var power = world.getRedstonePower(x,y,z)
+			if(power > 0) this.explode(x,y,z,null,world)
 		},
-		onset:function(x,y,z,dimension,world){
-			var power = world.getRedstonePower(x,y,z,dimension)
-			if(power > 0) this.explode(x,y,z,null,dimension,world)
+		onset:function(x,y,z,world){
+			var power = world.getRedstonePower(x,y,z)
+			if(power > 0) this.explode(x,y,z,null,world)
 		},
 		burnChance:0.6,
-		onburn:function(x,y,z,dimension,world){
-			this.explode(x,y,z,null,dimension,world)
+		onburn:function(x,y,z,world){
+			this.explode(x,y,z,null,world)
 		},
 		category:"redstone",
 		grassSound: true
@@ -1245,7 +1245,7 @@ const blockData = [
 		pistonPush:false,
 		pistonPull:false,
 		hidden:true,
-		ontouch: function(x,y,z,dimension,ent){
+		serverontouch: function(x,y,z,ent){
 			ent.portalEffect += 2.5
 			if(ent.portalEffect >= 100 && ent.portalFadeOutEffect <= 0){
 				if(ent.type === "Player") ent.connection.send({type:"portalOut"})
@@ -1261,16 +1261,16 @@ const blockData = [
 				if(ent.type === "Player") ent.addAchievment("Into the Nether")
 			}
 		},
-		searchForPortal:function(x,y,z,dimension,world){
+		searchForPortal:function(x,y,z,world){
 			for(let x2=0; x2<128; x2++) for(let y2=0; y2<128; y2++) for(let z2=0; z2<128; z2++) {
 				let x3 = x+((x2%2)?-(x2+1)/2:x2/2)//alternate back and forth, example: 0, -1, 1, -2, 2
 				let y3 = y+((y2%2)?-(y2+1)/2:y2/2)
 				let z3 = z+((z2%2)?-(z2+1)/2:z2/2)
-				if(blockData[world.getBlock(x3,y3,z3,dimension)].name === "portal") return [x3,y3,z3]
+				if(blockData[world.getBlock(x3,y3,z3)].name === "portal") return [x3,y3,z3]
 			}
 		},
 		doneLoading:function(p,world){
-			let portal = this.searchForPortal(round(p.x),round(p.y),round(p.z),p.dimension,world)
+			let portal = this.searchForPortal(round(p.x),round(p.y),round(p.z),world)
 			if(portal){
 				p.tp(portal[0],portal[1]-0.5+p.height*0.5,portal[2])
 				p.lastY = p.y
@@ -1279,7 +1279,7 @@ const blockData = [
 				let dy = 32
 				mainLoop:for(let y = 32; y<128; y++){
 					for(let x=px-2; x<px+2; x++) for(let z=pz-2; z<pz+2; z++){
-						if(blockData[world.getBlock(x,y,z,p.dimension)].solid){
+						if(blockData[world.getBlock(x,y,z)].solid){
 							portalFill = 0
 							continue mainLoop
 						}
@@ -1290,51 +1290,51 @@ const blockData = [
 				if(portalFill === 6){
 					let x = px, z = pz, y = dy
 					if(rand() > 0.5){
-						world.setBlock(x-2,y-5,z,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x-1,y-5,z,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x,y-5,z,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x+1,y-5,z,blockIds.obsidian,false,false,false,false,p.dimension)
+						world.setBlock(x-2,y-5,z,blockIds.obsidian)
+						world.setBlock(x-1,y-5,z,blockIds.obsidian)
+						world.setBlock(x,y-5,z,blockIds.obsidian)
+						world.setBlock(x+1,y-5,z,blockIds.obsidian)
 						//layer2
-						world.setBlock(x-2,y-4,z,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x-1,y-4,z,blockIds.portal|PORTAL|NORTH,false,false,false,false,p.dimension)
-						world.setBlock(x,y-4,z,blockIds.portal|PORTAL|NORTH,false,false,false,false,p.dimension)
-						world.setBlock(x+1,y-4,z,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x-2,y-3,z,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x-1,y-3,z,blockIds.portal|PORTAL|NORTH,false,false,false,false,p.dimension)
-						world.setBlock(x,y-3,z,blockIds.portal|PORTAL|NORTH,false,false,false,false,p.dimension)
-						world.setBlock(x+1,y-3,z,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x-2,y-2,z,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x-1,y-2,z,blockIds.portal|PORTAL|NORTH,false,false,false,false,p.dimension)
-						world.setBlock(x,y-2,z,blockIds.portal|PORTAL|NORTH,false,false,false,false,p.dimension)
-						world.setBlock(x+1,y-2,z,blockIds.obsidian,false,false,false,false,p.dimension)
+						world.setBlock(x-2,y-4,z,blockIds.obsidian)
+						world.setBlock(x-1,y-4,z,blockIds.portal|PORTAL|NORTH)
+						world.setBlock(x,y-4,z,blockIds.portal|PORTAL|NORTH)
+						world.setBlock(x+1,y-4,z,blockIds.obsidian)
+						world.setBlock(x-2,y-3,z,blockIds.obsidian)
+						world.setBlock(x-1,y-3,z,blockIds.portal|PORTAL|NORTH)
+						world.setBlock(x,y-3,z,blockIds.portal|PORTAL|NORTH)
+						world.setBlock(x+1,y-3,z,blockIds.obsidian)
+						world.setBlock(x-2,y-2,z,blockIds.obsidian)
+						world.setBlock(x-1,y-2,z,blockIds.portal|PORTAL|NORTH)
+						world.setBlock(x,y-2,z,blockIds.portal|PORTAL|NORTH)
+						world.setBlock(x+1,y-2,z,blockIds.obsidian)
 						//layer5
-						world.setBlock(x-2,y-1,z,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x-1,y-1,z,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x,y-1,z,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x+1,y-1,z,blockIds.obsidian,false,false,false,false,p.dimension)
+						world.setBlock(x-2,y-1,z,blockIds.obsidian)
+						world.setBlock(x-1,y-1,z,blockIds.obsidian)
+						world.setBlock(x,y-1,z,blockIds.obsidian)
+						world.setBlock(x+1,y-1,z,blockIds.obsidian)
 					}else{
-						world.setBlock(x,y-5,z-2,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x,y-5,z-1,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x,y-5,z,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x,y-5,z+1,blockIds.obsidian,false,false,false,false,p.dimension)
+						world.setBlock(x,y-5,z-2,blockIds.obsidian)
+						world.setBlock(x,y-5,z-1,blockIds.obsidian)
+						world.setBlock(x,y-5,z,blockIds.obsidian)
+						world.setBlock(x,y-5,z+1,blockIds.obsidian)
 						//layer2
-						world.setBlock(x,y-4,z-2,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x,y-4,z-1,blockIds.portal|PORTAL|EAST,false,false,false,false,p.dimension)
-						world.setBlock(x,y-4,z,blockIds.portal|PORTAL|EAST,false,false,false,false,p.dimension)
-						world.setBlock(x,y-4,z+1,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x,y-3,z-2,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x,y-3,z-1,blockIds.portal|PORTAL|EAST,false,false,false,false,p.dimension)
-						world.setBlock(x,y-3,z,blockIds.portal|PORTAL|EAST,false,false,false,false,p.dimension)
-						world.setBlock(x,y-3,z+1,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x,y-2,z-2,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x,y-2,z-1,blockIds.portal|PORTAL|EAST,false,false,false,false,p.dimension)
-						world.setBlock(x,y-2,z,blockIds.portal|PORTAL|EAST,false,false,false,false,p.dimension)
-						world.setBlock(x,y-2,z+1,blockIds.obsidian,false,false,false,false,p.dimension)
+						world.setBlock(x,y-4,z-2,blockIds.obsidian)
+						world.setBlock(x,y-4,z-1,blockIds.portal|PORTAL|EAST)
+						world.setBlock(x,y-4,z,blockIds.portal|PORTAL|EAST)
+						world.setBlock(x,y-4,z+1,blockIds.obsidian)
+						world.setBlock(x,y-3,z-2,blockIds.obsidian)
+						world.setBlock(x,y-3,z-1,blockIds.portal|PORTAL|EAST)
+						world.setBlock(x,y-3,z,blockIds.portal|PORTAL|EAST)
+						world.setBlock(x,y-3,z+1,blockIds.obsidian)
+						world.setBlock(x,y-2,z-2,blockIds.obsidian)
+						world.setBlock(x,y-2,z-1,blockIds.portal|PORTAL|EAST)
+						world.setBlock(x,y-2,z,blockIds.portal|PORTAL|EAST)
+						world.setBlock(x,y-2,z+1,blockIds.obsidian)
 						//layer5
-						world.setBlock(x,y-1,z-2,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x,y-1,z-1,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x,y-1,z,blockIds.obsidian,false,false,false,false,p.dimension)
-						world.setBlock(x,y-1,z+1,blockIds.obsidian,false,false,false,false,p.dimension)
+						world.setBlock(x,y-1,z-2,blockIds.obsidian)
+						world.setBlock(x,y-1,z-1,blockIds.obsidian)
+						world.setBlock(x,y-1,z,blockIds.obsidian)
+						world.setBlock(x,y-1,z+1,blockIds.obsidian)
 					}
 					p.tp(x,dy-5+0.5+p.height*0.5,z)
 					p.lastY = p.y
@@ -1422,7 +1422,7 @@ const blockData = [
 		solid:false,
 		hidden:true,
 		smoothLight:false,
-		damage:(x,y,z,dimension,world) => world.getPower(x,y,z,dimension)/15,
+		damage:(x,y,z,world) => world.getPower(x,y,z)/15,
 		dieMessage: () => username+" died from radiation from redstone dust.",
 		drop: "redstone",
 		carryRedstone:true,
@@ -1450,8 +1450,8 @@ const blockData = [
 		tagTintPropertySouth: "power",
 		tagTintPropertyEast: "power",
 		tagTintPropertyWest: "power",
-		onupdate: function(x,y,z,b,world,sx,sy,sz,dimension){
-			let tags = world.getTags(x,y,z,dimension)
+		onupdate: function(x,y,z,b,world,sx,sy,sz){
+			let tags = world.getTags(x,y,z)
 			let north, south, east, west
 			let northUp = getTagBits(tags,"northUp",this.id), southUp = getTagBits(tags,"southUp",this.id), eastUp = getTagBits(tags,"eastUp",this.id), westUp = getTagBits(tags,"westUp",this.id)
 			let northDown = getTagBits(tags,"northDown",this.id), southDown = getTagBits(tags,"southDown",this.id), eastDown = getTagBits(tags,"eastDown",this.id), westDown = getTagBits(tags,"westDown",this.id)
@@ -1463,23 +1463,23 @@ const blockData = [
 			if(above && !blockData[above].transparent){
 				westUp = eastUp = southUp = northUp = up = false
 			}else{
-				westUp = this.connectable(x+1,y+1,z,"westUp",dimension,b,world)
-				eastUp = this.connectable(x-1,y+1,z,"eastUp",dimension,b,world)
-				southUp = this.connectable(x,y+1,z-1,"southUp",dimension,b,world)
-				northUp = this.connectable(x,y+1,z+1,"northUp",dimension,b,world)
-				up = this.connectable(x,y+1,z,"up",dimension,b,world)
+				westUp = this.connectable(x+1,y+1,z,"westUp",b,world)
+				eastUp = this.connectable(x-1,y+1,z,"eastUp",b,world)
+				southUp = this.connectable(x,y+1,z-1,"southUp",b,world)
+				northUp = this.connectable(x,y+1,z+1,"northUp",b,world)
+				up = this.connectable(x,y+1,z,"up",b,world)
 			}
 			
-			westDown = this.connectable(x+1,y-1,z,"westDown",dimension,b,world)
-			eastDown = this.connectable(x-1,y-1,z,"eastDown",dimension,b,world)
-			southDown = this.connectable(x,y-1,z-1,"southDown",dimension,b,world)
-			northDown = this.connectable(x,y-1,z+1,"northDown",dimension,b,world)
-			down = this.connectable(x,y-1,z,"down",dimension,b,world)
+			westDown = this.connectable(x+1,y-1,z,"westDown",b,world)
+			eastDown = this.connectable(x-1,y-1,z,"eastDown",b,world)
+			southDown = this.connectable(x,y-1,z-1,"southDown",b,world)
+			northDown = this.connectable(x,y-1,z+1,"northDown",b,world)
+			down = this.connectable(x,y-1,z,"down",b,world)
 			
-			west = westUp || westDown || this.connectable(x+1,y,z,"west",dimension,b,world)
-			east = eastUp || eastDown || this.connectable(x-1,y,z,"east",dimension,b,world)
-			south = southUp || southDown || this.connectable(x,y,z-1,"south",dimension,b,world)
-			north = northUp || northDown || this.connectable(x,y,z+1,"north",dimension,b,world)
+			west = westUp || westDown || this.connectable(x+1,y,z,"west",b,world)
+			east = eastUp || eastDown || this.connectable(x-1,y,z,"east",b,world)
+			south = southUp || southDown || this.connectable(x,y,z-1,"south",b,world)
+			north = northUp || northDown || this.connectable(x,y,z+1,"north",b,world)
 			
 			if(north + south + east + west === 1){
 				//make it a line. it can't be half of a line
@@ -1491,20 +1491,20 @@ const blockData = [
 			if(up || down){
 				north = south = east = west = true
 			}
-			world.setTagByName(x,y,z,"north",north,true,dimension,true)
-			world.setTagByName(x,y,z,"south",south,true,dimension,true)
-			world.setTagByName(x,y,z,"east",east,true,dimension,true)
-			world.setTagByName(x,y,z,"west",west,true,dimension,true)
-			world.setTagByName(x,y,z,"northUp",northUp,true,dimension,true)
-			world.setTagByName(x,y,z,"southUp",southUp,true,dimension,true)
-			world.setTagByName(x,y,z,"eastUp",eastUp,true,dimension,true)
-			world.setTagByName(x,y,z,"westUp",westUp,true,dimension,true)
-			world.setTagByName(x,y,z,"northDown",northDown,true,dimension,true)
-			world.setTagByName(x,y,z,"southDown",southDown,true,dimension,true)
-			world.setTagByName(x,y,z,"eastDown",eastDown,true,dimension,true)
-			world.setTagByName(x,y,z,"westDown",westDown,true,dimension,true)
-			world.setTagByName(x,y,z,"up",up,true,dimension,true)
-			world.setTagByName(x,y,z,"down",down,false,dimension,false)//notice last one not lazy and not remote
+			world.setTagByName(x,y,z,"north",north,true,true)
+			world.setTagByName(x,y,z,"south",south,true,true)
+			world.setTagByName(x,y,z,"east",east,true,true)
+			world.setTagByName(x,y,z,"west",west,true,true)
+			world.setTagByName(x,y,z,"northUp",northUp,true,true)
+			world.setTagByName(x,y,z,"southUp",southUp,true,true)
+			world.setTagByName(x,y,z,"eastUp",eastUp,true,true)
+			world.setTagByName(x,y,z,"westUp",westUp,true,true)
+			world.setTagByName(x,y,z,"northDown",northDown,true,true)
+			world.setTagByName(x,y,z,"southDown",southDown,true,true)
+			world.setTagByName(x,y,z,"eastDown",eastDown,true,true)
+			world.setTagByName(x,y,z,"westDown",westDown,true,true)
+			world.setTagByName(x,y,z,"up",up,true,true)
+			world.setTagByName(x,y,z,"down",down,false,false)//notice last one not lazy and not remote
 			
 			//set texture and stuff
 			let sum = north + south + east + west
@@ -1528,148 +1528,148 @@ const blockData = [
 				}
 			}else if(sum === 4) block = this.id | PANE
 			if((b & FLIP) === FLIP) block |= FLIP //blue redstone
-			if(world.getBlock(x,y,z,dimension) !== block){
-				world.setBlock(x,y,z,block,false,false,false,true,dimension)
+			if(world.getBlock(x,y,z) !== block){
+				world.setBlock(x,y,z,block)
 				//world.updateBlock(x,y,z,false,false,null,null,null,dimension)
 			}
-			if(pnorthUp != northUp) world.updateBlock(x,y+1,z+1,false,false,null,null,null,dimension), world.unspreadPower(x,y+1,z+1,world.getPower(x,y+1,z+1,dimension), true,dimension)
-			if(psouthUp != southUp) world.updateBlock(x,y+1,z-1,false,false,null,null,null,dimension), world.unspreadPower(x,y+1,z-1,world.getPower(x,y+1,z-1,dimension), true,dimension)
-			if(pwestUp != westUp) world.updateBlock(x+1,y+1,z,false,false,null,null,null,dimension), world.unspreadPower(x+1,y+1,z,world.getPower(x+1,y+1,z,dimension), true,dimension)
-			if(peastUp != eastUp) world.updateBlock(x-1,y+1,z,false,false,null,null,null,dimension), world.unspreadPower(x-1,y+1,z,world.getPower(x-1,y+1,z,dimension), true,dimension)
-			if(pnorthDown != northDown) world.updateBlock(x,y-1,z+1,false,false,null,null,null,dimension), world.unspreadPower(x,y-1,z+1,world.getPower(x,y-1,z+1,dimension), true,dimension)
-			if(psouthDown != southDown) world.updateBlock(x,y-1,z-1,false,false,null,null,null,dimension), world.unspreadPower(x,y-1,z-1,world.getPower(x,y-1,z-1,dimension), true,dimension)
-			if(pwestDown != westDown) world.updateBlock(x+1,y-1,z,false,false,null,null,null,dimension), world.unspreadPower(x+1,y-1,z,world.getPower(x+1,y-1,z,dimension), true,dimension)
-			if(peastDown != eastDown) world.updateBlock(x-1,y-1,z,false,false,null,null,null,dimension), world.unspreadPower(x-1,y-1,z,world.getPower(x-1,y-1,z,dimension), true,dimension)
+			if(pnorthUp != northUp) world.updateBlock(x,y+1,z+1), world.unspreadPower(x,y+1,z+1,world.getPower(x,y+1,z+1), true)
+			if(psouthUp != southUp) world.updateBlock(x,y+1,z-1), world.unspreadPower(x,y+1,z-1,world.getPower(x,y+1,z-1), true)
+			if(pwestUp != westUp) world.updateBlock(x+1,y+1,z), world.unspreadPower(x+1,y+1,z,world.getPower(x+1,y+1,z), true)
+			if(peastUp != eastUp) world.updateBlock(x-1,y+1,z), world.unspreadPower(x-1,y+1,z,world.getPower(x-1,y+1,z), true)
+			if(pnorthDown != northDown) world.updateBlock(x,y-1,z+1), world.unspreadPower(x,y-1,z+1,world.getPower(x,y-1,z+1), true)
+			if(psouthDown != southDown) world.updateBlock(x,y-1,z-1), world.unspreadPower(x,y-1,z-1,world.getPower(x,y-1,z-1), true)
+			if(pwestDown != westDown) world.updateBlock(x+1,y-1,z), world.unspreadPower(x+1,y-1,z,world.getPower(x+1,y-1,z), true)
+			if(peastDown != eastDown) world.updateBlock(x-1,y-1,z), world.unspreadPower(x-1,y-1,z,world.getPower(x-1,y-1,z), true)
 			//above: number != boolean
 
-			this.onpowerupdate(x,y,z,x,y,z,false,dimension,world)
+			this.onpowerupdate(x,y,z,x,y,z,false,world)
 		},
-		onset:function(x,y,z,dimension,world){
+		onset:function(x,y,z,world){
 			//this.onupdate(x,y,z,null,null,null,null,null,dimension)
-			let power = world.getRedstoneWirePower(x,y,z,dimension)
-			var strong = world.getSurroundingBlockPower(x,y,z,dimension) === "strong"
+			let power = world.getRedstoneWirePower(x,y,z)
+			var strong = world.getSurroundingBlockPower(x,y,z) === "strong"
 			if(strong) power = 15
-			world.setTagByName(x,y,z,"power",power,false,dimension)
-			if(power) world.spreadPower(x,y,z,power,dimension)
+			world.setTagByName(x,y,z,"power",power,false)
+			if(power) world.spreadPower(x,y,z,power)
 		},
-		ondelete:function(x,y,z,tags,prev,dimension,world){
+		ondelete:function(x,y,z,tags,prev,world){
 			const power = getTagBits(tags,"power",this.id)
-			if(power) world.unspreadPower(x,y,z,power,false,dimension)
+			if(power) world.unspreadPower(x,y,z,power)
 			
 			if(getTagBits(tags,"north",this.id)){
-				var block = world.getBlock(x,y,z+1,dimension)
+				var block = world.getBlock(x,y,z+1)
 				if(block && !blockData[block].transparent){
-					world.setBlockPower(x,y,z+1, null, "south",dimension)
+					world.setBlockPower(x,y,z+1, null, "south")
 				}
 			}
 			if(getTagBits(tags,"south",this.id)){
-				var block = world.getBlock(x,y,z-1,dimension)
+				var block = world.getBlock(x,y,z-1)
 				if(block && !blockData[block].transparent){
-					world.setBlockPower(x,y,z-1, null, "north",dimension)
+					world.setBlockPower(x,y,z-1, null, "north")
 				}
 			}
 			if(getTagBits(tags,"west",this.id)){
-				var block = world.getBlock(x+1,y,z,dimension)
+				var block = world.getBlock(x+1,y,z)
 				if(block && !blockData[block].transparent){
-					world.setBlockPower(x+1,y,z, null, "east",dimension)
+					world.setBlockPower(x+1,y,z, null, "east")
 				}
 			}
 			if(getTagBits(tags,"east",this.id)){
-				var block = world.getBlock(x-1,y,z,dimension)
+				var block = world.getBlock(x-1,y,z)
 				if(block && !blockData[block].transparent){
-					world.setBlockPower(x-1,y,z, null, "west",dimension)
+					world.setBlockPower(x-1,y,z, null, "west")
 				}
 			}
-			var block = world.getBlock(x,y-1,z,dimension)
+			var block = world.getBlock(x,y-1,z)
 			if(block && !blockData[block].transparent){
-				world.setBlockPower(x,y-1,z, null, "top",dimension)
+				world.setBlockPower(x,y-1,z, null, "top")
 			}
 			
 			//update the diagnolly connecting redstone
-			if(getTagBits(tags,"northUp",this.id)) world.updateBlock(x,y+1,z+1,false,false,null,null,null,dimension), world.unspreadPower(x,y+1,z+1,world.getPower(x,y+1,z+1,dimension), true,dimension)
-			if(getTagBits(tags,"southUp",this.id)) world.updateBlock(x,y+1,z-1,false,false,null,null,null,dimension), world.unspreadPower(x,y+1,z-1,world.getPower(x,y+1,z-1,dimension), true,dimension)
-			if(getTagBits(tags,"westUp",this.id)) world.updateBlock(x+1,y+1,z,false,false,null,null,null,dimension), world.unspreadPower(x+1,y+1,z,world.getPower(x+1,y+1,z,dimension), true,dimension)
-			if(getTagBits(tags,"eastUp",this.id)) world.updateBlock(x-1,y+1,z,false,false,null,null,null,dimension), world.unspreadPower(x-1,y+1,z,world.getPower(x-1,y+1,z,dimension), true,dimension)
-			if(getTagBits(tags,"northDown",this.id)) world.updateBlock(x,y-1,z+1,false,false,null,null,null,dimension), world.unspreadPower(x,y-1,z+1,world.getPower(x,y-1,z+1,dimension), true,dimension)
-			if(getTagBits(tags,"southDown",this.id)) world.updateBlock(x,y-1,z-1,false,false,null,null,null,dimension), world.unspreadPower(x,y-1,z-1,world.getPower(x,y-1,z-1,dimension), true,dimension)
-			if(getTagBits(tags,"westDown",this.id)) world.updateBlock(x+1,y-1,z,false,false,null,null,null,dimension), world.unspreadPower(x+1,y-1,z,world.getPower(x+1,y-1,z,dimension), true,dimension)
-			if(getTagBits(tags,"eastDown",this.id)) world.updateBlock(x-1,y-1,z,false,false,null,null,null,dimension), world.unspreadPower(x-1,y-1,z,world.getPower(x-1,y-1,z,dimension), true,dimension)
+			if(getTagBits(tags,"northUp",this.id)) world.updateBlock(x,y+1,z+1), world.unspreadPower(x,y+1,z+1,world.getPower(x,y+1,z+1), true)
+			if(getTagBits(tags,"southUp",this.id)) world.updateBlock(x,y+1,z-1), world.unspreadPower(x,y+1,z-1,world.getPower(x,y+1,z-1), true)
+			if(getTagBits(tags,"westUp",this.id)) world.updateBlock(x+1,y+1,z), world.unspreadPower(x+1,y+1,z,world.getPower(x+1,y+1,z), true)
+			if(getTagBits(tags,"eastUp",this.id)) world.updateBlock(x-1,y+1,z), world.unspreadPower(x-1,y+1,z,world.getPower(x-1,y+1,z), true)
+			if(getTagBits(tags,"northDown",this.id)) world.updateBlock(x,y-1,z+1), world.unspreadPower(x,y-1,z+1,world.getPower(x,y-1,z+1), true)
+			if(getTagBits(tags,"southDown",this.id)) world.updateBlock(x,y-1,z-1), world.unspreadPower(x,y-1,z-1,world.getPower(x,y-1,z-1), true)
+			if(getTagBits(tags,"westDown",this.id)) world.updateBlock(x+1,y-1,z), world.unspreadPower(x+1,y-1,z,world.getPower(x+1,y-1,z), true)
+			if(getTagBits(tags,"eastDown",this.id)) world.updateBlock(x-1,y-1,z), world.unspreadPower(x-1,y-1,z,world.getPower(x-1,y-1,z), true)
 		},
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			if(x===sx && y===sy && z===sz && !blockPowerChanged){
-				var tags = world.getTags(x,y,z,dimension)
+				var tags = world.getTags(x,y,z)
 				if(getTagBits(tags,"power",this.id)){
-					if(getTagBits(tags,"north",this.id) && world.getBlockPower(x,y,z+1, "south",dimension) !== "weak"){
-						var block = world.getBlock(x,y,z+1,dimension)
+					if(getTagBits(tags,"north",this.id) && world.getBlockPower(x,y,z+1, "south") !== "weak"){
+						var block = world.getBlock(x,y,z+1)
 						if(block && !blockData[block].transparent){
-							world.setBlockPower(x,y,z+1, "weak", "south",dimension)
+							world.setBlockPower(x,y,z+1, "weak", "south")
 						}
 					}
-					if(getTagBits(tags,"south",this.id) && world.getBlockPower(x,y,z-1, "north",dimension) !== "weak"){
-						var block = world.getBlock(x,y,z-1,dimension)
+					if(getTagBits(tags,"south",this.id) && world.getBlockPower(x,y,z-1, "north") !== "weak"){
+						var block = world.getBlock(x,y,z-1)
 						if(block && !blockData[block].transparent){
-							world.setBlockPower(x,y,z-1, "weak", "north",dimension)
+							world.setBlockPower(x,y,z-1, "weak", "north")
 						}
 					}
-					if(getTagBits(tags,"west",this.id) && world.getBlockPower(x+1,y,z, "east",dimension) !== "weak"){
-						var block = world.getBlock(x+1,y,z,dimension)
+					if(getTagBits(tags,"west",this.id) && world.getBlockPower(x+1,y,z, "east") !== "weak"){
+						var block = world.getBlock(x+1,y,z)
 						if(block && !blockData[block].transparent){
-							world.setBlockPower(x+1,y,z, "weak", "east",dimension)
+							world.setBlockPower(x+1,y,z, "weak", "east")
 						}
 					}
-					if(getTagBits(tags,"east",this.id) && world.getBlockPower(x-1,y,z, "west",dimension) !== "weak"){
-						var block = world.getBlock(x-1,y,z,dimension)
+					if(getTagBits(tags,"east",this.id) && world.getBlockPower(x-1,y,z, "west") !== "weak"){
+						var block = world.getBlock(x-1,y,z)
 						if(block && !blockData[block].transparent){
-							world.setBlockPower(x-1,y,z, "weak", "west",dimension)
+							world.setBlockPower(x-1,y,z, "weak", "west")
 						}
 					}
 				}else{
-					if(world.getBlockPower(x,y,z+1, "south",dimension)){
-						var block = world.getBlock(x,y,z+1,dimension)
+					if(world.getBlockPower(x,y,z+1, "south")){
+						var block = world.getBlock(x,y,z+1)
 						if(block && !blockData[block].transparent){
-							world.setBlockPower(x,y,z+1, null, "south",dimension)
+							world.setBlockPower(x,y,z+1, null, "south")
 						}
 					}
-					if(world.getBlockPower(x,y,z-1, "north",dimension)){
-						block = world.getBlock(x,y,z-1,dimension)
+					if(world.getBlockPower(x,y,z-1, "north")){
+						block = world.getBlock(x,y,z-1)
 						if(block && !blockData[block].transparent){
-							world.setBlockPower(x,y,z-1, null, "north",dimension)
+							world.setBlockPower(x,y,z-1, null, "north")
 						}
 					}
-					if(world.getBlockPower(x+1,y,z, "east",dimension)){
-						block = world.getBlock(x+1,y,z,dimension)
+					if(world.getBlockPower(x+1,y,z, "east")){
+						block = world.getBlock(x+1,y,z)
 						if(block && !blockData[block].transparent){
-							world.setBlockPower(x+1,y,z, null, "east",dimension)
+							world.setBlockPower(x+1,y,z, null, "east")
 						}
 					}
-					if(world.getBlockPower(x-1,y,z, "west",dimension)){
-						block = world.getBlock(x-1,y,z,dimension)
+					if(world.getBlockPower(x-1,y,z, "west")){
+						block = world.getBlock(x-1,y,z)
 						if(block && !blockData[block].transparent){
-							world.setBlockPower(x-1,y,z, null, "west",dimension)
+							world.setBlockPower(x-1,y,z, null, "west")
 						}
 					}
 				}
 				var target = getTagBits(tags,"power",this.id) ? "weak" : null
-				if(target !== world.getBlockPower(x,y-1,z, "top",dimension)){
-					var block = world.getBlock(x,y-1,z,dimension)
+				if(target !== world.getBlockPower(x,y-1,z, "top")){
+					var block = world.getBlock(x,y-1,z)
 					if(block && !blockData[block].transparent){
-						world.setBlockPower(x,y-1,z, target, "top",dimension)
+						world.setBlockPower(x,y-1,z, target, "top")
 					}
 				}
 			}else if(blockPowerChanged){
-				var shouldBeOn = /*world.getRedstoneWirePower(x,y,z) || */world.getSurroundingBlockPower(x,y,z,dimension) === "strong"
-				var power = world.getPower(x,y,z,dimension)
+				var shouldBeOn = /*world.getRedstoneWirePower(x,y,z) || */world.getSurroundingBlockPower(x,y,z) === "strong"
+				var power = world.getPower(x,y,z)
 				if(shouldBeOn && !power){
-					world.setPower(x,y,z,15,false,dimension)
-					world.spreadPower(x,y,z,15,dimension)
+					world.setPower(x,y,z,15,false)
+					world.spreadPower(x,y,z,15)
 				}else if(!shouldBeOn && power){
-					world.unspreadPower(x,y,z,15,true,dimension)
+					world.unspreadPower(x,y,z,15,true)
 				}
 			}
 		},
 		connectables: ["redstoneBlock", "redstoneLamp", "tnt", "redstoneTorch", "lever", "redstoneConnector","is:button", "piston","pistonSticky","is:pressurePlate","dropper","dispenser","target","is:coloredRedstoneLamp","noteBlock", "daylightDetector","is:commandBlock"],
-		connectable: function(x,y,z, d,dimension, b,world) {
-			var id = world.getBlock(x,y,z,dimension)
+		connectable: function(x,y,z, d, b,world) {
+			var id = world.getBlock(x,y,z)
 			if(!id) return false
 			
 			var up = false, down = false
@@ -1691,7 +1691,7 @@ const blockData = [
 			}
 			
 			if(down && d !== "down"){
-				var block = world.getBlock(x,y+1,z,dimension)
+				var block = world.getBlock(x,y+1,z)
 				if(block && !blockData[block].transparent) return false
 			}
 			if(up || down) return blockData[id].name === "redstoneDust" && (id & FLIP) === (b & FLIP)
@@ -1705,7 +1705,7 @@ const blockData = [
 			}
 			if(blockData[id].name === "repeater" || blockData[id].name === "notGate"){
 				var canIt = false
-				var facing = blockData[id].getFacing(x,y,z,dimension,world)
+				var facing = blockData[id].getFacing(x,y,z,world)
 				switch(facing){
 					case "north":
 					case "south":
@@ -1717,7 +1717,7 @@ const blockData = [
 				}
 				return canIt
 			}else if(blockData[id].name === "observer"){
-				var facing = blockData[id].getFacing(x,y,z,dimension,world)
+				var facing = blockData[id].getFacing(x,y,z,world)
 				switch(facing){
 					case "east":
 						return d === "east"
@@ -1729,7 +1729,7 @@ const blockData = [
 						return d === "north"
 				}
 			}else if(blockData[id].logicGate){
-				var facing = blockData[id].getFacing(x,y,z,dimension,world)
+				var facing = blockData[id].getFacing(x,y,z,world)
 				switch(facing){
 					case "east":
 						return d === "east" || d === "north" || d === "south"
@@ -1741,7 +1741,7 @@ const blockData = [
 						return d === "north" || d === "east" || d === "west"
 				}
 			}else if(blockData[id].name === "comparator"){
-				var facing = blockData[id].getFacing(x,y,z,dimension,world)
+				var facing = blockData[id].getFacing(x,y,z,world)
 				var canIt
 				switch(facing){
 					case "east":
@@ -2106,7 +2106,7 @@ const blockData = [
 		shadow: false,
 		potCross: true,
 		crossShape: true,
-		ontouch: (x,y,z,dimension,ent) => ent.applyEffect("wither",1,2,false),
+		serverontouch: (x,y,z,ent) => ent.applyEffect("wither",1,2,false),
 		compostChance:0.65,
 		liquidBreakable:"drop",
 		category:"nature",
@@ -2308,7 +2308,7 @@ const blockData = [
 		rarity:"rare",
 		tagBits:null,
 		beaconBlocks:["ironBlock","goldBlock","emeraldBlock","diamondBlock","netheriteBlock"],
-		getSize:function(x,y,z,dimension,world){
+		getSize:function(x,y,z,world){
 			let minSize
 			sizeLoop:for(let size=1; size<4; size++){
 				for(let x2=x-size; x2<=x+size; x2++) for(let z2=z-size; z2<=z+size; z2++){
@@ -2319,17 +2319,17 @@ const blockData = [
 			}
 			return minSize
 		},
-		update: function(x,y,z,dimension,world){
-			let minSize = this.getSize(x,y,z,dimension,world), block = world.getBlock(x,y,z,dimension)
+		update: function(x,y,z,world){
+			let minSize = this.getSize(x,y,z,world), block = world.getBlock(x,y,z)
 			if(minSize){
 				if(block !== (this.id | BEACON)){
-					world.setBlock(x,y,z,this.id|BEACON,false,false,false,true,dimension)
+					world.setBlock(x,y,z,this.id|BEACON,false,false,false,true)
 				}
-			}else if(block !== this.id) world.setBlock(x,y,z,this.id,false,false,false,true,dimension)
+			}else if(block !== this.id) world.setBlock(x,y,z,this.id,false,false,false,true)
 			return minSize
 		},
-		onplace: function(x,y,z, dimension, player,world){
-			this.update(x,y,z,dimension,world)
+		onplace: function(x,y,z, player,world){
+			this.update(x,y,z,world)
 		}
 	},
 	
@@ -2341,8 +2341,8 @@ const blockData = [
 		cactus: true,
 		damage: 1,
 		potCross: true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			needsSupportingBlocks(x,y,z,b,world,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			needsSupportingBlocks(x,y,z,b,world)
 		},
 		compostChance:0.5,
 		liquidBreakable:"drop",
@@ -2382,7 +2382,7 @@ const blockData = [
 		shearBreakTime:0.35,
 		liquidBreakable:"drop",
 		solid:false,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
 			var fx = x, fz = z
 			switch(b){
 				case this.id | WALLFLAT | NORTH:
@@ -2398,19 +2398,19 @@ const blockData = [
 					fx--
 					break
 			}
-			var block = world.getBlock(fx,y,fz,dimension)
-			var above = world.getBlock(x,y+1,z,dimension)
-			if(!world.settings.blocksFall || block && blockData[block].solid || above === b) return
+			var block = world.getBlock(fx,y,fz)
+			var above = world.getBlock(x,y+1,z)
+			if(!world.world.settings.blocksFall || block && blockData[block].solid || above === b) return
 			world.setTimeout(function(){
-				var block = world.getBlock(fx,y,fz,dimension)
-				var above = world.getBlock(x,y+1,z,dimension)
+				var block = world.getBlock(fx,y,fz)
+				var above = world.getBlock(x,y+1,z)
 				if(block && blockData[block].solid || above === b) return
 				
-				world.setBlock(x,y,z, 0,false,false,false,false,dimension)
-				world.addItems(x,y,z,dimension,0,0,0,b&isCube,true)
-				world.blockParticles(b,x,y,z,30, "break",dimension)
+				world.setBlock(x,y,z, 0)
+				world.addItems(x,y,z,0,0,0,b&isCube,true)
+				world.blockParticles(b,x,y,z,30, "break")
 				world.blockSound(b, "dig", x,y,z)
-			},tickTime,x,y,z,dimension)
+			},tickTime,x,y,z)
 		},
 		
 		compostChance:0.5,
@@ -2437,27 +2437,27 @@ const blockData = [
 		blastResistance:100,
 		hidden:true,
 		dripThroughBlocks:[43/255, 63/255, 213/255],
-		getLevelDifference:function(level){return level-1},
+		getLevelDifference:function(level,dimension){return level-1},
 		canDuplicate:true,
 		drop:"air",
 		density:1,
 		inLiquid:1,
 		flowSound:"liquid.water",
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			var block = world.getBlock(x,y+1,z,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var block = world.getBlock(x,y+1,z)
 			if (block && blockData[block].name === "Lava") {
-				return world.setBlock(x,y,z,blockIds.stone,false,false,false,false,dimension)
+				return world.setBlock(x,y,z,blockIds.stone,false,false,false,false)
 			}
-			var n = world.getBlock(x,y,z+1,dimension)
-			var s = world.getBlock(x,y,z-1,dimension)
-			var e = world.getBlock(x+1,y,z,dimension)
-			var w = world.getBlock(x-1,y,z,dimension)
+			var n = world.getBlock(x,y,z+1)
+			var s = world.getBlock(x,y,z-1)
+			var e = world.getBlock(x+1,y,z)
+			var w = world.getBlock(x-1,y,z)
 			if (n && blockData[n].name === "Lava" || s && blockData[s].name === "Lava" || e && blockData[e].name === "Lava" || w && blockData[w].name === "Lava") {
-				return world.setBlock(x,y,z,blockIds.cobblestone,false,false,false,false,dimension)
+				return world.setBlock(x,y,z,blockIds.cobblestone,false,false,false,false)
 			}
-			if(!world.settings.blocksFall) return
+			if(!world.world.settings.blocksFall) return
 			var me = this
-			world.setTimeout(() => me.flow(x,y,z,dimension,world), tickTime*5, x,y,z,dimension)
+			world.setTimeout(() => me.flow(x,y,z,world), tickTime*5, x,y,z)
 		},
 		decreaseLight:1,
 		tint:waterTint,
@@ -2489,39 +2489,39 @@ const blockData = [
 		inLiquid:2,
 		flowSound:"liquid.lava",
 		getLevelDifference:function(level,dimension){return dimension === "nether" ? level-1 : level-2},
-		tick:function(x,y,z,dimension,world){
-			blockData[blockIds.fire].spread(x,y,z,dimension,world)
+		tick:function(x,y,z,world){
+			blockData[blockIds.fire].spread(x,y,z,world)
 		},
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			let block = world.getBlock(x,y+1,z,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			let block = world.getBlock(x,y+1,z)
 			if (block && blockData[block].name === "Water") {
-				return world.setBlock(x,y,z,blockIds.obsidian,false,false,false,false,dimension)
+				return world.setBlock(x,y,z,blockIds.obsidian,false,false,false,false)
 			}
-			const under = world.getBlock(x,y-1,z,dimension)
-			const n = world.getBlock(x,y,z+1,dimension)
-			const s = world.getBlock(x,y,z-1,dimension)
-			const e = world.getBlock(x+1,y,z,dimension)
-			const w = world.getBlock(x-1,y,z,dimension)
+			const under = world.getBlock(x,y-1,z)
+			const n = world.getBlock(x,y,z+1)
+			const s = world.getBlock(x,y,z-1)
+			const e = world.getBlock(x+1,y,z)
+			const w = world.getBlock(x-1,y,z)
 			if(blockData[under].name === "soulSoil"){
 				if (blockData[n].name === "ice" || blockData[n].name === "packedIce" || blockData[n].name === "blueIce" || blockData[s].name === "ice" || blockData[s].name === "packedIce" || blockData[s].name === "blueIce" || blockData[e].name === "ice" || blockData[e].name === "packedIce" || blockData[e].name === "blueIce" || blockData[w].name === "ice" || blockData[w].name === "packedIce" || blockData[w].name === "blueIce") {
-					return world.setBlock(x,y,z,blockIds.basalt,false,false,false,false,dimension)
+					return world.setBlock(x,y,z,blockIds.basalt,false,false,false,false)
 				}
 			}
 			if(blockData[under].name === "honeyBlock" || blockData[n].name === "honeyBlock" || blockData[s].name === "honeyBlock" || blockData[e].name === "honeyBlock" || blockData[w].name === "honeyBlock"){
-				return world.setBlock(x,y,z,blockIds.limestone,false,false,false,false,dimension)
+				return world.setBlock(x,y,z,blockIds.limestone,false,false,false,false)
 			}
-			if(!world.settings.blocksFall) return
+			if(!world.world.settings.blocksFall) return
 			var me = this
-			world.setTimeout(() => me.flow(x,y,z,dimension,world), tickTime*(dimension === "nether" ? 10 : 30), x,y,z,dimension)
+			world.setTimeout(() => me.flow(x,y,z,world), tickTime*(world.dimension === "nether" ? 10 : 30), x,y,z)
 		},
-		getY:function(x,y,z,dimension){
-			var block = world.getBlock(x,y,z,dimension)
+		getY:function(x,y,z){
+			var block = world.getBlock(x,y,z)
 			return (min((this.getLevel(block))*2,14.5)/16)-0.5
 		},
-		onspawnflow:function(x,y,z,dimension,world){
-			const under = world.getBlock(x,y-1,z,dimension)
+		onspawnflow:function(x,y,z,world){
+			const under = world.getBlock(x,y-1,z)
 			if(under === blockIds.Water){
-				world.spawnBlock(x,y-1,z,blockIds.stone,dimension,true)
+				world.spawnBlock(x,y-1,z,blockIds.stone,true)
 				return true
 			}
 		},
@@ -2604,9 +2604,9 @@ const blockData = [
 		compostChance:0.65,
 		category:"nature",
 		digSound: ["fungus.dig1", "fungus.dig2", "fungus.dig3", "fungus.dig4", "fungus.dig5", "fungus.dig6"],
-		growBonemeal: function(x,y,z,dimension,world){
+		growBonemeal: function(x,y,z,world){
 			win.serverSaveWorldGen()
-			world.getChunk(x,z,dimension).spawnNetherMushroom(x&15,y-1,z&15,x,z,"warpedForest")
+			world.getChunk(x,z).spawnNetherMushroom(x&15,y-1,z&15,x,z,"warpedForest")
 			win.serverRestoreWorldGen()
 		},
 		randomOffset:true,
@@ -2681,9 +2681,9 @@ const blockData = [
 		compostChance:0.65,
 		category:"nature",
 		digSound: ["fungus.dig1", "fungus.dig2", "fungus.dig3", "fungus.dig4", "fungus.dig5", "fungus.dig6"],
-		growBonemeal: function(x,y,z,dimension,world){
+		growBonemeal: function(x,y,z,world){
 			win.serverSaveWorldGen()
-			world.getChunk(x,z,dimension).spawnNetherMushroom(x&15,y-1,z&15,x,z,"crimsonForest")
+			world.getChunk(x,z).spawnNetherMushroom(x&15,y-1,z&15,x,z,"crimsonForest")
 			win.serverRestoreWorldGen()
 		},
 		randomOffset:true,
@@ -2724,11 +2724,11 @@ const blockData = [
 		transparent: true,
 		crossShape: true,
 		ladder:true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			var top = world.getBlock(x,y+1,z,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var top = world.getBlock(x,y+1,z)
 			var isIt = blockData[top].name === "twistingVines" || blockData[top].name === "twistingVinesPlant"
 			if(isIt){
-				world.setBlock(x,y,z,blockIds.twistingVinesPlant | CROSS,false,false,false,false,dimension)
+				world.setBlock(x,y,z,blockIds.twistingVinesPlant | CROSS,false,false,false,false)
 			}
 		},
 		hidden:true,
@@ -2743,11 +2743,11 @@ const blockData = [
 		transparent: true,
 		crossShape: true,
 		ladder:true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			var top = world.getBlock(x,y+1,z,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var top = world.getBlock(x,y+1,z)
 			var isIt = blockData[top].name === "twistingVines" || blockData[top].name === "twistingVinesPlant"
 			if(!isIt){
-				world.setBlock(x,y,z,blockIds.twistingVines | CROSS,false,false,false,false,dimension)
+				world.setBlock(x,y,z,blockIds.twistingVines | CROSS,false,false,false,false)
 			}
 		},
 		category:"nature",
@@ -2759,11 +2759,11 @@ const blockData = [
 		shadow: false,
 		crossShape: true,
 		ladder:true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			var top = world.getBlock(x,y-1,z,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var top = world.getBlock(x,y-1,z)
 			var isIt = blockData[top].name === "weepingVines" || blockData[top].name === "weepingVinesPlant"
 			if(isIt){
-				world.setBlock(x,y,z,blockIds.weepingVinesPlant | CROSS,false,false,false,false,dimension)
+				world.setBlock(x,y,z,blockIds.weepingVinesPlant | CROSS,false,false,false,false)
 			}
 		},
 		hidden:true,
@@ -2777,11 +2777,11 @@ const blockData = [
 		shadow: false,
 		crossShape: true,
 		ladder:true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			var top = world.getBlock(x,y-1,z,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var top = world.getBlock(x,y-1,z)
 			var isIt = blockData[top].name === "weepingVines" || blockData[top].name === "weepingVinesPlant"
 			if(!isIt){
-				world.setBlock(x,y,z,blockIds.weepingVines | CROSS,false,false,false,false,dimension)
+				world.setBlock(x,y,z,blockIds.weepingVines | CROSS,false,false,false,false)
 			}
 		},
 		category:"nature"
@@ -2846,21 +2846,21 @@ const blockData = [
 		Name:"Flint & Steel",
 		textures: "flintAndSteel",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			if(block === blockIds.tnt){
-				blockData[blockIds.tnt].explode(x,y,z,null,dimension,world)
+				blockData[blockIds.tnt].explode(x,y,z,null,world)
 				item.durability--
 			}else if(block === (blockIds.tnt | SLAB)){
-				blockData[blockIds.tnt].superTntExplode(x,y,z,dimension,world)
+				blockData[blockIds.tnt].superTntExplode(x,y,z,world)
 				item.durability--
 			}else if(block === (blockIds.tnt | STAIR)){
-				blockData[blockIds.tnt].ultraTntExplode(x,y,z,dimension,world)
+				blockData[blockIds.tnt].ultraTntExplode(x,y,z,world)
 				item.durability--
 			}else if(block === blockIds.untnt){
-				blockData[blockIds.untnt].explode(x,y,z,null,dimension,world)
+				blockData[blockIds.untnt].explode(x,y,z,null,world)
 				item.durability--
 			}else{
-				var attached = world.getBlock(x,y,z,dimension)
+				var attached = world.getBlock(x,y,z)
 				var b = blockIds.fire
 				if(attached && blockData[attached].canHaveSoulFire) b = blockIds.soulFire
 				;([x,y,z] = movePositionByFace(face,x,y,z))
@@ -2872,8 +2872,8 @@ const blockData = [
 					case "west": b |= SLAB | EAST; break
 				}
 				item.durability--
-				if(block === blockIds.obsidian && blockData[blockIds.fire].tryCreatePortal(x,y,z,dimension)) return
-				world.setBlock(x,y,z,b,false,false,false,false,dimension)
+				if(block === blockIds.obsidian && blockData[blockIds.fire].tryCreatePortal(x,y,z,world)) return
+				world.setBlock(x,y,z,b,false,false,false,false)
 				world.playSound(x,y,z, "fire.ignite")
 			}
 		},
@@ -2904,9 +2904,9 @@ const blockData = [
 		solid: false,
 		shadow:false,
 		liquidBreakable:"drop",
-		grow: function(x,y,z,dimension,world){
+		grow: function(x,y,z,world){
 			win.serverSaveWorldGen()
-			world.getChunk(x,z,dimension).spawnSmallTree(x&15,y-1,z&15,x,z,false)
+			world.getChunk(x,z).spawnSmallTree(x&15,y-1,z&15,x,z,false)
 			win.serverRestoreWorldGen()
 		},
 		compostChance:0.3,
@@ -3025,9 +3025,9 @@ const blockData = [
 		compostChance:0.3,
 		category:"nature",
 		liquidBreakable:"drop",
-		grow: function(x,y,z,dimension,world){
+		grow: function(x,y,z,world){
 			win.serverSaveWorldGen()
-			world.getChunk(x,z,dimension).spawnAcacia(x&15,y-1,z&15,x,z,true)
+			world.getChunk(x,z).spawnAcacia(x&15,y-1,z&15,x,z,true)
 			win.serverRestoreWorldGen()
 		},
 	},
@@ -3041,9 +3041,9 @@ const blockData = [
 		potCross: true,
 		category:"nature",
 		liquidBreakable:"drop",
-		grow: function(x,y,z,dimension,world){
+		grow: function(x,y,z,world){
 			win.serverSaveWorldGen()
-			world.getChunk(x,z,dimension).spawnSmallTree(x&15,y-1,z&15,x,z,true)
+			world.getChunk(x,z).spawnSmallTree(x&15,y-1,z&15,x,z,true)
 			win.serverRestoreWorldGen()
 		},
 		compostChance:0.3
@@ -3071,9 +3071,9 @@ const blockData = [
 		compostChance:0.3,
 		category:"nature",
 		liquidBreakable:"drop",
-		grow: function(x,y,z,dimension,world){
+		grow: function(x,y,z,world){
 			win.serverSaveWorldGen()
-			world.getChunk(x,z,dimension).spawnCocoaTree(x&15,y-1,z&15,x,z,true)
+			world.getChunk(x,z).spawnCocoaTree(x&15,y-1,z&15,x,z,true)
 			win.serverRestoreWorldGen()
 		}
 	},
@@ -3088,9 +3088,9 @@ const blockData = [
 		compostChance:0.3,
 		category:"nature",
 		liquidBreakable:"drop",
-		grow: function(x,y,z,dimension,world){
+		grow: function(x,y,z,world){
 			win.serverSaveWorldGen()
-			world.getChunk(x,z,dimension).spawnSpruce(x&15,y-1,z&15,x,z,true)
+			world.getChunk(x,z).spawnSpruce(x&15,y-1,z&15,x,z,true)
 			win.serverRestoreWorldGen()
 		}
 	},
@@ -3269,8 +3269,8 @@ const blockData = [
 		textures7:new Array(6).fill('wheat'),
 		compostChance:0.65,
 		category:"nature",
-		growBonemeal:function(x,y,z,dimension,world){
-			world.setBlock(x,y,z, this.id|LANTERN,false,false,false,false,dimension)
+		growBonemeal:function(x,y,z,world){
+			world.setBlock(x,y,z, this.id|LANTERN)
 		}
 	},
 	{
@@ -3289,11 +3289,11 @@ const blockData = [
 			changeScene("anvil")
 			releasePointer()
 		},
-		onupdate: function(x,y,z,b,world,sx,sy,sz,dimension){
-			fall(x,y,z,b,world,false,dimension)
+		onupdate: function(x,y,z,b,world,sx,sy,sz){
+			fall(x,y,z,b,world,false)
 		},
-		ongetexploded:function(x,y,z,b,world,dimension){
-			fall(x,y,z,b,world,true,dimension)
+		ongetexploded:function(x,y,z,b,world){
+			fall(x,y,z,b,world,true)
 		},
 		category:"items",
 	},
@@ -3327,13 +3327,13 @@ const blockData = [
 		textures: ["furnaceTop","furnaceTop","furnaceSide","furnaceFront","furnaceSide","furnaceSide"],
 		SW: true,
 		tagBits: null,
-		setContents: function(x,y,z,dimension,world){
+		setContents: function(x,y,z,world){
 			var data = {furnace:true, input:0, fuel:0, output:0, smeltStart:0, burnStart:0, canBurn:false, smelting:false, xp:0}
-			world.setTags(x, y, z, data,false,dimension)
+			world.setTags(x, y, z, data,false)
 			return data
 		},
-		update:function(x,y,z,dimension,world){
-			let data = world.getTags(x,y,z,dimension)
+		update:function(x,y,z,world){
+			let data = world.getTags(x,y,z)
 			if(!data) return
 			let prevSmelting = data.smelting
 			data.smelting = false
@@ -3385,7 +3385,7 @@ const blockData = [
 						}
 					}
 					data.smeltStart += (a/20)*smeltTo.time*1000
-					world.updateTags(x,y,z,dimension)
+					world.updateTags(x,y,z)
 				}
 				if(burnProgress >= fuel.time){
 					data.canBurn = false
@@ -3399,7 +3399,7 @@ const blockData = [
 							break
 						}
 					}
-					world.updateTags(x,y,z,dimension)
+					world.updateTags(x,y,z)
 					data.burnStart += a*fuel.time*1000
 					data.canBurn = true
 				}
@@ -3409,17 +3409,17 @@ const blockData = [
 				if((!data.input || !data.input.id) && data.progress) data.progress = 0
 			}
 			
-			var block = world.getBlock(x,y,z,dimension)
+			var block = world.getBlock(x,y,z)
 			var needs = blockIds.furnace | (block & ROTATION)
 			if(data.smelting){
 				needs |= SLAB
 			}
 			if(block !== needs){
-				world.setBlock(x,y,z, needs, false, false, false, true,dimension)//last argument is keepTags
+				world.setBlock(x,y,z, needs, false, false, false, true)//last argument is keepTags
 			}
 		},
-		tick:function(block,x,y,z,dimension,world){
-			this.update(x,y,z,dimension,world)
+		tick:function(block,x,y,z,world){
+			this.update(x,y,z,world)
 		},
 		stoneSound:true,
 		category:"items",
@@ -3445,30 +3445,30 @@ const blockData = [
 			on:[0,1],
 			note:[1,5]
 		},
-		onclick:function(x,y,z,dimension,world){
-			var note = world.getTagByName(x,y,z,"note",dimension)
+		onclick:function(x,y,z,world){
+			var note = world.getTagByName(x,y,z,"note")
 			if(!note && note !== 0) note = -1
 			note ++
 			if(note >= 24) note = 0
-			world.setTagByName(x,y,z,"note",note,false,dimension)
-			blockData[blockIds.noteBlock].playNote(x,y,z,dimension,world)
+			world.setTagByName(x,y,z,"note",note,false)
+			blockData[blockIds.noteBlock].playNote(x,y,z,world)
 		},
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-			var power = world.getRedstonePower(x,y,z,dimension) || world.getSurroundingBlockPower(x,y,z,dimension) ? true : false
-			var on = world.getTagByName(x,y,z,"on",dimension) || false
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z) ? true : false
+			var on = world.getTagByName(x,y,z,"on") || false
 			if(power !== on) {
-				world.setTagByName(x,y,z,"on",power,false,dimension)
+				world.setTagByName(x,y,z,"on",power,false)
 				if(power){
-					this.playNote(x,y,z,dimension,world)
+					this.playNote(x,y,z,world)
 				}
 			}
 		},
-		playNote:function(x,y,z,dimension,world){
-			var note = world.getTagByName(x,y,z,"note",dimension) || 0
+		playNote:function(x,y,z,world){
+			var note = world.getTagByName(x,y,z,"note") || 0
 			if(!note && note !== 0) return
 			var pitch = 2**((note-12)/12)
 			var instrument = "harp"
-			var block = world.getBlock(x,y-1,z,dimension)
+			var block = world.getBlock(x,y-1,z)
 			if(block && this.noteTypes[blockData[block].name]) instrument = this.noteTypes[blockData[block].name]
 			if(block){
 				for(var i in this.noteTypes){
@@ -3481,7 +3481,7 @@ const blockData = [
 			
 			world.sendAll({
 				type:"particles", particleType:"NoteParticle",
-				x,y:y+0.5,z, dimension, data:note
+				x,y:y+0.5,z, dimension:world.dimension, data:note
 			})
 		},
 		noteTypes:(function(obj){
@@ -3673,11 +3673,11 @@ const blockData = [
 		transparent: true,
 		shadow: false,
 		crossShape: true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			var top = world.getBlock(x,y-1,z,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var top = world.getBlock(x,y-1,z)
 			var isIt = blockData[top].name === "caveVines" || blockData[top].name === "caveVinesPlant" || blockData[top].name === "caveVinesLit" || blockData[top].name === "caveVinesPlantLit"
 			if(isIt){
-				world.setBlock(x,y,z,blockIds.caveVinesPlant | CROSS,false,false,false,false,dimension)
+				world.setBlock(x,y,z,blockIds.caveVinesPlant | CROSS,false,false,false,false)
 			}
 		},
 		liquidBreakable:"drop",
@@ -3689,11 +3689,11 @@ const blockData = [
 		transparent: true,
 		shadow: false,
 		crossShape: true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			var top = world.getBlock(x,y-1,z,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var top = world.getBlock(x,y-1,z)
 			var isIt = blockData[top].name === "caveVines" || blockData[top].name === "caveVinesPlant" || blockData[top].name === "caveVinesLit" || blockData[top].name === "caveVinesPlantLit"
 			if(!isIt){
-				world.setBlock(x,y,z,blockIds.caveVines | CROSS,false,false,false,false,dimension)
+				world.setBlock(x,y,z,blockIds.caveVines | CROSS,false,false,false,false)
 			}
 		},
 		hidden:true,
@@ -3708,11 +3708,11 @@ const blockData = [
 		shadow: false,
 		crossShape: true,
 		lightLevel: 14,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			var top = world.getBlock(x,y-1,z,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var top = world.getBlock(x,y-1,z)
 			var isIt = blockData[top].name === "caveVines" || blockData[top].name === "caveVinesPlant" || blockData[top].name === "caveVinesLit" || blockData[top].name === "caveVinesPlantLit"
 			if(isIt){
-				world.setBlock(x,y,z,blockIds.caveVinesPlantLit | CROSS,false,false,false,false,dimension)
+				world.setBlock(x,y,z,blockIds.caveVinesPlantLit | CROSS,false,false,false,false)
 			}
 		},
 		liquidBreakable:"drop",
@@ -3725,11 +3725,11 @@ const blockData = [
 		shadow: false,
 		crossShape: true,
 		lightLevel: 14,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			var top = world.getBlock(x,y-1,z,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var top = world.getBlock(x,y-1,z)
 			var isIt = blockData[top].name === "caveVines" || blockData[top].name === "caveVinesPlant" || blockData[top].name === "caveVinesLit" || blockData[top].name === "caveVinesPlantLit"
 			if(!isIt){
-				world.setBlock(x,y,z,blockIds.caveVinesLit | CROSS,false,false,false,false,dimension)
+				world.setBlock(x,y,z,blockIds.caveVinesLit | CROSS,false,false,false,false)
 			}
 		},
 		hidden:true,
@@ -3809,22 +3809,22 @@ const blockData = [
 		name: "bucket",
 		Name:"Bucket",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			if(block === blockIds.Water){
 				item.id = blockIds.waterBucket
-				world.setBlock(x,y,z,0,false,false,false,false,dimension)
+				world.setBlock(x,y,z,0)
 			}
 			if(block === blockIds.Lava){
 				item.id = blockIds.lavaBucket
-				world.setBlock(x,y,z,0,false,false,false,false,dimension)
+				world.setBlock(x,y,z,0)
 			}
 			if(block === blockIds.powderSnow){
 				item.id = blockIds.powderSnowBucket
-				world.setBlock(x,y,z,0,false,false,false,false,dimension)
+				world.setBlock(x,y,z,0)
 			}
 			if(block === blockIds.oil){
 				item.id = blockIds.oilBucket
-				world.setBlock(x,y,z,0,false,false,false,false,dimension)
+				world.setBlock(x,y,z,0)
 			}
 		},
 		stackSize: 1,
@@ -3835,10 +3835,10 @@ const blockData = [
 		name: "waterBucket",
 		Name:"Water Bucket",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			if(p.survival) item.id = blockIds.bucket
 			let pos = movePositionByFace(face,x,y,z)
-			world.setBlock(pos[0],pos[1],pos[2],blockIds.Water,false,false,false,false,dimension)
+			world.setBlock(pos[0],pos[1],pos[2],blockIds.Water)
 		},
 		stackSize: 1,
 		category:"items"
@@ -3847,10 +3847,10 @@ const blockData = [
 		name: "lavaBucket",
 		Name:"Lava Bucket",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			if(p.survival) item.id = blockIds.bucket
 			let pos = movePositionByFace(face,x,y,z)
-			world.setBlock(pos[0],pos[1],pos[2],blockIds.Lava,false,false,false,false,dimension)
+			world.setBlock(pos[0],pos[1],pos[2],blockIds.Lava)
 		},
 		stackSize: 1,
 		category:"items"
@@ -3859,15 +3859,15 @@ const blockData = [
 	{
 		name: "spawnCow",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.Cow](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
-			world.addEntity(ent,false,dimension)
+			world.addEntity(ent)
 			item.amount--
 		},
-		spawnMob: function(x,y,z,dimension,world){
-			world.addEntity(new entities[entityIds.Cow](x,y,z),false,dimension)
+		spawnMob: function(x,y,z,world){
+			world.addEntity(new entities[entityIds.Cow](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -3988,15 +3988,15 @@ const blockData = [
 	{
 		name: "spawnPig",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.Pig](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
-			world.addEntity(ent,false,dimension)
+			world.addEntity(ent)
 			item.amount--
 		},
-		spawnMob: function(x,y,z,dimension,world){
-			world.addEntity(new entities[entityIds.Pig](x,y,z),false,dimension)
+		spawnMob: function(x,y,z,world){
+			world.addEntity(new entities[entityIds.Pig](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -4072,11 +4072,11 @@ const blockData = [
 		drop:"snowball",
 		hardness: 0.1,
 		fallingDust:[248/255, 253/255, 253/255],
-		onupdate: function(x,y,z,b,world,sx,sy,sz,dimension){
-			fall(x,y,z,b,world,false,dimension)
+		onupdate: function(x,y,z,b,world,sx,sy,sz){
+			fall(x,y,z,b,world,false)
 		},
-		ongetexploded:function(x,y,z,b,world,dimension){
-			fall(x,y,z,b,world,true,dimension)
+		ongetexploded:function(x,y,z,b,world){
+			fall(x,y,z,b,world,true)
 		},
 		temperature:5,
 		liquidBreakable:"drop",
@@ -4098,10 +4098,10 @@ const blockData = [
 		name:"snowball",
 		Name:"Snowball",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			item.amount--
 			var pd = p.direction
-			world.addEntity(new entities[entityIds.Snowball](p.x+pd.x,p.y+pd.y,p.z+pd.z, pd.x*0.8, pd.y*0.8, pd.z*0.8,p.id),false,dimension)
+			world.addEntity(new entities[entityIds.Snowball](p.x+pd.x,p.y+pd.y,p.z+pd.z, pd.x*0.8, pd.y*0.8, pd.z*0.8,p.id))
 		},
 		useAnywhere:true,
 		category:"items",
@@ -4110,10 +4110,10 @@ const blockData = [
 		name:"powderSnowBucket",
 		Name:"Powder Snow Bucket",
 		item:true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			if(p.survival) item.id = blockIds.bucket
 			var pos = movePositionByFace(face,x,y,z)
-			world.setBlock(pos[0],pos[1],pos[2],blockIds.powderSnow,false,false,false,false,dimension)
+			world.setBlock(pos[0],pos[1],pos[2],blockIds.powderSnow)
 		},
 		stackSize: 1,
 		category:"items",
@@ -4145,15 +4145,15 @@ const blockData = [
 		category:"nature",
 		hardness:0.6, blastResistance:0.5,
 		type:"ground",
-		tick:function(block,x,y,z,dimension,world){
+		tick:function(block,x,y,z,world){
 			var target = this.id
 			for(var X=x-4;X<=x+4;X++){
 				for(var Z=z-4;Z<=z+4;Z++){
-					var b = world.getBlock(X,y,Z,dimension), a = world.getBlock(X,y+1,Z,dimension)
+					var b = world.getBlock(X,y,Z), a = world.getBlock(X,y+1,Z)
 					if(b && blockData[b].name === "Water" || a && blockData[a].name === "Water") target = this.id|SLAB
 				}
 			}
-			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false,dimension)
+			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
 		}
 	},
 	
@@ -4438,9 +4438,9 @@ const blockData = [
 		compostChance:0.65,
 		liquidBreakable:"drop",
 		category:"nature",
-		growBonemeal: function(x,y,z,dimension,world){
+		growBonemeal: function(x,y,z,world){
 			win.serverSaveWorldGen()
-			world.getChunk(x,z,dimension).spawnHugeMushroom(x&15,y-1,z&15,x,z,false)
+			world.getChunk(x,z).spawnHugeMushroom(x&15,y-1,z&15,x,z,false)
 			win.serverRestoreWorldGen()
 		},
 		randomOffset:true,
@@ -4457,9 +4457,9 @@ const blockData = [
 		compostChance:0.65,
 		liquidBreakable:"drop",
 		category:"nature",
-		growBonemeal: function(x,y,z,dimension,world){
+		growBonemeal: function(x,y,z,world){
 			win.serverSaveWorldGen()
-			world.getChunk(x,z,dimension).spawnHugeMushroom(x&15,y-1,z&15,x,z,true)
+			world.getChunk(x,z).spawnHugeMushroom(x&15,y-1,z&15,x,z,true)
 			win.serverRestoreWorldGen()
 		},
 		randomOffset:true,
@@ -5394,13 +5394,13 @@ const blockData = [
 		hardness:0.5,
 		blastResistance:0.5,
 		type:"ground",
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			let top = world.getBlock(x,y+1,z,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			let top = world.getBlock(x,y+1,z)
 			let isSnow = blockData[top].name === "snow" || blockData[top].name === "snowBlock"
 			if(b === blockIds.podzol && isSnow){
-				world.setBlock(x,y,z,blockIds.podzol | CROSS,false,false,false,false,dimension)
+				world.setBlock(x,y,z,blockIds.podzol | CROSS,false,false,false,false)
 			}else if(b === (blockIds.podzol | CROSS) && !isSnow){
-				world.setBlock(x,y,z,blockIds.podzol,false,false,false,false,dimension)
+				world.setBlock(x,y,z,blockIds.podzol,false,false,false,false)
 			}
 		},
 		compostChance:0.3,
@@ -5548,9 +5548,9 @@ const blockData = [
 		name:"enderPearl",
 		Name:"Ender Pearl",
 		item:true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			item.amount--
-			world.addEntity(new entities[entityIds.EnderPearl](p.x,p.y,p.z, p.direction.x, p.direction.y, p.direction.z, p.id),false,dimension)
+			world.addEntity(new entities[entityIds.EnderPearl](p.x,p.y,p.z, p.direction.x, p.direction.y, p.direction.z, p.id))
 		},
 		useAnywhere:true,
 		category:"items"
@@ -5642,16 +5642,16 @@ const blockData = [
 		name:"redstoneLamp",
 		Name:"Redstone Lamp",
 		//if you chang this, change colored lamps too
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-			var power = world.getRedstonePower(x,y,z,dimension) || world.getSurroundingBlockPower(x,y,z,dimension)
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
 			var block = this.id
 			if(power){
 				block = this.id | SLAB
 			}
-			if(world.getBlock(x,y,z,dimension) !== block) world.setBlock(x,y,z,block,false,false,false,false,dimension)
+			if(world.getBlock(x,y,z) !== block) world.setBlock(x,y,z,block,false,false,false,false)
 		},
-		onset:function(x,y,z,dimension,world){
-			this.onpowerupdate(x,y,z,null,null,null,null,dimension,world)
+		onset:function(x,y,z,world){
+			this.onpowerupdate(x,y,z,null,null,null,null,world)
 		},
 		category:"redstone"
 	},
@@ -5678,13 +5678,13 @@ const blockData = [
 		hardness:Infinity,
 		lightLevel:1,
 		glassSound: true,
-		eyeplace:function(x,y,z,dimension,world){
-			this.findFullFrame(x+1,y,z,dimension,world)
-			this.findFullFrame(x-1,y,z,dimension,world)
-			this.findFullFrame(x,y,z+1,dimension,world)
-			this.findFullFrame(x,y,z-1,dimension,world)
+		eyeplace:function(x,y,z,world){
+			this.findFullFrame(x+1,y,z,world)
+			this.findFullFrame(x-1,y,z,world)
+			this.findFullFrame(x,y,z+1,world)
+			this.findFullFrame(x,y,z-1,world)
 		},
-		findFullFrame:function(x,y,z,dimension,world){
+		findFullFrame:function(x,y,z,world){
 			if(blockData[world.getBlock(x,y,z)].solid) return
 			let spread = [], spreadAt = [x,y,z,0]
 			let minX = x, minZ = z
@@ -5695,22 +5695,22 @@ const blockData = [
 				minX = Math.min(minX,sx), minZ = Math.min(minZ,sz)
 				maxX = Math.max(maxX,sx), maxZ = Math.max(maxZ,sz)
 				if(!xyArrayHas(spread,spreadAt,sx,sy,sz+1)){
-					let b = world.getBlock(sx,sy,sz+1,dimension)
+					let b = world.getBlock(sx,sy,sz+1)
 					if(!blockData[b].solid) spreadAt.push(sx,sy,sz+1,0)
 					else if(blockData[b].name !== this.name) return
 				}
 				if(!xyArrayHas(spread,spreadAt,sx,sy,sz-1)){
-					let b = world.getBlock(sx,sy,sz-1,dimension)
+					let b = world.getBlock(sx,sy,sz-1)
 					if(!blockData[b].solid) spreadAt.push(sx,sy,sz-1,0)
 					else if(blockData[b].name !== this.name) return
 				}
 				if(!xyArrayHas(spread,spreadAt,sx+1,sy,sz)){
-					let b = world.getBlock(sx+1,sy,sz,dimension)
+					let b = world.getBlock(sx+1,sy,sz)
 					if(!blockData[b].solid) spreadAt.push(sx+1,sy,sz,0)
 					else if(blockData[b].name !== this.name) return
 				}
 				if(!xyArrayHas(spread,spreadAt,sx-1,sy,sz)){
-					let b = world.getBlock(sx-1,sy,sz,dimension)
+					let b = world.getBlock(sx-1,sy,sz)
 					if(!blockData[b].solid) spreadAt.push(sx-1,sy,sz,0)
 					else if(blockData[b].name !== this.name) return
 				}
@@ -5718,29 +5718,29 @@ const blockData = [
 			}
 			//check if frame is correct
 			x = minX-1, z = minZ-1
-			if(world.getBlock(x+1,y,z,dimension) !== (this.id | SLAB | SOUTH)) return
-			if(world.getBlock(x+2,y,z,dimension) !== (this.id | SLAB | SOUTH)) return
-			if(world.getBlock(x+3,y,z,dimension) !== (this.id | SLAB | SOUTH)) return
-			if(world.getBlock(x+4,y,z+1,dimension) !== (this.id | SLAB | EAST)) return
-			if(world.getBlock(x+4,y,z+2,dimension) !== (this.id | SLAB | EAST)) return
-			if(world.getBlock(x+4,y,z+3,dimension) !== (this.id | SLAB | EAST)) return
-			if(world.getBlock(x+1,y,z+4,dimension) !== (this.id | SLAB | NORTH)) return
-			if(world.getBlock(x+2,y,z+4,dimension) !== (this.id | SLAB | NORTH)) return
-			if(world.getBlock(x+3,y,z+4,dimension) !== (this.id | SLAB | NORTH)) return
-			if(world.getBlock(x,y,z+1,dimension) !== (this.id | SLAB | WEST)) return
-			if(world.getBlock(x,y,z+2,dimension) !== (this.id | SLAB | WEST)) return
-			if(world.getBlock(x,y,z+3,dimension) !== (this.id | SLAB | WEST)) return
+			if(world.getBlock(x+1,y,z) !== (this.id | SLAB | SOUTH)) return
+			if(world.getBlock(x+2,y,z) !== (this.id | SLAB | SOUTH)) return
+			if(world.getBlock(x+3,y,z) !== (this.id | SLAB | SOUTH)) return
+			if(world.getBlock(x+4,y,z+1) !== (this.id | SLAB | EAST)) return
+			if(world.getBlock(x+4,y,z+2) !== (this.id | SLAB | EAST)) return
+			if(world.getBlock(x+4,y,z+3) !== (this.id | SLAB | EAST)) return
+			if(world.getBlock(x+1,y,z+4) !== (this.id | SLAB | NORTH)) return
+			if(world.getBlock(x+2,y,z+4) !== (this.id | SLAB | NORTH)) return
+			if(world.getBlock(x+3,y,z+4) !== (this.id | SLAB | NORTH)) return
+			if(world.getBlock(x,y,z+1) !== (this.id | SLAB | WEST)) return
+			if(world.getBlock(x,y,z+2) !== (this.id | SLAB | WEST)) return
+			if(world.getBlock(x,y,z+3) !== (this.id | SLAB | WEST)) return
 
 			//place the frame
-			world.setBlock(x+1,y,z+1,blockIds.endPortal,false,false,false,false,dimension)
-			world.setBlock(x+2,y,z+1,blockIds.endPortal,false,false,false,false,dimension)
-			world.setBlock(x+3,y,z+1,blockIds.endPortal,false,false,false,false,dimension)
-			world.setBlock(x+1,y,z+2,blockIds.endPortal,false,false,false,false,dimension)
-			world.setBlock(x+2,y,z+2,blockIds.endPortal,false,false,false,false,dimension)
-			world.setBlock(x+3,y,z+2,blockIds.endPortal,false,false,false,false,dimension)
-			world.setBlock(x+1,y,z+3,blockIds.endPortal,false,false,false,false,dimension)
-			world.setBlock(x+2,y,z+3,blockIds.endPortal,false,false,false,false,dimension)
-			world.setBlock(x+3,y,z+3,blockIds.endPortal,false,false,false,false,dimension)
+			world.setBlock(x+1,y,z+1,blockIds.endPortal)
+			world.setBlock(x+2,y,z+1,blockIds.endPortal)
+			world.setBlock(x+3,y,z+1,blockIds.endPortal)
+			world.setBlock(x+1,y,z+2,blockIds.endPortal)
+			world.setBlock(x+2,y,z+2,blockIds.endPortal)
+			world.setBlock(x+3,y,z+2,blockIds.endPortal)
+			world.setBlock(x+1,y,z+3,blockIds.endPortal)
+			world.setBlock(x+2,y,z+3,blockIds.endPortal)
+			world.setBlock(x+3,y,z+3,blockIds.endPortal)
 
 			world.playSound(x+2,y,z+2,"end_portal.endportal")
 		}
@@ -5765,11 +5765,11 @@ const blockData = [
 		Name:"Red Sand",
 		hardness:0.5,
 		fallingDust:[178/255, 94/255, 26/255],
-		onupdate: function(x,y,z,b,world,sx,sy,sz,dimension){
-			fall(x,y,z,b,world,false,dimension)
+		onupdate: function(x,y,z,b,world,sx,sy,sz){
+			fall(x,y,z,b,world,false)
 		},
-		ongetexploded:function(x,y,z,b,world,dimension){
-			fall(x,y,z,b,world,true,dimension)
+		ongetexploded:function(x,y,z,b,world){
+			fall(x,y,z,b,world,true)
 		},
 		category:"nature",
 		digSound: ["sand.dig1", "sand.dig2", "sand.dig3", "sand.dig4"],
@@ -6053,9 +6053,9 @@ const blockData = [
 		name:"egg",
 		Name:"Egg",
 		item:true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			item.amount--
-			world.addEntity(new entities[entityIds.Egg](p.x+pd.x,p.y+pd.y,p.z+pd.z, pd.x*0.8, pd.y*0.8, pd.z*0.8, p.id),false,dimension)
+			world.addEntity(new entities[entityIds.Egg](p.x+pd.x,p.y+pd.y,p.z+pd.z, pd.x*0.8, pd.y*0.8, pd.z*0.8, p.id))
 		},
 		useAnywhere:true,
 		category:"items"
@@ -6166,7 +6166,7 @@ const blockData = [
 		tagBits:{
 			age:[0,8]
 		},
-		getAttached:function(x,y,z,block,dimension,getBlockOnly,world){
+		getAttached:function(x,y,z,block,getBlockOnly,world){
 			var ax = x, ay = y, az = z
 			switch(block){
 				case this.id:
@@ -6188,48 +6188,48 @@ const blockData = [
 					ax--
 					break
 			}
-			var attached = world.getBlock(ax,ay,az,dimension)
+			var attached = world.getBlock(ax,ay,az)
 			if(getBlockOnly) return attached
 			else return [attached,ax,ay,az]
 		},
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			var block = this.getAttached(x,y,z,b,dimension,true,world)
-			if(!block || !blockData[block].solid && !blockData[block].liquid) world.setBlock(x,y,z,0,false,false,false,false,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var block = this.getAttached(x,y,z,b,true,world)
+			if(!block || !blockData[block].solid && !blockData[block].liquid) world.setBlock(x,y,z,0,false,false,false,false)
 		},
-		tick:function(x,y,z,dimension,world){
-			var block = world.getBlock(x,y,z,dimension)
-			var attached = this.getAttached(x,y,z,block,dimension,false,world)
+		tick:function(x,y,z,world){
+			var block = world.getBlock(x,y,z)
+			var attached = this.getAttached(x,y,z,block,false,world)
 			var ax = attached[1], ay = attached[2], az = attached[3]
 			attached = attached[0]
-			var age = world.getTagByName(x,y,z,"age",dimension)
+			var age = world.getTagByName(x,y,z,"age")
 			if(!age) age = 0
 			age += rand(10,11)
 			//finish burning
 			if(age >= 15 && (!attached || !blockData[attached].burnTime)){
-				return world.setBlock(x,y,z,0,false,false,false,false,dimension)
+				return world.setBlock(x,y,z,0,false,false,false,false)
 			}
 			if(attached && blockData[attached].burnTime && age > blockData[attached].burnTime){
-				world.setBlock(x,y,z,0,false,false,false,false,dimension)
-				world.setBlock(ax,ay,az,0,false,false,false,false,dimension)
+				world.setBlock(x,y,z,0,false,false,false,false)
+				world.setBlock(ax,ay,az,0,false,false,false,false)
 				return
 			}
 			if(age > 255) age = 255
-			world.setTagByName(x,y,z,"age",age,false,dimension)
+			world.setTagByName(x,y,z,"age",age,false)
 
 			if(world.weather === "rain" && world.weatherAmount > 0.5){
-				let top = world.getSolidTop(x,z,dimension)
-				if(y > top) world.setBlock(x,y,z,0,false,false,false,false,dimension) //rain extinguish
+				let top = world.getSolidTop(x,z)
+				if(y > top) world.setBlock(x,y,z,0,false,false,false,false) //rain extinguish
 			}
 			
-			this.spread(x,y,z,dimension,world)
+			this.spread(x,y,z,world)
 		},
-		spread:function(x,y,z,dimension,world){
+		spread:function(x,y,z,world){
 			for(var i=x-1; i<=x+1; i++){
 				for(var j=y-1; j<=y+4; j++){
 					for(var k=z-1; k<=z+1; k++){
-						var block = world.getBlock(i,j,k,dimension)
+						var block = world.getBlock(i,j,k)
 						if(block && blockData[block].burnChance && rand() < blockData[block].burnChance){
-							if(blockData[block].onburn) blockData[block].onburn(i,j,k,dimension,world)
+							if(blockData[block].onburn) blockData[block].onburn(i,j,k,world)
 							var block
 							let rx, ry, rz
 							//find a place where the fire can go
@@ -6261,80 +6261,80 @@ const blockData = [
 										rx++
 										break
 								}
-								if(!world.getBlock(rx,ry,rz,dimension)) break
+								if(!world.getBlock(rx,ry,rz)) break
 							}
-							if(!world.getBlock(rx,ry,rz,dimension)) world.setBlock(rx,ry,rz,block,false,false,false,false,dimension)
+							if(!world.getBlock(rx,ry,rz)) world.setBlock(rx,ry,rz,block,false,false,false,false)
 						}
 					}
 				}
 			}
 		},
-		tryCreatePortalZ:function(x,y,z,dimension){ //weird portals are allowed
+		tryCreatePortalZ:function(x,y,z,world){ //weird portals are allowed
 			let spread = [], spreadAt = [x,y,z,0], maxSpread = 23, block
 			while(spreadAt.length){
 				let [sx,sy,sz,i] = spreadAt.splice(0,4)
 				spread.push(sx,sy,sz,i)
 				if(max(abs(sx-x),abs(sy-y),abs(sz-z)) > maxSpread) return
-				block = world.getBlock(sx,sy,sz+1,dimension)
+				block = world.getBlock(sx,sy,sz+1)
 				if(!xyArrayHas(spread,spreadAt,sx,sy,sz+1)){
 					if(!blockData[block].solid) spreadAt.push(sx,sy,sz+1,i+1)
 					else if(block !== blockIds.obsidian) return
 				}
-				block = world.getBlock(sx,sy,sz-1,dimension)
+				block = world.getBlock(sx,sy,sz-1)
 				if(!xyArrayHas(spread,spreadAt,sx,sy,sz-1)){
 					if(!blockData[block].solid) spreadAt.push(sx,sy,sz-1,i+1)
 					else if(block !== blockIds.obsidian) return
 				}
-				block = world.getBlock(sx,sy+1,sz,dimension)
+				block = world.getBlock(sx,sy+1,sz)
 				if(!xyArrayHas(spread,spreadAt,sx,sy+1,sz)){
 					if(!blockData[block].solid) spreadAt.push(sx,sy+1,sz,i+1)
 					else if(block !== blockIds.obsidian) return
 				}
-				block = world.getBlock(sx,sy-1,sz,dimension)
+				block = world.getBlock(sx,sy-1,sz)
 				if(!xyArrayHas(spread,spreadAt,sx,sy-1,sz)){
 					if(!blockData[block].solid) spreadAt.push(sx,sy-1,sz,i+1)
 					else if(block !== blockIds.obsidian) return
 				}
 			}
 			for(let i=0; i<spread.length; i+=4){
-				world.setBlock(spread[i],spread[i+1],spread[i+2],blockIds.portal|PORTAL|EAST,false,false,false,false,dimension)
+				world.setBlock(spread[i],spread[i+1],spread[i+2],blockIds.portal|PORTAL|EAST)
 			}
 			return true
 		},
-		tryCreatePortalX:function(x,y,z,dimension){ //weird portals are allowed
+		tryCreatePortalX:function(x,y,z,world){ //weird portals are allowed
 			let spread = [], spreadAt = [x,y,z,0], maxSpread = 23, block
 			while(spreadAt.length){
 				let [sx,sy,sz,i] = spreadAt.splice(0,4)
 				spread.push(sx,sy,sz,i)
 				if(max(abs(sx-x),abs(sy-y),abs(sz-z)) > maxSpread) return
-				block = world.getBlock(sx+1,sy,sz,dimension)
+				block = world.getBlock(sx+1,sy,sz)
 				if(!xyArrayHas(spread,spreadAt,sx+1,sy,sz)){
 					if(!blockData[block].solid) spreadAt.push(sx+1,sy,sz,i+1)
 					else if(block !== blockIds.obsidian) return
 				}
-				block = world.getBlock(sx-1,sy,sz,dimension)
+				block = world.getBlock(sx-1,sy,sz)
 				if(!xyArrayHas(spread,spreadAt,sx-1,sy,sz)){
 					if(!blockData[block].solid) spreadAt.push(sx-1,sy,sz,i+1)
 					else if(block !== blockIds.obsidian) return
 				}
-				block = world.getBlock(sx,sy+1,sz,dimension)
+				block = world.getBlock(sx,sy+1,sz)
 				if(!xyArrayHas(spread,spreadAt,sx,sy+1,sz)){
 					if(!blockData[block].solid) spreadAt.push(sx,sy+1,sz,i+1)
 					else if(block !== blockIds.obsidian) return
 				}
-				block = world.getBlock(sx,sy-1,sz,dimension)
+				block = world.getBlock(sx,sy-1,sz)
 				if(!xyArrayHas(spread,spreadAt,sx,sy-1,sz)){
 					if(!blockData[block].solid) spreadAt.push(sx,sy-1,sz,i+1)
 					else if(block !== blockIds.obsidian) return
 				}
 			}
 			for(let i=0; i<spread.length; i+=4){
-				world.setBlock(spread[i],spread[i+1],spread[i+2],blockIds.portal|PORTAL|NORTH,false,false,false,false,dimension)
+				world.setBlock(spread[i],spread[i+1],spread[i+2],blockIds.portal|PORTAL|NORTH)
 			}
 			return true
 		},
-		tryCreatePortal:function(x,y,z,dimension){
-			return this.tryCreatePortalZ(x,y,z,dimension) || this.tryCreatePortalX(x,y,z,dimension)
+		tryCreatePortal:function(x,y,z,world){
+			return this.tryCreatePortalZ(x,y,z,world) || this.tryCreatePortalX(x,y,z,world)
 		}
 	},
 	
@@ -6609,11 +6609,11 @@ const blockData = [
 		solid: false,
 		shadow: false,
 		crossShape: true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			var top = world.getBlock(x,y+1,z,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var top = world.getBlock(x,y+1,z)
 			var isIt = blockData[top].name === "kelp" || blockData[top].name === "kelpPlant"
 			if(isIt){
-				world.setBlock(x,y,z,blockIds.kelpPlant | CROSS,false,false,false,false,dimension)
+				world.setBlock(x,y,z,blockIds.kelpPlant | CROSS,false,false,false,false)
 			}
 		},
 		category:"nature"
@@ -6624,11 +6624,11 @@ const blockData = [
 		solid: false,
 		shadow: false,
 		crossShape: true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			var top = world.getBlock(x,y+1,z,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var top = world.getBlock(x,y+1,z)
 			var isIt = blockData[top].name === "kelp" || blockData[top].name === "kelpPlant"
 			if(!isIt){
-				world.setBlock(x,y,z,blockIds.kelp | CROSS,false,false,false,false,dimension)
+				world.setBlock(x,y,z,blockIds.kelp | CROSS,false,false,false,false)
 			}
 		},
 		hidden:true
@@ -6668,17 +6668,17 @@ const blockData = [
 		barrel:true,
 		category:"items",
 		tagBits: null,
-		setContents:function(x,y,z,dimension,world){
+		setContents:function(x,y,z,world){
 			let data = {chest:true, contents:new Array(27).fill(0)}
-			world.setTags(x, y, z, data,false,dimension)
+			world.setTags(x, y, z, data,false)
 			return data
 		},
-		onbreak:function(x,y,z, block, data,dimension,world){
+		onbreak:function(x,y,z, block, data,world){
 			if(!(data && data.chest && data.contents)) return
 			data = data.contents
 			for(var i=0; i<data.length; i++){
 				if(data[i]){
-					world.addItems(x,y,z,dimension,0,0,0,data[i].id, true, data[i].amount, data[i].durability, data[i].customName)
+					world.addItems(x,y,z,0,0,0,data[i].id, true, data[i].amount, data[i].durability, data[i].customName)
 				}
 			}
 		},
@@ -6854,9 +6854,9 @@ const blockData = [
 		smoothLight:false,
 		blastResistance:2,
 		hardness:2,
-		activate:function(x,y,z,dimension,block,ent){
+		activate:function(x,y,z,block,ent,world){
 			if(ent.burning && block === (this.id | SLAB) && onBoxEnt(x,y,z,1,1,1,ent)){
-				world.setBlock(x,y,z,this.id,false,false,false,false,dimension)
+				world.setBlock(x,y,z,this.id,false,false,false,false)
 			}
 		}
 	},
@@ -6878,9 +6878,9 @@ const blockData = [
 		smoothLight:false,
 		blastResistance:2,
 		hardness:2,
-		activate:function(x,y,z,dimension,block,ent){
+		activate:function(x,y,z,block,ent,world){
 			if(ent.burning && block === (this.id | SLAB) && onBoxEnt(x,y,z,1,1,1,ent)){
-				world.setBlock(x,y,z,this.id,false,false,false,false,dimension)
+				world.setBlock(x,y,z,this.id,false,false,false,false)
 			}
 		}
 	},
@@ -6909,8 +6909,8 @@ const blockData = [
 		transparent:true,
 		drop:"bambooStalk",
 		hardness:1,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			needsSupportingBlocks(x,y,z,b,world,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			needsSupportingBlocks(x,y,z,b,world)
 		},
 		liquidBreakable:"drop",
 		category:"nature",
@@ -6924,17 +6924,17 @@ const blockData = [
 		transparent:true,
 		chest:true,
 		tagBits: null,
-		setContents:function(x,y,z,dimension,world){
+		setContents:function(x,y,z,world){
 			let data = {chest:true, contents:new Array(27).fill(0)}
-			world.setTags(x, y, z, data,false,dimension)
+			world.setTags(x, y, z, data,false)
 			return data
 		},
-		onbreak:function(x,y,z, block, data,dimension,world){
+		onbreak:function(x,y,z, block, data,world){
 			if(!(data && data.chest && data.contents)) return
 			data = data.contents
 			for(var i=0; i<data.length; i++){
 				if(data[i]){
-					world.addItems(x,y,z,dimension,0,0,0,data[i].id, true, data[i].amount, data[i].durability, data[i].customName)
+					world.addItems(x,y,z,0,0,0,data[i].id, true, data[i].amount, data[i].durability, data[i].customName)
 				}
 			}
 		},
@@ -6944,14 +6944,14 @@ const blockData = [
 		name:"boneMeal",
 		Name:"Bone \"Meal\"",
 		item:true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			item.amount--
 			if(blockData[block].grow){
-				blockData[block].grow(x,y,z,dimension,world)
+				blockData[block].grow(x,y,z,world)
 			}else if(blockData[block].growBonemeal){
-				blockData[block].growBonemeal(x,y,z,dimension,world)
+				blockData[block].growBonemeal(x,y,z,world)
 			}else return true
-			world.glint(x,y,z,dimension)
+			world.glint(x,y,z)
 		},
 		category:"items"
 	},
@@ -7029,13 +7029,13 @@ const blockData = [
 		shadow:false,
 		transparent:true,
 		solid:false,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			needsSupportingBlocks(x,y,z,b,world,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			needsSupportingBlocks(x,y,z,b,world)
 		},
 		category:"nature",
 		liquidBreakable:"drop",
-		growBonemeal:function(x,y,z,dimension,world){
-			world.setBlock(x,y,z, this.id|TALLCROSS,false,false,false,false,dimension)
+		growBonemeal:function(x,y,z,world){
+			world.setBlock(x,y,z, this.id|TALLCROSS)
 		}
 	},
 	{
@@ -7062,8 +7062,8 @@ const blockData = [
 		shadow: false,
 		crossShape: true,
 		cactusFruit:true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			needsSupportingBlocks(x,y,z,b,world,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			needsSupportingBlocks(x,y,z,b,world)
 		},
 		compostChance:0.3,
 		liquidBreakable:true,
@@ -7077,8 +7077,8 @@ const blockData = [
 		shadow: false,
 		crossShape: true,
 		cactusFruit:true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			needsSupportingBlocks(x,y,z,b,world,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			needsSupportingBlocks(x,y,z,b,world)
 		},
 		compostChance:0.4,
 		liquidBreakable:true,
@@ -7096,8 +7096,8 @@ const blockData = [
 		food: 2,
 		saturation: 1,
 		cactusFruit:true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			needsSupportingBlocks(x,y,z,b,world,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			needsSupportingBlocks(x,y,z,b,world)
 		},
 		compostChance:0.5,
 		liquidBreakable:true,
@@ -7115,8 +7115,8 @@ const blockData = [
 		food: 3,
 		saturation: 2,
 		cactusFruit:true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			needsSupportingBlocks(x,y,z,b,world,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			needsSupportingBlocks(x,y,z,b,world)
 		},
 		compostChance:0.6,
 		liquidBreakable:true,
@@ -7208,9 +7208,9 @@ const blockData = [
 		crossShape: true,
 		potCross: true,
 		category:"nature",
-		grow: function(x,y,z,dimension,world){
+		grow: function(x,y,z,world){
 			win.serverSaveWorldGen()
-			world.getChunk(x,z,dimension).spawnCherryTree(x&15,y-1,z&15,x,z,true)
+			world.getChunk(x,z).spawnCherryTree(x&15,y-1,z&15,x,z,true)
 			win.serverRestoreWorldGen()
 		}
 	},
@@ -7231,9 +7231,9 @@ const blockData = [
 		name:"slingshot",
 		Name:"Slingshot",
 		item:true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			var pd = p.direction
-			world.addEntity(new entities[entityIds.SlingshotShot](p.x,p.y,p.z,pd.x,pd.y,pd.z),false,dimension)
+			world.addEntity(new entities[entityIds.SlingshotShot](p.x,p.y,p.z,pd.x,pd.y,pd.z))
 		},
 		useAnywhere:true,
 		stackSize:1,
@@ -7250,27 +7250,27 @@ const blockData = [
 		woodSound:true,
 		solid:false,
 		flatIcon:true,
-		onupdate: function(x,y,z,b,world,sx,sy,sz,dimension){
-			this.onpowerupdate(x,y,z,null,null,null,null,dimension,world)
+		onupdate: function(x,y,z,b,world,sx,sy,sz){
+			this.onpowerupdate(x,y,z,null,null,null,null,world)
 			
-			if(world.getPower(x,y,z,dimension) === 16){ //is torch on?
-				var b = world.getBlock(x,y+1,z,dimension)
+			if(world.getPower(x,y,z) === 16){ //is torch on?
+				var b = world.getBlock(x,y+1,z)
 				if(b && !blockData[b].transparent){
-					world.setBlockPower(x,y+1,z, "strong", "bottom",dimension) //torch is under this block
+					world.setBlockPower(x,y+1,z, "strong", "bottom") //torch is under this block
 				}
 				
-				b = world.getBlock(x,y-1,z,dimension)
+				b = world.getBlock(x,y-1,z)
 				if(b && blockData[b].carryRedstone){
-					world.setPower(x,y-1,z,15,false,dimension)
-					world.spreadPower(x,y-1,z,15,dimension)
+					world.setPower(x,y-1,z,15,false)
+					world.spreadPower(x,y-1,z,15)
 				}
 			}
 		},
-		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
+		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var that = this
 			world.setTimeout(function(){
 				//find block it's attached to
-				var me = world.getBlock(x,y,z,dimension)
+				var me = world.getBlock(x,y,z)
 				var ax=x,ay=y,az=z
 				var wall = that.id | SLAB
 				var wallOff = that.id | STAIR
@@ -7294,9 +7294,9 @@ const blockData = [
 					default:
 						ay--
 				}
-				var block = world.getBlock(ax,ay,az,dimension)
+				var block = world.getBlock(ax,ay,az)
 				//see if the torch should be on of off
-				var on = world.getPower(ax,ay,az,dimension) || world.getBlockPower(ax,ay,az,null,dimension) ? false : true
+				var on = world.getPower(ax,ay,az) || world.getBlockPower(ax,ay,az,null) ? false : true
 				var target = me
 				if(on){
 					switch(me){
@@ -7336,46 +7336,46 @@ const blockData = [
 
 				//set it
 				if(me !== target) {
-					world.setBlock(x,y,z,target,false,false,false,false,dimension)
+					world.setBlock(x,y,z,target,false,false,false,false)
 					if(on){
-						world.setPower(x,y,z,16,false,dimension)
-						world.spreadPower(x,y,z,16,dimension)
+						world.setPower(x,y,z,16,false)
+						world.spreadPower(x,y,z,16)
 					}else{
-						world.setPower(x,y,z,0,false,dimension)
-						world.unspreadPower(x,y,z,16,false,dimension)
+						world.setPower(x,y,z,0,false)
+						world.unspreadPower(x,y,z,16,false)
 					}
 					
-					var b = world.getBlock(x,y+1,z,dimension)
+					var b = world.getBlock(x,y+1,z)
 					if(b && !blockData[b].transparent){
-						world.setBlockPower(x,y+1,z, on ? "strong" : null, "bottom",dimension) //torch is under this block
+						world.setBlockPower(x,y+1,z, on ? "strong" : null, "bottom") //torch is under this block
 					}
-					b = world.getBlock(x,y-1,z,dimension)
+					b = world.getBlock(x,y-1,z)
 					if(b && blockData[b].carryRedstone){
 						if(on){
-							world.setPower(x,y-1,z,15,false,dimension)
-							world.spreadPower(x,y-1,z,15,dimension)
+							world.setPower(x,y-1,z,15,false)
+							world.spreadPower(x,y-1,z,15)
 						}else{
-							world.unspreadPower(x,y-1,z,15,true,dimension)
+							world.unspreadPower(x,y-1,z,15,true)
 						}
 					}
 				}
-			},tickTime*2, x,y,z,dimension)
+			},tickTime*2, x,y,z)
 		},
-		onset:function(x,y,z,dimension,world){
-			world.setPower(x,y,z,16,false,dimension)
-			world.spreadPower(x,y,z,16,dimension)
+		onset:function(x,y,z,world){
+			world.setPower(x,y,z,16,false)
+			world.spreadPower(x,y,z,16)
 		},
-		ondelete:function(x,y,z,prevTags,prev,dimension,world){
-			world.setPower(x,y,z,0,false,dimension)
-			world.unspreadPower(x,y,z,16,false,dimension)
+		ondelete:function(x,y,z,prevTags,prev,world){
+			world.setPower(x,y,z,0,false)
+			world.unspreadPower(x,y,z,16,false)
 			
-			var b = world.getBlock(x,y+1,z,dimension)
+			var b = world.getBlock(x,y+1,z)
 			if(b && !blockData[b].transparent){
-				world.setBlockPower(x,y+1,z, null, "bottom",dimension) //torch is under this block
+				world.setBlockPower(x,y+1,z, null, "bottom") //torch is under this block
 			}
-			b = world.getBlock(x,y-1,z,dimension)
+			b = world.getBlock(x,y-1,z)
 			if(b && blockData[b].carryRedstone){
-				world.unspreadPower(x,y-1,z,15,true,dimension)
+				world.unspreadPower(x,y-1,z,15,true)
 			}
 		},
 		category:"redstone"
@@ -7394,8 +7394,8 @@ const blockData = [
 		solid:false,
 		lever:true,
 		flatIcon:true,
-		onclick:function(x,y,z,dimension,world){
-			var block = world.getBlock(x,y,z,dimension)
+		onclick:function(x,y,z,world){
+			var block = world.getBlock(x,y,z)
 			var me = blockData[blockIds.lever]
 			var wall = me.id
 			var wallOn = me.id | SLAB
@@ -7484,23 +7484,23 @@ const blockData = [
 					target = me.id | TALLCROSS
 					break
 			}
-			world.setBlock(x,y,z,target,false,false,false,false,dimension)
+			world.setBlock(x,y,z,target)
 			if(on){
-				world.setPower(x,y,z,16,false,dimension)
-				world.spreadPower(x,y,z,15,dimension)
+				world.setPower(x,y,z,16)
+				world.spreadPower(x,y,z,15)
 			}else{
-				world.setPower(x,y,z,0,false,dimension)
-				world.unspreadPower(x,y,z,16,false,dimension)
+				world.setPower(x,y,z,0)
+				world.unspreadPower(x,y,z,16)
 			}
 			
-			var a = world.getBlock(ax,ay,az,dimension)
+			var a = world.getBlock(ax,ay,az)
 			if(a && !blockData[a].transparent){
-				world.setBlockPower(ax,ay,az,on ? "strong" : null,dir,dimension)
+				world.setBlockPower(ax,ay,az,on ? "strong" : null,dir)
 			}
 		},
-		ondelete:function(x,y,z,prevTags,prevBlock,dimension,world){
+		ondelete:function(x,y,z,prevTags,prevBlock,world){
 			if(getTagBits(prevTags,"power",this.id)){
-				world.unspreadPower(x,y,z,16,false,dimension)
+				world.unspreadPower(x,y,z,16,false)
 				
 				var block = prevBlock
 				var me = blockData[blockIds.lever]
@@ -7541,9 +7541,9 @@ const blockData = [
 						break
 				}
 				
-				var a = world.getBlock(ax,ay,az,dimension)
+				var a = world.getBlock(ax,ay,az)
 				if(a && !blockData[a].transparent){
-					world.setBlockPower(ax,ay,az,null,dir,dimension)
+					world.setBlockPower(ax,ay,az,null,dir)
 				}
 			}
 		},
@@ -7557,21 +7557,21 @@ const blockData = [
 		iconTexture:"repeaterIcon",
 		repeater:true,
 		transparent:true,
-		onupdate:function(x,y,z,b,w,sx,sy,sz,dimension){
-			this.onpowerupdate(x,y,z,null,null,null,null,dimension,w)
+		onupdate:function(x,y,z,b,w,sx,sy,sz){
+			this.onpowerupdate(x,y,z,null,null,null,null,w)
 		},
-		ondelete:function(x,y,z,prevTags,prevBlock,dimension,world){
-			world.unspreadPower(x,y,z,16,false,dimension)
-			world.setBlockPower(x,y,z+1,null,"south",dimension)
-			world.setBlockPower(x,y,z-1,null,"north",dimension)
-			world.setBlockPower(x+1,y,z,null,"east",dimension)
-			world.setBlockPower(x-1,y,z,null,"west",dimension)
+		ondelete:function(x,y,z,prevTags,prevBlock,world){
+			world.unspreadPower(x,y,z,16,false)
+			world.setBlockPower(x,y,z+1,null,"south")
+			world.setBlockPower(x,y,z-1,null,"north")
+			world.setBlockPower(x+1,y,z,null,"east")
+			world.setBlockPower(x-1,y,z,null,"west")
 		},
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var fx = x, fy = y, fz = z //from
 			var tx = x, ty = y, tz = z //pointing to
 			var side //side of block it's pointing to
-			var block = world.getBlock(x,y,z,dimension)
+			var block = world.getBlock(x,y,z)
 			var d1 = this.id, d2 = this.id | SLAB, d3 = this.id | STAIR, d4 = this.id | DOOR //delay
 			var D1 = this.id | PANE, D2 = this.id | PORTAL, D3 = this.id | WALLFLAT, D4 = this.id | TRAPDOOROPEN //delay for on repeaters
 			switch(block){
@@ -7691,27 +7691,27 @@ const blockData = [
 					on = true
 			}
 
-			var tblock = world.getBlock(tx,ty,tz,dimension)
+			var tblock = world.getBlock(tx,ty,tz)
 			if(tblock && blockData[tblock].carryRedstone){
 				if(on){
-					if(world.getPower(tx,ty,tz,dimension) !== 15){
-						world.setPower(tx,ty,tz,15,false,dimension)
-						world.spreadPower(tx,ty,tz,15,dimension)
+					if(world.getPower(tx,ty,tz) !== 15){
+						world.setPower(tx,ty,tz,15,false)
+						world.spreadPower(tx,ty,tz,15)
 					}
 				}
 			}else if(tblock && !blockData[tblock].transparent){
 				if(on){
-					world.setBlockPower(tx,ty,tz,"strong",side,dimension)
+					world.setBlockPower(tx,ty,tz,"strong",side)
 				}else{
-					world.setBlockPower(tx,ty,tz,null,side,dimension)
+					world.setBlockPower(tx,ty,tz,null,side)
 				}
 			}
 			
-			var shouldBeOn = world.getRepeaterPower(x,y,z,fx,fy,fz,dimension) || world.getBlockPower(fx,fy,fz,null,dimension) ? true : false
+			var shouldBeOn = world.getRepeaterPower(x,y,z,fx,fy,fz) || world.getBlockPower(fx,fy,fz,null) ? true : false
 			if(on === shouldBeOn) return
 			var t = function(){
-				block = world.getBlock(x,y,z,dimension)
-				var on = world.getRepeaterPower(x,y,z,fx,fy,fz,dimension) || world.getBlockPower(fx,fy,fz,null,dimension) ? true : false //should it be on?
+				block = world.getBlock(x,y,z)
+				var on = world.getRepeaterPower(x,y,z,fx,fy,fz) || world.getBlockPower(fx,fy,fz,null) ? true : false //should it be on?
 				var isOn = false
 				switch(block){ //todo: make it an if loop
 					case D1 | NORTH:
@@ -7845,32 +7845,32 @@ const blockData = [
 						case "west":
 							target |= WEST
 					}
-					if(block !== target) world.setBlock(x,y,z,target,false,false,false,false,dimension)
+					if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
 					
-					var tblock = world.getBlock(tx,ty,tz,dimension)
+					var tblock = world.getBlock(tx,ty,tz)
 					if(on){
 						if(tblock && blockData[tblock].carryRedstone){
-							if(world.getPower(tx,ty,tz,dimension) !== 15){
-								world.setPower(tx,ty,tz,15,false,dimension)
-								world.spreadPower(tx,ty,tz,15,dimension)
+							if(world.getPower(tx,ty,tz) !== 15){
+								world.setPower(tx,ty,tz,15,false)
+								world.spreadPower(tx,ty,tz,15)
 							}
 						}else if(tblock && !blockData[tblock].transparent){
-							world.setBlockPower(tx,ty,tz,"strong",side,dimension)
+							world.setBlockPower(tx,ty,tz,"strong",side)
 						}
 					}else{
 						if(tblock && blockData[tblock].carryRedstone){
-							world.unspreadPower(tx,ty,tz,15,true,dimension)
+							world.unspreadPower(tx,ty,tz,15,true)
 						}else if(tblock && !blockData[tblock].transparent){
-							world.setBlockPower(tx,ty,tz,null,side,dimension)
+							world.setBlockPower(tx,ty,tz,null,side)
 						}
 					}
 				}//end if repeater power changed
 			}
-			world.setTimeout(t,tickTime*delay*2, x,y,z,dimension)
+			world.setTimeout(t,tickTime*delay*2, x,y,z)
 		},
-		onclick:function(x,y,z,dimension){
+		onclick:function(x,y,z){
 			var me = blockData[blockIds.repeater]
-			var block = world.getBlock(x,y,z,dimension)
+			var block = world.getBlock(x,y,z)
 			var d1 = me.id, d2 = me.id | SLAB, d3 = me.id | STAIR, d4 = me.id | DOOR //delay
 			var D1 = me.id | PANE, D2 = me.id | PORTAL, D3 = me.id | WALLFLAT, D4 = me.id | TRAPDOOROPEN //delay for on repeaters
 			var target
@@ -7972,10 +7972,10 @@ const blockData = [
 					target = D1 | WEST
 					break
 			}
-			world.setBlock(x,y,z,target,false,false,false,false,dimension)
+			world.setBlock(x,y,z,target)
 		},
-		getFacing:function(x,y,z,dimension,world){
-			var block = world.getBlock(x,y,z,dimension)
+		getFacing:function(x,y,z,world){
+			var block = world.getBlock(x,y,z)
 			var d1 = this.id, d2 = this.id | SLAB, d3 = this.id | STAIR, d4 = this.id | DOOR //delay
 			var D1 = this.id | PANE, D2 = this.id | PORTAL, D3 = this.id | WALLFLAT, D4 = this.id | TRAPDOOROPEN //delay for on repeaters
 			var f
@@ -8023,9 +8023,9 @@ const blockData = [
 			}
 			return f
 		},
-		canHavePower:function(/*repeater*/rx,ry,rz,/*other thing*/x,y,z,dimension,world){
+		canHavePower:function(/*repeater*/rx,ry,rz,/*other thing*/x,y,z,world){
 			var tx = rx, ty = ry, tz = rz
-			var block = world.getBlock(rx,ry,rz,dimension)
+			var block = world.getBlock(rx,ry,rz)
 			var d1 = this.id, d2 = this.id | SLAB, d3 = this.id | STAIR, d4 = this.id | DOOR //delay
 			var D1 = this.id | PANE, D2 = this.id | PORTAL, D3 = this.id | WALLFLAT, D4 = this.id | TRAPDOOROPEN //delay for on repeaters
 			switch(block){
@@ -8108,8 +8108,8 @@ const blockData = [
 		headSideTexture:"pistonHeadSide",
 		frontOpenTexture:"pistonFrontOpen",
 		headBackTexture:"pistonFront",
-		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-			var block = world.getBlock(x,y,z,dimension)
+		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			var block = world.getBlock(x,y,z)
 			var extended = false, facing, attachedHead = false
 			switch(block){
 				case this.id:
@@ -8160,37 +8160,37 @@ const blockData = [
 			if(extended){
 				switch(facing){
 					case "top":
-						if(world.getBlock(x,y+1,z,dimension) === (this.id | STAIR)) attachedHead = true
+						if(world.getBlock(x,y+1,z) === (this.id | STAIR)) attachedHead = true
 						break
 					case "bottom":
-						if(world.getBlock(x,y-1,z,dimension) === (this.id | STAIR | FLIP)) attachedHead = true
+						if(world.getBlock(x,y-1,z) === (this.id | STAIR | FLIP)) attachedHead = true
 						break
 					case "north":
-						if(world.getBlock(x,y,z-1,dimension) === (this.id | DOOR | NORTH)) attachedHead = true
+						if(world.getBlock(x,y,z-1) === (this.id | DOOR | NORTH)) attachedHead = true
 						break
 					case "south":
-						if(world.getBlock(x,y,z+1,dimension) === (this.id | DOOR | SOUTH)) attachedHead = true
+						if(world.getBlock(x,y,z+1) === (this.id | DOOR | SOUTH)) attachedHead = true
 						break
 					case "east":
-						if(world.getBlock(x-1,y,z,dimension) === (this.id | DOOR | EAST)) attachedHead = true
+						if(world.getBlock(x-1,y,z) === (this.id | DOOR | EAST)) attachedHead = true
 						break
 					case "west":
-						if(world.getBlock(x+1,y,z,dimension) === (this.id | DOOR | WEST)) attachedHead = true
+						if(world.getBlock(x+1,y,z) === (this.id | DOOR | WEST)) attachedHead = true
 						break
 				}
 			}
 			
-			var power = world.getRedstonePower(x,y,z,dimension) || world.getSurroundingBlockPower(x,y,z,dimension)
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
 			if(power && !extended){
-				this.extend(x,y,z,facing,dimension,world)
+				this.extend(x,y,z,facing,world)
 			}else if(!power && extended && attachedHead){
-				this.retract(x,y,z,facing,dimension,world)
+				this.retract(x,y,z,facing,world)
 			}
 		},
-		onupdate:function(x,y,z,b,w,sx,sy,sz,dimension){ //onupdate is run when placed
-			this.onpowerupdate(x,y,z,null,null,null,null,dimension,w)
+		onupdate:function(x,y,z,b,w,sx,sy,sz){ //onupdate is run when placed
+			this.onpowerupdate(x,y,z,null,null,null,null,w)
 		},
-		onbreak:function(x,y,z, prevBlock, prevTags,dimension,world){
+		onbreak:function(x,y,z, prevBlock, prevTags,world){
 			//dissapear if it isn't connected (it = piston heads and piston open)
 			let tx = x, ty = y, tz = z
 			switch(prevBlock){
@@ -8221,9 +8221,9 @@ const blockData = [
 				default:
 					return //unextended pistons
 			}
-			world.setBlock(tx,ty,tz,0,false,false,false,false,dimension)
+			world.setBlock(tx,ty,tz,0,false,false,false,false)
 		},
-		extend:function(x,y,z, facing,dimension,world){
+		extend:function(x,y,z, facing,world){
 			var tx = x, ty = y, tz = z, mx = 0, my = 0, mz = 0
 			var head, headCut, open
 			switch(facing){
@@ -8272,24 +8272,24 @@ const blockData = [
 				default:
 					return console.log("oh no! piston isn't facing anywhere")
 			}
-			var push = getPistonPushedBlocks(x,y,z,mx,my,mz,dimension,world)
+			var push = getPistonPushedBlocks(x,y,z,mx,my,mz,world)
 			if(push === false) return
 			
-			world.setBlock(x,y,z,open,false,false,false,false,dimension)
+			world.setBlock(x,y,z,open,false,false,false,false)
 			var e = new entities[entityIds.MovingBlock](headCut,x,y,z,tx,ty,tz, tickTime*2, true)
 			e.endAs = head
-			world.addEntity(e,false,dimension)
+			world.addEntity(e,false)
 			//world.setTimeout(function(){
 			//	e.changeBlock(head)
 			//}, tickTime*1.5)
 			for(var i=0; i<push.length; i+=4){
 				var bx = push[i], by = push[i+1], bz = push[i+2]
-				var tags = world.getTags(bx,by,bz,dimension)
-				world.setBlock(bx,by,bz,0,false,false,false,false,dimension)
-				world.addEntity(new entities[entityIds.MovingBlock](push[i+3],bx,by,bz,bx+mx,by+my,bz+mz, tickTime*2, true, tags),false,dimension)
+				var tags = world.getTags(bx,by,bz)
+				world.setBlock(bx,by,bz,0,false,false,false,false)
+				world.addEntity(new entities[entityIds.MovingBlock](push[i+3],bx,by,bz,bx+mx,by+my,bz+mz, tickTime*2, true, tags),false)
 			}
 		},
-		retract:function(x,y,z, facing,dimension,world){
+		retract:function(x,y,z, facing,world){
 			var tx = x, ty = y, tz = z
 			var head, headCut, body
 			switch(facing){
@@ -8332,14 +8332,14 @@ const blockData = [
 				default:
 					return console.log("oh no! piston isn't facing anywhere")
 			}
-			world.setBlock(tx,ty,tz,0,false,false,false,false,dimension)
+			world.setBlock(tx,ty,tz,0,false,false,false,false)
 			var e = new entities[entityIds.MovingBlock](head,tx,ty,tz,x,y,z, tickTime*2)
-			world.addEntity(e,false,dimension)
+			world.addEntity(e,false)
 			//world.setTimeout(function(){
 			//	e.changeBlock(headCut)
 			//}, tickTime*0.5)
 			world.setTimeout(function(){
-				world.setBlock(x,y,z,body,false,false,false,false,dimension)
+				world.setBlock(x,y,z,body,false,false,false,false)
 			}, tickTime*2)
 		},
 		category:"redstone"
@@ -8362,8 +8362,8 @@ const blockData = [
 		frontOpenTexture:"pistonFrontOpen",
 		headBackTexture:"pistonFront",
 		category:"redstone",
-		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-			var block = world.getBlock(x,y,z,dimension)
+		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			var block = world.getBlock(x,y,z)
 			var extended = false, facing, attachedHead = false
 			switch(block){
 				case this.id:
@@ -8414,37 +8414,37 @@ const blockData = [
 			if(extended){
 				switch(facing){
 					case "top":
-						if(world.getBlock(x,y+1,z,dimension) === (this.id | STAIR)) attachedHead = true
+						if(world.getBlock(x,y+1,z) === (this.id | STAIR)) attachedHead = true
 						break
 					case "bottom":
-						if(world.getBlock(x,y-1,z,dimension) === (this.id | STAIR | FLIP)) attachedHead = true
+						if(world.getBlock(x,y-1,z) === (this.id | STAIR | FLIP)) attachedHead = true
 						break
 					case "north":
-						if(world.getBlock(x,y,z-1,dimension) === (this.id | DOOR | NORTH)) attachedHead = true
+						if(world.getBlock(x,y,z-1) === (this.id | DOOR | NORTH)) attachedHead = true
 						break
 					case "south":
-						if(world.getBlock(x,y,z+1,dimension) === (this.id | DOOR | SOUTH)) attachedHead = true
+						if(world.getBlock(x,y,z+1) === (this.id | DOOR | SOUTH)) attachedHead = true
 						break
 					case "east":
-						if(world.getBlock(x-1,y,z,dimension) === (this.id | DOOR | EAST)) attachedHead = true
+						if(world.getBlock(x-1,y,z) === (this.id | DOOR | EAST)) attachedHead = true
 						break
 					case "west":
-						if(world.getBlock(x+1,y,z,dimension) === (this.id | DOOR | WEST)) attachedHead = true
+						if(world.getBlock(x+1,y,z) === (this.id | DOOR | WEST)) attachedHead = true
 						break
 				}
 			}
 			
-			var power = world.getRedstonePower(x,y,z,dimension) || world.getSurroundingBlockPower(x,y,z,dimension)
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
 			if(power && !extended){
-				this.extend(x,y,z,facing,dimension,world)
+				this.extend(x,y,z,facing,world)
 			}else if(!power && extended && attachedHead){
-				this.retract(x,y,z,facing,dimension,world)
+				this.retract(x,y,z,facing,world)
 			}
 		},
-		onupdate:function(x,y,z,b,w,sx,sy,sz,dimension){ //onupdate is run when placed
-			this.onpowerupdate(x,y,z,null,null,null,null,dimension,w)
+		onupdate:function(x,y,z,b,w,sx,sy,sz){ //onupdate is run when placed
+			this.onpowerupdate(x,y,z,null,null,null,null,w)
 		},
-		onbreak:function(x,y,z, prevBlock, prevTags,dimension,world){
+		onbreak:function(x,y,z, prevBlock, prevTags,world){
 			//dissapear if it isn't connected (it = piston heads and piston open)
 			let tx = x, ty = y, tz = z
 			switch(prevBlock){
@@ -8475,9 +8475,9 @@ const blockData = [
 				default:
 					return //unextended pistons
 			}
-			world.setBlock(tx,ty,tz,0,false,false,false,false,dimension)
+			world.setBlock(tx,ty,tz,0,false,false,false,false)
 		},
-		extend:function(x,y,z, facing,dimension,world){
+		extend:function(x,y,z, facing,world){
 			var tx = x, ty = y, tz = z, mx = 0, my = 0, mz = 0
 			var head, headCut, open
 			switch(facing){
@@ -8526,24 +8526,24 @@ const blockData = [
 				default:
 					return console.log("oh no! piston isn't facing anywhere")
 			}
-			var push = getPistonPushedBlocks(x,y,z,mx,my,mz,dimension,world)
+			var push = getPistonPushedBlocks(x,y,z,mx,my,mz,world)
 			if(push === false) return
 			
-			world.setBlock(x,y,z,open,false,false,false,false,dimension)
+			world.setBlock(x,y,z,open,false,false,false,false)
 			var e = new entities[entityIds.MovingBlock](headCut,x,y,z,tx,ty,tz, tickTime*2, true)
 			for(var i=0; i<push.length; i+=4){
 				var bx = push[i], by = push[i+1], bz = push[i+2]
-				var tags = world.getTags(bx,by,bz,dimension)
-				world.setBlock(bx,by,bz,0,false,false,false,false,dimension)
-				world.addEntity(new entities[entityIds.MovingBlock](push[i+3],bx,by,bz,bx+mx,by+my,bz+mz, tickTime*2, true, tags),false,dimension)
+				var tags = world.getTags(bx,by,bz)
+				world.setBlock(bx,by,bz,0,false,false,false,false)
+				world.addEntity(new entities[entityIds.MovingBlock](push[i+3],bx,by,bz,bx+mx,by+my,bz+mz, tickTime*2, true, tags),false)
 			}
 			e.endAs = head
-			world.addEntity(e,false,dimension)
+			world.addEntity(e,false)
 			//world.setTimeout(function(){
 			//	e.changeBlock(head)
 			//}, tickTime*1.5)
 		},
-		retract:function(x,y,z, facing,dimension,world){
+		retract:function(x,y,z, facing,world){
 			var tx = x, ty = y, tz = z, mx = 0, my = 0, mz = 0
 			var head, headCut, body
 			switch(facing){
@@ -8592,23 +8592,23 @@ const blockData = [
 				default:
 					return console.log("oh no! piston isn't facing anywhere")
 			}
-			world.setBlock(tx,ty,tz,0,false,false,false,false,dimension)
+			world.setBlock(tx,ty,tz,0,false,false,false,false)
 			var e = new entities[entityIds.MovingBlock](head,tx,ty,tz,x,y,z, tickTime*2)
-			world.addEntity(e,false,dimension)
+			world.addEntity(e,false)
 			//world.setTimeout(function(){
 			//	e.changeBlock(headCut)
 			//}, tickTime*0.5)
 			world.setTimeout(function(){
-				world.setBlock(x,y,z,body,false,false,false,false,dimension)
+				world.setBlock(x,y,z,body,false,false,false,false)
 			}, tickTime*2)
 			
-			var pull = getPistonPulledBlocks(x,y,z,mx,my,mz,dimension,world)
+			var pull = getPistonPulledBlocks(x,y,z,mx,my,mz,world)
 			if(pull){
 				for(var i=0; i<pull.length; i+=4){
 					var bx = pull[i], by = pull[i+1], bz = pull[i+2]
-					var tags = world.getTags(bx,by,bz,dimension)
-					world.setBlock(bx,by,bz,0,false,false,false,false,dimension)
-					world.addEntity(new entities[entityIds.MovingBlock](pull[i+3],bx,by,bz,bx-mx,by-my,bz-mz, tickTime*2, true, tags),false,dimension)
+					var tags = world.getTags(bx,by,bz)
+					world.setBlock(bx,by,bz,0,false,false,false,false)
+					world.addEntity(new entities[entityIds.MovingBlock](pull[i+3],bx,by,bz,bx-mx,by-my,bz-mz, tickTime*2, true, tags),false)
 				}
 			}
 		}
@@ -8620,8 +8620,8 @@ const blockData = [
 		textures:["observerTop","observerTop","observerBack","observerFront","observerSide","observerSide"],
 		blastResistance:3.5,
 		hardness:3,
-		getFacing:function(x,y,z,dimension,world){
-			var block = world.getBlock(x,y,z,dimension)
+		getFacing:function(x,y,z,world){
+			var block = world.getBlock(x,y,z)
 			var facing
 			switch(block){
 				case this.id | NORTH:
@@ -8653,8 +8653,8 @@ const blockData = [
 			}
 			return facing
 		},
-		detected:function(x,y,z,sx,sy,sz,world, detected = false,dimension){ //if detected is true, it will send a signal no matter what
-			var block = world.getBlock(x,y,z,dimension)
+		detected:function(x,y,z,sx,sy,sz,world, detected = false){ //if detected is true, it will send a signal no matter what
+			var block = world.getBlock(x,y,z)
 			var facing, tx = 0, ty = 0, tz = 0, onBlock
 			switch(block){
 				case this.id | NORTH:
@@ -8694,33 +8694,33 @@ const blockData = [
 			if(!(x+tx === sx && y+ty === sy && z+tz === sz) && !detected) return
 			
 			world.setTimeout(function(){
-				var curBlock = world.getBlock(x,y,z,dimension)
+				var curBlock = world.getBlock(x,y,z)
 				if(!(curBlock && blockData[curBlock].name === "observer")) return
 				
-				world.setBlock(x,y,z,onBlock, false,true,false,false,dimension)
-				let blockBehind = world.getBlock(x-tx,y-ty,z-tz,dimension)
+				world.setBlock(x,y,z,onBlock, false,true,false,false)
+				let blockBehind = world.getBlock(x-tx,y-ty,z-tz)
 				if(blockBehind && blockData[blockBehind].carryRedstone){
-					world.setPower(x-tx,y-ty,z-tz, 15,false,dimension)
-					world.spreadPower(x-tx,y-ty,z-tz, 15,dimension)
+					world.setPower(x-tx,y-ty,z-tz, 15,false)
+					world.spreadPower(x-tx,y-ty,z-tz, 15)
 				}
 				world.setTimeout(function(){
-					let curBlock = world.getBlock(x,y,z,dimension)
+					let curBlock = world.getBlock(x,y,z)
 					if(!(curBlock && blockData[curBlock].name === "observer")) return
-					blockBehind = world.getBlock(x-tx,y-ty,z-tz,dimension)
+					blockBehind = world.getBlock(x-tx,y-ty,z-tz)
 					
-					world.setBlock(x,y,z,block, false,true,false,false,dimension)
-					if(blockBehind && blockData[blockBehind].carryRedstone) world.unspreadPower(x-tx,y-ty,z-tz, 15, true,dimension)
+					world.setBlock(x,y,z,block, false,true,false,false)
+					if(blockBehind && blockData[blockBehind].carryRedstone) world.unspreadPower(x-tx,y-ty,z-tz, 15, true)
 				}, tickTime*2)
-			}, tickTime, x,y,z,dimension)
+			}, tickTime, x,y,z)
 		},
-		onupdate:function(x,y,z,block,world,sx,sy,sz,dimension){
-			this.detected(x,y,z,sx,sy,sz,world,false,dimension)
+		onupdate:function(x,y,z,block,world,sx,sy,sz){
+			this.detected(x,y,z,sx,sy,sz,world,false)
 		},
-		onset:function(x,y,z,dimension,world){
-			this.detected(x,y,z,x,y,z,world,true,dimension)
+		onset:function(x,y,z,world){
+			this.detected(x,y,z,x,y,z,world,true)
 		},
-		canHavePower:function(rx,ry,rz, x,y,z, dimension,world){
-			var block = world.getBlock(rx,ry,rz,dimension)
+		canHavePower:function(rx,ry,rz, x,y,z,world){
+			var block = world.getBlock(rx,ry,rz)
 			var tx = 0, ty = 0, tz = 0
 			switch(block){
 				case this.id | STAIR | NORTH:
@@ -8880,14 +8880,14 @@ const blockData = [
 		pistonPull:false,
 		hidden:true,
 		drop:"air",
-		ontouch: function(x,y,z,dimension,ent){
+		serverontouch: function(x,y,z,ent){
 			let nx, ny, nz
 			if(ent.dimension === ""){
 				nx = round(rand(-64,64))
 				nz = round(rand(-64,64))
 				ny = ent.y
 			}else{
-				let spawn = ent.spawnPoint || ent.world.spawnPoint
+				let spawn = ent.spawnPoint || ent.world.world.spawnPoint
 				nx = spawn.x
 				ny = spawn.y
 				nz = spawn.z
@@ -8906,11 +8906,11 @@ const blockData = [
 		doneLoading:function(p,world){
 			if(p.dimension === "end"){
 				let ny
-				ny = world.getSolidTop(round(p.x),round(p.z),p.dimension)+0.5+p.height*0.5
+				ny = world.getSolidTop(round(p.x),round(p.z))+0.5+p.height*0.5
 				if(ny < 25) ny = 25
 				p.tp(p.x,ny,p.z)
 				if(!world.getBlock(p.x,floor(ny-p.height*0.5),p.z,p.dimension)){
-					world.setBlock(p.x,floor(ny-p.height*0.5),p.z,blockIds.obsidian,false,false,false,false,p.dimension)
+					world.setBlock(p.x,floor(ny-p.height*0.5),p.z,blockIds.obsidian)
 				}
 			}
 		}
@@ -9141,16 +9141,16 @@ const blockData = [
 		name:"redRedstoneLamp",
 		Name:"Red Redstone Lamp",
 		textures:"redstoneLamp",
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-			var power = world.getRedstonePower(x,y,z,dimension) || world.getSurroundingBlockPower(x,y,z,dimension)
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
 			var block = this.id
 			if(power){
 				block = this.id | SLAB
 			}
-			if(world.getBlock(x,y,z,dimension) !== block) world.setBlock(x,y,z,block,false,false,false,false,dimension)
+			if(world.getBlock(x,y,z) !== block) world.setBlock(x,y,z,block,false,false,false,false)
 		},
-		onset:function(x,y,z,dimension,world){
-			this.onpowerupdate(x,y,z,null,null,null,null,dimension,world)
+		onset:function(x,y,z,world){
+			this.onpowerupdate(x,y,z,null,null,null,null,world)
 		},
 		coloredRedstoneLamp:true,
 		category:"redstone"
@@ -9159,16 +9159,16 @@ const blockData = [
 		name:"yellowRedstoneLamp",
 		Name:"Yellow Redstone Lamp",
 		textures:"redstoneLamp",
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-			var power = world.getRedstonePower(x,y,z,dimension) || world.getSurroundingBlockPower(x,y,z,dimension)
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
 			var block = this.id
 			if(power){
 				block = this.id | SLAB
 			}
-			if(world.getBlock(x,y,z,dimension) !== block) world.setBlock(x,y,z,block,false,false,false,false,dimension)
+			if(world.getBlock(x,y,z) !== block) world.setBlock(x,y,z,block,false,false,false,false)
 		},
-		onset:function(x,y,z,dimension,world){
-			this.onpowerupdate(x,y,z,null,null,null,null,dimension,world)
+		onset:function(x,y,z,world){
+			this.onpowerupdate(x,y,z,null,null,null,null,world)
 		},
 		coloredRedstoneLamp:true,
 		category:"redstone"
@@ -9177,16 +9177,16 @@ const blockData = [
 		name:"greenRedstoneLamp",
 		Name:"Green Redstone Lamp",
 		textures:"redstoneLamp",
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-			var power = world.getRedstonePower(x,y,z,dimension) || world.getSurroundingBlockPower(x,y,z,dimension)
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
 			var block = this.id
 			if(power){
 				block = this.id | SLAB
 			}
-			if(world.getBlock(x,y,z,dimension) !== block) world.setBlock(x,y,z,block,false,false,false,false,dimension)
+			if(world.getBlock(x,y,z) !== block) world.setBlock(x,y,z,block,false,false,false,false)
 		},
-		onset:function(x,y,z,dimension,world){
-			this.onpowerupdate(x,y,z,null,null,null,null,dimension,world)
+		onset:function(x,y,z,world){
+			this.onpowerupdate(x,y,z,null,null,null,null,world)
 		},
 		coloredRedstoneLamp:true,
 		category:"redstone"
@@ -9195,16 +9195,16 @@ const blockData = [
 		name:"blueRedstoneLamp",
 		Name:"Blue Redstone Lamp",
 		textures:"redstoneLamp",
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-			var power = world.getRedstonePower(x,y,z,dimension) || world.getSurroundingBlockPower(x,y,z,dimension)
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
 			var block = this.id
 			if(power){
 				block = this.id | SLAB
 			}
-			if(world.getBlock(x,y,z,dimension) !== block) world.setBlock(x,y,z,block,false,false,false,false,dimension)
+			if(world.getBlock(x,y,z) !== block) world.setBlock(x,y,z,block,false,false,false,false)
 		},
-		onset:function(x,y,z,dimension,world){
-			this.onpowerupdate(x,y,z,null,null,null,null,dimension,world)
+		onset:function(x,y,z,world){
+			this.onpowerupdate(x,y,z,null,null,null,null,world)
 		},
 		coloredRedstoneLamp:true,
 		category:"redstone"
@@ -9224,7 +9224,7 @@ const blockData = [
 		smoothLight:false,
 		hidden:true,
 		noHitbox:true,
-		getAttached:function(x,y,z,block,dimension,getBlockOnly,world){
+		getAttached:function(x,y,z,block,getBlockOnly,world){
 			var ax = x, ay = y, az = z
 			switch(block){
 				case this.id:
@@ -9246,13 +9246,13 @@ const blockData = [
 					ax--
 					break
 			}
-			var attached = world.getBlock(ax,ay,az,dimension)
+			var attached = world.getBlock(ax,ay,az)
 			if(getBlockOnly) return attached
 			else return [attached,ax,ay,az]
 		},
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			var block = this.getAttached(x,y,z,b,dimension,true,world)
-			if(!block || !blockData[block].canHaveSoulFire) world.setBlock(x,y,z,0,false,false,false,false,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var block = this.getAttached(x,y,z,b,true,world)
+			if(!block || !blockData[block].canHaveSoulFire) world.setBlock(x,y,z,0,false,false,false,false)
 		},
 	},
 	
@@ -9306,14 +9306,14 @@ const blockData = [
 		shadow: false,
 		smoothLight:false,
 		liquidBreakable:"drop",
-		onupdate:function(x,y,z,block,world,sx,sy,sz,dimension){
+		onupdate:function(x,y,z,block,world,sx,sy,sz){
 			var me = blockIds.bigDripleaf
-			var top = world.getBlock(x,y+1,z,dimension)
+			var top = world.getBlock(x,y+1,z)
 			var isIt = top === me || top === (me | CROSS)
 			if(block === me && isIt){
-				world.setBlock(x,y,z,me | CROSS,false,false,false,false,dimension)
+				world.setBlock(x,y,z,me | CROSS,false,false,false,false)
 			}else if(block === (me | CROSS) && !isIt){
-				world.setBlock(x,y,z,me,false,false,false,false,dimension)
+				world.setBlock(x,y,z,me,false,false,false,false)
 			}
 		},
 		category:"nature"
@@ -9327,9 +9327,9 @@ const blockData = [
 		transparent: true,
 		shadow: false,
 		logicGate:true,
-		shouldBeOn:function(x,y,z,dimension,px,pz,world){
-			return (world.getRepeaterPower(x,y,z,x-pz,y,z-px,dimension) || world.getBlockPower(x-pz,y,z-px,null,dimension)
-							|| world.getRepeaterPower(x,y,z,x+pz,y,z+px,dimension) || world.getBlockPower(x+pz,y,z+px,null,dimension)) ? true : false
+		shouldBeOn:function(x,y,z,px,pz,world){
+			return (world.getRepeaterPower(x,y,z,x-pz,y,z-px) || world.getBlockPower(x-pz,y,z-px,null)
+							|| world.getRepeaterPower(x,y,z,x+pz,y,z+px) || world.getBlockPower(x+pz,y,z+px,null)) ? true : false
 		},
 		category:"redstone"
 	},
@@ -9341,9 +9341,9 @@ const blockData = [
 		transparent: true,
 		shadow: false,
 		logicGate:true,
-		shouldBeOn:function(x,y,z,dimension,px,pz,world){
-			return ((world.getRepeaterPower(x,y,z,x-pz,y,z-px,dimension) || world.getBlockPower(x-pz,y,z-px,null,dimension))
-							&& (world.getRepeaterPower(x,y,z,x+pz,y,z+px,dimension) || world.getBlockPower(x+pz,y,z+px,null,dimension))) ? true : false
+		shouldBeOn:function(x,y,z,px,pz,world){
+			return ((world.getRepeaterPower(x,y,z,x-pz,y,z-px) || world.getBlockPower(x-pz,y,z-px,null))
+							&& (world.getRepeaterPower(x,y,z,x+pz,y,z+px) || world.getBlockPower(x+pz,y,z+px,null))) ? true : false
 		},
 		category:"redstone"
 	},
@@ -9355,8 +9355,8 @@ const blockData = [
 		transparent: true,
 		shadow: false,
 		logicGate:true,
-		shouldBeOn:function(x,y,z,dimension,px,pz,world){
-			return !(world.getRepeaterPower(x,y,z,x-px,y,z-pz,dimension) || world.getBlockPower(x-px,y,z-pz,null,dimension)) ? true : false
+		shouldBeOn:function(x,y,z,px,pz,world){
+			return !(world.getRepeaterPower(x,y,z,x-px,y,z-pz) || world.getBlockPower(x-px,y,z-pz,null)) ? true : false
 		},
 		category:"redstone"
 	},
@@ -9368,9 +9368,9 @@ const blockData = [
 		transparent: true,
 		shadow: false,
 		logicGate:true,
-		shouldBeOn:function(x,y,z,dimension,px,pz,world){
-			var a = world.getRepeaterPower(x,y,z,x-pz,y,z-px,dimension) || world.getBlockPower(x-pz,y,z-px,null,dimension)
-			var b = world.getRepeaterPower(x,y,z,x+pz,y,z+px,dimension) || world.getBlockPower(x+pz,y,z+px,null,dimension)
+		shouldBeOn:function(x,y,z,px,pz,world){
+			var a = world.getRepeaterPower(x,y,z,x-pz,y,z-px) || world.getBlockPower(x-pz,y,z-px,null)
+			var b = world.getRepeaterPower(x,y,z,x+pz,y,z+px) || world.getBlockPower(x+pz,y,z+px,null)
 			return ((a||b)&&!(a&&b)) ? true : false
 		},
 		category:"redstone"
@@ -9396,42 +9396,42 @@ const blockData = [
 		blastResistance:3,
 		type:"rock1",
 		drop:"pointedDripstone",
-		pointing:function(x,y,z,d,world){
-			var b = world.getBlock(x,y,z,d)
+		pointing:function(x,y,z,world){
+			var b = world.getBlock(x,y,z)
 			if(blockData[b].name === this.name) return (b & FLIP) === FLIP ? -1 : 1
 		},
-		onupdate:function(x,y,z,block,world,sx,sy,sz,dimension){
+		onupdate:function(x,y,z,block,world,sx,sy,sz){
 			var down = (block & FLIP) === FLIP
 			var pointing = down ? -1 : 1
 			if(down){
-				var attached = world.getBlock(x,y+1,z,dimension)
-				if(world.settings.blocksFall && (!attached || !blockData[attached].solid)){
-					world.setBlock(x,y,z, 0, false,false,false,false,dimension)
-					world.addEntity(new entities[entityIds.BlockEntity](block, x,y,z),false,dimension)
+				var attached = world.getBlock(x,y+1,z)
+				if(world.world.settings.blocksFall && (!attached || !blockData[attached].solid)){
+					world.setBlock(x,y,z, 0, false,false,false,false)
+					world.addEntity(new entities[entityIds.BlockEntity](block, x,y,z),false)
 					return
 				}
 			}else{
-				if(needsSupportingBlocks(x,y,z, this.id,world,dimension)) return
+				if(needsSupportingBlocks(x,y,z, this.id,world)) return
 			}
 			
 			var target = down ? this.id | FLIP : this.id
-			if(this.pointing(x,y+pointing,z,dimension,world) === pointing && this.pointing(x,y+pointing*2,z,dimension,world) !== pointing) target |= CROSS //frustum
-			else if(this.pointing(x,y+pointing,z,dimension,world) === pointing && !this.pointing(x,y-pointing,z,dimension,world)) target |= SLAB //base
-			else if(this.pointing(x,y+pointing,z,dimension,world) === pointing) target |= STAIR //middle
-			else if(this.pointing(x,y+pointing,z,dimension,world) === -pointing) target |= TALLCROSS //tip merge
+			if(this.pointing(x,y+pointing,z,world) === pointing && this.pointing(x,y+pointing*2,z,world) !== pointing) target |= CROSS //frustum
+			else if(this.pointing(x,y+pointing,z,world) === pointing && !this.pointing(x,y-pointing,z,world)) target |= SLAB //base
+			else if(this.pointing(x,y+pointing,z,world) === pointing) target |= STAIR //middle
+			else if(this.pointing(x,y+pointing,z,world) === -pointing) target |= TALLCROSS //tip merge
 			
-			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false,dimension)
+			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
 		},
-		spawnUpdate:function(x,y,z,block,world,dimension){
+		spawnUpdate:function(x,y,z,block,world){
 			let down = (block & FLIP) === FLIP
 			let pointing = down ? -1 : 1
 			let target = down ? this.id | FLIP : this.id
-			if(this.pointing(x,y+pointing,z,dimension,world) === pointing && this.pointing(x,y+pointing*2,z,dimension,world) !== pointing) target |= CROSS //frustum
-			else if(this.pointing(x,y+pointing,z,dimension,world) === pointing && !this.pointing(x,y-pointing,z,dimension,world)) target |= SLAB //base
-			else if(this.pointing(x,y+pointing,z,dimension,world) === pointing) target |= STAIR //middle
-			else if(this.pointing(x,y+pointing,z,dimension,world) === -pointing) target |= TALLCROSS //tip merge
+			if(this.pointing(x,y+pointing,z,world) === pointing && this.pointing(x,y+pointing*2,z,world) !== pointing) target |= CROSS //frustum
+			else if(this.pointing(x,y+pointing,z,world) === pointing && !this.pointing(x,y-pointing,z,world)) target |= SLAB //base
+			else if(this.pointing(x,y+pointing,z,world) === pointing) target |= STAIR //middle
+			else if(this.pointing(x,y+pointing,z,world) === -pointing) target |= TALLCROSS //tip merge
 			
-			if(block !== target) world.spawnBlock(x,y,z,target,dimension, true)
+			if(block !== target) world.spawnBlock(x,y,z,target, true)
 		},
 		category:"nature",
 		randomOffset:true,
@@ -9565,11 +9565,11 @@ const blockData = [
 					return 7
 			}
 		},
-		onclick:function(x,y,z,dimension,world,p,holdObj){
+		onclick:function(x,y,z,world,p,holdObj){
 			if(!holdObj || !blockData[holdObj.id].compostChance) return true
 			let id = blockIds.composter
 			let target = id
-			let block = world.getBlock(x,y,z,dimension)
+			let block = world.getBlock(x,y,z)
 			let add = rand() <= blockData[holdObj.id].compostChance
 			switch(block){
 				case id:
@@ -9594,11 +9594,11 @@ const blockData = [
 					target |= LANTERN
 					break
 				case id | LANTERN:
-					if(add) world.addItems(x,y,z+0.5,dimension,0,0,0,blockIds.boneMeal,true, 1)
+					if(add) world.addItems(x,y,z+0.5,0,0,0,blockIds.boneMeal,true, 1)
 			}
 			holdObj.amount--
-			if(add) world.setBlock(x,y,z,target,false,false,false,false,dimension)
-			world.glint(x,y,z,dimension)
+			if(add) world.setBlock(x,y,z,target)
+			world.glint(x,y,z)
 		},
 		category:"items"
 	},
@@ -9777,9 +9777,6 @@ const blockData = [
 		saturation: 13.2,
 		eatResult:"bowl",
 		category:"food",
-		growBonemeal:function(x,y,z,dimension,world){
-			world.setBlock(x,y,z, this.id|CROSS,false,false,false,false,dimension)
-		}
 	},
 	{
 		name:"carrot",
@@ -9854,8 +9851,8 @@ const blockData = [
 			if(face === "top" && blockData[block].name === "farmland") return "potatoes"
 		},
 		category:"food",
-		growBonemeal:function(x,y,z,dimension,world){
-			world.setBlock(x,y,z, this.id|CROSS,false,false,false,false,dimension)
+		growBonemeal:function(x,y,z,world){
+			world.setBlock(x,y,z, this.id|CROSS)
 		}
 	},
 	{
@@ -9902,7 +9899,10 @@ const blockData = [
 		crop: true,
 		drop:"beetrootSeeds",
 		hidden:true,
-		liquidBreakable:"drop"
+		liquidBreakable:"drop",
+		growBonemeal:function(x,y,z,world){
+			world.setBlock(x,y,z, this.id|CROSS)
+		}
 	},
 	{
 		name:"potatoes",
@@ -9931,8 +9931,8 @@ const blockData = [
 		drop:"carrot",
 		hidden:true,
 		liquidBreakable:"drop",
-		growBonemeal:function(x,y,z,dimension,world){
-			world.setBlock(x,y,z, this.id|CROSS,false,false,false,false,dimension)
+		growBonemeal:function(x,y,z,world){
+			world.setBlock(x,y,z, this.id|CROSS)
 		}
 	},
 	
@@ -10172,10 +10172,10 @@ const blockData = [
 		name:"untnt",
 		Name:"UnTNT",
 		textures:["untntBottom","untntTop","untnt"],
-		explode:function(x,y,z,how,dimension,world){
-			world.setBlock(x,y,z,0,false,false,false,false,dimension)
+		explode:function(x,y,z,how,world){
+			world.setBlock(x,y,z,0,false,false,false,false)
 			var e = new entities[entityIds.PrimedUnTNT](x,y,z)
-			world.addEntity(e,false,dimension)
+			world.addEntity(e,false)
 			world.playSound(x,y,z, "random.fuse")
 			switch(how){
 				case "explosion":
@@ -10183,8 +10183,8 @@ const blockData = [
 			}
 		},
 		burnChance:0.6,
-		onburn:function(x,y,z,dimension,world){
-			this.explode(x,y,z,null,dimension,world)
+		onburn:function(x,y,z,world){
+			this.explode(x,y,z,null,world)
 		},
 		category:"redstone"
 	},
@@ -10225,27 +10225,27 @@ const blockData = [
 		stoneSound:true,
 		category:"redstone",
 		tagBits: null,
-		setContents:function(x,y,z,dimension,world){
+		setContents:function(x,y,z,world){
 			let data = {dispenser:true, contents:new Array(9).fill(0)}
-			world.setTags(x, y, z, data,false,dimension)
+			world.setTags(x, y, z, data,false)
 			return data
 		},
-		onbreak:function(x,y,z, block, data,dimension,world){
+		onbreak:function(x,y,z, block, data,world){
 			if(!(data && data.dispenser && data.contents)) return
 			data = data.contents
 			for(var i=0; i<data.length; i++){
 				if(data[i]){
-					world.addItems(x,y,z,dimension,0,0,0,data[i].id, true, data[i].amount, data[i].durability, data[i].customName)
+					world.addItems(x,y,z,0,0,0,data[i].id, true, data[i].amount, data[i].durability, data[i].customName)
 				}
 			}
 		},
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-			var block = world.getBlock(x,y,z,dimension)
-			var power = world.getRedstonePower(x,y,z,dimension) || world.getSurroundingBlockPower(x,y,z,dimension)
-			var tags = world.getTags(x,y,z,dimension)
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			var block = world.getBlock(x,y,z)
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
+			var tags = world.getTags(x,y,z)
 			var on = tags && tags.on || false
 			if(power !== on) {
-				world.setTagByName(x,y,z,"on",power,false,dimension)
+				world.setTagByName(x,y,z,"on",power,false)
 				if(power){
 					var me = this
 					world.setTimeout(function(){
@@ -10288,18 +10288,18 @@ const blockData = [
 								ty--
 								break
 						}
-						if(!putItemInContainer(tx,ty,tz,dimension,items[idx].id,items[idx].durability,items[idx].customName,false,world)){
-							world.addItems(ix,iy,iz,dimension,vx,vy,vz,items[idx].id, false, 1, items[idx].durability, items[idx].customName)
+						if(!putItemInContainer(tx,ty,tz,items[idx].id,items[idx].durability,items[idx].customName,false,world)){
+							world.addItems(ix,iy,iz,vx,vy,vz,items[idx].id, false, 1, items[idx].durability, items[idx].customName)
 						}
 						items[idx].amount--
 						if(items[idx].amount <= 0) items[idx] = 0
-						world.setTags(x,y,z,tags,false,dimension)
-					},tickTime*4, x,y,z,dimension)
+						world.setTags(x,y,z,tags,false)
+					},tickTime*4, x,y,z)
 				}
 			}
 		},
-		onset:function(x,y,z,dimension,world){
-			this.onpowerupdate(x,y,z,null,null,null,null,dimension,world)
+		onset:function(x,y,z,world){
+			this.onpowerupdate(x,y,z,null,null,null,null,world)
 		},
 	},
 	{
@@ -10313,27 +10313,27 @@ const blockData = [
 		hardness:3.5,
 		type:"rock2",
 		tagBits: null,
-		setContents:function(x,y,z,dimension,world){
+		setContents:function(x,y,z,world){
 			let data = {dispenser:true, contents:new Array(9).fill(0)}
-			world.setTags(x, y, z, data,false,dimension)
+			world.setTags(x, y, z, data,false)
 			return data
 		},
-		onbreak:function(x,y,z, block, data,dimension,world){
+		onbreak:function(x,y,z, block, data,world){
 			if(!(data && data.dispenser && data.contents)) return
 			data = data.contents
 			for(var i=0; i<data.length; i++){
 				if(data[i]){
-					world.addItems(x,y,z,dimension,0,0,0,data[i].id, true, data[i].amount, data[i].durability, data[i].customName)
+					world.addItems(x,y,z,0,0,0,data[i].id, true, data[i].amount, data[i].durability, data[i].customName)
 				}
 			}
 		},
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-			var block = world.getBlock(x,y,z,dimension)
-			var power = world.getRedstonePower(x,y,z,dimension) || world.getSurroundingBlockPower(x,y,z,dimension)
-			var tags = world.getTags(x,y,z,dimension)
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			var block = world.getBlock(x,y,z)
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
+			var tags = world.getTags(x,y,z)
 			var on = tags && tags.on || false
 			if(power !== on) {
-				world.setTagByName(x,y,z,"on",power,false,dimension)
+				world.setTagByName(x,y,z,"on",power,false)
 				if(power){
 					var me = this
 					world.setTimeout(function(){
@@ -10370,38 +10370,38 @@ const blockData = [
 								iy--
 								break
 						}
-						var front = world.getBlock(ix,iy,iz,dimension)
+						var front = world.getBlock(ix,iy,iz)
 						if(front && blockData[front].solid) return
 						var data = blockData[items[idx].id]
 						var minus = true
-						if(data.name === "arrow") world.addEntity(new entities[entityIds.Arrow](ix,iy,iz,vx*4,vy*4,vz*4),false,dimension)
-						else if(data.name === "boneMeal") data.serveronuse(ix,iy,iz, front,dimension, world,"",items[idx],{}), minus = false
-						else if(data.name === "snowball") world.addEntity(new entities[entityIds.Snowball](ix,iy,iz,vx*4,vy*4,vz*4),false,dimension)
-						else if(data.name === "egg") world.addEntity(new entities[entityIds.Egg](ix,iy,iz,vx*4,vy*4,vz*4),false,dimension)
+						if(data.name === "arrow") world.addEntity(new entities[entityIds.Arrow](ix,iy,iz,vx*4,vy*4,vz*4),false)
+						else if(data.name === "boneMeal") data.serveronuse(ix,iy,iz, front, world,"",items[idx],{}), minus = false
+						else if(data.name === "snowball") world.addEntity(new entities[entityIds.Snowball](ix,iy,iz,vx*4,vy*4,vz*4),false)
+						else if(data.name === "egg") world.addEntity(new entities[entityIds.Egg](ix,iy,iz,vx*4,vy*4,vz*4),false)
 						else if(data.name === "bucket"){
 							var set = false
 							if(front === blockIds.Water) set = true, items[idx].id = blockIds.waterBucket
 							if(front === blockIds.Lava) set = true, items[idx].id = blockIds.lavaBucket
 							if(front === blockIds.powderSnow) set = true, items[idx].id = blockIds.powderSnowBucket
 							if(front === blockIds.oil) set = true, items[idx].id = blockIds.oilBucket
-							world.setBlock(ix,iy,iz,0,false,false,false,false,dimension)
+							world.setBlock(ix,iy,iz,0,false,false,false,false)
 							minus = false
-						}else if(data.name === "waterBucket") world.setBlock(ix,iy,iz,blockIds.Water,false,false,false,false,dimension), items[idx].id = blockIds.bucket, minus = false
-						else if(data.name === "lavaBucket") world.setBlock(ix,iy,iz,blockIds.Lava,false,false,false,false,dimension), items[idx].id = blockIds.bucket, minus = false
-						else if(data.name === "powderSnowBucket") world.setBlock(ix,iy,iz,blockIds.powderSnow,false,false,false,false,dimension), items[idx].id = blockIds.bucket, minus = false
-						else if(data.name === "oilBucket") world.setBlock(ix,iy,iz,blockIds.oil,false,false,false,false,dimension), items[idx].id = blockIds.bucket, minus = false
-						else if(data.name === "tnt") data.explode(ix,iy,iz,null,dimension,world)
-						else if(data.item) world.addItems(ix,iy,iz,dimension,vx,vy,vz,items[idx].id, false, 1, items[idx].durability, items[idx].customName)
-						else world.setBlock(ix,iy,iz,items[idx].id,false,false,false,false,dimension)
+						}else if(data.name === "waterBucket") world.setBlock(ix,iy,iz,blockIds.Water,false,false,false,false), items[idx].id = blockIds.bucket, minus = false
+						else if(data.name === "lavaBucket") world.setBlock(ix,iy,iz,blockIds.Lava,false,false,false,false), items[idx].id = blockIds.bucket, minus = false
+						else if(data.name === "powderSnowBucket") world.setBlock(ix,iy,iz,blockIds.powderSnow,false,false,false,false), items[idx].id = blockIds.bucket, minus = false
+						else if(data.name === "oilBucket") world.setBlock(ix,iy,iz,blockIds.oil,false,false,false,false), items[idx].id = blockIds.bucket, minus = false
+						else if(data.name === "tnt") data.explode(ix,iy,iz,null,world)
+						else if(data.item) world.addItems(ix,iy,iz,vx,vy,vz,items[idx].id, false, 1, items[idx].durability, items[idx].customName)
+						else world.setBlock(ix,iy,iz,items[idx].id,false,false,false,false)
 						if(minus) items[idx].amount--
 						if(items[idx].amount <= 0) items[idx] = 0
-						world.setTags(x,y,z,tags,false,dimension)
-					},tickTime*4, x,y,z,dimension)
+						world.setTags(x,y,z,tags,false)
+					},tickTime*4, x,y,z)
 				}
 			}
 		},
-		onset:function(x,y,z,dimension,world){
-			this.onpowerupdate(x,y,z,null,null,null,null,dimension,world)
+		onset:function(x,y,z,world){
+			this.onpowerupdate(x,y,z,null,null,null,null,world)
 		},
 	},
 	{
@@ -10417,23 +10417,23 @@ const blockData = [
 		stoneSound:true,
 		category:"redstone",
 		tagBits: null,
-		setContents:function(x,y,z,dimension,world){
+		setContents:function(x,y,z,world){
 			let data = {hopper:true, contents:new Array(5).fill(0)}
-			world.setTags(x, y, z, data,false,dimension)
+			world.setTags(x, y, z, data,false)
 			return data
 		},
-		onbreak:function(x,y,z, block, data,dimension,world){
+		onbreak:function(x,y,z, block, data,world){
 			if(!(data && data.hopper && data.contents)) return
 			data = data.contents
 			for(var i=0; i<data.length; i++){
 				if(data[i]){
-					world.addItems(x,y,z,dimension,0,0,0,data[i].id, true, data[i].amount, data[i].durability, data[i].customName)
+					world.addItems(x,y,z,0,0,0,data[i].id, true, data[i].amount, data[i].durability, data[i].customName)
 				}
 			}
 		},
-		pushItem:function(x,y,z,dimension,tags,world){
+		pushItem:function(x,y,z,tags,world){
 			var tx = x, ty = y, tz = z, top, dx = 0, dy = 0, dz = 0
-			switch(world.getBlock(x,y,z,dimension)){
+			switch(world.getBlock(x,y,z)){
 				case this.id:
 					ty--
 					dy = -1
@@ -10456,17 +10456,17 @@ const blockData = [
 					dx = -1
 					break
 			}
-			var to = world.getBlock(tx,ty,tz,dimension)
+			var to = world.getBlock(tx,ty,tz)
 			for(var i=0; i<tags.contents.length; i++){
 				var item = tags.contents[i]
 				if(!item || !item.id) continue
 				var put
 				if(!to || !blockData[to].solid){
-					world.addItems(x+dx*0.625,y+dy*0.625,z+dz*0.625,dimension,dx/8,dy/8,dz/8,item.id, false, 1, item.durability, item.customName)
+					world.addItems(x+dx*0.625,y+dy*0.625,z+dz*0.625,dx/8,dy/8,dz/8,item.id, false, 1, item.durability, item.customName)
 					put = true
 				}else if(blockData[to].name === "furnace"){
-					var toTags = world.getTags(tx,ty,tz,dimension), toTagName
-					if(!toTags) toTags = blockData[to].setContents(tx,ty,tz,dimension,this.world)
+					var toTags = world.getTags(tx,ty,tz), toTagName
+					if(!toTags) toTags = blockData[to].setContents(tx,ty,tz,this.world)
 					if(top) toTagName = "input"
 					else toTagName = "fuel"
 					var toTag = toTags[toTagName]
@@ -10479,9 +10479,9 @@ const blockData = [
 					}
 					if(put){
 						toTags[toTagName] = toTag
-						world.setTags(tx,ty,tz,toTags,false,dimension)
+						world.setTags(tx,ty,tz,toTags,false)
 					}
-				}else if(putItemInContainer(tx,ty,tz,dimension,item.id,item.durability,item.customName,false,world)){
+				}else if(putItemInContainer(tx,ty,tz,item.id,item.durability,item.customName,false,world)){
 					put = true
 				}
 				if(put){
@@ -10491,59 +10491,59 @@ const blockData = [
 				}
 			}
 		},
-		pullItem:function(x,y,z,dimension,myTags,world){
-			var block = world.getBlock(x,y+1,z,dimension)
-			var tags = world.getTags(x,y+1,z,dimension)
+		pullItem:function(x,y,z,myTags,world){
+			var block = world.getBlock(x,y+1,z)
+			var tags = world.getTags(x,y+1,z)
 			if(!tags) return
 			if(blockData[block].name === "furnace"){
 				var item = tags.output
 				if(item && item.id){
-					if(!putItemInContainer(x,y,z,dimension,item.id,item.durability,item.customName,true,world)) return
+					if(!putItemInContainer(x,y,z,item.id,item.durability,item.customName,true,world)) return
 					item.amount--
 					if(!item.amount) tags.output = 0
-					world.tagsChanged(x,y,z,tags,false,dimension)
+					world.tagsChanged(x,y,z,tags,false)
 					return true
 				}
 			}else if(tags.contents) for(var i=0; i<tags.contents.length; i++){
 				var item = tags.contents[i]
 				if(item && item.id){
-					if(!putItemInContainer(x,y,z,dimension,item.id,item.durability,item.customName,true,world)) return
+					if(!putItemInContainer(x,y,z,item.id,item.durability,item.customName,true,world)) return
 					item.amount--
 					if(!item.amount) tags.contents[i] = 0
-					world.tagsChanged(x,y,z,tags,false,dimension)
+					world.tagsChanged(x,y,z,tags,false)
 					return true
 				}
 			}
 		},
-		update:function(x,y,z,dimension,world){
-			if(this.isLocked(x,y,z,dimension,world)) return
-			var tags = world.getTags(x,y,z,dimension)
-			if(!tags) tags = this.setContents(x,y,z,dimension,world)
+		update:function(x,y,z,world){
+			if(this.isLocked(x,y,z,world)) return
+			var tags = world.getTags(x,y,z)
+			if(!tags) tags = this.setContents(x,y,z,world)
 			var u = false
-			if(this.pushItem(x,y,z,dimension,tags,world)) u = true
-			if(this.pullItem(x,y,z,dimension,tags,world)) u = true
-			if(u) world.setTags(x,y,z,tags,false,dimension)
+			if(this.pushItem(x,y,z,tags,world)) u = true
+			if(this.pullItem(x,y,z,tags,world)) u = true
+			if(u) world.setTags(x,y,z,tags,false)
 		},
-		onupdate:function(x,y,z,block,world,sx,sy,sz,dimension){
+		onupdate:function(x,y,z,block,world,sx,sy,sz){
 			var me = this
-			var t = () => me.update(x,y,z,dimension,world)
-			world.setTimeout(t, tickTime*8, x,y,z,dimension)
+			var t = () => me.update(x,y,z,world)
+			world.setTimeout(t, tickTime*8, x,y,z)
 		},
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-			this.onupdate(x,y,z,null,world,sx,sy,sz,dimension,world)
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			this.onupdate(x,y,z,null,world,sx,sy,sz,world)
 		},
-		ontagsupdate:function(x,y,z,dimension,tags,world){
-			this.onupdate(x,y,z,null,world,null,null,null,dimension,world)
+		ontagsupdate:function(x,y,z,tags,world){
+			this.onupdate(x,y,z,null,world,null,null,null,world)
 		},
-		isLocked:function(x,y,z,dimension,world){
-			return world.getRedstonePower(x,y,z,dimension) || world.getSurroundingBlockPower(x,y,z,dimension)
+		isLocked:function(x,y,z,world){
+			return world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
 		},
-		itemOnTop(x,y,z,dimension,ent){
+		itemOnTop(x,y,z,ent){
 			let world = ent.world
-			if(this.isLocked(x,y,z,dimension,world)) return
+			if(this.isLocked(x,y,z,world)) return
 			var amount = ent.amount
 			while(amount){
-				if(!putItemInContainer(x,y,z,dimension,ent.block,ent.durability,ent.name,false,world)) break
+				if(!putItemInContainer(x,y,z,ent.block,ent.durability,ent.name,false,world)) break
 				amount--
 			}
 			return amount
@@ -10562,16 +10562,16 @@ const blockData = [
 		type:"plant2",
 		cornerDist:sqrt(0.75),
 		sideDist:0.5,
-		projectileHit:function(x,y,z,dimension,ent){
+		projectileHit:function(x,y,z,ent){
 			let world = ent.world
 			var dist = dist3(ent.x+ent.direction.x/2,ent.y+ent.direction.y/2,ent.z+ent.direction.z/2,x,y,z)
 			var power = round(map(dist,this.sideDist,this.cornerDist,15,0))
-			world.setPower(x,y,z,power,false,dimension)
-			world.spreadPower(x,y,z,power,dimension)
+			world.setPower(x,y,z,power,false)
+			world.spreadPower(x,y,z,power)
 			world.setTimeout(function(){
-				world.setPower(x,y,z,0,false,dimension)
-				world.unspreadPower(x,y,z,power,false,dimension)
-			},tickTime*8, x,y,z,dimension)
+				world.setPower(x,y,z,0,false)
+				world.unspreadPower(x,y,z,power,false)
+			},tickTime*8, x,y,z)
 		}
 	},
 	{
@@ -10584,31 +10584,31 @@ const blockData = [
 		tagBits:{
 			output:[0,4]
 		},
-		on:function(x,y,z,dimension,dx,dy,dz,subtract,world){
+		on:function(x,y,z,dx,dy,dz,subtract,world){
 			var fx = x-dx, fy = y-dy, fz = z-dz
-			var backPower = min(max(world.getRepeaterPower(x,y,z,fx,fy,fz,dimension),ceil((getContainerFullness(fx,fy,fz,dimension,world) || 0)*15)),15)
-			if(world.getBlockPower(fx,fy,fz,null,dimension)) backPower = 15
-			var sidePower = min(max(world.getRepeaterPower(x,y,z,x-dz,y-dy,z-dx,dimension),world.getRepeaterPower(x,y,z,x+dz,y-dy,z+dx,dimension)),15)
+			var backPower = min(max(world.getRepeaterPower(x,y,z,fx,fy,fz),ceil((getContainerFullness(fx,fy,fz,world) || 0)*15)),15)
+			if(world.getBlockPower(fx,fy,fz,null)) backPower = 15
+			var sidePower = min(max(world.getRepeaterPower(x,y,z,x-dz,y-dy,z-dx),world.getRepeaterPower(x,y,z,x+dz,y-dy,z+dx)),15)
 			if(subtract) return max(backPower - sidePower, 0)
 			else return backPower * (sidePower <= backPower)
 		},
-		onupdate:function(x,y,z,b,w,sx,sy,sz,dimension){
-			this.onpowerupdate(x,y,z,null,null,null,null,dimension,w)
+		onupdate:function(x,y,z,b,w,sx,sy,sz){
+			this.onpowerupdate(x,y,z,null,null,null,null,w)
 		},
-		ontagsupdate:function(x,y,z,dimension,tags,world){
-			this.onpowerupdate(x,y,z,null,null,null,null,dimension,world)
+		ontagsupdate:function(x,y,z,tags,world){
+			this.onpowerupdate(x,y,z,null,null,null,null,world)
 		},
-		ondelete:function(x,y,z,prevTags,prevBlock,dimension,world){
-			world.unspreadPower(x,y,z,16,false,dimension)
-			world.setBlockPower(x,y,z+1,null,"south",dimension)
-			world.setBlockPower(x,y,z-1,null,"north",dimension)
-			world.setBlockPower(x+1,y,z,null,"east",dimension)
-			world.setBlockPower(x-1,y,z,null,"west",dimension)
+		ondelete:function(x,y,z,prevTags,prevBlock,world){
+			world.unspreadPower(x,y,z,16)
+			world.setBlockPower(x,y,z+1,null,"south")
+			world.setBlockPower(x,y,z-1,null,"north")
+			world.setBlockPower(x+1,y,z,null,"east")
+			world.setBlockPower(x-1,y,z,null,"west")
 		},
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var dx = 0, dy = 0, dz = 0 //direction
 			var side //side of block it's pointing to
-			var block = world.getBlock(x,y,z,dimension)
+			var block = world.getBlock(x,y,z)
 			var offCompare = this.id, onCompare = this.id | SLAB, offSubtract = this.id | STAIR, onSubtract = this.id | DOOR
 			var subtractMode
 			switch(block){
@@ -10648,17 +10648,17 @@ const blockData = [
 			if(!dx && !dy && !dz) return console.log("doesn't match up") //doesn't match up
 			
 			var tx = x+dx, ty = y+dy, tz = z+dz
-			var output = world.getTagByName(x,y,z,"output",dimension) || 0
-			var power = this.on(x,y,z,dimension,dx,dy,dz,subtractMode,world)
-			var tblock = world.getBlock(tx,ty,tz,dimension)
+			var output = world.getTagByName(x,y,z,"output") || 0
+			var power = this.on(x,y,z,dx,dy,dz,subtractMode,world)
+			var tblock = world.getBlock(tx,ty,tz)
 			if(tblock && blockData[tblock].carryRedstone){
 				if(output){
-					var frontPower = world.getPower(tx,ty,tz,dimension)
+					var frontPower = world.getPower(tx,ty,tz)
 					if(output < frontPower){
-						world.unspreadPower(tx,ty,tz,frontPower,true,dimension)
+						world.unspreadPower(tx,ty,tz,frontPower,true)
 					}else if(output > frontPower){
-						world.setPower(tx,ty,tz,output,false,dimension)
-						world.spreadPower(tx,ty,tz,output,dimension)
+						world.setPower(tx,ty,tz,output,false)
+						world.spreadPower(tx,ty,tz,output)
 					}
 				}
 			}
@@ -10666,11 +10666,11 @@ const blockData = [
 			if(power === output) return
 			var me = this
 			var t = function(){
-				block = world.getBlock(x,y,z,dimension)
-				power = me.on(x,y,z,dimension,dx,dy,dz,subtractMode,world)
-				output = world.getTagByName(x,y,z,"output",dimension) || 0
+				block = world.getBlock(x,y,z)
+				power = me.on(x,y,z,dx,dy,dz,subtractMode,world)
+				output = world.getTagByName(x,y,z,"output") || 0
 				if(power !== output) {
-					world.setTagByName(x,y,z,"output",power,false,dimension)
+					world.setTagByName(x,y,z,"output",power,false)
 					var on = false
 					switch(block){
 						case onSubtract | NORTH:
@@ -10735,32 +10735,32 @@ const blockData = [
 								target = offSubtract | WEST
 								break
 						}
-						if(block !== target) world.setBlock(x,y,z,target,false,false,false,true,dimension)
+						if(block !== target) world.setBlock(x,y,z,target,false,false,false,true)
 					}
 					
-					var tblock = world.getBlock(tx,ty,tz,dimension)
+					var tblock = world.getBlock(tx,ty,tz)
 					if(power){
 						if(tblock && blockData[tblock].carryRedstone){
-							var frontPower = world.getPower(tx,ty,tz,dimension)
+							var frontPower = world.getPower(tx,ty,tz)
 							if(power < frontPower){
-								world.unspreadPower(tx,ty,tz,frontPower,true,dimension)
+								world.unspreadPower(tx,ty,tz,frontPower,true)
 							}else if(power > frontPower){
-								world.setPower(tx,ty,tz,power,false,dimension)
-								world.spreadPower(tx,ty,tz,power,dimension)
+								world.setPower(tx,ty,tz,power,false)
+								world.spreadPower(tx,ty,tz,power)
 							}
 						}
 					}else{
 						if(tblock && blockData[tblock].carryRedstone){
-							world.unspreadPower(tx,ty,tz,output,true,dimension)
+							world.unspreadPower(tx,ty,tz,output,true)
 						}
 					}
 				}//end if power changed
 			}
-			world.setTimeout(t,tickTime*2, x,y,z,dimension)
+			world.setTimeout(t,tickTime*2, x,y,z)
 		},
-		onclick:function(x,y,z,dimension,world){
+		onclick:function(x,y,z,world){
 			var me = blockData[blockIds.comparator]
-			var block = world.getBlock(x,y,z,dimension)
+			var block = world.getBlock(x,y,z)
 			var off = me.id, on = me.id | SLAB, offSubtract = me.id | STAIR, onSubtract = me.id | DOOR
 			var target
 			switch(block){
@@ -10813,10 +10813,10 @@ const blockData = [
 					target = on | WEST
 					break
 			}
-			world.setBlock(x,y,z,target,false,false,false,true,dimension)
+			world.setBlock(x,y,z,target,false,false,false,true)
 		},
-		getFacing:function(x,y,z,dimension,world){
-			var block = world.getBlock(x,y,z,dimension)
+		getFacing:function(x,y,z,world){
+			var block = world.getBlock(x,y,z)
 			var off = this.id, on = this.id | SLAB, offSubtract = this.id | STAIR, onSubtract = this.id | DOOR
 			var f
 			switch(block){
@@ -10847,9 +10847,9 @@ const blockData = [
 			}
 			return f
 		},
-		canHavePower:function(/*this*/rx,ry,rz,/*other thing*/x,y,z,dimension,world){
+		canHavePower:function(/*this*/rx,ry,rz,/*other thing*/x,y,z,world){
 			var tx = rx, ty = ry, tz = rz
-			var block = world.getBlock(rx,ry,rz,dimension)
+			var block = world.getBlock(rx,ry,rz)
 			var off = this.id, on = this.id | SLAB, offSubtract = this.id | STAIR, onSubtract = this.id | DOOR
 			switch(block){
 				case offSubtract | NORTH:
@@ -10879,7 +10879,7 @@ const blockData = [
 			}
 			
 			if(tx === x && ty === y && tz === z){
-				return world.getTagByName(rx,ry,rz,"output",dimension) || 0
+				return world.getTagByName(rx,ry,rz,"output") || 0
 			}
 			return 0
 		}
@@ -10978,15 +10978,15 @@ const blockData = [
 	{
 		name: "spawnCreeper",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.Creeper](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
-			world.addEntity(ent,false,dimension)
+			world.addEntity(ent)
 			item.amount--
 		},
-		spawnMob: function(x,y,z,dimension,world){
-			world.addEntity(new entities[entityIds.Creeper](x,y,z),false,dimension)
+		spawnMob: function(x,y,z,world){
+			world.addEntity(new entities[entityIds.Creeper](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -11003,30 +11003,30 @@ const blockData = [
 	{
 		name: "spawnSheep",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.Sheep](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
-			world.addEntity(ent,false,dimension)
+			world.addEntity(ent)
 			item.amount--
 		},
-		spawnMob: function(x,y,z,dimension,world){
-			world.addEntity(new entities[entityIds.Sheep](x,y,z),false,dimension)
+		spawnMob: function(x,y,z,world){
+			world.addEntity(new entities[entityIds.Sheep](x,y,z),false)
 		},
 		category:"items"
 	},
 	{
 		name: "spawnChicken",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.Chicken](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
-			world.addEntity(ent,false,dimension)
+			world.addEntity(ent)
 			item.amount--
 		},
-		spawnMob: function(x,y,z,dimension,world){
-			world.addEntity(new entities[entityIds.Chicken](x,y,z),false,dimension)
+		spawnMob: function(x,y,z,world){
+			world.addEntity(new entities[entityIds.Chicken](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -11038,30 +11038,30 @@ const blockData = [
 	{
 		name: "spawnZombie",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.Zombie](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
-			world.addEntity(ent,false,dimension)
+			world.addEntity(ent)
 			item.amount--
 		},
-		spawnMob: function(x,y,z,dimension,world){
-			world.addEntity(new entities[entityIds.Zombie](x,y,z),false,dimension)
+		spawnMob: function(x,y,z,world){
+			world.addEntity(new entities[entityIds.Zombie](x,y,z),false)
 		},
 		category:"items"
 	},
 	{
 		name: "spawnSkeleton",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.Skeleton](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
-			world.addEntity(ent,false,dimension)
+			world.addEntity(ent)
 			item.amount--
 		},
-		spawnMob: function(x,y,z,dimension,world){
-			world.addEntity(new entities[entityIds.Skeleton](x,y,z),false,dimension)
+		spawnMob: function(x,y,z,world){
+			world.addEntity(new entities[entityIds.Skeleton](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -11080,31 +11080,31 @@ const blockData = [
 		drop:"air",
 		experience:15,
 		tagBits:null,
-		tick:function(block,x,y,z,dimension,world){
-			let spawn = world.getTagByName(x,y,z,"spawn",dimension)
+		tick:function(block,x,y,z,world){
+			let spawn = world.getTagByName(x,y,z,"spawn")
 			if(spawn){
 				world.sendAll({
 					type:"particles", particleType:"flameCube",
-					x,y,z,dimension, amount: 20
+					x,y,z,dimension:world.dimension, amount: 20
 				})
 				for(let i=0; i<10; i++){
 					let sx = x+round(rand(-4.5,4))
 					let sy = y+round(rand(-1.5,1.5))
 					let sz = z+round(rand(-4.5,4))
-					let block = world.getBlock(sx,sy,sz,dimension)
+					let block = world.getBlock(sx,sy,sz)
 					if(blockData[block].transparent){
-						blockData[spawn].spawnMob(sx,sy,sz,dimension,world)
+						blockData[spawn].spawnMob(sx,sy,sz,world)
 						break
 					}
 				}
 			}
 		},
-		onclick:function(x,y,z,dimension,world,p){
+		onclick:function(x,y,z,world,p){
 			if(p.holding && blockData[p.holding].spawnMob){
-				world.setTagByName(x,y,z,"spawn",p.holding,false,dimension)
+				world.setTagByName(x,y,z,"spawn",p.holding)
 				world.sendAll({
 					type:"particles", particleType:"flameCube",
-					x,y,z,dimension, amount: 30
+					x,y,z,dimension:world.dimension, amount: 30
 				})
 			}else return true
 		}
@@ -11118,36 +11118,36 @@ const blockData = [
 		blastResistance:0.2,
 		hardness:0.2,
 		woodSound:true,
-		onclick:function(x,y,z,dimension,world){
-			let block = world.getBlock(x,y,z,dimension)
+		onclick:function(x,y,z,world){
+			let block = world.getBlock(x,y,z)
 			let me = blockData[blockIds.daylightDetector]
 			if(block === (me.id | SLAB)) block = me.id
 			else block = me.id | SLAB
-			world.setBlock(x,y,z,block,false,false,false,false,dimension)
+			world.setBlock(x,y,z,block)
 		},
-		tick:function(block,x,y,z,dimension,world){
-			let power = round(world.getLight(x, y, z, 0, dimension)*world.skyLight)
+		tick:function(block,x,y,z,world){
+			let power = round(world.getLight(x, y, z, 0)*world.skyLight)
 			if(block === (this.id | SLAB)) power = 15 - power
-			let prev = world.getPower(x,y,z,dimension)
+			let prev = world.getPower(x,y,z)
 			if(prev !== power){
-				world.setPower(x,y,z,power,false,dimension)
+				world.setPower(x,y,z,power,false)
 				if(power){
 					if(power < prev){
-						world.unspreadPower(x,y,z,prev,false,dimension)
+						world.unspreadPower(x,y,z,prev,false)
 					}else if(power > prev){
-						world.spreadPower(x,y,z,power,dimension)
+						world.spreadPower(x,y,z,power)
 					}
 				}else{
-					world.unspreadPower(x,y,z,prev,false,dimension)
+					world.unspreadPower(x,y,z,prev,false)
 				}
 			}
 		},
-		onset:function(x,y,z,dimension,world){
-			this.tick(world.getBlock(x,y,z,dimension),x,y,z,dimension,world)
+		onset:function(x,y,z,world){
+			this.tick(world.getBlock(x,y,z),x,y,z,world)
 		},
-		ondelete: function(x,y,z,prevTags,prev,dimension,world){
-			world.setPower(x,y,z,0,false,dimension)
-			world.unspreadPower(x,y,z, 16,false,dimension)
+		ondelete: function(x,y,z,prevTags,prev,world){
+			world.setPower(x,y,z,0)
+			world.unspreadPower(x,y,z, 16)
 		},
 		category:"redstone"
 	},
@@ -11163,21 +11163,21 @@ const blockData = [
 		hardness:Infinity,
 		commandBlock:true,
 		tagBits: null,
-		trigger:function(x,y,z,dimension,world){
-			let data = world.getTagByName(x,y,z,"data",dimension)
-			let running = world.getTagByName(x,y,z,"running",dimension)
+		trigger:function(x,y,z,world){
+			let data = world.getTagByName(x,y,z,"data")
+			let running = world.getTagByName(x,y,z,"running")
 			if(data && !running){
-				world.setTagByName(x,y,z,"running",true,false,dimension)
-				runCmd(data,{x,y,z,dimension},world,true, output => {
+				world.setTagByName(x,y,z,"running",true,false)
+				runCmd(data,{x,y,z,dimension:world.dimension},world,true, output => {
 					let outputHTML = "none"
 					outputHTML = ""
 					for(let i=0; i<output.length; i+=2){
 						if(i) outputHTML += "<br>"
 						outputHTML += Messages.format(output[i])
 					}
-					world.setTagByName(x,y,z,"output",outputHTML,false,dimension)
+					world.setTagByName(x,y,z,"output",outputHTML,false)
 					let target
-					let block = world.getBlock(x,y,z,dimension)
+					let block = world.getBlock(x,y,z)
 					switch(block){
 						case this.id:
 						case this.id | FLIP:
@@ -11205,17 +11205,17 @@ const blockData = [
 							break
 					}
 					if(output && output[output.length-1] === "error") target |= FLIP
-					if(block !== target) world.setBlock(x,y,z,target,false,false,false,true,dimension)
-				}).then(() => world.setTagByName(x,y,z,"running",false,false,dimension))
+					if(block !== target) world.setBlock(x,y,z,target,false,false,false,true)
+				}).then(() => world.setTagByName(x,y,z,"running",false,false))
 			}
 		},
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-			var power = world.getRedstonePower(x,y,z,dimension) || world.getSurroundingBlockPower(x,y,z,dimension) ? true : false
-			var on = world.getTagByName(x,y,z,"on",dimension) || false
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z) ? true : false
+			var on = world.getTagByName(x,y,z,"on") || false
 			if(power !== on) {
-				world.setTagByName(x,y,z,"on",power,false,dimension)
+				world.setTagByName(x,y,z,"on",power,false)
 				if(power){
-					this.trigger(x,y,z,dimension,world)
+					this.trigger(x,y,z,world)
 				}
 			}
 		},
@@ -11230,45 +11230,45 @@ const blockData = [
 	{
 		name: "spawnSpider",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.Spider](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
-			world.addEntity(ent,false,dimension)
+			world.addEntity(ent)
 			item.amount--
 		},
-		spawnMob: function(x,y,z,dimension,world){
-			world.addEntity(new entities[entityIds.Spider](x,y,z),false,dimension)
+		spawnMob: function(x,y,z,world){
+			world.addEntity(new entities[entityIds.Spider](x,y,z),false)
 		},
 		category:"items"
 	},
 	{
 		name: "spawnCaveSpider",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.Spider](pos[0],pos[1],pos[2],true)
 			if(item.customName) ent.name = item.customName
-			world.addEntity(ent,false,dimension)
+			world.addEntity(ent)
 			item.amount--
 		},
-		spawnMob: function(x,y,z,dimension,world){
-			world.addEntity(new entities[entityIds.Spider](x,y,z,true),false,dimension)
+		spawnMob: function(x,y,z,world){
+			world.addEntity(new entities[entityIds.Spider](x,y,z,true),false)
 		},
 		category:"items"
 	},
 	{
 		name: "spawnWolf",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.Wolf](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
-			world.addEntity(ent,false,dimension)
+			world.addEntity(ent)
 			item.amount--
 		},
-		spawnMob: function(x,y,z,dimension,world){
-			world.addEntity(new entities[entityIds.Wolf](x,y,z),false,dimension)
+		spawnMob: function(x,y,z,world){
+			world.addEntity(new entities[entityIds.Wolf](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -11297,15 +11297,15 @@ const blockData = [
 	{
 		name: "spawnBlaze",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.Blaze](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
-			world.addEntity(ent,false,dimension)
+			world.addEntity(ent)
 			item.amount--
 		},
-		spawnMob: function(x,y,z,dimension,world){
-			world.addEntity(new entities[entityIds.Blaze](x,y,z),false,dimension)
+		spawnMob: function(x,y,z,world){
+			world.addEntity(new entities[entityIds.Blaze](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -11316,14 +11316,14 @@ const blockData = [
 	{
 		name: "spawnEnderDragon",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.EnderDragon](pos[0],pos[1],pos[2])
-			world.addEntity(ent,false,dimension)
+			world.addEntity(ent)
 			item.amount--
 		},
-		spawnMob: function(x,y,z,dimension,world){
-			world.addEntity(new entities[entityIds.EnderDragon](x,y,z),false,dimension)
+		spawnMob: function(x,y,z,world){
+			world.addEntity(new entities[entityIds.EnderDragon](x,y,z),false)
 		},
 		category:"items",
 		hidden:true
@@ -11347,14 +11347,14 @@ const blockData = [
 		burnTime: 15,
 		density:0.1,
 		inLiquid:3,
-		getLevelDifference:function(level){return level-2},
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			if(!world.settings.blocksFall) return
+		getLevelDifference:function(level,dimension){return level-2},
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			if(!world.world.settings.blocksFall) return
 			var me = this
-			world.setTimeout(() => me.flow(x,y,z,dimension,world), tickTime*5, x,y,z,dimension)
+			world.setTimeout(() => me.flow(x,y,z,world), tickTime*5, x,y,z)
 		},
-		getY:function(x,y,z,dimension){
-			var block = world.getBlock(x,y,z,dimension)
+		getY:function(x,y,z){
+			var block = world.getBlock(x,y,z)
 			return (min((this.getLevel(block) || (block ? 8 : 0))*2,14.5)/16)-0.5
 		},
 	},
@@ -11362,10 +11362,10 @@ const blockData = [
 		name: "oilBucket",
 		Name:"Oil Bucket",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			if(p.survival) item.id = blockIds.bucket
 			var pos = movePositionByFace(face,x,y,z)
-			world.setBlock(pos[0],pos[1],pos[2],blockIds.oil,false,false,false,false,dimension)
+			world.setBlock(pos[0],pos[1],pos[2],blockIds.oil)
 		},
 		stackSize: 1,
 		category:"items"
@@ -11375,15 +11375,15 @@ const blockData = [
 	{
 		name: "spawnEnderman",
 		item: true,
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.Enderman](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
-			world.addEntity(ent,false,dimension)
+			world.addEntity(ent)
 			item.amount--
 		},
-		spawnMob: function(x,y,z,dimension,world){
-			world.addEntity(new entities[entityIds.Enderman](x,y,z),false,dimension)
+		spawnMob: function(x,y,z,world){
+			world.addEntity(new entities[entityIds.Enderman](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -11589,11 +11589,11 @@ const blockData = [
 		Name:"Suspicois Sand",
 		textures:"suspiciousSand0",
 		hardness:0.25, blastResistance:0.5,
-		onupdate: function(x,y,z,b,world,sx,sy,sz,dimension){
-			fall(x,y,z,b,world,false,dimension)
+		onupdate: function(x,y,z,b,world,sx,sy,sz){
+			fall(x,y,z,b,world,false)
 		},
-		ongetexploded:function(x,y,z,b,world,dimension){
-			fall(x,y,z,b,world,true,dimension)
+		ongetexploded:function(x,y,z,b,world){
+			fall(x,y,z,b,world,true)
 		},
 		drop:"air"
 	},
@@ -11602,11 +11602,11 @@ const blockData = [
 		Name:"Suspicous Gravel",
 		textures:"suspiciousGravel0",
 		hardness:0.25, blastResistance:0.5,
-		onupdate: function(x,y,z,b,world,sx,sy,sz,dimension){
-			fall(x,y,z,b,world,false,dimension)
+		onupdate: function(x,y,z,b,world,sx,sy,sz){
+			fall(x,y,z,b,world,false)
 		},
-		ongetexploded:function(x,y,z,b,world,dimension){
-			fall(x,y,z,b,world,true,dimension)
+		ongetexploded:function(x,y,z,b,world){
+			fall(x,y,z,b,world,true)
 		},
 		drop:"air"
 	},
@@ -11732,8 +11732,8 @@ const blockData = [
 		liquidBreakable:"drop",
 		category:"nature",
 		randomRotateOnSpawn:true,
-		addPetal:function(x,y,z,dimension,world){
-			let block = world.getBlock(x,y,z,dimension), target, rot = block&ROTATION
+		addPetal:function(x,y,z,world){
+			let block = world.getBlock(x,y,z), target, rot = block&ROTATION
 			switch(block & (~ROTATION)){
 				case this.id:
 					target = this.id | SLAB
@@ -11745,7 +11745,7 @@ const blockData = [
 					target = this.id | DOOR
 					break
 			}
-			if(target) world.setBlock(x,y,z,target|rot,false,false,false,false,dimension)
+			if(target) world.setBlock(x,y,z,target|rot)
 		},
 		tint:grassTint,
 		biomeTintEast:true,
@@ -11972,10 +11972,10 @@ const blockData = [
 		textures:"minecartIcon",
 		item:true,
 		category:"redstone",
-		serveronuse: (x,y,z, block, dimension,world,face,item,p) => {
+		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.Minecart](pos[0],pos[1],pos[2])
-			world.addEntity(ent,false,dimension)
+			world.addEntity(ent)
 		},
 	},
 	{
@@ -11989,8 +11989,8 @@ const blockData = [
 		rail:true,
 		category:"redstone",
 		flatIcon:true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			this.railonupdate(x,y,z,b,world,dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			this.railonupdate(x,y,z,b,world)
 		},
 	},
 	{
@@ -12005,19 +12005,19 @@ const blockData = [
 		category:"redstone",
 		flatIcon:true,
 		carryRedstone:true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz,dimension){
-			let on = world.getTagByName(x,y,z,"power",dimension)
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			let on = world.getTagByName(x,y,z,"power")
 			if(on && !(b&FLIP)){
 				b |= FLIP
-				world.setBlock(x,y,z,b,false,false,false,true,dimension)
+				world.setBlock(x,y,z,b,false,false,false,true)
 			}else if(!on && (b&FLIP)){
 				b &= ~FLIP
-				world.setBlock(x,y,z,b,false,false,false,true,dimension)
+				world.setBlock(x,y,z,b,false,false,false,true)
 			}
-			this.railonupdate(x,y,z,b,world,dimension)
+			this.railonupdate(x,y,z,b,world)
 		},
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-			this.onupdate(x,y,z,world.getBlock(x,y,z,dimension),world,sx,sy,sz,dimension)
+		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			this.onupdate(x,y,z,world.getBlock(x,y,z),world,sx,sy,sz)
 		}
 	},
 	{
@@ -12034,8 +12034,8 @@ const blockData = [
 		drop:"corn",
 		hidden:true,
 		liquidBreakable:"drop",
-		growBonemeal:function(x,y,z,dimension,world){
-			world.setBlock(x,y,z, this.id|DOOR,false,false,false,false,dimension)
+		growBonemeal:function(x,y,z,world){
+			world.setBlock(x,y,z, this.id|DOOR)
 		}
 	},
 	{
@@ -18013,11 +18013,11 @@ function initShapes() {
 		return tex
 	}
 	
-	var buttonOnclick = function(x,y,z,dimension,world){
+	var buttonOnclick = function(x,y,z,world){
 		var off = this.id | BUTTON
 		var on = this.id | SLAB
 		var target = null
-		switch(world.getBlock(x,y,z,dimension)){
+		switch(world.getBlock(x,y,z)){
 			case off | NORTH:
 				target = on | NORTH
 				break
@@ -18031,19 +18031,19 @@ function initShapes() {
 				target = on | WEST
 		}
 		if(target){
-			world.setBlock(x,y,z,target, false,false,false,false,dimension)
+			world.setBlock(x,y,z,target)
 		}
 	}
-	var buttonProjectileHit = function(x,y,z,dimension,ent){
+	var buttonProjectileHit = function(x,y,z,ent){
 		let world = ent.world
-		this.onclick(x,y,z,dimension,world)
+		this.onclick(x,y,z,world)
 	}
-	var buttonOnupdate = function(x,y,z,b,world,sx,sy,sz,dimension){
+	var buttonOnupdate = function(x,y,z,b,world,sx,sy,sz){
 		var off = this.id | BUTTON
 		var on = this.id | SLAB
 		var target = null
 		var ax=x,ay=y,az=z, dir
-		var block = world.getBlock(x,y,z,dimension)
+		var block = world.getBlock(x,y,z)
 		switch(block){
 			case on | NORTH:
 			case off | NORTH:
@@ -18085,64 +18085,64 @@ function initShapes() {
 				hasPower = true
 				break
 		}
-		if(hasPower && !world.getPower(x,y,z,dimension)){
-			world.setPower(x,y,z,16,false,dimension)
-			world.spreadPower(x,y,z,16,dimension)
-			world.setBlockPower(ax,ay,az,"strong",dir,dimension)
+		if(hasPower && !world.getPower(x,y,z)){
+			world.setPower(x,y,z,16,false)
+			world.spreadPower(x,y,z,16)
+			world.setBlockPower(ax,ay,az,"strong",dir)
 			world.playSound(x,y,z, "click",1,0.6)
 			
 			world.setTimeout(function(){
-				world.setBlock(x,y,z,target, false,false,false,false,dimension)
-				world.setPower(x,y,z,0,false,dimension)
-				world.unspreadPower(x,y,z,16,false,dimension)
-				world.setBlockPower(ax,ay,az,null,dir,dimension)
+				world.setBlock(x,y,z,target, false,false,false,false)
+				world.setPower(x,y,z,0,false)
+				world.unspreadPower(x,y,z,16,false)
+				world.setBlockPower(ax,ay,az,null,dir)
 				world.playSound(x,y,z, "click",1,0.5)
-			},this.stone ? tickTime*20 : tickTime*30, x,y,z,dimension)
+			},this.stone ? tickTime*20 : tickTime*30, x,y,z)
 		}
 	}
 	
-	var pressurePlateActivate = function(x,y,z,dimension,block,ent,world){
+	var pressurePlateActivate = function(x,y,z,block,ent,world){
 		if(this.heavyWeighted || this.lightWeighted) return //not going to do those yet
 		
-		if(world.getBlock(x,y,z,dimension) === this.id && pressurePlateHasPressure(x,y,z,dimension,world)){
-			world.setBlock(x,y,z, this.id | SLAB, false,false,false,false,dimension)
+		if(world.getBlock(x,y,z) === this.id && pressurePlateHasPressure(x,y,z,world)){
+			world.setBlock(x,y,z, this.id | SLAB, false,false,false,false)
 		}
 	}
-	var pressurePlateOnupdate = function(x,y,z,b,world,sx,sy,sz,dimension){
-		var block = world.getBlock(x,y,z,dimension)
-		if(block === (this.id | SLAB) && !world.getPower(x,y,z,dimension)){
-			world.setPower(x,y,z,16,false,dimension)
-			world.spreadPower(x,y,z,16,dimension)
-			world.setBlockPower(x,y-1,z,"strong","top",dimension)
+	var pressurePlateOnupdate = function(x,y,z,b,world,sx,sy,sz){
+		var block = world.getBlock(x,y,z)
+		if(block === (this.id | SLAB) && !world.getPower(x,y,z)){
+			world.setPower(x,y,z,16,false)
+			world.spreadPower(x,y,z,16)
+			world.setBlockPower(x,y-1,z,"strong","top")
 			world.playSound(x,y,z, "click",1,0.6)
 			
 			var me = this
 			var i = setInterval(function(){
-				if(pressurePlateHasPressure(x,y,z,dimension,world)) return
+				if(pressurePlateHasPressure(x,y,z,world)) return
 				
 				clearInterval(i)
 				world.setTimeout(function(){
-					world.setBlock(x,y,z,me.id, false,false,false,false,dimension)
-					world.setPower(x,y,z,0,false,dimension)
-					world.unspreadPower(x,y,z,16,false,dimension)
-					world.setBlockPower(x,y-1,z,null,"top",dimension)
+					world.setBlock(x,y,z,me.id, false,false,false,false)
+					world.setPower(x,y,z,0,false)
+					world.unspreadPower(x,y,z,16,false)
+					world.setBlockPower(x,y-1,z,null,"top")
 					world.playSound(x,y,z, "click",1,0.5)
-				}, tickTime*20, x,y,z,dimension)
+				}, tickTime*20, x,y,z)
 			}, tickTime*2)
 		}
 	}
-	var logicGateOnupdate = function(x,y,z,b,w,sx,sy,sz,dimension){
-		this.onpowerupdate(x,y,z,null,null,null,null,dimension,w)
+	var logicGateOnupdate = function(x,y,z,b,w,sx,sy,sz){
+		this.onpowerupdate(x,y,z,null,null,null,null,w)
 	}
-	var logicGateOndelete = function(x,y,z,prevTags,prevBlock,dimension,world){
-		world.unspreadPower(x,y,z,16,false,dimension)
-		world.setBlockPower(x,y,z+1,null,"south",dimension)
-		world.setBlockPower(x,y,z-1,null,"north",dimension)
-		world.setBlockPower(x+1,y,z,null,"east",dimension)
-		world.setBlockPower(x-1,y,z,null,"west",dimension)
+	var logicGateOndelete = function(x,y,z,prevTags,prevBlock,world){
+		world.unspreadPower(x,y,z,16)
+		world.setBlockPower(x,y,z+1,null,"south")
+		world.setBlockPower(x,y,z-1,null,"north")
+		world.setBlockPower(x+1,y,z,null,"east")
+		world.setBlockPower(x-1,y,z,null,"west")
 	}
-	var logicGateOnpowerupdate = function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-		var block = world.getBlock(x,y,z,dimension)
+	var logicGateOnpowerupdate = function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+		var block = world.getBlock(x,y,z)
 		var px = 0, pz = 0
 		switch(block){
 			case this.id | NORTH:
@@ -18162,7 +18162,7 @@ function initShapes() {
 				px--
 				break
 		}
-		var shouldBeOn = this.shouldBeOn(x,y,z,dimension,px,pz,world)
+		var shouldBeOn = this.shouldBeOn(x,y,z,px,pz,world)
 		var isOn = false
 		var target, tx = x, ty = y, tz = z, side
 		switch(block){
@@ -18212,46 +18212,46 @@ function initShapes() {
 				break
 		}
 		
-		var tblock = world.getBlock(tx,ty,tz,dimension)
+		var tblock = world.getBlock(tx,ty,tz)
 		if(tblock && blockData[tblock].carryRedstone){
 			if(isOn){
-				if(world.getPower(tx,ty,tz,dimension) !== 15){
-					world.setPower(tx,ty,tz,15,false,dimension)
-					world.spreadPower(tx,ty,tz,15,dimension)
+				if(world.getPower(tx,ty,tz) !== 15){
+					world.setPower(tx,ty,tz,15,false)
+					world.spreadPower(tx,ty,tz,15)
 				}
 			}
 		}else if(tblock && !blockData[tblock].transparent){
 			if(isOn){
-				world.setBlockPower(tx,ty,tz,"strong",side,dimension)
+				world.setBlockPower(tx,ty,tz,"strong",side)
 			}else{
-				world.setBlockPower(tx,ty,tz,null,side,dimension)
+				world.setBlockPower(tx,ty,tz,null,side)
 			}
 		}
 		if(isOn !== shouldBeOn){
 			var t = function(){
-				world.setBlock(x,y,z,target,false,false,false,false,dimension)
+				world.setBlock(x,y,z,target,false,false,false,false)
 				
-				var tblock = world.getBlock(tx,ty,tz,dimension)
+				var tblock = world.getBlock(tx,ty,tz)
 				if(shouldBeOn){
 					if(tblock && blockData[tblock].carryRedstone){
-						world.setPower(tx,ty,tz,15,false,dimension)
-						world.spreadPower(tx,ty,tz,15,dimension)
+						world.setPower(tx,ty,tz,15,false)
+						world.spreadPower(tx,ty,tz,15)
 					}else if(tblock && !blockData[tblock].transparent){
-						world.setBlockPower(tx,ty,tz,"strong",side,dimension)
+						world.setBlockPower(tx,ty,tz,"strong",side)
 					}
 				}else{
 					if(tblock && blockData[tblock].carryRedstone){
-						world.unspreadPower(tx,ty,tz,15,true,dimension)
+						world.unspreadPower(tx,ty,tz,15,true)
 					}else if(tblock && !blockData[tblock].transparent){
-						world.setBlockPower(tx,ty,tz,null,side,dimension)
+						world.setBlockPower(tx,ty,tz,null,side)
 					}
 				}
 			}
-			world.setTimeout(t,tickTime*2, x,y,z,dimension)
+			world.setTimeout(t,tickTime*2, x,y,z)
 		}
 	}
-	var logicGateGetFacing = function(x,y,z,dimension,world){
-		var block = world.getBlock(x,y,z,dimension)
+	var logicGateGetFacing = function(x,y,z,world){
+		var block = world.getBlock(x,y,z)
 		switch(block){
 			case this.id | NORTH:
 			case this.id | SLAB | NORTH:
@@ -18267,9 +18267,9 @@ function initShapes() {
 				return "west"
 		}
 	}
-	var logicGateCanHavePower = function(rx,ry,rz,x,y,z,dimension,world){
+	var logicGateCanHavePower = function(rx,ry,rz,x,y,z,world){
 		var tx = rx, ty = ry, tz = rz, on
-		var block = world.getBlock(rx,ry,rz,dimension)
+		var block = world.getBlock(rx,ry,rz)
 		switch(block){
 			case this.id | NORTH | SLAB:
 				on = true
@@ -18297,36 +18297,36 @@ function initShapes() {
 		}
 		return 0
 	}
-	var signOnplace = function(x,y,z, dimension, player,world){
-		var block = world.getBlock(x,y,z,dimension)
+	var signOnplace = function(x,y,z, player,world){
+		var block = world.getBlock(x,y,z)
 		var tags = {sign:true}
 		var rot = round(player.ry*16/Math.PId)
 		if((block & STAIR) === STAIR) rot = round(rot/4)*4
 		tags.rot = rot
-		world.setTags(x,y,z,tags,false,dimension)
+		world.setTags(x,y,z,tags)
 	}
-	var signOnclick = function(x,y,z,dimension,world,p){
+	var signOnclick = function(x,y,z,world,p){
 		if(p.holding && blockData[p.holding].dye){
-			world.setTagByName(x,y,z, "color",colors.dye[blockData[p.holding].dye].slice(),false,dimension)
+			world.setTagByName(x,y,z, "color",colors.dye[blockData[p.holding].dye].slice())
 		}else if(p.holding && p.holding === blockIds.glowInkSac){
-			let side = getSignSide(world.getTags(x,y,z,dimension),p) ? "glow2" : "glow"
-			world.setTagByName(x,y,z, side,true,false,dimension)
+			let side = getSignSide(world.getTags(x,y,z),p) ? "glow2" : "glow"
+			world.setTagByName(x,y,z, side,true)
 		}else{
-			p.connection.send({type:"openContainer",data:"sign",x,y,z,dimension})
+			p.connection.send({type:"openContainer",data:"sign",x,y,z,dimension:world.dimension})
 		}
 	}
-	var itemFrameOnclick = function(x,y,z, dimension,world, p){
-		var prev = world.getTagByName(x,y,z,"block",dimension) || 0
-		if(!prev && p.holding) world.setTagByName(x,y,z, "block",p.holding,false,dimension)
+	var itemFrameOnclick = function(x,y,z,world, p){
+		var prev = world.getTagByName(x,y,z,"block") || 0
+		if(!prev && p.holding) world.setTagByName(x,y,z, "block",p.holding)
 		else{
-			var rot = world.getTagByName(x,y,z,"rot",dimension) || 0
+			var rot = world.getTagByName(x,y,z,"rot") || 0
 			rot++
 			if(rot >= 8) rot = 0
-			world.setTagByName(x,y,z, "rot",rot,false,dimension)
+			world.setTagByName(x,y,z, "rot",rot)
 		}
 	}
-	let doorToggle = function(x,y,z,dimension,world){
-		var b = world.getBlock(x,y,z,dimension)
+	let doorToggle = function(x,y,z,world){
+		var b = world.getBlock(x,y,z)
 		var o = (b & DOOR) !== DOOR
 		var shapeId = o ? (this.id | SLAB) : (this.id | DOOR)
 		var setId = o ? (this.id | DOOR) : (this.id | SLAB)
@@ -18352,11 +18352,11 @@ function initShapes() {
 				set = setId | NORTH
 			}
 		}
-		world.setBlock(x,y,z,set, false,false,false,false,dimension)
+		world.setBlock(x,y,z,set)
 		doorSound(x,y,z,this.name === "ironDoor"?"iron_door":"wooden_door",!o,world)
 	}
-	let trapdoorToggle = function(x,y,z,dimension,world){
-		let block = world.getBlock(x,y,z,dimension)
+	let trapdoorToggle = function(x,y,z,world){
+		let block = world.getBlock(x,y,z)
 		let target
 		switch(block){
 			case this.id | TRAPDOOR | NORTH:
@@ -18372,11 +18372,11 @@ function initShapes() {
 				target = this.id | TRAPDOOROPEN | WEST
 				break
 		}
-		world.setBlock(x,y,z,target,false,false,false,false,dimension)
+		world.setBlock(x,y,z,target)
 		doorSound(x,y,z,this.name === "ironTrapdoor"?"iron_trapdoor":"wooden_trapdoor",true,world)
 	}
-	let trapdoorOpenToggle = function(x,y,z,dimension,world){
-		let block = world.getBlock(x,y,z,dimension)
+	let trapdoorOpenToggle = function(x,y,z,world){
+		let block = world.getBlock(x,y,z)
 		let target
 		switch(block){
 			case this.id | TRAPDOOROPEN | NORTH:
@@ -18392,17 +18392,17 @@ function initShapes() {
 				target = this.id | TRAPDOOR | WEST
 				break
 		}
-		world.setBlock(x,y,z,target,false,false,false,false,dimension)
+		world.setBlock(x,y,z,target)
 		doorSound(x,y,z,this.name === "ironTrapdoor"?"iron_trapdoor":"wooden_trapdoor",false,world)
 	}
-	function clickBed(x,y,z,dimension,world,p){
-    if(dimension !== "") return world.explode(x,y,z,5,false,dimension)
+	function clickBed(x,y,z,world,p){
+    if(dimension !== "") return world.explode(x,y,z,5,false)
     p.spawnPoint.x = x
     p.spawnPoint.y = y+1
     p.spawnPoint.z = z
     p.connection.send({type:"message",data:"Respawn point set",fromServer:true})
     if(world.skyLight < 0.5){
-      let block = world.getBlock(x,y,z,dimension)
+      let block = world.getBlock(x,y,z)
       y += 0.25
       p.rx = Math.PI2
       switch(block & ROTATION){
@@ -18428,11 +18428,11 @@ function initShapes() {
 			p.connection.send({type:"sleep"})
     }else p.connection.send({type:"message",data:"Too bright to sleep",fromServer:true})
   }
-	function sit(x,y,z,dimension,world,p){
+	function sit(x,y,z,world,p){
 		if(x !== undefined){
 			p.tp(x,y,z)
 			p.riding = null
-			const block = world.getBlock(x,y,z,dimension)
+			const block = world.getBlock(x,y,z)
 			switch(block & ROTATION){
 				case NORTH:
 					p.ry = Math.PI
@@ -18499,12 +18499,12 @@ function initShapes() {
 					return this.id | LAYER8
 			}
 		},
-		getLevelAt:function(x,y,z,dimension,world){
-			var block = world.getBlock(x,y,z,dimension)
+		getLevelAt:function(x,y,z,world){
+			var block = world.getBlock(x,y,z)
 			return this.getLevel(block)
 		},
-		isThisHere:function(x,y,z,d,world){
-			var b = world.getBlock(x,y,z,d)
+		isThisHere:function(x,y,z,world){
+			var b = world.getBlock(x,y,z)
 			return b && blockData[b].id === this.id
 		},
 		isThis:function(b){
@@ -18514,60 +18514,60 @@ function initShapes() {
 			var b = world.getBlock(x,y,z,d)
 			return b === this.id
 		},
-		tryFlowTo:function(x,y,z,dimension,level,world,fromSource=false){
-			let block = world.getBlock(x,y,z,dimension)
+		tryFlowTo:function(x,y,z,level,world,fromSource=false){
+			let block = world.getBlock(x,y,z)
 			const data = blockData[block]
 			if(data.liquid){
 				if(this.id === block) return !fromSource//source blocks must spread around other source blocks when above
 				else if(this.id === data.id) return true
 			}
 			if(!block || data.liquidBreakable || data.liquid && this.density > data.density){
-				world.setBlock(x,y,z,this.getLevelBlock(level),false,false,false,false,dimension)
+				world.setBlock(x,y,z,this.getLevelBlock(level),false,false,false,false)
 				if(data.liquidBreakable === "drop"){
-					world.addItems(x,y,z,dimension,0,0,0,block,true)
-					world.blockParticles(block,x,y,z,30, "break",dimension)
+					world.addItems(x,y,z,0,0,0,block,true)
+					world.blockParticles(block,x,y,z,30, "break")
 					world.blockSound(block, "dig", x,y,z)
 				}
 				return true
 			}
 		},
-		flow:function(x,y,z,dimension,world){
-			let block = world.getBlock(x,y,z,dimension)
+		flow:function(x,y,z,world){
+			let block = world.getBlock(x,y,z)
 			if(!this.isThis(block)) return
 			let source = block === this.id
 			let level = this.getLevel(block)
-			let down = world.getBlock(x,y-1,z,dimension)
+			let down = world.getBlock(x,y-1,z)
 			if(!source){
-				if(this.canDuplicate && (world.getBlock(x,y,z+1,dimension) === this.id)+(world.getBlock(x,y,z-1,dimension) === this.id)+(world.getBlock(x+1,y,z,dimension) === this.id)+(world.getBlock(x-1,y,z,dimension) === this.id) >= 2 && (down || down === this.id)){
-					return world.setBlock(x,y,z,this.id, false,false,false,false,dimension) //if two or more sources surrounding, turn into source
+				if(this.canDuplicate && (world.getBlock(x,y,z+1) === this.id)+(world.getBlock(x,y,z-1) === this.id)+(world.getBlock(x+1,y,z) === this.id)+(world.getBlock(x-1,y,z) === this.id) >= 2 && (down || down === this.id)){
+					return world.setBlock(x,y,z,this.id, false,false,false,false) //if two or more sources surrounding, turn into source
 				}
 				let levelTarget = level
-				if(this.isThisHere(x,y+1,z,dimension,world)){
+				if(this.isThisHere(x,y+1,z,world)){
 					levelTarget = 8
 				}else{
-					let around = max(this.getLevelAt(x,y,z+1,dimension,world), this.getLevelAt(x,y,z-1,dimension,world), this.getLevelAt(x+1,y,z,dimension,world), this.getLevelAt(x-1,y,z,dimension,world))
-					around = this.getLevelDifference(around,dimension)
+					let around = max(this.getLevelAt(x,y,z+1,world), this.getLevelAt(x,y,z-1,world), this.getLevelAt(x+1,y,z,world), this.getLevelAt(x-1,y,z,world))
+					around = this.getLevelDifference(around,world.dimension)
 					if(around !== levelTarget) levelTarget = around
-					if(levelTarget <= 0) return world.setBlock(x,y,z,0, false,false,false,false,dimension)
+					if(levelTarget <= 0) return world.setBlock(x,y,z,0, false,false,false,false)
 				}
 				if(level !== levelTarget){
 					level = levelTarget
-					world.setBlock(x,y,z,this.getLevelBlock(level), false,false,false,false,dimension)
+					world.setBlock(x,y,z,this.getLevelBlock(level), false,false,false,false)
 				}
 			}else{
-				let above = world.getBlock(x,y+1,z,dimension)
+				let above = world.getBlock(x,y+1,z)
 				if(blockData[above].liquid && blockData[above].density > this.density){
-					world.setBlock(x,y,z,above,false,false,false,false,dimension)
-					world.setBlock(x,y+1,z,block,false,false,false,false,dimension)
+					world.setBlock(x,y,z,above,false,false,false,false)
+					world.setBlock(x,y+1,z,block,false,false,false,false)
 					return
 				}
 			}
-			let newLevel = this.getLevelDifference(level,dimension)
-			if(!this.tryFlowTo(x,y-1,z,dimension,8,world,source) && newLevel > 0){
-				this.tryFlowTo(x,y,z+1,dimension,newLevel,world)
-				this.tryFlowTo(x,y,z-1,dimension,newLevel,world)
-				this.tryFlowTo(x+1,y,z,dimension,newLevel,world)
-				this.tryFlowTo(x-1,y,z,dimension,newLevel,world)
+			let newLevel = this.getLevelDifference(level,world.dimension)
+			if(!this.tryFlowTo(x,y-1,z,8,world,source) && newLevel > 0){
+				this.tryFlowTo(x,y,z+1,newLevel,world)
+				this.tryFlowTo(x,y,z-1,newLevel,world)
+				this.tryFlowTo(x+1,y,z,newLevel,world)
+				this.tryFlowTo(x-1,y,z,newLevel,world)
 			}
 		},
 		current:{
@@ -18575,12 +18575,12 @@ function initShapes() {
 			ang4:Math.sqrt(0.5),
 			ang8:Math.sqrt(5)
 		},
-		getCurrent:function(bx,by,bz,dimension,level,noNormalize,world){
-			if(level === undefined) level = this.getLevelAt(bx,by,bz,dimension,world)
-			let x = this.getLevelAt(bx-1,by,bz,dimension,world)
-			let X = this.getLevelAt(bx+1,by,bz,dimension,world)
-			let z = this.getLevelAt(bx,by,bz-1,dimension,world)
-			let Z = this.getLevelAt(bx,by,bz+1,dimension,world)
+		getCurrent:function(bx,by,bz,level,noNormalize,world){
+			if(level === undefined) level = this.getLevelAt(bx,by,bz,world)
+			let x = this.getLevelAt(bx-1,by,bz,world)
+			let X = this.getLevelAt(bx+1,by,bz,world)
+			let z = this.getLevelAt(bx,by,bz-1,world)
+			let Z = this.getLevelAt(bx,by,bz+1,world)
 			let current = this.current
 			current.x = (X && X < level) + (x > level) - (X > level) - (x && x < level)
 			current.z = (Z && Z < level) + (z > level) - (Z > level) - (z && z < level)
@@ -18590,28 +18590,28 @@ function initShapes() {
 			current.z /= mag
 			return current
 		},
-		trySpawnFlow:function(x,y,z,dimension,world,level,spread,fromSource=false){
-			let block = world.getBlock(x,y,z,dimension)
+		trySpawnFlow:function(x,y,z,world,level,spread,fromSource=false){
+			let block = world.getBlock(x,y,z)
 			if(blockData[block].liquid && (block&isCube) === block) return !fromSource //source blocks must spread around other source blocks when above
-			let hasSpawnedUnder = this.onspawnflow && this.onspawnflow(x,y,z,dimension,world)
+			let hasSpawnedUnder = this.onspawnflow && this.onspawnflow(x,y,z,world)
 			if(!blockData[block].solid && level > this.getLevel(block)){
-				world.spawnBlock(x,y,z,this.getLevelBlock(level),dimension,true)
+				world.spawnBlock(x,y,z,this.getLevelBlock(level),true)
 				if(!hasSpawnedUnder) spread.push(x,y,z,level)
 			}
 			return !blockData[block].solid
 		},
-		spawnFlow:async function(x,y,z,dimension,world){
+		spawnFlow:async function(x,y,z,world){
 			let spread = [x,y,z,8], count = 0
 			while(spread.length){
 				let [sx,sy,sz,level] = spread
-				let newLevel = this.getLevelDifference(level,dimension)
+				let newLevel = this.getLevelDifference(level,world.dimension)
 				if(newLevel > 0 && max(abs(sx-x),abs(sz-z)) < 16 && abs(sy-y) < 64){
 					const fromSource = sx === x && sy === y && sz === z
-					if(!this.trySpawnFlow(sx,sy-1,sz,dimension,world,8,spread,fromSource)){
-						this.trySpawnFlow(sx+1,sy,sz,dimension,world,newLevel,spread)
-						this.trySpawnFlow(sx-1,sy,sz,dimension,world,newLevel,spread)
-						this.trySpawnFlow(sx,sy,sz+1,dimension,world,newLevel,spread)
-						this.trySpawnFlow(sx,sy,sz-1,dimension,world,newLevel,spread)
+					if(!this.trySpawnFlow(sx,sy-1,sz,world,8,spread,fromSource)){
+						this.trySpawnFlow(sx+1,sy,sz,world,newLevel,spread)
+						this.trySpawnFlow(sx-1,sy,sz,world,newLevel,spread)
+						this.trySpawnFlow(sx,sy,sz+1,world,newLevel,spread)
+						this.trySpawnFlow(sx,sy,sz-1,world,newLevel,spread)
 					}
 				}
 				spread.splice(0,4)
@@ -18622,8 +18622,8 @@ function initShapes() {
 
 	const railData = {
 		lastConnectSides: {},
-		isFacing: function(x,y,z,dimension,side,setLastConnectSides){//are there sides of that rail facing in direction
-			let block = world.getBlock(x,y,z,dimension)
+		isFacing: function(x,y,z,side,setLastConnectSides,world){//are there sides of that rail facing in direction
+			let block = world.getBlock(x,y,z)
 			if(!blockData[block].rail) return false
 			let rot = (block&ROTATION)
 			if((block&isState) === CUBE || (block&isState) === SLAB){
@@ -18645,46 +18645,46 @@ function initShapes() {
 			}
 			return false
 		},
-		isConnected: function(x,y,z,dimension){//returns number of sides connected
-			let block = world.getBlock(x,y,z,dimension)
+		isConnected: function(x,y,z,world){//returns number of sides connected
+			let block = world.getBlock(x,y,z)
 			if(!blockData[block].rail) return
 			let rot = (block&ROTATION)
 			if((block&isState) === CUBE){
-				if(rot === NORTH || rot === SOUTH) return this.isFacing(x,y,z+1,dimension,"south","north") + this.isFacing(x,y,z-1,dimension,"north","south")
-				else return this.isFacing(x+1,y,z,dimension,"west","east") + this.isFacing(x-1,y,z,dimension,"east","west")
+				if(rot === NORTH || rot === SOUTH) return this.isFacing(x,y,z+1,"south","north",world) + this.isFacing(x,y,z-1,"north","south",world)
+				else return this.isFacing(x+1,y,z,"west","east",world) + this.isFacing(x-1,y,z,"east","west",world)
 			}else if((block&isState) === SLAB){
-				if(rot === NORTH) return this.isFacing(x,y+1,z+1,dimension,"south","northUp") + this.isFacing(x,y,z-1,dimension,"north","south")
-				else if(rot === SOUTH) return this.isFacing(x,y+1,z-1,dimension,"north","southUp") + this.isFacing(x,y,z+1,dimension,"south","north")
-				else if(rot === EAST) return this.isFacing(x+1,y+1,z,dimension,"west","eastUp") + this.isFacing(x-1,y,z,dimension,"east","west")
-				else if(rot === WEST) return this.isFacing(x-1,y+1,z,dimension,"east","westUp") + this.isFacing(x+1,y,z,dimension,"west","east")
+				if(rot === NORTH) return this.isFacing(x,y+1,z+1,"south","northUp",world) + this.isFacing(x,y,z-1,"north","south",world)
+				else if(rot === SOUTH) return this.isFacing(x,y+1,z-1,"north","southUp",world) + this.isFacing(x,y,z+1,"south","north",world)
+				else if(rot === EAST) return this.isFacing(x+1,y+1,z,"west","eastUp",world) + this.isFacing(x-1,y,z,"east","west",world)
+				else if(rot === WEST) return this.isFacing(x-1,y+1,z,"east","westUp",world) + this.isFacing(x+1,y,z,"west","east",world)
 			}else{//corner rail
-				if(rot === NORTH) return this.isFacing(x,y,z-1,dimension,"north","south")+this.isFacing(x-1,y,z,dimension,"east","west")
-				else if(rot === SOUTH) return this.isFacing(x,y,z+1,dimension,"south","north")+this.isFacing(x+1,y,z,dimension,"west","east")
-				else if(rot === WEST) return this.isFacing(x,y,z-1,dimension,"north","south")+this.isFacing(x+1,y,z,dimension,"west","east")
-				else if(rot === EAST) return this.isFacing(x,y,z+1,dimension,"south","north")+this.isFacing(x-1,y,z,dimension,"east","west")
+				if(rot === NORTH) return this.isFacing(x,y,z-1,"north","south",world)+this.isFacing(x-1,y,z,"east","west",world)
+				else if(rot === SOUTH) return this.isFacing(x,y,z+1,"south","north",world)+this.isFacing(x+1,y,z,"west","east",world)
+				else if(rot === WEST) return this.isFacing(x,y,z-1,"north","south",world)+this.isFacing(x+1,y,z,"west","east",world)
+				else if(rot === EAST) return this.isFacing(x,y,z+1,"south","north",world)+this.isFacing(x-1,y,z,"east","west",world)
 			}
 		},
-		railonupdate: function(x,y,z,b,world,dimension){
+		railonupdate: function(x,y,z,b,world){
 			this.lastConnectSides.north = this.lastConnectSides.south = this.lastConnectSides.east = this.lastConnectSides.west = this.lastConnectSides.northUp = this.lastConnectSides.southUp = this.lastConnectSides.eastUp = this.lastConnectSides.westUp = false
-			if(this.isConnected(x,y,z,dimension) === 2) return
+			if(this.isConnected(x,y,z,world) === 2) return
 			let {north:curConnectNorth, south:curConnectSouth, east:curConnectEast, west:curConnectWest, northUp:curConnectNorthUp, southUp:curConnectSouthUp, eastUp:curConnectEastUp, westUp:curConnectWestUp} = this.lastConnectSides
 			//below: is the other rail available for connecting or already connected to this rail
-			let north = this.isConnected(x,y,z+1,dimension) < 2 || curConnectNorth,
-				south = this.isConnected(x,y,z-1,dimension) < 2 || curConnectSouth,
-				east = this.isConnected(x+1,y,z,dimension) < 2 || curConnectEast,
-				west = this.isConnected(x-1,y,z,dimension) < 2 || curConnectWest,
-				northUp = this.isConnected(x,y+1,z+1,dimension) < 2 || curConnectNorthUp,
-				southUp = this.isConnected(x,y+1,z-1,dimension) < 2 || curConnectSouthUp,
-				eastUp = this.isConnected(x+1,y+1,z,dimension) < 2 || curConnectEastUp,
-				westUp = this.isConnected(x-1,y+1,z,dimension) < 2 || curConnectWestUp
+			let north = this.isConnected(x,y,z+1,world) < 2 || curConnectNorth,
+				south = this.isConnected(x,y,z-1,world) < 2 || curConnectSouth,
+				east = this.isConnected(x+1,y,z,world) < 2 || curConnectEast,
+				west = this.isConnected(x-1,y,z,world) < 2 || curConnectWest,
+				northUp = this.isConnected(x,y+1,z+1,world) < 2 || curConnectNorthUp,
+				southUp = this.isConnected(x,y+1,z-1,world) < 2 || curConnectSouthUp,
+				eastUp = this.isConnected(x+1,y+1,z,world) < 2 || curConnectEastUp,
+				westUp = this.isConnected(x-1,y+1,z,world) < 2 || curConnectWestUp
 			this.lastConnectSides.north = false
-			north = north || this.isConnected(x,y-1,z+1,dimension) < 2 || this.lastConnectSides.north
+			north = north || this.isConnected(x,y-1,z+1,world) < 2 || this.lastConnectSides.north
 			this.lastConnectSides.south = false
-			south = south || this.isConnected(x,y-1,z-1,dimension) < 2 || this.lastConnectSides.south
+			south = south || this.isConnected(x,y-1,z-1,world) < 2 || this.lastConnectSides.south
 			this.lastConnectSides.east = false
-			east = east || this.isConnected(x+1,y-1,z,dimension) < 2 || this.lastConnectSides.east
+			east = east || this.isConnected(x+1,y-1,z,world) < 2 || this.lastConnectSides.east
 			this.lastConnectSides.west = false
-			west = west || this.isConnected(x-1,y-1,z,dimension) < 2 || this.lastConnectSides.west
+			west = west || this.isConnected(x-1,y-1,z,world) < 2 || this.lastConnectSides.west
 
 			let target = this.id
 			if(northUp){
@@ -18710,38 +18710,38 @@ function initShapes() {
 			}else return
 			target |= (b&FLIP)
 			if(b !== target){
-				world.setBlock(x,y,z,target,false,false,false,true,dimension)
+				world.setBlock(x,y,z,target,false,false,false,true)
 			}
 		},
-		onset: function(x,y,z,dimension,world){
-			world.updateBlock(x,y+1,z+1,false,false,null,null,null,dimension)
-			world.updateBlock(x,y+1,z-1,false,false,null,null,null,dimension)
-			world.updateBlock(x+1,y+1,z,false,false,null,null,null,dimension)
-			world.updateBlock(x-1,y+1,z,false,false,null,null,null,dimension)
-			world.updateBlock(x,y-1,z+1,false,false,null,null,null,dimension)
-			world.updateBlock(x,y-1,z-1,false,false,null,null,null,dimension)
-			world.updateBlock(x+1,y-1,z,false,false,null,null,null,dimension)
-			world.updateBlock(x-1,y-1,z,false,false,null,null,null,dimension)
+		onset: function(x,y,z,world){
+			world.updateBlock(x,y+1,z+1,false,false,null,null,null)
+			world.updateBlock(x,y+1,z-1,false,false,null,null,null)
+			world.updateBlock(x+1,y+1,z,false,false,null,null,null)
+			world.updateBlock(x-1,y+1,z,false,false,null,null,null)
+			world.updateBlock(x,y-1,z+1,false,false,null,null,null)
+			world.updateBlock(x,y-1,z-1,false,false,null,null,null)
+			world.updateBlock(x+1,y-1,z,false,false,null,null,null)
+			world.updateBlock(x-1,y-1,z,false,false,null,null,null)
 			if(this.carryRedstone){
-				let power = world.getRedstoneWirePower(x,y,z,dimension)
-				let strong = world.getSurroundingBlockPower(x,y,z,dimension) === "strong"
+				let power = world.getRedstoneWirePower(x,y,z)
+				let strong = world.getSurroundingBlockPower(x,y,z) === "strong"
 				if(strong) power = 15
-				world.setTagByName(x,y,z,"power",power,false,dimension)
-				if(power) world.spreadPower(x,y,z,power,dimension)
+				world.setTagByName(x,y,z,"power",power,false)
+				if(power) world.spreadPower(x,y,z,power)
 			}
 		},
-		ondelete:function(x,y,z,prevTags,prev,dimension,world){
-			world.updateBlock(x,y+1,z+1,false,false,null,null,null,dimension)
-			world.updateBlock(x,y+1,z-1,false,false,null,null,null,dimension)
-			world.updateBlock(x+1,y+1,z,false,false,null,null,null,dimension)
-			world.updateBlock(x-1,y+1,z,false,false,null,null,null,dimension)
-			world.updateBlock(x,y-1,z+1,false,false,null,null,null,dimension)
-			world.updateBlock(x,y-1,z-1,false,false,null,null,null,dimension)
-			world.updateBlock(x+1,y-1,z,false,false,null,null,null,dimension)
-			world.updateBlock(x-1,y-1,z,false,false,null,null,null,dimension)
+		ondelete:function(x,y,z,prevTags,prev,world){
+			world.updateBlock(x,y+1,z+1)
+			world.updateBlock(x,y+1,z-1)
+			world.updateBlock(x+1,y+1,z)
+			world.updateBlock(x-1,y+1,z)
+			world.updateBlock(x,y-1,z+1)
+			world.updateBlock(x,y-1,z-1)
+			world.updateBlock(x+1,y-1,z)
+			world.updateBlock(x-1,y-1,z)
 			if(this.carryRedstone){
 				const power = getTagBits(prevTags,"power",this.id)
-				if(power) world.unspreadPower(x,y,z,power,false,dimension)
+				if(power) world.unspreadPower(x,y,z,power)
 			}
 		}
 	}
@@ -18841,14 +18841,14 @@ function initShapes() {
 			slabBlock.drop = i
 		}
 		if(baseBlock.door){
-			var onclick = baseBlock.name === "ironDoor" ? emptyFunc : function(x,y,z,dimension,world){
-				this.toggle(x,y,z,dimension,world)
+			var onclick = baseBlock.name === "ironDoor" ? emptyFunc : function(x,y,z,world){
+				this.toggle(x,y,z,world)
 			}
-			var onpowerupdate = function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-				var power = world.getRedstonePower(x,y,z,dimension) || world.getSurroundingBlockPower(x,y,z,dimension) ? true : false
-				let block = world.getBlock(x,y,z,dimension)
+			var onpowerupdate = function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+				var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z) ? true : false
+				let block = world.getBlock(x,y,z)
 				var open = (block & DOOR) !== DOOR
-				if(power !== open) this.toggle(x,y,z,dimension,world)
+				if(power !== open) this.toggle(x,y,z,world)
 			}
 			baseBlock.toggle = doorToggle.bind(baseBlock)
 			baseBlock.onclick = onclick.bind(baseBlock)
@@ -18858,14 +18858,14 @@ function initShapes() {
 			slabBlock.Name = "Inverted "+baseBlock.name
 		}
 		if(baseBlock.trapdoor){
-			var onclick = baseBlock.name === "ironTrapdoor" ? emptyFunc : function(x,y,z,dimension,world){
-				this.toggle(x,y,z,dimension,world)
+			var onclick = baseBlock.name === "ironTrapdoor" ? emptyFunc : function(x,y,z,world){
+				this.toggle(x,y,z,world)
 			}
-			var onpowerupdate = function(x,y,z,sx,sy,sz,blockPowerChanged,dimension,world){
-				var power = world.getRedstonePower(x,y,z,dimension) || world.getSurroundingBlockPower(x,y,z,dimension) ? true : false
-				let block = world.getBlock(x,y,z,dimension)
+			var onpowerupdate = function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+				var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z) ? true : false
+				let block = world.getBlock(x,y,z)
 				var open = (block & TRAPDOOR) !== TRAPDOOR
-				if(power !== open) this.toggle(x,y,z,dimension,world)
+				if(power !== open) this.toggle(x,y,z,world)
 			}
 			trapdoorBlock.toggle = trapdoorToggle.bind(baseBlock)
 			openTrapdoor.toggle = trapdoorOpenToggle.bind(baseBlock)
@@ -19052,8 +19052,8 @@ function initShapes() {
 			stairBlock.shape = shapes.fenceGateOpen
 			doorBlock.shape = shapes.fenceGateWallOpen
 			doorBlock.transparent = true
-			baseBlock.onclick = (function(x,y,z,dimension){
-				var b = world.getBlock(x,y,z,dimension)
+			baseBlock.onclick = (function(x,y,z){
+				var b = world.getBlock(x,y,z)
 				var set
 				var id = this.id
 				let o = false
@@ -19115,7 +19115,7 @@ function initShapes() {
 						set = id | SLAB | WEST
 						break
 				}
-				world.setBlock(x,y,z,set,false,false,false,false,dimension)
+				world.setBlock(x,y,z,set)
 				doorSound(x,y,z,"fence_gate",o,world)
 			}).bind({id:baseBlock.id})
 		}
@@ -19906,19 +19906,19 @@ constVersion(version)
 
 {//Commands
 let copiedBlocks
-function fillBlocks(x,y,z,x2,y2,z2, blockID, dimension,world){
+function fillBlocks(x,y,z,x2,y2,z2, blockID,world){
 	if(x>x2){var px=x; x=x2; x2=px}
 	if(y>y2){var py=y; y=y2; y2=py}
 	if(z>z2){var pz=z; z=z2; z2=pz}
 	for(var X=x; x2>=X; X++){
 		for(var Y=y; y2>=Y; Y++){
 			for(var Z=z; z2>=Z; Z++){
-				world.setBlock(X,Y,Z,blockID, false,false,false,false,dimension)
+				world.setBlock(X,Y,Z,blockID)
 			}
 		}
 	}
 }
-function copy(x,y,z,x2,y2,z2, dimension,world){
+function copy(x,y,z,x2,y2,z2,world){
 	if(x>x2){var px=x; x=x2; x2=px}
 	if(y>y2){var py=y; y=y2; y2=py}
 	if(z>z2){var pz=z; z=z2; z2=pz}
@@ -19929,36 +19929,36 @@ function copy(x,y,z,x2,y2,z2, dimension,world){
 		for(var Y=y; y2>=Y; Y++){
 			var yRow = []
 			for(var Z=z; z2>=Z; Z++){
-				yRow.push(world.getBlock(X,Y,Z,dimension), world.getTags(X,Y,Z,dimension));
+				yRow.push(world.getBlock(X,Y,Z), world.getTags(X,Y,Z));
 			}
 			xRow.push(yRow);
 		}
 		copiedBlocks.push(xRow);
 	}
 }
-function paste(x,y,z,dimension,world){
+function paste(x,y,z,world){
 	for(var X = 0; X<copiedBlocks.length; X++){
 		var xRow = copiedBlocks[X];
 		for(var Y=0; Y<xRow.length; Y++){
 			var yRow = xRow[Y];
 			for(var Z=0; Z<yRow.length/2; Z++){
 				var block = yRow[Z*2]
-				world.setBlock(X+x,Y+y,Z+z,block,false,false,false,false,dimension)
+				world.setBlock(X+x,Y+y,Z+z,block)
 				var tags = yRow[z*2+1]
-				if(tags) world.setTags(X+x,Y+y,Z+z, tags,false, dimension)
+				if(tags) world.setTags(X+x,Y+y,Z+z, tags)
 			}
 		}
 	}
 }
-function replaceBlocks(x,y,z,x2,y2,z2, replace, into, dimension,world){
+function replaceBlocks(x,y,z,x2,y2,z2, replace, into,world){
 	if(x>x2){var px=x; x=x2; x2=px}
 	if(y>y2){var py=y; y=y2; y2=py}
 	if(z>z2){var pz=z; z=z2; z2=pz}
 	for(var X=x; x2>=X; X++){
 		for(var Y=y; y2>=Y; Y++){
 			for(var Z=z; z2>=Z; Z++){
-				if(world.getBlock(X,Y,Z,dimension) === replace){
-					world.setBlock(X,Y,Z,into, false,false,false,false,dimension)
+				if(world.getBlock(X,Y,Z) === replace){
+					world.setBlock(X,Y,Z,into)
 				}
 			}
 		}
@@ -19971,26 +19971,26 @@ function fromPlayer(p,world){
 }
 function fillToPlayer(id,p,world){
 	//fills at player feet
-	fillBlocks(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z), id, p.dimension,world)
+	fillBlocks(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z), id,world)
 	world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
 function copyToPlayer(p,world){
-	copy(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z), p.dimension,world);
+	copy(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z),world);
 	p.copiedBlocksCmd = copiedBlocks
 	world.sendPlayer({type:"clientCmd",data:"copySelect",args:{w:copiedBlocks.length,h:copiedBlocks[0].length,d:copiedBlocks[0][0].length}},p.id)
 }
 function pasteAtPlayer(p,world){
 	copiedBlocks = p.copiedBlocksCmd
-	paste(round(p.x), round(p.y-1), round(p.z), p.dimension,world)
+	paste(round(p.x), round(p.y-1), round(p.z),world)
 	world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
 function replaceAtPlayer(replace,into,p,world){
-	replaceBlocks(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z), replace, into, p.dimension, world)
+	replaceBlocks(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z), replace, into, world)
 	world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
 
 let cancelShape = 0
-async function hcyl(width, height, depth, id, X,Y,Z, dimension,world) {
+async function hcyl(width, height, depth, id, X,Y,Z,world) {
 	let cid = cancelShape
 	let w2 = width * width
 	let d2 = depth * depth
@@ -20002,7 +20002,7 @@ async function hcyl(width, height, depth, id, X,Y,Z, dimension,world) {
 				let n = x * x / w2 + z * z / d2
 				let n2 = x * x / w3 + z * z / d3
 				if (n < 1 && n2 >= 1) {
-					world.setBlock(round(X + x), round(Y + y), round(Z + z), id, false,false,false,false, dimension)
+					world.setBlock(round(X + x), round(Y + y), round(Z + z), id)
 					await sleep(10)
 					if(cancelShape > cid) return
 				}
@@ -20011,7 +20011,7 @@ async function hcyl(width, height, depth, id, X,Y,Z, dimension,world) {
 	}
 }
 
-async function cyl(width, height, depth, id, X,Y,Z, dimension,world) {
+async function cyl(width, height, depth, id, X,Y,Z,world) {
 	let cid = cancelShape
 	let w2 = width * width
 	let d2 = depth * depth
@@ -20020,7 +20020,7 @@ async function cyl(width, height, depth, id, X,Y,Z, dimension,world) {
 			for (let z = floor(-depth); z <= ceil(depth); z++) {
 				let n = x * x / w2 + z * z / d2
 				if (n < 1) {
-					world.setBlock(round(X + x), round(Y + y), round(Z + z), id, false,false,false,false, dimension)
+					world.setBlock(round(X + x), round(Y + y), round(Z + z), id)
 					await sleep(10)
 					if(cancelShape > cid) return
 				}
@@ -20029,7 +20029,7 @@ async function cyl(width, height, depth, id, X,Y,Z, dimension,world) {
 	}
 }
 
-async function sphereoid(w, h, d, id, X,Y,Z, dimension,world) {
+async function sphereoid(w, h, d, id, X,Y,Z,world) {
 	let cid = cancelShape
 	let w2 = w * w
 	let h2 = h * h
@@ -20044,7 +20044,7 @@ async function sphereoid(w, h, d, id, X,Y,Z, dimension,world) {
 				let n = x * x / w2 + y * y / h2 + z * z / d2
 				let n2 = x * x / w3 + y * y / h3 + z * z / d3
 				if (n < 1 && n2 >= 1) {
-					world.setBlock(round(X + x), round(Y + y), round(Z + z), id, false,false,false,false, dimension)
+					world.setBlock(round(X + x), round(Y + y), round(Z + z), id)
 					await sleep(10)
 					if(cancelShape > cid) return
 				}
@@ -20052,7 +20052,7 @@ async function sphereoid(w, h, d, id, X,Y,Z, dimension,world) {
 		}
 	}
 }
-async function ball(w, h, d, id, X,Y,Z, dimension,world) {
+async function ball(w, h, d, id, X,Y,Z,world) {
 	let cid = cancelShape
 	let w2 = w * w
 	let h2 = h * h
@@ -20063,7 +20063,7 @@ async function ball(w, h, d, id, X,Y,Z, dimension,world) {
 			for (let z = floor(-d); z <= ceil(d); z++) {
 				let n = x * x / w2 + y * y / h2 + z * z / d2
 				if (n < 1) {
-					world.setBlock(round(X + x), round(Y + y), round(Z + z), id, false,false,false,false, dimension)
+					world.setBlock(round(X + x), round(Y + y), round(Z + z), id)
 					await sleep(10)
 					if(cancelShape > cid) return
 				}
@@ -20087,13 +20087,13 @@ function parseTarget(str,pos,world){
 	if(str === "@s"){
 		return [pos]
 	}else if(str === "@a"){
-		let a = world.players.slice()
+		let a = world.world.players.slice()
 		return a
 	}else if(str === "@e"){
-		return world.entities.slice()
+		return world.world.entities.slice()
 	}else if(str === "@p"){
 		let closest = Infinity, cp = undefined
-		for(let P of world.players){
+		for(let P of world.world.players){
 			let d = dist3(pos.x,pos.y,pos.z,P.x,P.y,P.z)
 			if(d < closest){
 				closest = d
@@ -20111,617 +20111,6 @@ types can be: root,literal,argument,redirect
 if func exists, the node can be run with it at the end of stack
 next is array of node ids
 */
-/*let defaultServerCommandNodes = [
-	{
-		type:"root",
-		next:[
-			'fromPlayer', 'fillToPlayer', 'copyToPlayer', 'pasteAtPlayer', 'replaceToPlayer', 'cancelFrom', 'shape', 'cancelShape',
-			'give', 'kill', 'time', 'weather', 'teleportToPlayer', 'teleport', 'playSound', 'title', 'setBlock', 'getBlock', 'setTag', 'getTag',
-			'echo', 'var', 'solve', 'getPos', 'wait', 'getTime', 'blockInfo', 'seed', 'trigger', 'effect', 'clear', 'clearHistory',
-			'gameMode', 'spectatePlayer', 'reloadChunks', 'ban', 'unban', 'whitelist', 'online', 'sendEval', 'help'
-		]
-	},
-	,];const lateraaa=[//todo below
-	{
-		type:"literal",
-		id:"fromPlayer",
-		name: "fromPlayer",
-		info: "Sets starting position to player position",
-		func: (args,pos,scope,world) => fromPlayer(pos,world),
-		anonymousFunc: null
-	},
-	{
-		type:"literal",
-		id:"fillToPlayer",
-		name: "fillToPlayer",
-		next:["blockNameFillToPlayer"],
-		info: "Fills from starting position to player position",
-		anonymousFunc: null,
-		func: (args,pos,scope,world) => {
-			let id = blockIds[args.block_name]
-			if(!args.block_name) id = 0
-			fillToPlayer(id,pos,world)
-		},
-	},
-	{
-		type:"literal",
-		name: "copyToPlayer",
-		info: "Copys blocks from starting position to player position",
-		func: (args,pos,scope,world) => copyToPlayer(pos,world),
-		anonymousFunc: null
-	},
-	{
-		type:"literal",
-		name: "pasteAtPlayer",
-		info: "Pastes copied blocks at the player's position",
-		func: (args,pos,scope,world) => pasteAtPlayer(pos,world),
-		anonymousFunc: null
-	},
-	{
-		type:"literal",
-		name: "replaceToPlayer",
-		args: ["replace_what", "with_what"],
-		argValues:{replace_what:"type:block",with_what:"type:block"},
-		func: (args,pos,scope,world) => {
-			let replace = blockIds[args.replace_what]
-			if(!args.replace_what) replace = 0
-			let into = blockIds[args.with_what]
-			if(!args.with_what) into = 0
-			replaceAtPlayer(replace,into,pos,world)
-		},
-		anonymousFunc: null
-	},
-	{
-		type:"literal",
-		name:"cancelFrom",
-		info:"Delete starting position",
-		client:true
-	},
-	{
-		type:"literal",
-		name: "shape",
-		info: "Type can be: sphere, hollowSphere, cylinder, hollowCylinder",
-		args: ["type","width", "height", "depth", "block_name", "x", "y", "z"],
-		argValues: {block_name:"type:block",x:"type:x",y:"type:y",z:"type:z",type:["sphere","hollowSphere","cylinder","hollowCylinder"],width:"type:number",height:"type:number",depth:"type:number"},
-		func: (args,pos,scope,world) => {
-			let id = blockIds[args.block_name]
-			if(!args.block_name) id = 0
-			let x = args.x ? parseFloat(args.x) : pos.x,
-					y = args.y ? parseFloat(args.y) : pos.y,
-					z = args.z ? parseFloat(args.z) : pos.z,
-					width = parseFloat(args.width) || 0,
-					height = parseFloat(args.height) || 0,
-					depth = parseFloat(args.depth) || 0
-			if(args.type === "sphere") return ball(width, height, depth, id, x,y,z, pos.dimension, world)
-			else if(args.type === "hollowSphere") return sphereoid(width, height, depth, id, x,y,z, pos.dimension, world)
-			else if(args.type === "cylinder") return cyl(width, height, depth, id, x,y,z, pos.dimension, world)
-			else if(args.type === "hollowCylinder") return hcyl(width, height, depth, id, x,y,z, pos.dimension, world)
-			else return ["No such shape: "+args.type,"error"]
-		}
-	},
-	{
-		type:"literal",
-		name:"cancelShape",
-		info:"Stop generating shapes currently being generated.",
-		func: () => {
-			cancelShape++
-		}
-	},
-	{
-		type:"literal",
-		name: "give",
-		args: ["target", "block_name", "amount"],
-		argValues:{block_name:"type:block",target:["type:player","@s","@a","@p"],amount:"type:number"},
-		info: "Gives the target the the specified amount of specified blocks",
-		func: (args,pos,scope,world) => {
-			let id = blockIds[args.block_name]
-			let amount = parseInt(args.amount) || 1
-			let arr = parseTarget(args.target,pos,world)
-			if(arr){
-				for(let i of arr){
-					world.addItems(i.x,i.y,i.z,i.dimension,0,0,0,id,false,amount)
-				}
-			}else return ["No such target: "+args.target,"error"]
-		}
-	},
-	{
-		type:"literal",
-		name: "kill",
-		args: ["target","message"],
-		argValues:{target:["type:player","@s","@a","@e","@p"]},
-		info: "Target can be: @s, your username, someone's uername, @a, @e",
-		func: (args,pos,scope,world) => {
-			if(world.settings.killCmdOff) return ["Kill command is disabled on this world.","error"]
-			args.target = args.target || "@s"
-			let arr = parseTarget(args.target,pos,world)
-			if(arr){
-				for(let i of arr){
-					if(i.type === "Player"){
-						world.sendPlayer({type:"kill", data:args.message || pos.username+" killed "+(args.target === "@a" ? "everyone" : args.target)+" with the kill command."},i.id)
-					}else{
-						world.deleteEntity(i.id)
-					}
-				}
-			}else return ["No such target: "+args.target,"error"]
-		}
-	},
-	{
-		type:"literal",
-		name: "time",
-		args: ["mode","n"],
-		argValues:{mode:["set","add","subtract"],n:["day","night","type:number"]},
-		info: "mode can be: set, add, subtract. n is the time to set to. 1000 is a day. n an also be: day, night",
-		func: (args,pos,scope,world) => {
-			let time
-			if(args.n === "day") time = 500
-			else if(args.n === "night") time = 0
-			else time = parseInt(args.n) || 0
-
-			if(args.mode === "set"){
-				world.time = time
-			}else if(args.mode === "add"){
-				world.time += time
-			}else if(args.mode === "subtract"){
-				world.time -= time
-			}else{
-				return ["No such mode: "+args.mode,"error"]
-			}
-		}
-	},
-	{
-		type:"literal",
-		name: "weather",
-		args: ["w"],
-		argValues:{w:["clear","rain","snow"]},
-		info: "w is the weather to set to. It can be clear, rain, or snow",
-		func: (args,pos,scope,world) => {
-			if(args.w === "rain") world.weather = "rain"
-			else if(args.w === "snow") world.weather = "snow"
-			else world.weather = ""
-		}
-	},
-	{
-		type:"literal",
-		name:"teleportToPlayer",
-		names:["tpPlayer","tpp","tptp"],
-		args: ["to_who","who"],
-		argValues:{to_who:["@s","type:player"],who:["@s","type:player"]},
-		info: "Teleport player [who] to [to_who]. who is optional.",
-		func: (args,pos,scope,world) => {
-			let to = parseTarget(args.to_who,pos,world)
-			to = to && to[0]
-			let who = parseTarget(args.who,pos,world)
-			if(!to) return ["Player doesn't exsist: "+args.to_who,"error"]
-			if(!who || !who.length) who = [pos]
-			for(let e of who) world.sendPlayer({type:"tp",x:to.x,y:to.y,z:to.z,dimension:to.dimension},e.id)
-		}
-	},
-	//Trexler made this command but it has been modified
-	{
-		type:"literal",
-		name: "teleport",
-		names:["tp"],
-		args: ["target","x","y","z","dimension"],
-		argValues:{x:"type:x",y:"type:y",z:"type:z",dimension:"type:dimension",target:["@s","type:player"]},
-		info: "x, y, and z are the coordinates to teleport to. dimension is optional.",
-		func: (args,pos,scope,world) => {
-			let target = parseTarget(args.target,pos,world)
-			if(!target || !target[0]) return ["No such target: "+args.target,"error"]
-
-			if(!args.x || !args.y || !args.z) return ["You need to set the coordinates.","error"]
-			let px = pos.x, py = pos.y, pz = pos.z
-
-			let x = parsePosition(args.x,px)
-			let y = parsePosition(args.y,py)
-			let z = parsePosition(args.z,pz)
-			if(isNaN(x)) x = px
-			if(isNaN(y)) y = py
-			if(isNaN(z)) z = pz
-
-			let dimension = args.dimension || pos.dimension
-
-			for(let t of target) world.sendPlayer({type:"tp",x,y,z,dimension},t.id)
-		}
-	},
-	{
-		type:"literal",
-		name:"playSound",
-		args:["sound", "volume", "pitch"],
-		argValues:{sound:"type:sound",volume:"type:number",pitch:"type:number"},
-		info:"Plays a sound. Sound can be any sound, for example: click, block.grass.dig1, entity.generic.explode1. Volume is a number from 0 to 1.",
-		func: (args,pos,scope,world) => {
-			if(!args.sound) return ["The first argument (sound) is required.","error"]
-			let volume = parseFloat(args.volume) || 1
-			let pitch = parseFloat(args.pitch) || 1
-			world.playSound(null,null,null,args.sound, volume, pitch)
-			//return ["That sound doesn't exist.","error"]
-		}
-	},
-	{
-		type:"literal",
-		name:"title",
-		args:['text','subtext','color','fadeIn','fadeOut','stay'],
-		argValues:{fadeIn:"type:number",fadeOut:"type:number",stay:"type:number"},
-		info:"Shows text on screen. fadeIn and fadeOut and stay are miliseconds.",
-		func: (args,pos,scope,world) => {
-			args.text = args.text || "/title"
-			args.fadeIn = (args.fadeIn || args.fadeIn === 0) ? parseFloat(args.fadeIn) : 500
-			args.fadeOut = (args.fadeOut || args.fadeOut === 0) ? parseFloat(args.fadeOut) : 2000
-			args.stay = (args.stay || args.stay === 0) ? parseFloat(args.stay) : 1000
-			world.sendAll({type:"title",data:args.text,sub:args.subtext,color:args.color,fadeIn:args.fadeIn,fadeOut:args.fadeOut,stay:args.stay})
-		}
-	},
-	{
-		type:"literal",
-		name:"setBlock",
-		args:["x","y","z","dimension","block"],
-		argValues:{block:"type:block",x:"type:x",y:"type:y",z:"type:z",dimension:"type:dimension"},
-		info:"Sets a block at a specified position.",
-		func: (args,pos,scope,world) => {
-			let block = blockIds[args.block]
-			if(block === undefined) block = parseInt(args.block)
-			if(!blockData[block]) return ["No such block "+block,"error"]
-			let x = parsePosition(args.x,pos.x,true),
-					y = parsePosition(args.y,pos.y,true),
-					z = parsePosition(args.z,pos.z,true),
-					dimension = args.dimension || pos.dimension
-			world.setBlock(x,y,z,block,false,false,false,false,dimension)
-		}
-	},
-	{
-		type:"literal",
-		name:"getBlock",
-		args:["x","y","z","dimension"],
-		argValues:{x:"type:x",y:"type:y",z:"type:z",dimension:"type:dimension"},
-		info:"Gets a block at the specified position and sets a variable called block_name.",
-		func: (args,pos,scope,world) => {
-			let x = parsePosition(args.x,pos.x,true),
-					y = parsePosition(args.y,pos.y,true),
-					z = parsePosition(args.z,pos.z,true),
-					dimension = args.dimension || pos.dimension
-			scope.block_name = blockData[world.getBlock(x,y,z,dimension)].name
-		}
-	},
-	{
-		type:"literal",
-		name:"setTag",
-		args:["x","y","z","dimension","tag_name","tag_data"],
-		argValues:{x:"type:x",y:"type:y",z:"type:z",dimension:"type:dimension"},
-		info:"Sets a specified tag at a specified position. tag_name can be JSON or raw text.",
-		func: (args,pos,scope,world) => {
-			let data
-			try{
-				data = JSON.parse(args.tag_data)
-			}catch{
-				data = args.tag_data
-			}
-			let x = parsePosition(args.x,pos.x,true),
-					y = parsePosition(args.y,pos.y,true),
-					z = parsePosition(args.z,pos.z,true),
-					dimension = args.dimension || pos.dimension
-			try{
-				world.setTagByName(x,y,z,args.tag_name,data, false,dimension)
-			}catch(e){
-				return [e.message,"error"]
-			}
-		}
-	},
-	{
-		type:"literal",
-		name:"getTag",
-		args:["x","y","z","dimension","tag_name"],
-		argValues:{x:"type:x",y:"type:y",z:"type:z",dimension:"type:dimension"},
-		info:"Gets a specified tag at the specified position and sets a variable called tag_data. tag_data will be JSON string if not a string.",
-		func: (args,pos,scope,world) => {
-			let x = parsePosition(args.x,pos.x,true),
-					y = parsePosition(args.y,pos.y,true),
-					z = parsePosition(args.z,pos.z,true),
-					dimension = args.dimension || pos.dimension
-			scope.tag_data = world.getTagByName(x,y,z,args.tag_name,dimension)
-			if(typeof scope.tag_data !== "string") scope.tag_data = JSON.stringify(scope.tag_data)
-		}
-	},
-	/*{
-		name:"online",
-		noCheats: true,
-		info: "Lists people that are in this world.",
-		func: (args,pos,scope,world) => {
-			let arr = world.players.map(u => u.username)
-			let str = "<span style='color:lime;'>"+arr.length + " players online: " + arr.join(", ")
-			let bannedLength = 0
-      for(let b in world.banned) bannedLength ++
-      if(bannedLength){
-        str += "<br>"
-        str += bannedLength + " players banned: "
-        for(let b in world.banned) str += b + ", "
-        str = str.slice(0,str.length-2)
-      }
-      if(world.whitelist){
-        str += "<br>"
-        str += world.whitelist.length + " players whitelisted: "+world.whitelist.join(", ")
-      }
-			return [str,""]
-		}
-	},*-/
-	{
-		type:"literal",
-		name:"echo",
-		args:["data"],
-		info:"Outputs data.",
-		func: args => {
-			return [args.data+"",""]
-		}
-	},
-	{
-		type:"literal",
-		name:"var",
-		args:["name","value"],
-		info:"Set a variable to a value. Value can be empty.",
-		func: (args,pos,scope) => {
-			if(!args.name) return ["Error: name required.","error"]
-			scope[args.name] = args.value
-		}
-	},
-	{
-		type:"literal",
-		name:"solve",
-		args:["value1","operation","value2"],
-		argValues:{operation:["+","-","/","*","<",">","=","round","floor","ceil","sin","cos","tan","sqrt","%"]},
-		info:"Calculate operation on value1 and value2 and sets a variabled called value. Some operations don't use value2. Example: /solve 1 + 1",
-		func: (args,pos,scope) => {
-			let value1 = typeof args.value1 === "number" ? args.value1 : parseFloat(args.value1), value2 = typeof args.value2 === "number" ? args.value2 : parseFloat(args.value2)
-			if(isNaN(value1) || isNaN(args.value1)) value1 = args.value1
-			if(isNaN(value2) || isNaN(args.value2)) value2 = args.value2
-			switch(args.operation){
-				case "+":
-					scope.value = value1+value2
-					break
-				case "-":
-					scope.value = value1-value2
-					break
-				case "*":
-					scope.value = value1*value2
-					break
-				case "/":
-					scope.value = value1/value2
-					break
-				case "<":
-					scope.value = value1<value2
-					break
-				case ">":
-					scope.value = value1>value2
-					break
-				case "=":
-					scope.value = value1===value2
-					break
-				case "round":
-					scope.value = round(value1)
-					break
-				case "floor":
-					scope.value = floor(value1)
-					break
-				case "ceil":
-					scope.value = ceil(value1)
-					break
-				case "sin":
-					scope.value = sin(value1)
-					break
-				case "cos":
-					scope.value = cos(value1)
-					break
-				case "tan":
-					scope.value = tan(value1)
-					break
-				case "sqrt":
-					scope.value = sqrt(value1)
-					break
-				case "%":
-					scope.value = value1 % value2
-					break
-				default:
-					return ["No such operation called "+args.operation,"error"]
-			}
-			//scope.value += "" //convert to string
-		}
-	},
-	{
-		type:"literal",
-		name:"getPos",
-		names:["gp"],
-		args:["target"],
-		argValues:{target:["type:player","@s","@p"]},
-		info:"Gets position of specified target and sets target_x, target_y, target_z, target_dimension, target_name. Target can be @s, @p, or a username.",
-		func: (args,pos,scope,world) => {
-			args.target = args.target || "@s"
-			let arr = parseTarget(args.target,pos,world)
-			if(!arr || !arr[0]) return ["No such target: "+args.target,"error"]
-			let t = arr[0]
-			scope.target_x = t.x
-			scope.target_y = t.y
-			scope.target_z = t.z
-			scope.target_dimension = t.dimension
-			scope.target_name = t.username || t.name
-		}
-	},
-	{
-		type:"literal",
-		name:"wait",
-		args:["time"],
-		argValues:{time:["type:number"]},
-		info:"Wait for time miliseconds.",
-		func: args => {
-			return sleep(parseFloat(args.time))
-		}
-	},
-	{
-		type:"literal",
-		name:"getTime",
-		args:["timestart"],
-		argValues:{timestart:["type:number"]},
-		info:"Sets time to the current time in miliseconds. If timestart is specified, the time is subtracted from timestart.",
-		func: (args,pos,scope) => {
-			scope.time = Date.now()
-			if(args.timestart) scope.time -= parseInt(args.timestart)
-		}
-	},
-	{
-		type:"literal",
-		name:"blockInfo",
-		names:["bi"],
-		args:["block"],
-		argValues:{block:["type:block"]},
-		func: args => {
-			let block = blockData[blockIds[args.block]]
-			if(!block){
-				return ["No such block "+args.block,"error"]
-			}
-			let str = ''
-			for(let i in block){
-				if(i === "shape") continue
-				str += i+": "
-				if(typeof block[i] === "function") str += "function() { [code] }"
-				else if(typeof block[i] === "string") str += block[i]
-				else str += JSON.stringify(block[i])
-				str += "<br>"
-			}
-			return [str,""]
-		},
-		noCheats:true
-	},
-	{
-		type:"literal",
-		name:"seed",
-		noCheats:true,
-		func: (args,pos,scope,world) => [world.worldSeed+"",""]
-	},
-	{
-		type:"literal",
-		name:"trigger",
-		args:["condition","x","y","z","dimension"],
-		argValues:{x:"type:x",y:"type:y",z:"type:z",dimension:"type:dimension",condition:"type:boolean"},
-		info:"Trigger a command block at specified position if condition is a true value. condition may be a variable.",
-		func: (args,pos,scope,world) => {
-			if(!args.condition) return
-			let x = parsePosition(args.x,pos.x,true),
-					y = parsePosition(args.y,pos.y,true),
-					z = parsePosition(args.z,pos.z,true),
-					dimension = args.dimension || pos.dimension
-			let block = world.getBlock(x,y,z,dimension)
-			if(blockData[block].commandBlock){
-				blockData[block].trigger(x,y,z,dimension,world)
-			}
-		}
-	},
-	{
-		type:"literal",
-		name:"effect",
-		args:["target","name","time","level","hide_particles"],
-		argValues:{target:["type:player","@a","@e","@p"], name:["wither","blur"], time:["type:number"], level:"type:number", show_particles:"type:boolean"},
-		info:"Start a effect on target. time is in seconds. level should be more than zero.",
-		func: (args,pos,scope,world) => {
-			let arr = parseTarget(args.target,pos,world)
-			if(!arr || !arr[0]) return ["No such target: "+args.target,"error"]
-			let time = parseFloat(args.time)
-			let level = parseFloat(args.level)
-			let showParticles = args.hide_particles !== "true"
-			for(let ent of arr){
-				if(ent.applyEffect) ent.applyEffect(args.name, level,time,showParticles)
-			}
-		}
-	},
-
-	//client side commands
-	{
-		type:"literal",
-		name: "clear",
-		info: "Clears shown messages",
-		client:true,
-		noCheats: true
-	},
-	{
-		type:"literal",
-		name:"clearHistory",
-		info:"Clears chat history and input history.",
-		names:"ch",
-		client:true,
-		noCheats: true
-	},
-	{
-		type:"literal",
-		name:"gameMode",
-		names: ["gm"],
-		args: ["mode"],
-		argValues:{mode:["creative","c","survival","s","spectator","l"]},
-		info: "mode can be: creative, c, survival, s, spectator",
-		client:true,
-	},
-	{
-		type:"literal",
-		name:"spectatePlayer",
-		names:["sp"],
-		args:["username","remote_control"],
-		argValues:{username:"type:player",remote_control:"type:boolean"},
-		info:"Spectate a player. If remote_control is set to true and you are the host or certain people, remote control will be enabled.",
-		client:true,
-	},
-	{
-		type:"literal",
-		name:"reloadChunks",
-		info:"Reload chunks. May cause freezing.",
-		client:true,
-	},
-	{
-		type:"literal",
-		name: "ban",
-		args: ["username","reason"],
-		argValues:{username:"type:player"},
-		info: "Bans a player. They cannot rejoin the world. Reason is the reason why you banned them. Only bans them until multiplayer turns off",
-		client:true,
-		noCheats:true
-	},
-	{
-		type:"literal",
-		name: "unban",
-		args: ["username"],
-		argValues:{username:"type:banned"},
-		info: "Unbans a player.",
-		client:true,
-		noCheats:true
-	},
-	{
-		type:"literal",
-		name:"whitelist",
-		args: ["action","username"],
-		argValues:{action:["enable","disable","add","remove"],username:["type:player","type:whitelisted"]},
-		info: "Allow certain people to join. Uses:<br>/whitelist enable<br>/whitelist disable<br>/whitelist add username<br>/whitelist remove username",
-		client:true,
-		noCheats: true
-	},
-	{
-		type:"literal",
-		name:"online",
-		noCheats: true,
-		info: "Lists people that are in this world.",
-		client:true,
-	},
-	{
-		type:"literal",
-		name:"sendEval",
-		args:["target","data"],
-		argValues:{target:["type:player","@a","@A"]},
-		info:"Send javascript to players. Can only be used by certain people. Target can be: username, @a, @A. If target isn't specified, it sends it to all players except you. If target is @A, it send to everyone including you.",
-		client:true,
-	},
-	{
-		type:"literal",
-		name:"help",
-		names:["?"],
-		args:["command_name"],
-		client:true,
-		noCheats:true
-	}
-]
-win.defaultServerCommandNodes = defaultServerCommandNodes*/
 let tempWorldForCommand
 class CommandNode{
 	constructor(type, name, func, info, argType, redirect, anonymousFunc, noCheats){
@@ -20769,17 +20158,17 @@ function initDefaultCommands(world){
 		(args,pos,scope) => {
 			let id = blockIds[args.block_name]
 			if(!args.block_name) id = 0
-			fillToPlayer(id,pos,world)
+			fillToPlayer(id,pos,world[pos.dimension])
 		},"block",false)),
-		CommandNode.l("copyToPlayer",(args,pos,scope) => copyToPlayer(pos,world),"Copys blocks from starting position to current position",false),
-		CommandNode.l("pasteAtPlayer", (args,pos,scope) => pasteAtPlayer(pos,world), "Pastes copied blocks at the current position",false),
+		CommandNode.l("copyToPlayer",(args,pos,scope) => copyToPlayer(pos,world[pos.dimension]),"Copys blocks from starting position to current position",false),
+		CommandNode.l("pasteAtPlayer", (args,pos,scope) => pasteAtPlayer(pos,world[pos.dimension]), "Pastes copied blocks at the current position",false),
 		CommandNode.l("replaceToPlayer",null,"Replace certain blocks from starting position to current position with a certain block").then(CommandNode.a("replace_what",null,"block").then(CommandNode.a("with_what",
 		(args,pos,scope) => {
 			let replace = blockIds[args.replace_what]
 			if(!args.replace_what) replace = 0
 			let into = blockIds[args.with_what]
 			if(!args.with_what) into = 0
-			replaceAtPlayer(replace,into,pos,world)
+			replaceAtPlayer(replace,into,pos,world[pos.dimension])
 		},"block",false))),
 		CommandNode.l("cancelFrom","client","Delete starting position"),
 		CommandNode.l("shape",null,"Creates a shape of certain shape.").then(
@@ -20787,95 +20176,95 @@ function initDefaultCommands(world){
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return ball(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, pos.dimension, world)
+				return ball(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, world[pos.dimension])
 			},"block").then(CommandNode.a("x",null,"number").then(CommandNode.a("y",null,"number").then(CommandNode.a("z",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return ball(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, pos.dimension, world)
+				return ball(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, world[pos.dimension])
 			},"number")))))))),
 			CommandNode.l("hollowSphere").then(CommandNode.a("width",null,"number").then(CommandNode.a("height",null,"number").then(CommandNode.a("depth",null,"number").then(CommandNode.a("block_name",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return sphereoid(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, pos.dimension, world)
+				return sphereoid(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, world[pos.dimension])
 			},"block").then(CommandNode.a("x",null,"number").then(CommandNode.a("y",null,"number").then(CommandNode.a("z",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return sphereoid(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, pos.dimension, world)
+				return sphereoid(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, world[pos.dimension])
 			},"number")))))))),
 			CommandNode.l("cylinder").then(CommandNode.a("width",null,"number").then(CommandNode.a("height",null,"number").then(CommandNode.a("depth",null,"number").then(CommandNode.a("block_name",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return cyl(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, pos.dimension, world)
+				return cyl(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, world[pos.dimension])
 			},"block").then(CommandNode.a("x",null,"number").then(CommandNode.a("y",null,"number").then(CommandNode.a("z",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return cyl(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, pos.dimension, world)
+				return cyl(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, world[pos.dimension])
 			},"number")))))))),
 			CommandNode.l("hollowCylinder").then(CommandNode.a("width",null,"number").then(CommandNode.a("height",null,"number").then(CommandNode.a("depth",null,"number").then(CommandNode.a("block_name",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return hcyl(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, pos.dimension, world)
+				return hcyl(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, world[pos.dimension])
 			},"block").then(CommandNode.a("x",null,"number").then(CommandNode.a("y",null,"number").then(CommandNode.a("z",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return hcyl(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, pos.dimension, world)
+				return hcyl(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, world[pos.dimension])
 			},"number"))))))))
 		),
 		CommandNode.l("cancelShape", () => {cancelShape++}, "Stop generating shapes currently being generated."),
 		CommandNode.l("give",null,"Gives the target the the specified amount of specified blocks").then(CommandNode.a("target",null,"target").then(CommandNode.a("block_name",
 		(args,pos,scope) => {
 			let id = blockIds[args.block_name]
-			let arr = parseTarget(args.target,pos,world)
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(arr.length){
 				for(let i of arr){
-					world.addItems(i.x,i.y,i.z,i.dimension,0,0,0,id,false,1)
+					world[i.dimension].addItems(i.x,i.y,i.z,0,0,0,id,false,1)
 				}
 			}else return ["No such target: "+args.target,"error"]
 		},"block").then(CommandNode.a("amount",
 		(args,pos,scope) => {
 			let id = blockIds[args.block_name]
 			let amount = args.amount || 1
-			let arr = parseTarget(args.target,pos,world)
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(arr.length){
 				for(let i of arr){
-					world.addItems(i.x,i.y,i.z,i.dimension,0,0,0,id,false,amount)
+					world[i.dimension].addItems(i.x,i.y,i.z,0,0,0,id,false,amount)
 				}
 			}else return ["No such target: "+args.target,"error"]
 		},"number")))),
 		CommandNode.l("kill").then(CommandNode.a("target",
 		(args,pos,scope) => {
-			if(world.settings.killCmdOff) return ["Kill command is disabled on this world.","error"]
+			if(world.world.settings.killCmdOff) return ["Kill command is disabled on this world.","error"]
 			args.target = args.target || "@s"
-			let arr = parseTarget(args.target,pos,world)
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(arr.length){
 				for(let i of arr){
 					if(i.type === "Player"){
 						i.health = 0
 						i.damage(1,pos.username+" killed "+(args.target === "@a" ? "everyone" : args.target)+" with the kill command.")
 					}else{
-						world.deleteEntity(i.id)
+						world[i.dimension].deleteEntity(i.id)
 					}
 				}
 			}else return ["No such target: "+args.target,"error"]
 		},"target").then(CommandNode.a("message",
 		(args,pos,scope) => {
-			if(world.settings.killCmdOff) return ["Kill command is disabled on this world.","error"]
+			if(world.world.settings.killCmdOff) return ["Kill command is disabled on this world.","error"]
 			args.target = args.target || "@s"
-			let arr = parseTarget(args.target,pos,world)
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(arr.length){
 				for(let i of arr){
 					if(i.type === "Player"){
 						i.health = 0
 						i.damage(1,arg.message)
 					}else{
-						world.deleteEntity(i.id)
+						world[i.dimension].deleteEntity(i.id)
 					}
 				}
 			}else return ["No such target: "+args.target,"error"]
@@ -20892,12 +20281,12 @@ function initDefaultCommands(world){
 		tp = CommandNode.l("teleport",null,"Teleport certain player/self to location/entity/player").then(CommandNode.a("target",null,"target").then(
 			CommandNode.a("x",null,"x").then(CommandNode.a("y",null,"y").then(CommandNode.a("z",
 			(args,pos) => {
-				let arr = parseTarget(args.target,pos,world)
+				let arr = parseTarget(args.target,pos,world[pos.dimension])
 				for(let e of arr) e.tp(args.x,args.y,args.z)
 			}, "z"))),
 			CommandNode.a("to_target",
 			(args,pos) => {
-				let arr = parseTarget(args.target,pos,world), to = parseTarget(args.to_target,pos,world)[0]
+				let arr = parseTarget(args.target,pos,world[pos.dimension]), to = parseTarget(args.to_target,pos,world[pos.dimension])[0]
 				if(!to) return ["No such target: "+args.target,"error"]
 				for(let e of arr) e.tp(args.x,args.y,args.z)
 			},"target")
@@ -20905,13 +20294,13 @@ function initDefaultCommands(world){
 		CommandNode.r("tp",tp),
 		CommandNode.l("playSound",null,"Plays a sound. Volume should be a number from 0 to 1.").then(CommandNode.a("sound",
 		(args,pos,scope) => {
-			world.playSound(null,null,null,args.sound, 1, 1)
+			world.sendAll({type:"playSound", data:args.sound, volume:1, pitch:1})
 		},"sound").then(CommandNode.a("volume",
 		(args,pos,scope) => {
-			world.playSound(null,null,null,args.sound, parseFloat(args.volume), 1)
+			world.sendAll({type:"playSound", data:args.sound, volume:parseFloat(args.volume), pitch:1})
 		},"number").then(CommandNode.a("pitch",
 		(args,pos,scope) => {
-			world.playSound(null,null,null,args.sound, parseFloat(args.volume), parseFloat(args.pitch))
+			world.sendAll({type:"playSound", data:args.sound, volume:parseFloat(args.volume), pitch:parseFloat(args.pitch)})
 		},"number")))),
 		CommandNode.l("title",null,"Shows text on screen. fadeIn and fadeOut and stay are miliseconds.").then(CommandNode.a("text", args => {world.sendAll({type:"title",data:args.text,fadeIn:500,fadeOut:1000,stay:2000})}).then(CommandNode.a("subtext", args => {world.sendAll({type:"title",data:args.text,sub:args.subtext,fadeIn:500,fadeOut:1000,stay:2000})}).then(CommandNode.a("color", args => {world.sendAll({type:"title",data:args.text,sub:args.subtext,color:args.color,fadeIn:500,fadeOut:1000,stay:2000})}).then(
 			CommandNode.a("fadeIn",null,"number").then(CommandNode.a("fadeOut",null,"number").then(CommandNode.a("stay",args => {world.sendAll({type:"title",data:args.text,sub:args.subtext,color:args.color,fadeIn:args.fadeIn,fadeOut:args.fadeOut,stay:args.stay})},"number")))
@@ -20921,16 +20310,16 @@ function initDefaultCommands(world){
 			let block = blockIds[args.block]
 			if(block === undefined) block = parseInt(args.block)
 			if(!blockData[block]) return ["No such block "+block,"error"]
-			world.setBlock(args.x,args.y,args.z,block,false,false,false,false,pos.dimension)
+			world[pos.dimension].setBlock(args.x,args.y,args.z,block)
 		},"block"))))),
 		CommandNode.l("getBlock",null,"Gets a block at the specified position and sets a variable called block_name.").then(CommandNode.a("x",null,"x").then(CommandNode.a("y",null,"y").then(CommandNode.a("z",
 		(args,pos,scope) => {
-			scope.block_name = blockData[world.getBlock(args.x,args.y,args.z,pos.dimension)].name
+			scope.block_name = blockData[world[i.dimension].getBlock(args.x,args.y,args.z,pos.dimension)].name
 		},"z")))),
 		CommandNode.l("getPos",null,"Gets position of specified target and sets target_x, target_y, target_z, target_dimension, target_name. Target can be @s, @p, or a username.").then(CommandNode.a("target",
 		(args,pos,scope) => {
 			args.target = args.target || "@s"
-			let arr = parseTarget(args.target,pos,world)
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(!arr.length) return ["No such target: "+args.target,"error"]
 			let t = arr[0]
 			scope.target_x = t.x
@@ -20943,7 +20332,7 @@ function initDefaultCommands(world){
 		CommandNode.l("seed", () => [world.worldSeed+"",""], null,null,true),
 		CommandNode.l("effect",null,"Start a effect on target. time is in seconds. level should be more than zero.").then(CommandNode.a("target",null,"target").then(CommandNode.a("name").then(CommandNode.a("time",null,"number").then(CommandNode.a("level",
 		(args,pos,scope) => {
-			let arr = parseTarget(args.target,pos,world)
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(!arr.length) return ["No such target: "+args.target,"error"]
 			let time = parseFloat(args.time)
 			let level = parseFloat(args.level)
@@ -20952,7 +20341,7 @@ function initDefaultCommands(world){
 			}
 		},"number").then(CommandNode.a("hide_particles",
 		(args,pos,scope) => {
-			let arr = parseTarget(args.target,pos,world)
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(!arr.length) return ["No such target: "+args.target,"error"]
 			let time = parseFloat(args.time)
 			let level = parseFloat(args.level)
@@ -20975,7 +20364,7 @@ function initDefaultCommands(world){
 		CommandNode.l("clearHistory","client","Clears chat history and input history.",null,true),
 		sp = CommandNode.l("spectatePlayer",null,"Spectate a player. If remote_control is set to true and you are the host or certain people, remote control will be enabled.").then(CommandNode.a("username",
 		(args,pos) =>{
-			let player = getPlayerByUsername(arg.username,world)
+			let player = getPlayerByUsername(arg.username,world[pos.dimension])
 			if(player){
 				pos.gameMode = "spectator"
 				pos.riding = null
@@ -20984,7 +20373,7 @@ function initDefaultCommands(world){
 			}else return ["Player doesn't exist: "+args.username,"error"]
 		}).then(CommandNode.a("remoteControl",
 		(args,pos) =>{
-			let player = getPlayerByUsername(arg.username,world)
+			let player = getPlayerByUsername(arg.username,world[pos.dimension])
 			if(player){
 				pos.gameMode = "spectator"
 				pos.riding = null
@@ -21641,7 +21030,7 @@ class Entity {
 					}
 					if(blockData[block].getCurrent){
 						var me = blockData[block]
-						var c = me.getCurrent(x,y,z,this.dimension,undefined,undefined,this.world)
+						var c = me.getCurrent(x,y,z,undefined,undefined,this.world)
 						this.velx += (c.x||0)/64
 						this.velz += (c.z||0)/64
 						var under = this.world.getBlock(x,y-1,z,this.dimension)
@@ -21651,7 +21040,7 @@ class Entity {
 						let dist = max(abs(x-this.x),abs(z-this.z),abs(y-this.y))
 						if(dist<closestTouch){
 							closestTouch = dist
-							ontouch = blockData[block].ontouch
+							ontouch = blockData[block].serverontouch
 							touchX = x, touchY = y, touchZ = z
 						}
 					}
@@ -21659,14 +21048,14 @@ class Entity {
 				}
 			}
 		}
-		this.world.getEntitiesNear(this.x,this.y,this.z,this.dimension, max(this.width,this.height,this.depth)/2, nearEntityArray)
+		this.world.getEntitiesNear(this.x,this.y,this.z, max(this.width,this.height,this.depth)/2, nearEntityArray)
 		for(let e of nearEntityArray) {
 			if(e.canStandOn && e.block && e.x > pminX && e.x < pmaxX && e.y > pminY && e.y < pmaxY && e.z > pminZ && e.z < pmaxZ) {
 				this.contacts.add(e.x, e.y, e.z, e.block, e)
 			}
 		}
 		if(this.world.weather === "rain" && this.world.weatherAmount > 0.5){
-			let top = this.world.getSolidTop(round(this.x),round(this.z),this.dimension)
+			let top = this.world.getSolidTop(round(this.x),round(this.z))
 			if(this.y > top) this.wet = true
 		}
 
@@ -21791,7 +21180,7 @@ class Entity {
 		this.lastUpdate = now
 		this.contacts.clear()
 		if(ontouch){
-      ontouch(touchX, touchY, touchZ, this.dimension, this)
+      ontouch(touchX, touchY, touchZ, this)
     }
 		if(this.portalFadeOutEffect > 0){
 			this.portalFadeOutEffect -= 2
@@ -21800,7 +21189,7 @@ class Entity {
 			this.portalEffect -= 1.25
 		}
 		if(this.doingPortal){
-			let chunk = this.world.getChunk(this.x,this.z,this.dimension)
+			let chunk = this.world.getChunk(this.x,this.z)
 			if(chunk && chunk.allGenerated){
 				blockData[this.doingPortal].doneLoading(this,this.world)
 				this.doingPortal = 0
@@ -21810,8 +21199,9 @@ class Entity {
 	updateChunk(){
 		let chunkX = this.x >> 4, chunkZ = this.z >> 4
 		if(this.chunkX !== chunkX || this.chunkZ !== chunkZ || this.dimension !== this.chunkDimension){
-			let oldChunk = this.world.getChunk(this.chunkX<<4,this.chunkZ<<4,this.chunkDimension)
-			let chunk = this.world.getOrNewChunk(chunkX<<4,chunkZ<<4,this.dimension)
+			let oldChunk = this.world.getChunk(this.chunkX<<4,this.chunkZ<<4)
+			this.world = this.world.world[this.chunkDimension]
+			let chunk = this.world.getOrNewChunk(chunkX<<4,chunkZ<<4)
 			this.chunkX = chunkX
 			this.chunkZ = chunkZ
 			this.chunkDimension = this.dimension
@@ -22027,7 +21417,7 @@ class Player extends Entity{
 	respawn(){
     let spawn = this.spawnPoint
 		if(!spawn){
-			spawn = this.spawnPoint = {x:this.world.spawnPoint.x,y:this.world.spawnPoint.y,z:this.world.spawnPoint.z}
+			spawn = this.spawnPoint = {x:this.world.world.spawnPoint.x,y:this.world.world.spawnPoint.y,z:this.world.world.spawnPoint.z}
 		}
 		this.tp(spawn.x,spawn.y+0.5+this.height*0.5,spawn.z)
 		this.velx = this.vely = this.velz = 0
@@ -22072,6 +21462,7 @@ class Player extends Entity{
 		this.targetY = this.y = y
 		this.targetZ = this.z = z
 		this.dimension = dimension
+		this.world = this.world.world[dimension]
 		if(this.connection) this.connection.send({type:"tp",x,y,z,dimension})
 	}
 	addXP(amount){
@@ -22115,10 +21506,10 @@ class Player extends Entity{
 		if(this.connection) this.connection.send({type:"effects",data:this.effects})
 	}
 	saveInv(){
-		let inv = this.world.playersInv[this.host ? ":host" : this.username]
-		if(!inv) inv = this.world.playersInv[this.host ? ":host" : this.username] = {}
-		inv.survivStr = this.world.getSurvivStr(this).array
-		inv.inv = this.world.getInv(this).array
+		let inv = this.world.world.playersInv[this.host ? ":host" : this.username]
+		if(!inv) inv = this.world.world.playersInv[this.host ? ":host" : this.username] = {}
+		inv.survivStr = this.world.world.getSurvivStr(this).array
+		inv.inv = this.world.world.getInv(this).array
 	}
 	addAchievment(name){
 		let id = achievmentIds[name]
@@ -22176,7 +21567,7 @@ class Player extends Entity{
 					}
 					if(touchingBox(this,x,y,z,1,1,1)){
 						let d = blockData[block].damage
-						if(typeof d === "function") d = d(x,y,z,this.dimension,this.world)
+						if(typeof d === "function") d = d(x,y,z,this.world)
 						if(d && d>takeDamage) {
 							takeDamage = d
 							damageBlock = blockData[block]
@@ -22205,14 +21596,14 @@ class Player extends Entity{
 						}
 					}
 					if(blockData[block].activate){
-						blockData[block].activate(x,y,z,this.dimension,block,this)
+						blockData[block].activate(x,y,z,this.dimension,block,this,this.world)
 					}
 					if(!inBox(this,x,y,z,1,1,1)) continue
-					if(!this.spectator && blockData[block].ontouch){
+					if(!this.spectator && blockData[block].serverontouch){
 						let dist = max(abs(x-this.x),abs(z-this.z),abs(y-this.y))
 						if(dist<closestTouch){
 							closestTouch = dist
-							ontouch = blockData[block].ontouch
+							ontouch = blockData[block].serverontouch
 							touchX = x, touchY = y, touchZ = z
 						}
 					}
@@ -22224,7 +21615,7 @@ class Player extends Entity{
 					}
 					if(blockData[block].getCurrent && !this.spectator){
 						var me = blockData[block]
-						var c = me.getCurrent(x,y,z,this.dimension,undefined,undefined,this.world)
+						var c = me.getCurrent(x,y,z,undefined,undefined,this.world)
 						this.velx += (c.x||0)/64
 						this.velz += (c.z||0)/64
 						var under = this.world.getBlock(x,y-1,z,this.dimension)
@@ -22271,7 +21662,7 @@ class Player extends Entity{
 		if(this.y > this.lastY) this.lastY = this.y
     
     if(ontouch){
-      ontouch(touchX, touchY, touchZ, this.dimension, this)
+      ontouch(touchX, touchY, touchZ, this)
     }
 		if(this.portalFadeOutEffect > 0){
 			this.portalFadeOutEffect -= 2
@@ -22280,7 +21671,7 @@ class Player extends Entity{
 			this.portalEffect -= 1.25
 		}
 		if(this.doingPortal){
-			let chunk = this.world.getChunk(this.x,this.z,this.dimension)
+			let chunk = this.world.getChunk(this.x,this.z)
 			if(chunk && chunk.allGenerated){
 				blockData[this.doingPortal].doneLoading(this,this.world)
 				this.doingPortal = 0
@@ -22296,12 +21687,12 @@ class Player extends Entity{
 			if(this.survival){
 				for(let i of this.inventory.hotbar){
 					if(i){
-						this.world.addItems(this.x,this.y,this.z,this.dimension,0,0,0,i.id,true,i.amount,i.durability,i.customName,this.id)
+						this.world.addItems(this.x,this.y,this.z,0,0,0,i.id,true,i.amount,i.durability,i.customName,this.id)
 					}
 				}
 				for(let i of this.inventory.main){
 					if(i){
-						this.world.addItems(this.x,this.y,this.z,this.dimension,0,0,0,i.id,true,i.amount,i.durability,i.customName,this.id)
+						this.world.addItems(this.x,this.y,this.z,0,0,0,i.id,true,i.amount,i.durability,i.customName,this.id)
 					}
 				}
 				this.inventory.hotbar.fill(null)
@@ -22523,7 +21914,7 @@ class Player extends Entity{
 					holdObj.amount --
 					if(!holdObj.amount) this.inventory.hotbar[this.inventory.hotbarSlot] = null
 					if(holdBlockData.eatResult && !newInvItem(this,blockIds[holdBlockData.eatResult])) {
-						this.world.addItems(holdBlockData.x,holdBlockData.y,holdBlockData.z,holdBlockData.dimension,0,0,0,blockIds[holdBlockData.eatResult])
+						this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds[holdBlockData.eatResult])
 					}
 				}
 				if(this.food >= 20){
@@ -22760,7 +22151,7 @@ entities[entities.length] = class Item extends Entity {
 		
 		let pickup
 		if(now - this.spawn > 1000){
-			for(var P of this.world.players){
+			for(var P of this.world.world.players){
 				if(!P.hidden && !P.die && P.dimension === this.dimension){
 					if(this.goCloserToPlayer(P)) pickup = P
 				}
@@ -22770,7 +22161,7 @@ entities[entities.length] = class Item extends Entity {
 		let d = 3/4
 		var stackSize = blockData[this.block].stackSize
 		var c = false
-		this.world.getEntitiesNear(this.x,this.y,this.z,this.dimension, 1, nearEntityArray)
+		this.world.getEntitiesNear(this.x,this.y,this.z, 1, nearEntityArray)
 		for(var e of nearEntityArray){
 			if(e.type === "Item" && e !== this && e.block === this.block && (!e.name && !this.name || e.name === this.name) && e.amount + this.amount <= stackSize){
 				var xDist = this.x - e.x
@@ -22865,7 +22256,7 @@ let BlockEntity = entities[entities.length] = class BlockEntity extends Entity{
 			var b = this.world.getBlock(x, y, z, this.dimension)
 			if(b && !blockData[b].liquid){
 				// non cube block breaks falling blocks
-				this.world.addItems(x,y,z,this.dimension, 0,0,0, this.block)
+				this.world.addItems(x,y,z, 0,0,0, this.block)
 			}else{
 				this.world.setBlock(x,y,z, this.block,false,false,false,false,this.dimension)
 				this.world.blockSound(this.block, "land", x,y,z)
@@ -22888,8 +22279,8 @@ let BlockEntity = entities[entities.length] = class BlockEntity extends Entity{
 			}
 			if(blockData[this.block].name === "pointedDripstone" && this.onGround){
 				var b = blockIds.pointedDripstone
-				this.world.addItems(this.x,this.y,this.z,this.dimension,0,0,0,b,true)
-				this.world.blockParticles(b,this.x,this.y,this.z,30, "break",this.dimension)
+				this.world.addItems(this.x,this.y,this.z,0,0,0,b,true)
+				this.world.blockParticles(b,this.x,this.y,this.z,30, "break")
 				this.canDespawn = true
 			}
 		}
@@ -22912,7 +22303,7 @@ let PrimedTNT = entities[entities.length] = class PrimedTNT extends BlockEntity{
 	}
 	explode(){
 		var x = round(this.x), y = round(this.y), z = round(this.z)
-		this.world.explode(x,y,z,4, this.liquid || !this.world.settings.tntExplode, this.dimension)
+		this.world.explode(x,y,z,4, this.liquid || !this.world.world.settings.tntExplode, this.dimension)
 	}
 	update() {
 		this.updateVelocity(now)
@@ -22940,7 +22331,7 @@ entities[entities.length] = class PrimedSuperTNT extends PrimedTNT{
 	}
 	explode(){
 		var x = round(this.x), y = round(this.y), z = round(this.z)
-		this.world.explode(x,y,z,8, blockData[this.world.getBlock(x,y,z)].liquid || !this.world.settings.tntExplode, this.dimension)
+		this.world.explode(x,y,z,8, blockData[this.world.getBlock(x,y,z)].liquid || !this.world.world.settings.tntExplode, this.dimension)
 	}
 }
 entities[entities.length] = class PrimedUltraTNT extends PrimedTNT{
@@ -22950,7 +22341,7 @@ entities[entities.length] = class PrimedUltraTNT extends PrimedTNT{
 	}
 	explode(){
 		var x = round(this.x), y = round(this.y), z = round(this.z)
-		this.world.explode(x,y,z,24, blockData[this.world.getBlock(x,y,z)].liquid || !this.world.settings.tntExplode, this.dimension)
+		this.world.explode(x,y,z,24, blockData[this.world.getBlock(x,y,z)].liquid || !this.world.world.settings.tntExplode, this.dimension)
 	}
 }
 entities[entities.length] = class PrimedUnTNT extends PrimedTNT{
@@ -22960,7 +22351,7 @@ entities[entities.length] = class PrimedUnTNT extends PrimedTNT{
 	}
 	explode(){
 		var x = round(this.x), y = round(this.y), z = round(this.z)
-		this.world.explode(x,y,z,5, blockData[this.world.getBlock(x,y,z)].liquid || !this.world.settings.tntExplode || "original", this.dimension)
+		this.world.explode(x,y,z,5, blockData[this.world.getBlock(x,y,z)].liquid || !this.world.world.settings.tntExplode || "original", this.dimension)
 	}
 }
 entities[entities.length] = class MovingBlock extends BlockEntity{
@@ -22988,7 +22379,7 @@ entities[entities.length] = class MovingBlock extends BlockEntity{
 				this.y = this.my
 				this.z = this.mz
 				this.world.setBlock(round(this.x),round(this.y),round(this.z),this.endAs || this.block, false,false,false,false, this.dimension)
-				if(this.tags) this.world.setTags(round(this.x),round(this.y),round(this.z), this.tags, false, this.dimension)
+				if(this.tags) this.world.setTags(round(this.x),round(this.y),round(this.z), this.tags)
 			}
 		}
 		
@@ -23080,7 +22471,7 @@ entities[entities.length] = class Snowball extends BlockEntity{
 		if (now - this.spawn > this.despawns || this.hasCollided) {
 			this.canDespawn = true
 		}
-		if(this.canDespawn) this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break",this.dimension)
+		if(this.canDespawn) this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break")
 		
 		this.canFacePlayer = true
 	}
@@ -23119,7 +22510,7 @@ entities[entities.length] = class SmallFireball extends BlockEntity{
 			this.canDespawn = true
 			if(this.hasCollided) this.world.setBlock(round(this.x),round(this.y),round(this.z),blockIds.fire,false,false,false,false,this.dimension)
 		}
-		if(this.canDespawn) this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break",this.dimension)
+		if(this.canDespawn) this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break")
 		
 		this.canFacePlayer = true
 	}
@@ -23152,8 +22543,8 @@ entities[entities.length] = class Egg extends BlockEntity{
 			this.canDespawn = true
 		}
 		if(this.canDespawn){
-			this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break",this.dimension)
-			if(rand() > 0.9) this.world.addEntity(new entities[entityIds.Chicken](this.x,this.y,this.z),false,this.dimension)
+			this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break")
+			if(rand() > 0.9) this.world.addEntity(new entities[entityIds.Chicken](this.x,this.y,this.z))
 		}
 		
 		this.canFacePlayer = true
@@ -23330,7 +22721,7 @@ entities[entities.length] = class Arrow extends Entity{
 			var z = round(this.z+this.direction.z)
 			var block = this.world.getBlock(x,y,z,this.dimension)
 			if(block && blockData[block].projectileHit){
-				blockData[block].projectileHit(x,y,z,this.dimension,this)
+				blockData[block].projectileHit(x,y,z,this)
 			}
 		}
 		if (now - this.stopStart > this.despawns) {
@@ -23380,7 +22771,7 @@ entities[entities.length] = class ExperienceOrb extends Entity{
 	}
 	update(){
 		let pickup
-		for(let p of this.world.players){
+		for(let p of this.world.world.players){
 			if(!p.hidden && !p.die && p.dimension === this.dimension){
 				if(this.goToPlayer(p)) pickup = p
 			}
@@ -23446,10 +22837,10 @@ entities[entities.length] = class Minecart extends Entity{
 		}
 
 		this.updateVelocity(now)
-		for(let P of this.world.players){
+		for(let P of this.world.world.players){
 			if(!P.hidden && !P.die && P.dimension === this.dimension && P.riding !== this.id) this.pushByMob(P)
 		}
-		this.world.getEntitiesNear(this.x,this.y,this.z,this.dimension, 16, nearEntityArray)
+		this.world.getEntitiesNear(this.x,this.y,this.z, 16, nearEntityArray)
 		for(let ent of nearEntityArray){
 			if(ent.pushes && ent !== this && ent.dimension === this.dimension && ent.riding !== this.id) this.pushByMob(ent)
 		}
@@ -23565,7 +22956,7 @@ entities[entities.length] = class Minecart extends Entity{
 		}
 		if(this.health <= 0){
 			this.canDespawn = true
-			this.world.addItems(this.x,this.y,this.z,this.dimension,0,0,0,blockIds.minecart,true,1,null,null,this.id)
+			this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds.minecart,true,1,null,null,this.id)
 		}
 	}
 	onhit(damage,remote, vx,vz, from){
@@ -23768,7 +23159,7 @@ class Mob extends Entity{
 			else spreadAt.pop(), spreadAt.pop(), spreadAt.pop(), spreadAt.pop(), spreadAtIndexes.pop()
 		}
 		if(sx === fx && sy === fy && sz === fz) return null
-		let i = closestIdx, path = []//[sz+zDir,sy+yDir,sx+xDir,sz,sy,sx]
+		let i = closestIdx, path = [sz+zDir,sy+yDir,sx+xDir]//[sz+zDir,sy+yDir,sx+xDir,sz,sy,sx]
 		while(path.length < 85){
 			i = spreaded[i+3]
 			if(i) path.push(spreaded[i+2],spreaded[i+1],spreaded[i])
@@ -23794,7 +23185,8 @@ class Mob extends Entity{
 		let target = this.target && getEntityOrPlayer(this.target,this.world)
 		let follow = target || this.attractEnt
 		let d = follow && max(abs(follow.x-this.x),abs(follow.y-this.y),abs(follow.z-this.z))
-		if(this.path && this.path.length && (!follow || follow === target && d > this.minFollowDist || follow === this.attractEnt && d > 2)){
+		if(this.path && !this.path.length) this.path = null
+		if(this.path && (!follow || follow === target && d > this.minFollowDist || follow === this.attractEnt && d > 2)){
 			//let x,y,z, c = Infinity, i
 			/*for(let i2=0; i2<this.path.length; i2+=3){
 				let d = max(abs(this.path[i2]-this.x),abs(this.path[i2+1]-this.y),abs(this.path[i2+2]-this.z))
@@ -23826,7 +23218,6 @@ class Mob extends Entity{
 			if(distToPath < 1){
 				this.path.splice(0,3)
 			}
-			if(!this.path.length) this.path = null
 			this.walking = true
 		}else{
 			this.walking = false
@@ -23850,7 +23241,7 @@ class Mob extends Entity{
 		}
 		if(this.hostile && !target && !this.sitting){
 			let c = Infinity
-			if(!this.attacks || this.attacks.includes("Player")) for(let ent of this.world.players){
+			if(!this.attacks || this.attacks.includes("Player")) for(let ent of this.world.world.players){
 				if(this.dimension === ent.dimension && !ent.hidden && !ent.die && ent.survival){
 					let d = max(abs(this.x-ent.x),abs(this.y-ent.y),abs(this.z-ent.z))
 					if(d<this.detectionDist && d<c){
@@ -23860,7 +23251,7 @@ class Mob extends Entity{
 				}
 			}
 			if(this.attacks){
-				this.world.getEntitiesNear(this.x,this.y,this.z,this.dimension, this.detectionDist, nearEntityArray)
+				this.world.getEntitiesNear(this.x,this.y,this.z, this.detectionDist, nearEntityArray)
 				for(let ent of nearEntityArray){
 					if(this.dimension === ent.dimension && !ent.hidden && !ent.die && this.attacks.includes(ent.type)){
 						let d = max(abs(this.x-ent.x),abs(this.y-ent.y),abs(this.z-ent.z))
@@ -23875,7 +23266,7 @@ class Mob extends Entity{
 		this.attractEnt = null
 		if(!target && this.attracts){
 			let cd = Infinity
-			for(let p of this.world.players){
+			for(let p of this.world.world.players){
 				let dist = max(abs(this.x-p.x),abs(this.y-p.y),abs(this.z-p.z))
 				if(p.dimension === this.dimension && !p.hidden && !p.die && dist < 5 && dist < cd && this.attracts.includes(p.holding)) cd = dist, this.attractEnt = p
 			}
@@ -23964,7 +23355,7 @@ class Mob extends Entity{
 		if(inBox(this,x,y,z,1,1,1)){
 			if(data.damage){
 				let d = data.damage
-				if(typeof d === "function") d = d(round(this.x),round(this.y),round(this.z),this.dimension,this.world)
+				if(typeof d === "function") d = d(round(this.x),round(this.y),round(this.z),this.world)
 				if(d > this.maxDamageBlock) this.maxDamageBlock = d
 			}
 			if(data.burnEnt) this.maxBurnBlock = 0.2
@@ -23976,10 +23367,10 @@ class Mob extends Entity{
 		this.maxBurnBlock = this.maxDamageBlock = 0
 		this.updateVelocity(now)
 		this.move(now)
-		for(let P of this.world.players){
+		for(let P of this.world.world.players){
 			if(!P.hidden && !P.die && P.dimension === this.dimension && P.riding !== this.id) this.pushByMob(P)
 		}
-		this.world.getEntitiesNear(this.x,this.y,this.z,this.dimension, 16, nearEntityArray)
+		this.world.getEntitiesNear(this.x,this.y,this.z, 16, nearEntityArray)
 		for(let ent of nearEntityArray){
 			if(ent.pushes && ent !== this && ent.dimension === this.dimension && ent.riding !== this.id) this.pushByMob(ent)
 		}
@@ -24077,9 +23468,9 @@ class Mob extends Entity{
 				for(let i of this.drop){
 					let amount = this.dropAmount || 1
 					if(Array.isArray(amount)) amount = round(rand(amount[0],amount[1]))
-					this.world.addItems(this.x,this.y,this.z,this.dimension,0,0,0,i,true,amount,null,null,this.id)
+					this.world.addItems(this.x,this.y,this.z,0,0,0,i,true,amount,null,null,this.id)
 				}
-				if(this.holding) this.world.addItems(this.x,this.y,this.z,this.dimension,0,0,0,this.holding,true,null,null,null,this.id)
+				if(this.holding) this.world.addItems(this.x,this.y,this.z,0,0,0,this.holding,true,null,null,null,this.id)
 				if(this.experience) this.world.addEntity(new entities[entityIds.ExperienceOrb](this.x, this.y, this.z, this.experience),false,this.dimension)
 				if(this.ondie) this.ondie()
 			}
@@ -24107,7 +23498,7 @@ class Mob extends Entity{
 	}
 	updateAlways(){
 		let canDespawn = true
-		for(let p of this.world.players){
+		for(let p of this.world.world.players){
 			if(max(abs(this.x-p.x),abs(this.y-p.y),abs(this.z-p.z)) <= 48) canDespawn = false
 		}
 		if(this.name) canDespawn = false
@@ -24247,7 +23638,7 @@ entities[entities.length] = class Creeper extends Mob{
 	}
 	explode(){
 		var x = round(this.x), y = round(this.y), z = round(this.z)
-		this.world.explode(x,y,z,3, this.liquid || !this.world.settings.tntExplode, this.dimension)
+		this.world.explode(x,y,z,3, this.liquid || !this.world.world.settings.tntExplode, this.dimension)
 	}
 	update(){
 		this.mobUpdate(now)
@@ -24322,7 +23713,7 @@ entities[entities.length] = class Sheep extends Mob{
 		this.attracts = [blockIds.wheat]
 	}
 	ondie(){
-		this.world.addItems(this.x,this.y,this.z,this.dimension,0,0,0,blockIds[this.wool],true,round(rand(1,2)))
+		this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds[this.wool],true,round(rand(1,2)))
 	}
 	onclick(holding){
 		let data = blockData[holding ? holding.id : 0]
@@ -24334,7 +23725,7 @@ entities[entities.length] = class Sheep extends Mob{
 		}else if(data.shears){
 			if(!this.fur) return
 			this.fur = false
-			this.world.addItems(this.x,this.y,this.z,this.dimension,0,0,0,blockIds[this.wool],true,round(rand(1,3)))
+			this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds[this.wool],true,round(rand(1,3)))
 			//this.world.sendAllInChunk({type:"entEvent",event:"sheepFur",data:false,id:this.id},this.chunkX,this.chunkZ,this.chunkDimension)
 			this.world.sendEntityPos(this)
 			this.world.playSound(this.x,this.y,this.z, "sheep.shear")
@@ -24353,7 +23744,7 @@ entities[entities.length] = class Sheep extends Mob{
 			this.fur = true
 			//this.world.sendAllInChunk({type:"entEvent",event:"sheepFur",data:true,id:this.id},this.chunkX,this.chunkZ,this.chunkDimension)
 			this.world.sendEntityPos(this)
-			this.world.blockParticles(this.standingOn,round(this.x),floor(this.y-this.height/2)+0.5,round(this.z),30, "break",this.dimension)
+			this.world.blockParticles(this.standingOn,round(this.x),floor(this.y-this.height/2)+0.5,round(this.z),30, "break")
 		}
 	}
 	update(){
@@ -24382,7 +23773,7 @@ entities[entities.length] = class Chicken extends Mob{
 	}
 	additionalAI(){
 		if(rand() > 0.9998){
-			this.world.addItems(this.x,this.y,this.z,this.dimension,0,0,0,blockIds.egg,true)
+			this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds.egg,true)
 			this.world.playSound(this.x,this.y,this.z, "chicken.plop")
 		}
 	}
@@ -24426,7 +23817,7 @@ entities[entities.length] = class Zombie extends Mob{
 	killMessage(username){return username+" died from some small punches from a Zombie."}
 	update(){
 		this.mobUpdate(now)
-		if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0, this.dimension)*this.world.skyLight > 11){
+		if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0)*this.world.skyLight > 11){
 			this.burnTimer += 0.2
 		}
 	}
@@ -24471,7 +23862,7 @@ entities[entities.length] = class Skeleton extends Mob{
 	}
 	update(){
 		this.mobUpdate(now)
-		if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0, this.dimension)*this.world.skyLight > 11){
+		if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0)*this.world.skyLight > 11){
 			this.burnTimer += 0.2
 		}
 	}
@@ -24638,7 +24029,7 @@ entities[entities.length] = class Wolf extends Mob{
 		this.mobUpdate(now)
 		let pix = 1 / 16
 		if(!this.target && !this.tame){
-			this.world.getEntitiesNear(this.x,this.y,this.z,this.dimension, 16, nearEntityArray)
+			this.world.getEntitiesNear(this.x,this.y,this.z, 16, nearEntityArray)
 			let cd = Infinity, ctarget
 			for(let i of nearEntityArray){
 				if(i.dimension === this.dimension && i.type === this.type && i.target){
@@ -25174,7 +24565,7 @@ class Section {
 		this.world = chunk && chunk.world
 		this.type = chunk && chunk.type
 		this.edited = false
-		this.caves = this.type !== "" || !this.world.caves
+		this.caves = this.type !== "" || !this.world.world.caves
 	}
 	getBlock(x, y, z) {
 		return this.blocks[x * 256 + y * 16 + z]
@@ -25187,7 +24578,7 @@ class Section {
 	}
 	setWorldBlock(x,y,z,blockId){
 		if(x<0 || x>=16 || y<0 || y>=16 || z<0 || z>=16){
-			this.world.setBlock(x+this.x,y+this.y,z+this.z,blockId,true,true,false,false,this.type)
+			this.world.setBlock(x+this.x,y+this.y,z+this.z,blockId,true,true)
 		}else this.setBlock(x,y,z,blockId)
 	}
 	updateBlock(x, y, z, world, noOnupdate, sx,sy,sz) {
@@ -25199,7 +24590,7 @@ class Section {
 		z += this.z
 		let block = this.blocks[i * 256 + j * 16 + k]
 		
-		if(!noOnupdate) this.world.updateQueue.push(x,y,z,this.type,sx,sy,sz)
+		if(!noOnupdate) this.world.updateQueue.push(x,y,z,sx,sy,sz)
 		/*else if(!noOnupdate){
 			if((block & isState) === STAIR || (block & isState) === CORNERSTAIRIN || (block & isState) === CORNERSTAIROUT){
 				let front, back //front is lower side
@@ -25267,7 +24658,7 @@ class Section {
 						if (y > 3) {
 							for (let i = 0; i < sphere.length; i += 3) {
 								const block = y+sphere[i + 1]<10 ? blockIds.Lava :  blockIds.air
-								this.setWorldBlock(xx + sphere[i], yy + sphere[i + 1], zz + sphere[i + 2], block, true,true,false,false, this.type)
+								this.setWorldBlock(xx + sphere[i], yy + sphere[i + 1], zz + sphere[i + 2], block, true,true)
 							}
 						}
 					}
@@ -25290,7 +24681,7 @@ class Section {
 		let maxChunkX = this.x + x + 32 >> 4
 		let minChunkZ = this.z + z - 32 >> 4
 		let maxChunkZ = this.z + z + 32 >> 4
-		let chunks = this.type === "nether" ? this.world.netherChunks : (this.type === "end" ? this.world.endChunks : this.world.chunks)
+		let chunks = this.chunks
 		let block = this.getBlock(x,y,z), light = max(this.getLight(x,y,z,0)*this.world.skyLight,this.getLight(x,y,z,1))
 		let under = this.chunk.getBlock(x,y+this.y-1,z,0,true)
 		if(this.type === "" && !block && light > 10 && under === blockIds.grass){
@@ -25301,8 +24692,8 @@ class Section {
 			}
 			let amount = rand(1,6)
 			let mob = fieldMobs[floor(rand(fieldMobs.length))]
-			for(let i=0; i<amount; i++) blockData[blockIds["spawn"+mob]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),this.type,world)
-		}else if(this.type === "" && !block && light > 10 && this.world.getBiome(this.x+x,this.y+y,this.z+z,this.type) === "snowyPlains" && (under === blockIds.grass || blockData[under].name === "snow")){
+			for(let i=0; i<amount; i++) blockData[blockIds["spawn"+mob]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),world)
+		}else if(this.type === "" && !block && light > 10 && this.world.getBiome(this.x+x,this.y+y,this.z+z) === "snowyPlains" && (under === blockIds.grass || blockData[under].name === "snow")){
 			for(let x2=minChunkX; x2<=maxChunkX; x2++) for(let z2=minChunkZ; z2<=maxChunkZ; z2++){
 				if(chunks[x2] && chunks[x2][z2]) for(let [i,ent] of chunks[x2][z2].entities){
 					if(ent.mob && max(abs(this.x+x-ent.x),abs(this.y+y-ent.y),abs(this.z+z-ent.z)) < 32) return
@@ -25310,12 +24701,12 @@ class Section {
 			}
 			let amount = rand(1,6)
 			let mob = snowMobs[floor(rand(snowMobs.length))]
-			for(let i=0; i<amount; i++) blockData[blockIds["spawn"+mob]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),this.type,world)
+			for(let i=0; i<amount; i++) blockData[blockIds["spawn"+mob]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),world)
 		}else if(this.type === "" && !block && light <= 11 && under && 
 			!this.getBlock(x,y+1,z) && !this.getBlock(x+1,y,z) && !this.getBlock(x,y,z+1)
 			&& !this.getBlock(x+1,y+1,z) && !this.getBlock(x,y+1,z+1)){
 			let within = false
-			for(let p of this.world.players){
+			for(let p of this.world.world.players){
 				let dist = max(abs(this.x+x-p.x),abs(this.y+y-p.y),abs(this.z+z-p.z))
 				if(dist < 16 || p.dimension !== this.type) return
 				within = within || dist<32
@@ -25327,8 +24718,8 @@ class Section {
 				}
 			}
 			let mob = hostileMobs[floor(rand(hostileMobs.length))]
-			blockData[blockIds["spawn"+mob]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),this.type,world)
-		}else if(this.type === "nether" && !block && this.world.getBiome(this.x+x,this.y+y,this.z+z,this.type) === "netherWastes" && under === blockIds.netherrack){
+			blockData[blockIds["spawn"+mob]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),world)
+		}else if(this.type === "nether" && !block && this.world.getBiome(this.x+x,this.y+y,this.z+z) === "netherWastes" && under === blockIds.netherrack){
 			for(let x2=minChunkX; x2<=maxChunkX; x2++) for(let z2=minChunkZ; z2<=maxChunkZ; z2++){
 				if(chunks[x2] && chunks[x2][z2]) for(let [i,ent] of chunks[x2][z2].entities){
 					if(ent.mob && max(abs(this.x+x-ent.x),abs(this.y+y-ent.y),abs(this.z+z-ent.z)) < 32) return
@@ -25336,7 +24727,7 @@ class Section {
 			}
 			let amount = rand(1,6)
 			let mob = netherWasteMobs[floor(rand(netherWasteMobs.length))]
-			for(let i=0; i<amount; i++) blockData[blockIds["spawn"+mob]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),this.type,world)
+			for(let i=0; i<amount; i++) blockData[blockIds["spawn"+mob]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),world)
 		}else if(this.type === "end" && !block && blockData[under].solid){
 			for(let x2=minChunkX; x2<=maxChunkX; x2++) for(let z2=minChunkZ; z2<=maxChunkZ; z2++){
 				if(chunks[x2] && chunks[x2][z2]) for(let [i,ent] of chunks[x2][z2].entities){
@@ -25345,12 +24736,12 @@ class Section {
 			}
 			let amount = rand(1,6)
 			let mob = endMobs[floor(rand(endMobs.length))]
-			for(let i=0; i<amount; i++) blockData[blockIds["spawn"+mob]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),this.type,world)
+			for(let i=0; i<amount; i++) blockData[blockIds["spawn"+mob]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),world)
 		}
 	}
 	spawnMobs(){
 		if(!this.chunk.lit) return
-		if(this.world.usePreBeta) return this.oldSpawnMobs()
+		if(this.world.world.usePreBeta) return this.oldSpawnMobs()
 		let {world} = this
 		let x = Math.random() * 16 | 0
 		let y = Math.random() * 16 | 0
@@ -25363,7 +24754,7 @@ class Section {
 		let maxChunkX = this.x + x + 32 >> 4
 		let minChunkZ = this.z + z - 32 >> 4
 		let maxChunkZ = this.z + z + 32 >> 4
-		let chunks = this.type === "nether" ? this.world.netherChunks : (this.type === "end" ? this.world.endChunks : this.world.chunks)
+		let chunks = this.chunks
 		let light = max(this.getLight(x,y,z,0)*this.world.skyLight,this.getLight(x,y,z,1))
 		let under = this.chunk.getBlock(x,y+this.y-1,z,0,true)
 		let biome = world.getBiome(x+this.x,y+this.y,z+this.z)
@@ -25378,12 +24769,12 @@ class Section {
 			let mob = passiveMobs[floor(rand(passiveMobs.length))]
 			let amount = rand(mob[1],mob[2])
 			if(blockIds["spawn"+mob[0]]){
-				for(let i=0; i<amount; i++) blockData[blockIds["spawn"+mob[0]]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),this.type,world)
+				for(let i=0; i<amount; i++) blockData[blockIds["spawn"+mob[0]]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),world)
 			}
 		}
 		if(!light && under){
 			let within = false
-			for(let p of this.world.players){
+			for(let p of this.world.world.players){
 				let dist = max(abs(this.x+x-p.x),abs(this.y+y-p.y),abs(this.z+z-p.z))
 				if(dist < 16 || p.dimension !== this.type) return
 				within = within || dist<32
@@ -25398,7 +24789,7 @@ class Section {
 			let mob = hostileMobs && idx<hostileMobs.length ? hostileMobs[idx] : defaultHostileMobs[idx-(hostileMobs ? hostileMobs.length : 0)]
 			let amount = rand(mob[1],mob[2])
 			if(blockIds["spawn"+mob[0]]){
-				for(let i=0; i<amount; i++) blockData[blockIds["spawn"+mob[0]]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),this.type,world)
+				for(let i=0; i<amount; i++) blockData[blockIds["spawn"+mob[0]]].spawnMob(x+this.x+rand(),y+this.y,z+this.z+rand(),world)
 			}
 		}
 	}
@@ -25452,17 +24843,17 @@ class Section {
 						this.world.setBlock(x, y, z, (blockID & isCube) | (spreadTo & (~isCube)), false,false,false,false, this.type)
 					}
 				} else if (block.grow){
-					block.grow(x,y,z,this.type,this.world)
+					block.grow(x,y,z,this.world)
 				}else if(block.name === "vine" || block.name === "weepingVines"){
 					if(!this.world.getBlock(x,y-1,z)){
-						this.world.setBlock(x,y-1,z,blockID, false,false,false,false,this.type)
+						this.world.setBlock(x,y-1,z,blockID, false,false,false,false)
 					}
 				}else if(block.name === "twistingVines"){
 					let i = (rnd >> 8) + this.x
 					let j = (rnd >> 4 & 15) + this.y
 					let k = (rnd & 15) + this.z
 					if(!this.world.getBlock(x,y+1,z)){
-						this.world.setBlock(x,y+1,z,blockID, false,false,false,false,this.type)
+						this.world.setBlock(x,y+1,z,blockID, false,false,false,false)
 					}
 				}
 			}
@@ -25499,14 +24890,14 @@ class Section {
 					var tall = 0
 					var maxTall = 3
 					for(var t=0; t<maxTall; t++){
-						if(world.getBlock(x,y-t,z,this.type) === (blockIds.cactus|CACTUS)) tall++
+						if(world.getBlock(x,y-t,z) === (blockIds.cactus|CACTUS)) tall++
 						else break
 					}
 					if(tall >= maxTall) return
 					
-					var above = world.getBlock(x,y+1,z,this.type)
+					var above = world.getBlock(x,y+1,z)
 					if(blockData[above].cactusFruit){
-						if(world.getBlock(x,y+2,z,this.type)) return //the cactus fruit can't replace blocks
+						if(world.getBlock(x,y+2,z)) return //the cactus fruit can't replace blocks
 						world.setBlock(x,y+2,z, above, false,false,false,false, this.type) //move the cactus fruit up
 					}else if(above) return //there is a block so it can't grow
 					world.setBlock(x,y+1,z, blockIds.cactus|CACTUS, false,false,false,false, this.type)
@@ -25543,7 +24934,7 @@ class Section {
 					var maxTall = 16
 					let blocks = []
 					for(let t=0; t<maxTall; t++){
-						let block = world.getBlock(x,y-t,z,this.type)
+						let block = world.getBlock(x,y-t,z)
 						if(blockData[block].name === "bambooStalk"){
 							tall++
 							blocks.push(block)
@@ -25551,23 +24942,23 @@ class Section {
 					}
 					if(tall >= maxTall) return
 					
-					var above = world.getBlock(x,y+1,z,this.type)
+					var above = world.getBlock(x,y+1,z)
 					if(above) return //there is a block so it can't grow
 					world.setBlock(x,y+1,z, blockIds.bambooStalk | (tall > 3 ? STAIR : TALLCROSS), false,false,false,false, this.type)
 					if(tall > 3){
 						for(let t=0; t<tall; t++){
 							let block = blocks[t]
-							if(t === 0 && block !== (blockIds.bambooStalk | SLAB)) world.setBlock(x,y-t,z,blockIds.bambooStalk | SLAB,false,false,false,false,this.type)
-							else if(block !== blockIds.bambooStalk) world.setBlock(x,y-t,z,blockIds.bambooStalk,false,false,false,false,this.type)
+							if(t === 0 && block !== (blockIds.bambooStalk | SLAB)) world.setBlock(x,y-t,z,blockIds.bambooStalk | SLAB,false,false,false,false)
+							else if(block !== blockIds.bambooStalk) world.setBlock(x,y-t,z,blockIds.bambooStalk,false,false,false,false)
 						}
 					}else{
 						for(let t=0; t<tall; t++){
 							let block = blocks[t]
-							if(t === 0 && block !== (blockIds.bambooStalk | CROSS)) world.setBlock(x,y-t,z,blockIds.bambooStalk | CROSS,false,false,false,false,this.type)
+							if(t === 0 && block !== (blockIds.bambooStalk | CROSS)) world.setBlock(x,y-t,z,blockIds.bambooStalk | CROSS,false,false,false,false)
 						}
 					}
 				}else if(blockID === (blockIds.bambooShoot | CROSS)){
-					if(world.getBlock(x,y+1,z,this.type)) return
+					if(world.getBlock(x,y+1,z)) return
 					world.setBlock(x, y, z, blockIds.bambooStalk|CROSS, false,false,false,false, this.type)
 					world.setBlock(x, y+1, z, blockIds.bambooStalk|TALLCROSS, false,false,false,false, this.type)
 				}else if(block.name === "sugarCane"){
@@ -25575,12 +24966,12 @@ class Section {
 					var tall = 0
 					var maxTall = 3
 					for(var t=0; t<maxTall; t++){
-						if(world.getBlock(x,y-t,z,this.type) === b) tall++
+						if(world.getBlock(x,y-t,z) === b) tall++
 						else break
 					}
 					if(tall >= maxTall) return
 					
-					var above = world.getBlock(x,y+1,z,this.type)
+					var above = world.getBlock(x,y+1,z)
 					if(above) return //there is a block so it can't grow
 					world.setBlock(x,y+1,z, b, false,false,false,false, this.type)
 				}else if(blockID === blockIds.pitcherCrop){
@@ -25604,14 +24995,14 @@ class Section {
 							if(blockData[asoieuhisd].name !== "pointedDripstone") break
 						}
 						if(!blockData[asoieuhisd].solid){
-							world.setBlock(x,y2,z,blockIds.pointedDripstone|FLIP,false,false,false,false,this.type)
+							world.setBlock(x,y2,z,blockIds.pointedDripstone|FLIP,false,false,false,false)
 							let y3
 							for(y3=y2-1; y3>y2-12; y3--){
 								asoieuhisd = world.getBlock(x,y3,z)
 								if(blockData[asoieuhisd].solid) break
 							}
 							if(blockData[asoieuhisd].solid){
-								world.setBlock(x,y3+1,z,blockIds.pointedDripstone,false,false,false,false,this.type)
+								world.setBlock(x,y3+1,z,blockIds.pointedDripstone,false,false,false,false)
 							}
 						}
 					}
@@ -25620,12 +25011,12 @@ class Section {
 					if(state === CUBE || state === SLAB || state === STAIR || state === VERTICALSLAB){
 						let wall = state === STAIR || state === VERTICALSLAB
 						let wet = (
-							blockData[world.getBlock(x,y+1,z,this.type)].wet ||
-							blockData[world.getBlock(x,y-1,z,this.type)].wet ||
-							blockData[world.getBlock(x+1,y,z,this.type)].wet ||
-							blockData[world.getBlock(x-1,y,z,this.type)].wet ||
-							blockData[world.getBlock(x,y,z+1,this.type)].wet ||
-							blockData[world.getBlock(x,y,z-1,this.type)].wet
+							blockData[world.getBlock(x,y+1,z)].wet ||
+							blockData[world.getBlock(x,y-1,z)].wet ||
+							blockData[world.getBlock(x+1,y,z)].wet ||
+							blockData[world.getBlock(x-1,y,z)].wet ||
+							blockData[world.getBlock(x,y,z+1)].wet ||
+							blockData[world.getBlock(x,y,z-1)].wet
 						)
 						let newState = wall?(wet?STAIR:VERTICALSLAB):(wet?CUBE:SLAB)
 						if(newState !== state){
@@ -25646,12 +25037,12 @@ class Section {
 			}
 			if(i<40){
 				if(block.name === "fire" || block.name === "Lava"){
-					if(this.world.settings.fireSpreads) block.tick(x,y,z,this.type,this.world)
+					if(this.world.world.settings.fireSpreads) block.tick(x,y,z,this.world)
 				}else if(block.tick){
-					block.tick(block,x,y,z,this.type,this.world)
+					block.tick(block,x,y,z,this.world)
 				}
 				if(block.beacon){
-					block.update(x,y,z,this.type,this.world)
+					block.update(x,y,z,this.world)
 				}
 			}
 		}
@@ -25720,7 +25111,7 @@ function getTag(t,n,block){
 }
 
 class Chunk {
-	constructor(x, z, type, world) {
+	constructor(x, z, world) {
 		this.x = x
 		this.z = z
 		this.maxY = 0
@@ -25736,14 +25127,14 @@ class Chunk {
 		this.caves = this.type !== "" || !caves
 		this.generated = false; // Terrain
 		this.generating = false //is it currently generating?
-		this.populated = world.superflat === true || world.superflat === "void" // Trees and ores
+		this.populated = world.world.superflat === true || world.world.superflat === "void" // Trees and ores
 		this.lit = false
 		this.lazy = false
 		this.edited = false
 		this.loaded = false
-		this.type = type || ""
+		this.type = world.dimension
 		this.world = world
-		this.caves = this.type !== "" || !this.world.caves
+		this.caves = this.type !== "" || !this.world.world.caves
 		this.entities = new Map()
 		this.columnHashs = new Uint8Array(16 * 16)//used to detect when column changes
 		this.canSendClient = false
@@ -25760,7 +25151,7 @@ class Chunk {
 		if(y<0) return
 		if(this.allGenerated && !user){//used for generating trees after populations
 			user = this.world
-			this.world.sendAllInChunk({type:"setBlock", data:{x:x+this.x, y:py, z:z+this.z, block:blockID, dimension:this.type}},this.x>>4,this.z>>4,this.type)
+			this.world.sendAllInChunk({type:"setBlock", data:{x:x+this.x, y:py, z:z+this.z, block:blockID, dimension:this.type}},this.x>>4,this.z>>4)
 		}
 		if (!this.sections[y >> 4]) {
 			do {
@@ -25923,10 +25314,10 @@ class Chunk {
 	trySpread(x, y, z, level, spread, blockLight, update = false) {
 		if(y < minHeight) return
 		
-		if (this.world.getLight(x, y, z, blockLight, this.type, 1) < level) {
-			let chunk = this.world.getChunk(x,z,this.type)
-			if (blockData[this.world.getBlock(x, y, z, this.type)].transparent) {
-				this.world.setLight(x, y, z, level, blockLight, this.type)
+		if (this.world.getLight(x, y, z, blockLight, 1) < level) {
+			//let chunk = this.world.getChunk(x,z)
+			if (blockData[this.world.getBlock(x, y, z)].transparent) {
+				this.world.setLight(x, y, z, level, blockLight)
 				spread.push(x, y, z)
 			}
 		}
@@ -25953,12 +25344,12 @@ class Chunk {
 	tryUnSpread(x, y, z, level, spread, respread, blockLight) {
 		if(y < minHeight) return
 		
-		let light = this.world.getLight(x, y, z, blockLight, this.type, 1)
-		let expose = !blockLight && this.world.getLight(x, y, z, 2, this.type)
-		let trans = blockData[this.world.getBlock(x, y, z, this.type)].transparent
+		let light = this.world.getLight(x, y, z, blockLight, 1)
+		let expose = !blockLight && this.world.getLight(x, y, z, 2)
+		let trans = blockData[this.world.getBlock(x, y, z)].transparent
 		if (light === level) {
 			if (trans) {
-				this.world.setLight(x, y, z, 0, blockLight, this.type)
+				this.world.setLight(x, y, z, 0, blockLight)
 				spread.push(x, y, z)
 			}
 		} else if (light > level && !expose) {
@@ -26013,7 +25404,7 @@ class Chunk {
 		}
 	}
 	carveCaves() {
-		if(this.world.usePreBeta || this.world.superflat){
+		if(this.world.world.usePreBeta || this.world.world.superflat){
 			for (let i = (-minHeight)>>4; i < this.sections.length; i++) {
 				if (!this.sections[i].caves) {
 					this.sections[i].carveCaves()
@@ -26045,7 +25436,7 @@ class Chunk {
 			return false
 		}
 		this.generating = true
-		const {noiseProfile} = this.world
+		const {noiseProfile} = this.world.world
 		let smoothness = generator.smooth
 		let hilliness = generator.height
 		let biomeSmooth = generator.biomeSmooth
@@ -26055,7 +25446,7 @@ class Chunk {
 		//}
 		let gen = 0, floatGen = 0
 		if(this.world.customChunkGenerate && !this.world.customChunkGenerate(this)){
-		}else if(this.world.usePreBeta && this.type === "" && !this.world.superflat){
+		}else if(this.world.world.usePreBeta && this.type === "" && !this.world.world.superflat){
 		for (let i = 0; i < 16; i++) {
 			for (let k = 0; k < 16; k++) {
 				floatGen = noiseProfile.noise((trueX + i) * smoothness, (trueZ + k) * smoothness) * hilliness + generator.extra
@@ -26261,7 +25652,7 @@ class Chunk {
 					}
 				}
 			}
-		}else if(this.world.superflat === "island"){
+		}else if(this.world.world.superflat === "island"){
 			for (let i = 0; i < 16; i++) {
 				for (let k = 0; k < 16; k++) {
 					let wx = trueX + i, wz = trueZ + k
@@ -26313,13 +25704,13 @@ class Chunk {
 					this.setBlock(i, 0, k, blockIds.bedrock)
 				}
 			}
-		}else if(this.world.superflat === "void"){
+		}else if(this.world.world.superflat === "void"){
 			for (let i = 0; i < 16; i++) {
 				for (let k = 0; k < 16; k++) {
 					this.biomes[k * 16 + i] = biomeIds.void
 				}
 			}
-		}else if(this.world.superflat){
+		}else if(this.world.world.superflat){
 			for (let i = 0; i < 16; i++) {
 				for (let k = 0; k < 16; k++) {
 					this.tops[k * 16 + i] = 4;
@@ -26333,7 +25724,7 @@ class Chunk {
 				}
 			}
 		}else{
-			let {blocks,tops,biomes,minY,maxY,waterTops,caveBiomes,caveY} = await doWork({generate:true,trueX,trueZ,seed:this.world.worldSeed,fancyRivers:this.world.fancyRivers,caves:!this.caves})
+			let {blocks,tops,biomes,minY,maxY,waterTops,caveBiomes,caveY} = await doWork({generate:true,trueX,trueZ,seed:this.world.worldSeed,fancyRivers:this.world.world.fancyRivers,caves:!this.caves})
 			this.tops.set(tops)
 			this.solidTops.set(tops)
 			this.biomes = biomes
@@ -26415,16 +25806,16 @@ class Chunk {
 		for(let x=-oreSize;x<oreSize;x++){
 			for(let y=-oreSize;y<oreSize;y++){
 				for(let z=-oreSize;z<oreSize;z++){
-					let block = replace[world.getBlock(X+x,Y+y,Z+z,this.type)]
+					let block = replace[world.getBlock(X+x,Y+y,Z+z)]
 					if(block === undefined) continue
-					if(typeof block === "function") block = block(X+x,Y+y,Z+z,this.type)
+					if(typeof block === "function") block = block(X+x,Y+y,Z+z)
 					if(block === undefined) continue
 					let d=0;
 					for(let i=0; i<balls.length; i+=3){
 						d += 1/dist3(balls[i],balls[i+1],balls[i+2],x,y,z);
 					}
 					if(d>1/oreSegmentSize){
-						world.spawnBlock(X+x,Y+y,Z+z,block,this.type, true)
+						world.spawnBlock(X+x,Y+y,Z+z,block, true)
 					}
 				}
 			}
@@ -26472,10 +25863,10 @@ class Chunk {
 						place = rand & 1
 						rand >>>= 1
 						if (place) {
-							world.spawnBlock(wx + x, top - 2, wz + z, leaf, type)
+							world.spawnBlock(wx + x, top - 2, wz + z, leaf)
 						}
 					} else {
-						world.spawnBlock(wx + x, top - 2, wz + z, leaf, type)
+						world.spawnBlock(wx + x, top - 2, wz + z, leaf)
 					}
 				}
 			}
@@ -26489,10 +25880,10 @@ class Chunk {
 						place = rand & 1
 						rand >>>= 1
 						if (place) {
-							world.spawnBlock(wx + x, top - 1, wz + z, leaf, type)
+							world.spawnBlock(wx + x, top - 1, wz + z, leaf)
 						}
 					} else {
-						world.spawnBlock(wx + x, top - 1, wz + z, leaf, type)
+						world.spawnBlock(wx + x, top - 1, wz + z, leaf)
 					}
 				}
 			}
@@ -26506,20 +25897,20 @@ class Chunk {
 						place = rand & 1
 						rand >>>= 1
 						if (place) {
-							world.spawnBlock(wx + x, top, wz + z, leaf, type)
+							world.spawnBlock(wx + x, top, wz + z, leaf)
 						}
 					} else {
-						world.spawnBlock(wx + x, top, wz + z, leaf, type)
+						world.spawnBlock(wx + x, top, wz + z, leaf)
 					}
 				}
 			}
 		}
 
 		//Top leaves
-		world.spawnBlock(wx + 1, top + 1, wz, leaf, type)
-		world.spawnBlock(wx, top + 1, wz - 1, leaf, type)
-		world.spawnBlock(wx, top + 1, wz + 1, leaf, type)
-		world.spawnBlock(wx - 1, top + 1, wz, leaf, type)
+		world.spawnBlock(wx + 1, top + 1, wz, leaf)
+		world.spawnBlock(wx, top + 1, wz - 1, leaf)
+		world.spawnBlock(wx, top + 1, wz + 1, leaf)
+		world.spawnBlock(wx - 1, top + 1, wz, leaf)
 	}
 	spawnSnowSmallTree(i,ground,k,wx,wz){
 		let place
@@ -26539,14 +25930,14 @@ class Chunk {
 		this.setBlock(i, top + 2, k, snow | LAYER2)
 		
 		//Top leaves
-		world.spawnBlock(wx + 1, top + 1, wz, leaf, type)
-		world.spawnBlock(wx, top + 1, wz - 1, leaf, type)
-		world.spawnBlock(wx, top + 1, wz + 1, leaf, type)
-		world.spawnBlock(wx - 1, top + 1, wz, leaf, type)
-		world.spawnBlock(wx + 1, top + 2, wz, snow | LAYER1, type)
-		world.spawnBlock(wx, top + 2, wz - 1, snow | LAYER1, type)
-		world.spawnBlock(wx, top + 2, wz + 1, snow | LAYER1, type)
-		world.spawnBlock(wx - 1, top + 2, wz, snow | LAYER1, type)
+		world.spawnBlock(wx + 1, top + 1, wz, leaf)
+		world.spawnBlock(wx, top + 1, wz - 1, leaf)
+		world.spawnBlock(wx, top + 1, wz + 1, leaf)
+		world.spawnBlock(wx - 1, top + 1, wz, leaf)
+		world.spawnBlock(wx + 1, top + 2, wz, snow | LAYER1)
+		world.spawnBlock(wx, top + 2, wz - 1, snow | LAYER1)
+		world.spawnBlock(wx, top + 2, wz + 1, snow | LAYER1)
+		world.spawnBlock(wx - 1, top + 2, wz, snow | LAYER1)
 
 		//Bottom leaves
 		for (let x = -2; x <= 2; x++) {
@@ -26556,10 +25947,10 @@ class Chunk {
 						place = rand & 1
 						rand >>>= 1
 						if (place) {
-							world.spawnBlock(wx + x, top - 2, wz + z, leaf, type)
+							world.spawnBlock(wx + x, top - 2, wz + z, leaf)
 						}
 					} else {
-						world.spawnBlock(wx + x, top - 2, wz + z, leaf, type)
+						world.spawnBlock(wx + x, top - 2, wz + z, leaf)
 					}
 				}
 			}
@@ -26573,13 +25964,13 @@ class Chunk {
 						place = rand & 1
 						rand >>>= 1
 						if (place) {
-							world.spawnBlock(wx + x, top, wz + z, leaf, type)
-							if(rand & 2) world.spawnBlock(wx + x, top + 1, wz + z, snow | LAYER2, type)
-							else world.spawnBlock(wx + x, top + 1, wz + z, snow | LAYER1, type)
+							world.spawnBlock(wx + x, top, wz + z, leaf)
+							if(rand & 2) world.spawnBlock(wx + x, top + 1, wz + z, snow | LAYER2)
+							else world.spawnBlock(wx + x, top + 1, wz + z, snow | LAYER1)
 						}
 					} else {
-						world.spawnBlock(wx + x, top, wz + z, leaf, type)
-						world.spawnBlock(wx + x, top + 1, wz + z, snow | LAYER1, type)
+						world.spawnBlock(wx + x, top, wz + z, leaf)
+						world.spawnBlock(wx + x, top + 1, wz + z, snow | LAYER1)
 					}
 				}
 			}
@@ -26593,13 +25984,13 @@ class Chunk {
 						place = rand & 1
 						rand >>>= 1
 						if (place) {
-							world.spawnBlock(wx + x, top - 1, wz + z, leaf, type)
-							if(rand & 2) world.spawnBlock(wx + x, top, wz + z, snow | LAYER2, type)
-							else world.spawnBlock(wx + x, top, wz + z, snow | LAYER1, type)
+							world.spawnBlock(wx + x, top - 1, wz + z, leaf)
+							if(rand & 2) world.spawnBlock(wx + x, top, wz + z, snow | LAYER2)
+							else world.spawnBlock(wx + x, top, wz + z, snow | LAYER1)
 						}
 					} else {
-						world.spawnBlock(wx + x, top - 1, wz + z, leaf, type)
-						world.spawnBlock(wx + x, top, wz + z, snow | LAYER1, type)
+						world.spawnBlock(wx + x, top - 1, wz + z, leaf)
+						world.spawnBlock(wx + x, top, wz + z, snow | LAYER1)
 					}
 				}
 			}
@@ -26666,11 +26057,11 @@ class Chunk {
 						place = rand & 1
 						rand >>>= 1
 						if (place) {
-							world.spawnBlock(wx + x, top - 2, wz + z, leaf, type)
+							world.spawnBlock(wx + x, top - 2, wz + z, leaf)
 							worldGenArray.add(wx+x,top-2,wz+z,blockIds.vine)
 						}
 					} else {
-						world.spawnBlock(wx + x, top - 2, wz + z, leaf, type)
+						world.spawnBlock(wx + x, top - 2, wz + z, leaf)
 						worldGenArray.add(wx+x,top-2,wz+z,blockIds.vine)
 					}
 				}
@@ -26685,11 +26076,11 @@ class Chunk {
 						place = rand & 1
 						rand >>>= 1
 						if (place) {
-							world.spawnBlock(wx + x, top - 1, wz + z, leaf, type)
+							world.spawnBlock(wx + x, top - 1, wz + z, leaf)
 							worldGenArray.add(wx+x,top-1,wz+z,blockIds.vine)
 						}
 					} else {
-						world.spawnBlock(wx + x, top - 1, wz + z, leaf, type)
+						world.spawnBlock(wx + x, top - 1, wz + z, leaf)
 						worldGenArray.add(wx+x,top-1,wz+z,blockIds.vine)
 					}
 				}
@@ -26704,11 +26095,11 @@ class Chunk {
 						place = rand & 1
 						rand >>>= 1
 						if (place) {
-							world.spawnBlock(wx + x, top, wz + z, leaf, type)
+							world.spawnBlock(wx + x, top, wz + z, leaf)
 							worldGenArray.add(wx+x,top,wz+z,blockIds.vine)
 						}
 					} else {
-						world.spawnBlock(wx + x, top, wz + z, leaf, type)
+						world.spawnBlock(wx + x, top, wz + z, leaf)
 						worldGenArray.add(wx+x,top,wz+z,blockIds.vine)
 					}
 				}
@@ -26716,10 +26107,10 @@ class Chunk {
 		}
 
 		//Top leaves
-		world.spawnBlock(wx + 1, top + 1, wz, leaf, type)
-		world.spawnBlock(wx, top + 1, wz - 1, leaf, type)
-		world.spawnBlock(wx, top + 1, wz + 1, leaf, type)
-		world.spawnBlock(wx - 1, top + 1, wz, leaf, type)
+		world.spawnBlock(wx + 1, top + 1, wz, leaf)
+		world.spawnBlock(wx, top + 1, wz - 1, leaf)
+		world.spawnBlock(wx, top + 1, wz + 1, leaf)
+		world.spawnBlock(wx - 1, top + 1, wz, leaf)
 		worldGenArray.add(wx+1,top+1,wz,blockIds.vine)
 		worldGenArray.add(wx,top+1,wz-1,blockIds.vine)
 		worldGenArray.add(wx,top+1,wz+1,blockIds.vine)
@@ -26735,14 +26126,14 @@ class Chunk {
 		//Center
 		for (let j = ground + 1; j < top; j++) {
 			this.setBlock(i, j, k, tree)
-			world.spawnBlock(wx + 1, j, wz, tree, type)
-			world.spawnBlock(wx, j, wz + 1, tree, type)
-			world.spawnBlock(wx+1, j, wz+1, tree, type)
+			world.spawnBlock(wx + 1, j, wz, tree)
+			world.spawnBlock(wx, j, wz + 1, tree)
+			world.spawnBlock(wx+1, j, wz+1, tree)
 		}
 		this.setBlock(i, ground, k, blockIds.dirt)
-		world.spawnBlock(wx + 1, ground, wz, blockIds.dirt, type, true)
-		world.spawnBlock(wx, ground, wz + 1, blockIds.dirt, type, true)
-		world.spawnBlock(wx+1, ground, wz+1, blockIds.dirt, type, true)
+		world.spawnBlock(wx + 1, ground, wz, blockIds.dirt, true)
+		world.spawnBlock(wx, ground, wz + 1, blockIds.dirt, true)
+		world.spawnBlock(wx+1, ground, wz+1, blockIds.dirt, true)
 
 		//Messy part
 		//leaves
@@ -26753,7 +26144,7 @@ class Chunk {
 					let x = x2-0.5, z = z2-0.5
 					let n = x * x / w2 + y * y / w2 + z * z / w2
 					if (n < 1) {
-						world.spawnBlock(wx + x+1, top-4+y, wz + z+1, leaf, type)
+						world.spawnBlock(wx + x+1, top-4+y, wz + z+1, leaf)
 						worldGenArray.add(wx+x+1,top-4+y,wz+z+1,blockIds.vine)
 					}
 				}
@@ -26783,7 +26174,7 @@ class Chunk {
 			let rnd = floor(random(4))+2
 			//branch
 			for(var by=0; by<rnd; by++){
-				world.spawnBlock(wx+x, y+by, wz+z, tree, type)
+				world.spawnBlock(wx+x, y+by, wz+z, tree)
 				worldGenArray.add(wx+x,y+by,wz+z,blockIds.vine)
 				x += mx
 				z += mz
@@ -26798,7 +26189,7 @@ class Chunk {
 					for(var lz=-3; lz<3; lz++){
 						let n = lx * lx / w2 + ly * ly / w2 + lz * lz / w2
 						if (n < 1) {
-							world.spawnBlock(wx+x + lx, y+by+ly, wz+z + lz, leaf, type)
+							world.spawnBlock(wx+x + lx, y+by+ly, wz+z + lz, leaf)
 							worldGenArray.add(wx+x+lx,y+by+ly,wz+z+lz,blockIds.vine)
 						}
 					}
@@ -26830,8 +26221,8 @@ class Chunk {
 					break
 			}
 			var vh = max(floor(random(ground,vy)), ground)
-			for(; vy > vh && !world.getBlock(vx, vy, vz, type); vy --){
-				world.spawnBlock(vx,vy,vz, blockIds.vine | WALLFLAT | side, type)
+			for(; vy > vh && !world.getBlock(vx, vy, vz); vy --){
+				world.spawnBlock(vx,vy,vz, blockIds.vine | WALLFLAT | side)
 			}
 		}
 	}
@@ -26849,10 +26240,10 @@ class Chunk {
 						place = rand & 1
 						rand >>>= 1
 						if (place) {
-							world.spawnBlock(wx + x, ground+1, wz + z, leaf, type)
+							world.spawnBlock(wx + x, ground+1, wz + z, leaf)
 						}
 					} else {
-						world.spawnBlock(wx + x, ground+1, wz + z, leaf, type)
+						world.spawnBlock(wx + x, ground+1, wz + z, leaf)
 					}
 				}
 			}
@@ -26864,10 +26255,10 @@ class Chunk {
 					place = rand & 1
 					rand >>>= 1
 					if (place) {
-						world.spawnBlock(wx + x, ground+2, wz + z, leaf, type)
+						world.spawnBlock(wx + x, ground+2, wz + z, leaf)
 					}
 				} else {
-					world.spawnBlock(wx + x, ground+2, wz + z, leaf, type)
+					world.spawnBlock(wx + x, ground+2, wz + z, leaf)
 				}
 			}
 		}
@@ -26909,22 +26300,22 @@ class Chunk {
 					if(n>0.5) n += this.world.caveNoise((wx+x2)*1.5, (top+y2)*1.5, (wz+z2)*1.5)*0.5
 					if (n < 1 && n2 > 1) {
 					let thisy = top-leafRadius+2+y2
-						world.spawnBlock(wx+x2, thisy, wz+z2, leaf, type)
+						world.spawnBlock(wx+x2, thisy, wz+z2, leaf)
 						if(!world.getBlock(wx+x2, thisy-1, wz+z2)){
 							let randomValue = hash3(wx+x2, thisy, wz+z2)
-							if(randomValue<0.02) world.spawnBlock(wx+x2, thisy, wz+z2, blockIds.shroomlight, type, true)
+							if(randomValue<0.02) world.spawnBlock(wx+x2, thisy, wz+z2, blockIds.shroomlight, true)
 							if(y2<2){
 								if(randomValue>0.8){
 									let h = map(randomValue,0.8,1,1,3)
 									for(var y=0; y<h; y++){
-										world.spawnBlock(wx + x2, thisy - y - 1, wz + z2, leaf, type)
+										world.spawnBlock(wx + x2, thisy - y - 1, wz + z2, leaf)
 									}
 								}else if(randomValue>0.7 && b === "crimsonForest"){
 									let h = map(randomValue,0.7,0.8,1,5)
 									for(var y=0; y<h; y++){
-										world.spawnBlock(wx + x2, thisy - y - 1, wz + z2, blockIds.weepingVinesPlant, type)
+										world.spawnBlock(wx + x2, thisy - y - 1, wz + z2, blockIds.weepingVinesPlant)
 									}
-									world.spawnBlock(wx + x2, thisy - h - 1, wz + z2, blockIds.weepingVines, type)
+									world.spawnBlock(wx + x2, thisy - h - 1, wz + z2, blockIds.weepingVines)
 								}
 							}
 						}
@@ -26934,7 +26325,7 @@ class Chunk {
 		}
 		/*
 		//Shroomlight
-		for(var l=0; l<3; l++) world.spawnBlock(wx + random(-2, 2), top + random(-1,1), wz + random(-2,2), blockIds.shroomlight, type)
+		for(var l=0; l<3; l++) world.spawnBlock(wx + random(-2, 2), top + random(-1,1), wz + random(-2,2), blockIds.shroomlight)
 		
 		//Top leaves
 		for(var x=-1; x<2; x++){
@@ -26942,7 +26333,7 @@ class Chunk {
 				place = (x&1) && (z&1) ? rand & 1 : true
 				rand >>>= 1
 				if(place){
-					world.spawnBlock(wx + x, top + 1, wz + z, leaf, type)
+					world.spawnBlock(wx + x, top + 1, wz + z, leaf)
 				}
 			}
 		}
@@ -26953,7 +26344,7 @@ class Chunk {
 				place = (x===2 || x===-2) && (z===2 || z==-2) ? rand & 1 : true
 				rand >>>= 1
 				if(place){
-					world.spawnBlock(wx + x, top, wz + z, leaf, type)
+					world.spawnBlock(wx + x, top, wz + z, leaf)
 				}
 			}
 		}
@@ -26965,7 +26356,7 @@ class Chunk {
 				place = x===2 || x===-2 || z===2 || z==-2 ? !(rand & 1) : false
 				rand >>>= 1
 				if(place){
-					world.spawnBlock(wx + x, top - 1, wz + z, leaf, type)
+					world.spawnBlock(wx + x, top - 1, wz + z, leaf)
 				}
 			}
 		}
@@ -26979,9 +26370,9 @@ class Chunk {
 				if(place){
 					var h = rand & 4 && rand & 8 ? rand & 3 : 0
 					if(h){
-						world.spawnBlock(wx + x, top - 1, wz + z, leaf, type) //to make sure removed ones are put back
+						world.spawnBlock(wx + x, top - 1, wz + z, leaf) //to make sure removed ones are put back
 						for(var y=0; y<h; y++){
-							world.spawnBlock(wx + x, top - 2 - y, wz + z, leaf, type)
+							world.spawnBlock(wx + x, top - 2 - y, wz + z, leaf)
 						}
 					}
 				}
@@ -26998,11 +26389,11 @@ class Chunk {
 					if(place){
 						var h = (rand & 4 && rand & 8) ? (rand & (tall-2)) - 1 : 0
 						if(h){
-							world.spawnBlock(wx + x, top - 1, wz + z, leaf, type) //to make sure removed ones are put back
+							world.spawnBlock(wx + x, top - 1, wz + z, leaf) //to make sure removed ones are put back
 							for(var y=0; y<h; y++){
-								world.spawnBlock(wx + x, top - 2 - y, wz + z, blockIds.weepingVinesPlant, type)
+								world.spawnBlock(wx + x, top - 2 - y, wz + z, blockIds.weepingVinesPlant)
 							}
-							world.spawnBlock(wx + x, top - 2 - h, wz + z, blockIds.weepingVines, type)
+							world.spawnBlock(wx + x, top - 2 - h, wz + z, blockIds.weepingVines)
 						}
 					}
 				}
@@ -27032,7 +26423,7 @@ class Chunk {
 					let rot = hash3(i,b,k)*Math.PId
 					let dx = sin(rot), dz = cos(rot)
 					for(let l=0; l<4; l++){
-						world.spawnBlock(round(wx+dx*l),round(j+l*-0.5),round(wz+dz*l),blockIds.bambooLeaves,type)
+						world.spawnBlock(round(wx+dx*l),round(j+l*-0.5),round(wz+dz*l),blockIds.bambooLeaves)
 					}
 				}
 			}
@@ -27082,25 +26473,25 @@ class Chunk {
 			if(random() < 0.08){
 				dir += round(random(-1,1))
 			}
-			let prev = world.getBlock(x,y,z, type)
-			world.spawnBlock(x,y,z,blockIds.Lava,type,true)
+			let prev = world.getBlock(x,y,z)
+			world.spawnBlock(x,y,z,blockIds.Lava,true)
 			if(xp){
-				world.spawnBlock(x+1,y,z,blockIds.Lava,type,true)
+				world.spawnBlock(x+1,y,z,blockIds.Lava,true)
 			}
 			if(zp){
-				world.spawnBlock(x,y,z+1,blockIds.Lava,type,true)
+				world.spawnBlock(x,y,z+1,blockIds.Lava,true)
 			}
 			if(!prev && y>1){
 				y--
-				prev = world.getBlock(x,y,z, type)
-				world.spawnBlock(x,y,z,blockIds.Lava,type,true)
+				prev = world.getBlock(x,y,z)
+				world.spawnBlock(x,y,z,blockIds.Lava,true)
 				while(!prev && y>1){
 					y--
-					prev = world.getBlock(x,y,z, type)
-					world.spawnBlock(x,y,z,blockIds.Lava,type,true)
+					prev = world.getBlock(x,y,z)
+					world.spawnBlock(x,y,z,blockIds.Lava,true)
 				}
 			}
-			if(world.getBlock(x,y-1,z, type) === blockIds.Lava) break
+			if(world.getBlock(x,y-1,z) === blockIds.Lava) break
 		}
 	}*/
 	tempTreeBranches = []
@@ -27146,7 +26537,7 @@ class Chunk {
 				//c = cos(rx)
 				//dx = ryx*c, dy = sin(rx), dz = ryz*c
 				subLength = length-(l*l/length)
-				world.spawnBlock(round(x),round(y),round(z),log,type)
+				world.spawnBlock(round(x),round(y),round(z),log)
 				b++
 				if(depth<maxDepth && b>budSpace+budSpaceAdd*subLength){
 					b -= budSpace
@@ -27176,7 +26567,7 @@ class Chunk {
 							n += hash3(lx + x, ly + y, lz + z)*0.8
 						}
 						if (n < 1) {
-							world.spawnBlock(lx + x, ly + y, lz + z, leaf,type)
+							world.spawnBlock(lx + x, ly + y, lz + z, leaf)
 						}
 					}
 				}
@@ -27244,7 +26635,7 @@ class Chunk {
 			var z = b[2]
 			if(y >= miny+ground){
 				for(var bi=0;bi<b.length;bi+=3){
-					world.spawnBlock(b[bi],b[bi+1],b[bi+2],tree,type)
+					world.spawnBlock(b[bi],b[bi+1],b[bi+2],tree)
 					if(dying) worldGenArray.add(b[bi],b[bi+1],b[bi+2],blockIds.mossCarpet)
 				}
 			}
@@ -27265,7 +26656,7 @@ class Chunk {
 							n += this.world.caveNoise((lx + x)*3.3, (ly + y)*3.3, (lz + z)*3.3)*0.8
 						}
 						if (n < 1) {
-							world.spawnBlock(lx + x, ly + y, lz + z, leaf,type)
+							world.spawnBlock(lx + x, ly + y, lz + z, leaf)
 						}
 					}
 				}
@@ -27304,13 +26695,13 @@ class Chunk {
 		if(hasVines && random()<hasVines){
 			worldGenArray.add(wx,ground+1,wz,blockIds.vine)
 		}
-		ground = world.getTop(wx+distance*dx,wz+distance*dz,type)
+		ground = world.getTop(wx+distance*dx,wz+distance*dz)
 		for(let l=0; l<length; l++){
 			let x = wx+(distance+l)*dx, z = wz+(distance+l)*dz
-			world.spawnBlock(x,ground+1,z,sw|rot,type)
+			world.spawnBlock(x,ground+1,z,sw|rot)
 			if(rnd&1){
 				let mushroom = ((rnd>>1)&1) ? blockIds.redMushroom : blockIds.brownMushroom
-				world.spawnBlock(x,ground+2,z,mushroom,type)
+				world.spawnBlock(x,ground+2,z,mushroom)
 			}
 			rnd >>= 2
 		}
@@ -27330,10 +26721,10 @@ class Chunk {
 		this.setBlock(i, ground, k, blockIds.dirt)
 
 		//Top leaves
-		world.spawnBlock(wx + 1, topOffseted, wz, leaf, type)
-		world.spawnBlock(wx, topOffseted, wz - 1, leaf, type)
-		world.spawnBlock(wx, topOffseted, wz + 1, leaf, type)
-		world.spawnBlock(wx - 1, topOffseted, wz, leaf, type)
+		world.spawnBlock(wx + 1, topOffseted, wz, leaf)
+		world.spawnBlock(wx, topOffseted, wz - 1, leaf)
+		world.spawnBlock(wx, topOffseted, wz + 1, leaf)
+		world.spawnBlock(wx - 1, topOffseted, wz, leaf)
 		
 		for(let j=topOffseted-2, l=0; j>ground+1; j--, l++){
 			if(l > bigStart && !(l%2)){//big layer
@@ -27341,7 +26732,7 @@ class Chunk {
 					for (let z = -3; z <= 3; z++) {
 						if (x || z) {
 							if (abs(x) !== 3 || abs(z) !== 3) {
-								world.spawnBlock(wx + x, j, wz + z, leaf, type)
+								world.spawnBlock(wx + x, j, wz + z, leaf)
 							}
 						}
 					}
@@ -27351,16 +26742,16 @@ class Chunk {
 					for (let z = -2; z <= 2; z++) {
 						if (x || z) {
 							if ((x * z & 7) !== 4) {
-								world.spawnBlock(wx + x, j, wz + z, leaf, type)
+								world.spawnBlock(wx + x, j, wz + z, leaf)
 							}
 						}
 					}
 				}
 			}else{//small layer
-				world.spawnBlock(wx + 1, j, wz, leaf, type)
-				world.spawnBlock(wx, j, wz - 1, leaf, type)
-				world.spawnBlock(wx, j, wz + 1, leaf, type)
-				world.spawnBlock(wx - 1, j, wz, leaf, type)
+				world.spawnBlock(wx + 1, j, wz, leaf)
+				world.spawnBlock(wx, j, wz - 1, leaf)
+				world.spawnBlock(wx, j, wz + 1, leaf)
+				world.spawnBlock(wx - 1, j, wz, leaf)
 			}
 		}
 	}
@@ -27383,16 +26774,16 @@ class Chunk {
 					for (let z = -2; z <= 2; z++) {
 						if (x || z) {
 							if ((x * z & 7) !== 4) {
-								world.spawnBlock(wx + x, top-l, wz + z, leaf, type)
+								world.spawnBlock(wx + x, top-l, wz + z, leaf)
 							}
 						}
 					}
 				}
 			}else{
-				world.spawnBlock(wx+1, top - l, wz, leaf, type)
-				world.spawnBlock(wx-1, top - l, wz, leaf, type)
-				world.spawnBlock(wx, top - l, wz+1, leaf, type)
-				world.spawnBlock(wx, top - l, wz-1, leaf, type)
+				world.spawnBlock(wx+1, top - l, wz, leaf)
+				world.spawnBlock(wx-1, top - l, wz, leaf)
+				world.spawnBlock(wx, top - l, wz+1, leaf)
+				world.spawnBlock(wx, top - l, wz-1, leaf)
 			}
 		}
 	}
@@ -27406,30 +26797,30 @@ class Chunk {
 
 		for (let j = ground + 1; j < top; j++) {
 			this.setBlock(i, j, k, tree)
-			world.spawnBlock(wx + 1, j, wz, tree, type)
-			world.spawnBlock(wx, j, wz + 1, tree, type)
-			world.spawnBlock(wx+1, j, wz+1, tree, type)
+			world.spawnBlock(wx + 1, j, wz, tree)
+			world.spawnBlock(wx, j, wz + 1, tree)
+			world.spawnBlock(wx+1, j, wz+1, tree)
 		}
 		this.setBlock(i, ground, k, blockIds.dirt)
-		world.spawnBlock(wx + 1, ground, wz, blockIds.dirt, type, true)
-		world.spawnBlock(wx, ground, wz + 1, blockIds.dirt, type, true)
-		world.spawnBlock(wx+1, ground, wz+1, blockIds.dirt, type, true)
+		world.spawnBlock(wx + 1, ground, wz, blockIds.dirt, true)
+		world.spawnBlock(wx, ground, wz + 1, blockIds.dirt, true)
+		world.spawnBlock(wx+1, ground, wz+1, blockIds.dirt, true)
 
 		/*//Top leaves
 		this.setBlock(i, top, k, leaf)
-		world.spawnBlock(wx + 1, top, wz, leaf, type)
-		world.spawnBlock(wx, top, wz + 1, leaf, type)
-		world.spawnBlock(wx+1, top, wz+1, leaf, type)
+		world.spawnBlock(wx + 1, top, wz, leaf)
+		world.spawnBlock(wx, top, wz + 1, leaf)
+		world.spawnBlock(wx+1, top, wz+1, leaf)
 
 		//2nd layer leaves
-		world.spawnBlock(wx-1, top-1, wz, leaf, type)
-		world.spawnBlock(wx-1, top-1, wz+1, leaf, type)
-		world.spawnBlock(wx, top-1, wz-1, leaf, type)
-		world.spawnBlock(wx+1, top-1, wz-1, leaf, type)
-		world.spawnBlock(wx+2, top-1, wz, leaf, type)
-		world.spawnBlock(wx+2, top-1, wz+1, leaf, type)
-		world.spawnBlock(wx, top-1, wz+2, leaf, type)
-		world.spawnBlock(wx+1, top-1, wz+2, leaf, type)*/
+		world.spawnBlock(wx-1, top-1, wz, leaf)
+		world.spawnBlock(wx-1, top-1, wz+1, leaf)
+		world.spawnBlock(wx, top-1, wz-1, leaf)
+		world.spawnBlock(wx+1, top-1, wz-1, leaf)
+		world.spawnBlock(wx+2, top-1, wz, leaf)
+		world.spawnBlock(wx+2, top-1, wz+1, leaf)
+		world.spawnBlock(wx, top-1, wz+2, leaf)
+		world.spawnBlock(wx+1, top-1, wz+2, leaf)*/
 
 		for (let j = top+2, l=0; j > ground+4; j--, l++) {
 			let size = round(l/4 + 1)
@@ -27446,7 +26837,7 @@ class Chunk {
 					let mult = 1/Math.hypot(x,z)*2
 					n += this.world.caveNoise(wx+x*mult, (j+n)*0.5, wz+z*mult)*0.8
 					if (n < 1) {
-						world.spawnBlock(wx + x+1, j, wz + z+1, leaf, type)
+						world.spawnBlock(wx + x+1, j, wz + z+1, leaf)
 					}
 				}
 			}
@@ -27477,7 +26868,7 @@ class Chunk {
 					n += this.world.caveNoise(wx+x*mult, (j+n)*0.5, wz+z*mult)*2*noiseAmountHigh
 					if(noiseAmount>0.8) n = lerp((noiseAmount-0.8)/0.2, n,1.2)
 					if (n < 1) {
-						world.spawnBlock(wx + x, j, wz + z, leaf, type)
+						world.spawnBlock(wx + x, j, wz + z, leaf)
 					}
 				}
 			}
@@ -27495,14 +26886,14 @@ class Chunk {
 
 		for (let j = ground + 1; j < top; j++) {
 			this.setBlock(i, j, k, tree)
-			world.spawnBlock(wx + 1, j, wz, tree, type)
-			world.spawnBlock(wx, j, wz + 1, tree, type)
-			world.spawnBlock(wx+1, j, wz+1, tree, type)
+			world.spawnBlock(wx + 1, j, wz, tree)
+			world.spawnBlock(wx, j, wz + 1, tree)
+			world.spawnBlock(wx+1, j, wz+1, tree)
 		}
 		this.setBlock(i, ground, k, blockIds.dirt)
-		world.spawnBlock(wx + 1, ground, wz, blockIds.dirt, type, true)
-		world.spawnBlock(wx, ground, wz + 1, blockIds.dirt, type, true)
-		world.spawnBlock(wx+1, ground, wz+1, blockIds.dirt, type, true)
+		world.spawnBlock(wx + 1, ground, wz, blockIds.dirt, true)
+		world.spawnBlock(wx, ground, wz + 1, blockIds.dirt, true)
+		world.spawnBlock(wx+1, ground, wz+1, blockIds.dirt, true)
 
 		/*let w = 8
 		let w2 = w**2, h2 = h**2
@@ -27514,7 +26905,7 @@ class Chunk {
 						n += this.world.caveNoise((wx+x2)*2, (top+y2), (wz+z2)*2)*0.4
 					}
 					if (n < 1) {
-						world.spawnBlock(wx+x2, top+y2, wz+z2, leaf, type)
+						world.spawnBlock(wx+x2, top+y2, wz+z2, leaf)
 					}
 				}
 			}
@@ -27532,7 +26923,7 @@ class Chunk {
 					n += this.world.caveNoise((wx+x), j, (wz+z))*2.5*noiseAmount
 					if(noiseAmount>0.8) n = lerp((noiseAmount-0.8)/0.2, n,1.2)
 					if (n < 1) {
-						world.spawnBlock(wx + x+1, j, wz + z+1, leaf, type)
+						world.spawnBlock(wx + x+1, j, wz + z+1, leaf)
 					}
 				}
 			}
@@ -27569,11 +26960,11 @@ class Chunk {
 		}
 		for(let i=0; i<branch1; i++){
 			x += dx, z += dz, y++
-			world.spawnBlock(x,y,z,tree,type)
+			world.spawnBlock(x,y,z,tree)
 		}
 		if(branch1Top){
 			y++
-			world.spawnBlock(x,y,z,tree,type)
+			world.spawnBlock(x,y,z,tree)
 		}
 		let s2 = size1 ** 2
 		for(var x2=-size1; x2<size1; x2++){
@@ -27581,7 +26972,7 @@ class Chunk {
 				for(var z2=-size1; z2<size1; z2++){
 					let n = x2 * x2 / s2 + y2 * y2 / s2 + z2 * z2 / s2
 					if (n < 1) {
-						world.spawnBlock(x+x2, y-1+y2, z+z2, leaf, type)
+						world.spawnBlock(x+x2, y-1+y2, z+z2, leaf)
 					}
 				}
 			}
@@ -27598,11 +26989,11 @@ class Chunk {
 		}
 		for(let i=0; i<branch2; i++){
 			x += dx, z += dz, y++
-			world.spawnBlock(x,y,z,tree,type)
+			world.spawnBlock(x,y,z,tree)
 		}
 		if(branch2Top){
 			y++
-			world.spawnBlock(x,y,z,tree,type)
+			world.spawnBlock(x,y,z,tree)
 		}
 		s2 = size2 ** 2
 		for(var x2=-size2; x2<size2; x2++){
@@ -27610,7 +27001,7 @@ class Chunk {
 				for(var z2=-size2; z2<size2; z2++){
 					let n = x2 * x2 / s2 + y2 * y2 / s2 + z2 * z2 / s2
 					if (n < 1) {
-						world.spawnBlock(x+x2, y-1+y2, z+z2, leaf, type)
+						world.spawnBlock(x+x2, y-1+y2, z+z2, leaf)
 					}
 				}
 			}
@@ -27638,7 +27029,7 @@ class Chunk {
 				let length = (1-dy+0.25)*8
 				for(let l=0; l<length; l++){
 					x += dx, z += dz, y += dy
-					world.spawnBlock(x,round(y),z,sw|rot,type)
+					world.spawnBlock(x,round(y),z,sw|rot)
 				}
 				y = round(y)
 				for(var x2=-8; x2<8; x2++){
@@ -27646,7 +27037,7 @@ class Chunk {
 						for(var z2=-8; z2<8; z2++){
 							let n = x2 * x2 / 64 + y2 * y2 / 64 + z2 * z2 / 64
 							if (n < 1) {
-								world.spawnBlock(x+x2, y-6+y2, z+z2, leaf, type)
+								world.spawnBlock(x+x2, y-6+y2, z+z2, leaf)
 							}
 						}
 					}
@@ -27657,17 +27048,17 @@ class Chunk {
 	spawnDisk(wx,wz, replace, block, underBlock = block, radius){
 		let {type, world} = this
 		let r2 = radius**2
-		let maxY = world.getSolidTop(wx,wz,type)+10
+		let maxY = world.getSolidTop(wx,wz)+10
 		for(let x2=-radius; x2<radius; x2++){
 			for(let z2=-radius; z2<radius; z2++){
 				let n = x2 * x2 / r2 + z2 * z2 / r2
 				if (n < 1) {
-					let y = world.getSolidTop(wx+x2,wz+z2,type)
+					let y = world.getSolidTop(wx+x2,wz+z2)
 					if(y>maxY) continue
-					let blockHere = world.getBlock(wx+x2, y, wz+z2,type)
+					let blockHere = world.getBlock(wx+x2, y, wz+z2)
 					if(!replace.includes(blockHere)) continue
-					let under = block !== underBlock && world.getBlock(wx+x2, y+1, wz+z2,type)
-					world.spawnBlock(wx+x2, y, wz+z2, under ? underBlock : block, type, true)
+					let under = block !== underBlock && world.getBlock(wx+x2, y+1, wz+z2)
+					world.spawnBlock(wx+x2, y, wz+z2, under ? underBlock : block, true)
 				}
 			}
 		}
@@ -27689,7 +27080,7 @@ class Chunk {
 			for(let z=-oreW;z<oreW;z++){
 				const horizontalSubtract = ((x/oreW)**2 + (z/oreW)**2)**2
 				for(let y=oreH-1;y>=-oreH;y--){
-					if(blockData[world.getBlock(X+x,Y+y,Z+z,this.type)].solid) break //Skip to next column
+					if(blockData[world.getBlock(X+x,Y+y,Z+z)].solid) break //Skip to next column
 					const n = mapClamped(this.world.noiseProfile.noise((X+x)*oreWeirdness*4,(Y+y)*oreWeirdness*1.5,(Z+z)*oreWeirdness*4),0.1,0.7)
 					//const n2 = this.world.noiseProfile.noise((Y+y)*oreWeirdness,(Z+z)*oreWeirdness*4,(X+x)*oreWeirdness*4)
 					const subtract = ((y+oreH)/oreH/2) + horizontalSubtract//preferMiddle((y+oreH)/oreH/2, 0.1, 0,1)
@@ -27699,31 +27090,31 @@ class Chunk {
 						}else if(type === "small"){
 							block = blockIds.cobblestone
 						}else if(type === "flat"){
-							if(!world.getBlock(X+x,Y+y+1,Z+z,this.type) && this.world.caveNoise((X+x)*0.5,(Y+y)*0.5,(Z+z)*0.5) > 0.65){
+							if(!world.getBlock(X+x,Y+y+1,Z+z) && this.world.caveNoise((X+x)*0.5,(Y+y)*0.5,(Z+z)*0.5) > 0.65){
 								block = blockIds.grass
 							}else{
 								block = blockIds.limestone
 							}
 						}else{
-							if(!world.getBlock(X+x,Y+y+1,Z+z,this.type) && this.world.caveNoise((X+x)*0.25,(Y+y)*0.25,(Z+z)*0.25) > 0.6){
+							if(!world.getBlock(X+x,Y+y+1,Z+z) && this.world.caveNoise((X+x)*0.25,(Y+y)*0.25,(Z+z)*0.25) > 0.6){
 								block = blockIds.grass
 								if(random()>0.75) world.spawnBlock(X+x,Y+y+1,Z+z, blockIds.TallGrass, this.type, true)
 							}else{
 								block = blockIds.stone
 							}
 						}
-						world.spawnBlock(X+x,Y+y,Z+z,block,this.type, true)
-						//const under = world.getBlock(X+x,Y+y-1,Z+z,this.type)
+						world.spawnBlock(X+x,Y+y,Z+z,block, true)
+						//const under = world.getBlock(X+x,Y+y-1,Z+z)
 						//if(under === blockIds.grass || under === (blockIds.grass|CROSS) || under === blockIds.podzol || under === blockIds.mycelium){
-						//	world.spawnBlock(X+x,Y+y-1,Z+z,blockIds.dirt,this.type, true)
+						//	world.spawnBlock(X+x,Y+y-1,Z+z,blockIds.dirt, true)
 						//}
 						if(y === -oreH){
 							let y2 = Y+y-1, under = 0
 							if(block === blockIds.grass) block = blockIds.dirt
 							while(Y+y-y2<64 && !blockData[under].solid || under === blockIds.dirt || under === blockIds.grass || under === (blockIds.grass|CROSS) || under === blockIds.podzol || under === blockIds.mycelium){
-								world.spawnBlock(X+x,y2,Z+z,block,this.type, true)
+								world.spawnBlock(X+x,y2,Z+z,block, true)
 								y2--
-								under = world.getBlock(X+x,y2,Z+z,this.type)
+								under = world.getBlock(X+x,y2,Z+z)
 							}
 						}
 					}
@@ -27736,9 +27127,9 @@ class Chunk {
 		for(let x=-size;x<=size;x++){
 			for(let y=size;y>=-size;y--){
 				for(let z=-size;z<=size;z++){
-					let blockHere = blockData[world.getBlock(X+x,Y+y,Z+z,this.type)]
-					if(hash3(X+x,Y+y,Z+z)*((x/size)**2+(y/size)**2+(z/size)**2) < 0.5 && !blockHere.solid && !blockHere.liquid && blockData[world.getBlock(X+x,Y+y-1,Z+z,this.type)].type === "ground"){
-						world.spawnBlock(X+x,Y+y,Z+z,blocks[floor(random(blocks.length))],this.type,true)
+					let blockHere = blockData[world.getBlock(X+x,Y+y,Z+z)]
+					if(hash3(X+x,Y+y,Z+z)*((x/size)**2+(y/size)**2+(z/size)**2) < 0.5 && !blockHere.solid && !blockHere.liquid && blockData[world.getBlock(X+x,Y+y-1,Z+z)].type === "ground"){
+						world.spawnBlock(X+x,Y+y,Z+z,blocks[floor(random(blocks.length))],true)
 					}
 				}
 			}
@@ -27761,15 +27152,15 @@ class Chunk {
 			let rot = hash3(i,b,k)*Math.PId
 			let dx = sin(rot), dz = cos(rot)
 			if(tall) for(let l=0; l<6; l++){
-				world.spawnBlock(round(wx+dx*l),round(j+l*-0.5),round(wz+dz*l),leaf,type)
-				world.spawnBlock(round(wx+dx*l+1),round(j+l*-0.5),round(wz+dz*l),leaf,type)
-				world.spawnBlock(round(wx+dx*l-1),round(j+l*-0.5),round(wz+dz*l),leaf,type)
-				world.spawnBlock(round(wx+dx*l),round(j+l*-0.5),round(wz+dz*l+1),leaf,type)
-				world.spawnBlock(round(wx+dx*l),round(j+l*-0.5),round(wz+dz*l-1),leaf,type)
-				world.spawnBlock(round(wx+dx*l),round(j+l*+0.5),round(wz+dz*l),leaf,type)
-				world.spawnBlock(round(wx+dx*l),round(j+l*-1.5),round(wz+dz*l),leaf,type)
+				world.spawnBlock(round(wx+dx*l),round(j+l*-0.5),round(wz+dz*l),leaf)
+				world.spawnBlock(round(wx+dx*l+1),round(j+l*-0.5),round(wz+dz*l),leaf)
+				world.spawnBlock(round(wx+dx*l-1),round(j+l*-0.5),round(wz+dz*l),leaf)
+				world.spawnBlock(round(wx+dx*l),round(j+l*-0.5),round(wz+dz*l+1),leaf)
+				world.spawnBlock(round(wx+dx*l),round(j+l*-0.5),round(wz+dz*l-1),leaf)
+				world.spawnBlock(round(wx+dx*l),round(j+l*+0.5),round(wz+dz*l),leaf)
+				world.spawnBlock(round(wx+dx*l),round(j+l*-1.5),round(wz+dz*l),leaf)
 			}else for(let l=0; l<6; l++){
-				world.spawnBlock(round(wx+dx*l),round(j+l*-0.5),round(wz+dz*l),leaf,type)
+				world.spawnBlock(round(wx+dx*l),round(j+l*-0.5),round(wz+dz*l),leaf)
 			}
 		}
 		/*let leafBottom = round(lerp(0.25,ground,top)), leafTop = top+4
@@ -27781,7 +27172,7 @@ class Chunk {
 					let n = x2 * x2 / w2 + z2 * z2 / w2
 					n += this.world.caveNoise((wx+x2)*1.5, y*1.5, (wz+z2)*1.5)
 					if (n < 1) {
-						world.spawnBlock(wx+x2, y, wz+z2, leaf, type)
+						world.spawnBlock(wx+x2, y, wz+z2, leaf)
 					}
 				}
 			}
@@ -27799,7 +27190,7 @@ class Chunk {
 					let n = x * x / w2 + z * z / w2 + y2 * y2 / h2
 					n += this.world.caveNoise((wx+x2)*1.5, (top+y2)*1.5, (wz+z2)*1.5)*1.25
 					if (n < 1) {
-						world.spawnBlock(wx+x2, top+y2, wz+z2, leaf, type)
+						world.spawnBlock(wx+x2, top+y2, wz+z2, leaf)
 					}
 				}
 			}
@@ -27827,10 +27218,10 @@ class Chunk {
 		this.setBlock(i,ground+1,k,leaf)
 		if(sides){
 			this.setBlock(i,ground+2,k,leaf|SLAB)
-			world.spawnBlock(wx,ground+1,wz-1,leaf|VERTICALSLAB|NORTH,type)
-			world.spawnBlock(wx,ground+1,wz+1,leaf|VERTICALSLAB|SOUTH,type)
-			world.spawnBlock(wx-1,ground+1,wz,leaf|VERTICALSLAB|EAST,type)
-			world.spawnBlock(wx+1,ground+1,wz,leaf|VERTICALSLAB|WEST,type)
+			world.spawnBlock(wx,ground+1,wz-1,leaf|VERTICALSLAB|NORTH)
+			world.spawnBlock(wx,ground+1,wz+1,leaf|VERTICALSLAB|SOUTH)
+			world.spawnBlock(wx-1,ground+1,wz,leaf|VERTICALSLAB|EAST)
+			world.spawnBlock(wx+1,ground+1,wz,leaf|VERTICALSLAB|WEST)
 		}
 	}
 	spawnBush(i,ground,k,wx,wz,leafType){
@@ -27875,7 +27266,7 @@ class Chunk {
 						n += this.world.caveNoise((wx+x2)*2, (top+y2), (wz+z2)*2)*0.4
 					}
 					if (n < 1) {
-						world.spawnBlock(wx+x2, top+y2, wz+z2, leaf2 && hash3(wx+x2, top+y2, wz+z2) > 0.2 ? leaf2 : leaf, type)
+						world.spawnBlock(wx+x2, top+y2, wz+z2, leaf2 && hash3(wx+x2, top+y2, wz+z2) > 0.2 ? leaf2 : leaf)
 					}
 				}
 			}
@@ -27891,21 +27282,21 @@ class Chunk {
 			pOffX = offX, pOffZ = offZ
 			offX = round(lerp(Math.min((j-ground-1)*0.25,1),0,world.noiseProfile.generator.noise3d(wx,j*0.05,wz))*8)
 			offZ = round(lerp(Math.min((j-ground-1)*0.25,1),0,world.noiseProfile.generator.noise3d(wx,-j*0.05,wz)*8))
-			world.spawnBlock(wx+offX, j, wz+offZ, tree, type)
-			world.spawnBlock(wx + 1+offX, j, wz+offZ, tree, type)
-			world.spawnBlock(wx+offX, j, wz + 1+offZ, tree, type)
-			world.spawnBlock(wx+1+offX, j, wz+1+offZ, tree, type)
+			world.spawnBlock(wx+offX, j, wz+offZ, tree)
+			world.spawnBlock(wx + 1+offX, j, wz+offZ, tree)
+			world.spawnBlock(wx+offX, j, wz + 1+offZ, tree)
+			world.spawnBlock(wx+1+offX, j, wz+1+offZ, tree)
 			if(pOffX !== offX || pOffZ !== offZ){
-				world.spawnBlock(wx+offX, j-1, wz+offZ, tree, type)
-				world.spawnBlock(wx + 1+offX, j-1, wz+offZ, tree, type)
-				world.spawnBlock(wx+offX, j-1, wz + 1+offZ, tree, type)
-				world.spawnBlock(wx+1+offX, j-1, wz+1+offZ, tree, type)
+				world.spawnBlock(wx+offX, j-1, wz+offZ, tree)
+				world.spawnBlock(wx + 1+offX, j-1, wz+offZ, tree)
+				world.spawnBlock(wx+offX, j-1, wz + 1+offZ, tree)
+				world.spawnBlock(wx+1+offX, j-1, wz+1+offZ, tree)
 			}
 		}
-		world.spawnBlock(wx, ground, wz, blockIds.dirt, type, true)
-		world.spawnBlock(wx + 1, ground, wz, blockIds.dirt, type, true)
-		world.spawnBlock(wx, ground, wz + 1, blockIds.dirt, type, true)
-		world.spawnBlock(wx+1, ground, wz+1, blockIds.dirt, type, true)
+		world.spawnBlock(wx, ground, wz, blockIds.dirt, true)
+		world.spawnBlock(wx + 1, ground, wz, blockIds.dirt, true)
+		world.spawnBlock(wx, ground, wz + 1, blockIds.dirt, true)
+		world.spawnBlock(wx+1, ground, wz+1, blockIds.dirt, true)
 
 		let topX = wx+offX, topZ = wz+offZ
 		let branch = []
@@ -27918,7 +27309,7 @@ class Chunk {
 			branch.length = 0
 			line3D(endX,top,endZ,startX,startY,startZ,branch)
 			for(let bi=0; bi<branch.length; bi+=3){
-				world.spawnBlock(branch[bi],branch[bi+1],branch[bi+2],tree,type)
+				world.spawnBlock(branch[bi],branch[bi+1],branch[bi+2],tree)
 			}
 		}
 
@@ -27937,15 +27328,15 @@ class Chunk {
 						n += this.world.caveNoise((topX+x2)*0.4, (top+y2), (topZ+z2)*0.4)*0.4
 					}
 					if (n < 1) {
-						world.spawnBlock(topX+x2, top+y2, topZ+z2, leaf, type)
+						world.spawnBlock(topX+x2, top+y2, topZ+z2, leaf)
 						if(n>0.75 && hash3(topX+x2, top+y2, topZ+z2) > 0.75){
 							worldGenArray.add(topX+x2, top+y2, topZ+z2,blockIds.vine)
-							if(hasLight && !world.getBlock(topX+x2, top+y2-1, topZ+z2,type) && hash3(topX+x2, top+y2, topZ+z2) > 0.9){
+							if(hasLight && !world.getBlock(topX+x2, top+y2-1, topZ+z2) && hash3(topX+x2, top+y2, topZ+z2) > 0.9){
 								let length = round(random(5,12))
 								for(let l=1; l<length; l++){
-									world.spawnBlock(topX+x2, top+y2-l, topZ+z2, hash3(topX+x2, top+y2-l, topZ+z2)>0.75 ? blockIds.caveVinesPlantLit : blockIds.caveVinesPlant, type)
+									world.spawnBlock(topX+x2, top+y2-l, topZ+z2, hash3(topX+x2, top+y2-l, topZ+z2)>0.75 ? blockIds.caveVinesPlantLit : blockIds.caveVinesPlant)
 								}
-								world.spawnBlock(topX+x2, top+y2-length, topZ+z2, hash3(topX+x2, top+y2-length, topZ+z2)>0.75 ? blockIds.caveVinesLit : blockIds.caveVines, type)
+								world.spawnBlock(topX+x2, top+y2-length, topZ+z2, hash3(topX+x2, top+y2-length, topZ+z2)>0.75 ? blockIds.caveVinesLit : blockIds.caveVines)
 							}
 						}
 					}
@@ -27955,16 +27346,16 @@ class Chunk {
 	}
 	spawnHugeMushroomPiece3x3(x,y,z,dx,dz,rot,nextRot,mushroom){
 		let {type, world} = this
-		world.spawnBlock(x-dx,y,z-dz,mushroom|PANE|rot,type)
-		world.spawnBlock(x,y,z,mushroom|DOOR|rot,type)
-		world.spawnBlock(x+dx,y,z+dz,mushroom|PANE|nextRot,type)
+		world.spawnBlock(x-dx,y,z-dz,mushroom|PANE|rot)
+		world.spawnBlock(x,y,z,mushroom|DOOR|rot)
+		world.spawnBlock(x+dx,y,z+dz,mushroom|PANE|nextRot)
 
-		world.spawnBlock(x-dx,y-1,z-dz,mushroom|PORTAL|rot,type)
-		world.spawnBlock(x,y-1,z,mushroom|WALLFLAT|rot,type)
-		world.spawnBlock(x+dx,y-1,z+dz,mushroom|PORTAL|nextRot,type)
-		world.spawnBlock(x-dx,y-2,z-dz,mushroom|PORTAL|rot,type)
-		world.spawnBlock(x,y-2,z,mushroom|WALLFLAT|rot,type)
-		world.spawnBlock(x+dx,y-2,z+dz,mushroom|PORTAL|nextRot,type)
+		world.spawnBlock(x-dx,y-1,z-dz,mushroom|PORTAL|rot)
+		world.spawnBlock(x,y-1,z,mushroom|WALLFLAT|rot)
+		world.spawnBlock(x+dx,y-1,z+dz,mushroom|PORTAL|nextRot)
+		world.spawnBlock(x-dx,y-2,z-dz,mushroom|PORTAL|rot)
+		world.spawnBlock(x,y-2,z,mushroom|WALLFLAT|rot)
+		world.spawnBlock(x+dx,y-2,z+dz,mushroom|PORTAL|nextRot)
 	}
 	spawnHugeMushroom(i,ground,k,wx,wz,isBrown){
 		let {type, world} = this
@@ -27977,45 +27368,45 @@ class Chunk {
 		this.setBlock(i, ground, k, blockIds.dirt)
 		if(isBrown){//Brown mushroom (flat)
 			let mushroom = blockIds.brownMushroomBlock
-			world.spawnBlock(wx+3,top,wz-2,mushroom|PANE|EAST,type)
-			world.spawnBlock(wx+3,top,wz-1,mushroom|DOOR|EAST,type)
-			world.spawnBlock(wx+3,top,wz,mushroom|DOOR|EAST,type)
-			world.spawnBlock(wx+3,top,wz+1,mushroom|DOOR|EAST,type)
-			world.spawnBlock(wx+3,top,wz+2,mushroom|PANE|NORTH,type)
+			world.spawnBlock(wx+3,top,wz-2,mushroom|PANE|EAST)
+			world.spawnBlock(wx+3,top,wz-1,mushroom|DOOR|EAST)
+			world.spawnBlock(wx+3,top,wz,mushroom|DOOR|EAST)
+			world.spawnBlock(wx+3,top,wz+1,mushroom|DOOR|EAST)
+			world.spawnBlock(wx+3,top,wz+2,mushroom|PANE|NORTH)
 			
-			world.spawnBlock(wx+2,top,wz+3,mushroom|PANE|NORTH,type)
-			world.spawnBlock(wx+1,top,wz+3,mushroom|DOOR|NORTH,type)
-			world.spawnBlock(wx,top,wz+3,mushroom|DOOR|NORTH,type)
-			world.spawnBlock(wx-1,top,wz+3,mushroom|DOOR|NORTH,type)
-			world.spawnBlock(wx-2,top,wz+3,mushroom|PANE|WEST,type)
+			world.spawnBlock(wx+2,top,wz+3,mushroom|PANE|NORTH)
+			world.spawnBlock(wx+1,top,wz+3,mushroom|DOOR|NORTH)
+			world.spawnBlock(wx,top,wz+3,mushroom|DOOR|NORTH)
+			world.spawnBlock(wx-1,top,wz+3,mushroom|DOOR|NORTH)
+			world.spawnBlock(wx-2,top,wz+3,mushroom|PANE|WEST)
 
-			world.spawnBlock(wx-3,top,wz+2,mushroom|PANE|WEST,type)
-			world.spawnBlock(wx-3,top,wz+1,mushroom|DOOR|WEST,type)
-			world.spawnBlock(wx-3,top,wz,mushroom|DOOR|WEST,type)
-			world.spawnBlock(wx-3,top,wz-1,mushroom|DOOR|WEST,type)
-			world.spawnBlock(wx-3,top,wz-2,mushroom|PANE|SOUTH,type)
+			world.spawnBlock(wx-3,top,wz+2,mushroom|PANE|WEST)
+			world.spawnBlock(wx-3,top,wz+1,mushroom|DOOR|WEST)
+			world.spawnBlock(wx-3,top,wz,mushroom|DOOR|WEST)
+			world.spawnBlock(wx-3,top,wz-1,mushroom|DOOR|WEST)
+			world.spawnBlock(wx-3,top,wz-2,mushroom|PANE|SOUTH)
 
-			world.spawnBlock(wx-2,top,wz-3,mushroom|PANE|SOUTH,type)
-			world.spawnBlock(wx-1,top,wz-3,mushroom|DOOR|SOUTH,type)
-			world.spawnBlock(wx,top,wz-3,mushroom|DOOR|SOUTH,type)
-			world.spawnBlock(wx+1,top,wz-3,mushroom|DOOR|SOUTH,type)
-			world.spawnBlock(wx+2,top,wz-3,mushroom|PANE|EAST,type)
+			world.spawnBlock(wx-2,top,wz-3,mushroom|PANE|SOUTH)
+			world.spawnBlock(wx-1,top,wz-3,mushroom|DOOR|SOUTH)
+			world.spawnBlock(wx,top,wz-3,mushroom|DOOR|SOUTH)
+			world.spawnBlock(wx+1,top,wz-3,mushroom|DOOR|SOUTH)
+			world.spawnBlock(wx+2,top,wz-3,mushroom|PANE|EAST)
 			for(let x=-2; x<=2; x++){
 				for(let z=-2; z<=2; z++){
-					world.spawnBlock(wx+x,top,wz+z,mushroom|STAIR,type)
+					world.spawnBlock(wx+x,top,wz+z,mushroom|STAIR)
 				}
 			}
 		}else{
 			let mushroom = blockIds.redMushroomBlock
-			world.spawnBlock(wx,top,wz,mushroom|STAIR,type)
-			world.spawnBlock(wx+1,top,wz,mushroom|DOOR|EAST,type)
-			world.spawnBlock(wx-1,top,wz,mushroom|DOOR|WEST,type)
-			world.spawnBlock(wx,top,wz+1,mushroom|DOOR|NORTH,type)
-			world.spawnBlock(wx,top,wz-1,mushroom|DOOR|SOUTH,type)
-			world.spawnBlock(wx+1,top,wz-1,mushroom|PANE|EAST,type)
-			world.spawnBlock(wx-1,top,wz+1,mushroom|PANE|WEST,type)
-			world.spawnBlock(wx+1,top,wz+1,mushroom|PANE|NORTH,type)
-			world.spawnBlock(wx-1,top,wz-1,mushroom|PANE|SOUTH,type)
+			world.spawnBlock(wx,top,wz,mushroom|STAIR)
+			world.spawnBlock(wx+1,top,wz,mushroom|DOOR|EAST)
+			world.spawnBlock(wx-1,top,wz,mushroom|DOOR|WEST)
+			world.spawnBlock(wx,top,wz+1,mushroom|DOOR|NORTH)
+			world.spawnBlock(wx,top,wz-1,mushroom|DOOR|SOUTH)
+			world.spawnBlock(wx+1,top,wz-1,mushroom|PANE|EAST)
+			world.spawnBlock(wx-1,top,wz+1,mushroom|PANE|WEST)
+			world.spawnBlock(wx+1,top,wz+1,mushroom|PANE|NORTH)
+			world.spawnBlock(wx-1,top,wz-1,mushroom|PANE|SOUTH)
 			this.spawnHugeMushroomPiece3x3(wx+2,top-1,wz,0,1,EAST,NORTH,mushroom)
 			this.spawnHugeMushroomPiece3x3(wx,top-1,wz+2,-1,0,NORTH,WEST,mushroom)
 			this.spawnHugeMushroomPiece3x3(wx-2,top-1,wz,0,-1,WEST,SOUTH,mushroom)
@@ -28060,14 +27451,14 @@ class Chunk {
 				line3DConncected(wx+dx*branchLength,endY,wz+dz*branchLength,wx,startY,wz,branch)
 				let swornot = (endY-startY)/branchLength >= 1 ? tree : treeSW|rot
 				for(let bi=0; bi<branch.length; bi+=3){
-					world.spawnBlock(branch[bi],branch[bi+1],branch[bi+2],swornot,type)
+					world.spawnBlock(branch[bi],branch[bi+1],branch[bi+2],swornot)
 				}
 			}else{
 				for(let bi=0; bi<=branchLength; bi++){
-					world.spawnBlock(wx+dx*bi,startY,wz+dz*bi,treeSW|rot,type)
+					world.spawnBlock(wx+dx*bi,startY,wz+dz*bi,treeSW|rot)
 				}
 				for(let y=startY; y<endY; y++){
-					world.spawnBlock(wx+dx*branchLength,y,wz+dz*branchLength,tree,type)
+					world.spawnBlock(wx+dx*branchLength,y,wz+dz*branchLength,tree)
 				}
 			}
 		}
@@ -28081,12 +27472,12 @@ class Chunk {
 						let n = x2 * x2 / w2 + z2 * z2 / w2 + y2 * y2 / h2
 						if(n > 0.5) n += this.world.caveNoise((wx+x2)*1.5, (top+y2)*1.5, (wz+z2)*1.5)*0.5
 						if (n < 1) {
-							world.spawnBlock(x+x2, y+y2, z+z2, leaf, type)
+							world.spawnBlock(x+x2, y+y2, z+z2, leaf)
 							if(!world.getBlock(x+x2,y+y2-1,z+z2)){//hanging leaves
 								let length = round(lerp(hash3(x+x2,y+y2,z+z2),-1,1.8))
 								if(length>0){
-									world.spawnBlock(x+x2, y+y2-1, z+z2, leaf, type)
-									if(length>1) world.spawnBlock(x+x2, y+y2-2, z+z2, leaf, type)
+									world.spawnBlock(x+x2, y+y2-1, z+z2, leaf)
+									if(length>1) world.spawnBlock(x+x2, y+y2-2, z+z2, leaf)
 								}
 							}
 						}
@@ -28118,12 +27509,12 @@ class Chunk {
 						place = rand & 1
 						rand >>>= 1
 						if (place) {
-							world.spawnBlock(wx + x, top - 2, wz + z, leaf, type)
+							world.spawnBlock(wx + x, top - 2, wz + z, leaf)
 							worldGenArray.add(wx + x, top - 2, wz + z, blockIds.vine)
 							worldGenArray.add(wx + x, top - 2, wz + z, blockIds.vine)
 						}
 					} else {
-						world.spawnBlock(wx + x, top - 2, wz + z, leaf, type)
+						world.spawnBlock(wx + x, top - 2, wz + z, leaf)
 						worldGenArray.add(wx + x, top - 2, wz + z, blockIds.vine)
 						worldGenArray.add(wx + x, top - 2, wz + z, blockIds.vine)
 					}
@@ -28139,12 +27530,12 @@ class Chunk {
 						place = rand & 1
 						rand >>>= 1
 						if (place) {
-							world.spawnBlock(wx + x, top - 1, wz + z, leaf, type)
+							world.spawnBlock(wx + x, top - 1, wz + z, leaf)
 							worldGenArray.add(wx + x, top - 1, wz + z, blockIds.vine)
 							worldGenArray.add(wx + x, top - 1, wz + z, blockIds.vine)
 						}
 					} else {
-						world.spawnBlock(wx + x, top - 1, wz + z, leaf, type)
+						world.spawnBlock(wx + x, top - 1, wz + z, leaf)
 						worldGenArray.add(wx + x, top - 1, wz + z, blockIds.vine)
 						worldGenArray.add(wx + x, top - 1, wz + z, blockIds.vine)
 					}
@@ -28160,11 +27551,11 @@ class Chunk {
 						place = rand & 1
 						rand >>>= 1
 						if (place) {
-							world.spawnBlock(wx + x, top, wz + z, leaf, type)
+							world.spawnBlock(wx + x, top, wz + z, leaf)
 							worldGenArray.add(wx + x, top, wz + z, blockIds.vine)
 						}
 					} else {
-						world.spawnBlock(wx + x, top, wz + z, leaf, type)
+						world.spawnBlock(wx + x, top, wz + z, leaf)
 						worldGenArray.add(wx + x, top, wz + z, blockIds.vine)
 					}
 				}
@@ -28175,7 +27566,7 @@ class Chunk {
 		for (let x = -2; x <= 2; x++) {
 			for (let z = -2; z <= 2; z++) {
 				if ((x || z) && (abs(x) !== 2 || abs(z) !== 2)) {
-					world.spawnBlock(wx + x, top+1, wz + z, leaf, type)
+					world.spawnBlock(wx + x, top+1, wz + z, leaf)
 					worldGenArray.add(wx + x, top+1, wz + z, blockIds.vine)
 				}
 			}
@@ -28195,7 +27586,7 @@ class Chunk {
 					let n = x2 * x2 / w2 + z2 * z2 / w2 + y2 * y2 / (y2>0 ? topH : bottomH)
 					if(n > 0.5) n += this.world.caveNoise((wx+x2)*1.5, (waterHeight+y2)*1.5, (wz+z2)*1.5)*0.5
 					if (n < 1) {
-						world.spawnBlock(wx+x2, waterHeight+y2, wz+z2, ice, type)
+						world.spawnBlock(wx+x2, waterHeight+y2, wz+z2, ice)
 					}
 				}
 			}
@@ -28217,13 +27608,13 @@ class Chunk {
 			if(y > maxHeight) continue //Prevent doing extra unneeded stuff
 			dist = (ax-x)**2 + (ay-y)**2 + (az-z)**2
 			if(dist > maxDist){
-				maxHeight = min(maxHeight, world.getTop(x,z,type)) //Prevent overflow if outside cave
+				maxHeight = min(maxHeight, world.getTop(x,z)) //Prevent overflow if outside cave
 			}else{
-				if(!world.getBlock(x+1,y,z,type) && !xyArrayHas(aquiferSpreadAt,bigArray,x+1,y,z,undefined,aquiferSpreaded)) aquiferSpreadAt.push(x+1,y,z,0)
-				if(!world.getBlock(x-1,y,z,type) && !xyArrayHas(aquiferSpreadAt,bigArray,x-1,y,z,undefined,aquiferSpreaded)) aquiferSpreadAt.push(x-1,y,z,0)
-				if(!world.getBlock(x,y,z+1,type) && !xyArrayHas(aquiferSpreadAt,bigArray,x,y,z+1,undefined,aquiferSpreaded)) aquiferSpreadAt.push(x,y,z+1,0)
-				if(!world.getBlock(x,y,z-1,type) && !xyArrayHas(aquiferSpreadAt,bigArray,x,y,z-1,undefined,aquiferSpreaded)) aquiferSpreadAt.push(x,y,z-1,0)
-				if(!world.getBlock(x,y-1,z,type) && !xyArrayHas(aquiferSpreadAt,bigArray,x,y-1,z,undefined,aquiferSpreaded)) aquiferSpreadAt.push(x,y-1,z,0)
+				if(!world.getBlock(x+1,y,z) && !xyArrayHas(aquiferSpreadAt,bigArray,x+1,y,z,undefined,aquiferSpreaded)) aquiferSpreadAt.push(x+1,y,z,0)
+				if(!world.getBlock(x-1,y,z) && !xyArrayHas(aquiferSpreadAt,bigArray,x-1,y,z,undefined,aquiferSpreaded)) aquiferSpreadAt.push(x-1,y,z,0)
+				if(!world.getBlock(x,y,z+1) && !xyArrayHas(aquiferSpreadAt,bigArray,x,y,z+1,undefined,aquiferSpreaded)) aquiferSpreadAt.push(x,y,z+1,0)
+				if(!world.getBlock(x,y,z-1) && !xyArrayHas(aquiferSpreadAt,bigArray,x,y,z-1,undefined,aquiferSpreaded)) aquiferSpreadAt.push(x,y,z-1,0)
+				if(!world.getBlock(x,y-1,z) && !xyArrayHas(aquiferSpreadAt,bigArray,x,y-1,z,undefined,aquiferSpreaded)) aquiferSpreadAt.push(x,y-1,z,0)
 			}
 			bigArray[aquiferSpreaded++] = x
 			bigArray[aquiferSpreaded++] = y
@@ -28235,7 +27626,7 @@ class Chunk {
 			if(bigArray[i+1] > maxHeight) continue
 			let x = bigArray[i], y = bigArray[i+1], z = bigArray[i+2]
 			let barrier = bigArray[i+3]
-			world.spawnBlock(x,y,z,barrier?blockIds.stone:blockIds.Water,type,true)
+			world.spawnBlock(x,y,z,barrier?blockIds.stone:blockIds.Water,true)
 		}
 	}*/
 	/*spawnAmethystGeode(X,Y,Z){
@@ -28284,15 +27675,15 @@ class Chunk {
 						d += 1/dist3(balls[i],balls[i+1],balls[i+2],x,y,z);
 					}
 					if(d>0.8){
-						world.spawnBlock(X+x,Y+y,Z+z,0,this.type,true)
+						world.spawnBlock(X+x,Y+y,Z+z,0,true)
 					}else if(d>0.7){
 						let bud = random()>0.8
-						world.spawnBlock(X+x,Y+y,Z+z, bud?blockIds.buddingAmethyst:blockIds.amethystBlock,this.type,true)
+						world.spawnBlock(X+x,Y+y,Z+z, bud?blockIds.buddingAmethyst:blockIds.amethystBlock,true)
 						if(bud) buds.push(X+x,Y+y,Z+z)
 					}else if(d>0.6){
-						world.spawnBlock(X+x,Y+y,Z+z,blockIds.calcite,this.type,true)
+						world.spawnBlock(X+x,Y+y,Z+z,blockIds.calcite,true)
 					}else if(d>0.5){
-						world.spawnBlock(X+x,Y+y,Z+z,blockIds.smoothBasalt,this.type,true)
+						world.spawnBlock(X+x,Y+y,Z+z,blockIds.smoothBasalt,true)
 					}
 				}
 			}
@@ -28315,12 +27706,12 @@ class Chunk {
 					block = blockIds.largeAmethystBud
 					break
 			}
-			world.spawnBlock(x,y+1,z,block|CROSS,this.type)
-			world.spawnBlock(x,y-1,z,block|SLAB,this.type)
-			world.spawnBlock(x+1,y,z,block|WEST,this.type)
-			world.spawnBlock(x-1,y,z,block|EAST,this.type)
-			world.spawnBlock(x,y,z+1,block|SOUTH,this.type)
-			world.spawnBlock(x,y,z-1,block|NORTH,this.type)
+			world.spawnBlock(x,y+1,z,block|CROSS)
+			world.spawnBlock(x,y-1,z,block|SLAB)
+			world.spawnBlock(x+1,y,z,block|WEST)
+			world.spawnBlock(x-1,y,z,block|EAST)
+			world.spawnBlock(x,y,z+1,block|SOUTH)
+			world.spawnBlock(x,y,z-1,block|NORTH)
 		}
 	}*/
 	patches = {
@@ -28391,7 +27782,7 @@ class Chunk {
 		worldGenArray.clear() //generate extras like vines
 
 		if(this.world.customChunkPopulate && !this.world.customChunkPopulate(this)){
-		}else if((world.usePreBeta || world.superflat === "island") && type === ""){
+		}else if((world.world.usePreBeta || world.world.superflat === "island") && type === ""){
 			const flowers = this.allFlowers
 			const clayReplaceable = [blockIds.dirt, blockIds.stone, blockIds.gravel]
 			const dirtReplaceable = [blockIds.stone,blockIds.gravel]
@@ -28441,7 +27832,7 @@ class Chunk {
 								for(var z=-3; z<3; z++){
 									let n = x * x / w2 + y * y / h2 + z * z / d2
 									if (n < 1) {
-										world.spawnBlock(wx+x, ground+y, wz+z, blockIds.jungleLeaves, type)
+										world.spawnBlock(wx+x, ground+y, wz+z, blockIds.jungleLeaves)
 										worldGenArray.add(wx+x,ground+y,wz+z,blockIds.vine)
 									}
 								}
@@ -28451,7 +27842,7 @@ class Chunk {
 					}
 					
 					//flowers and vines
-					if (random() < 0.05 && this.getBlock(i, ground, k, type) === blockIds.grass) {
+					if (random() < 0.05 && this.getBlock(i, ground, k) === blockIds.grass) {
 						var rnd = random()
 						var flower
 						if(b === "jungle"){
@@ -28465,7 +27856,7 @@ class Chunk {
 								flower = blockIds.largeFern
 							}
 						}else flower = flowers[Math.round(rnd * (flowers.length - 1))]
-						world.spawnBlock(wx, ground+1, wz, flower, type);
+						world.spawnBlock(wx, ground+1, wz, flower);
 					}
 					
 					//bamboo
@@ -28572,17 +27963,17 @@ class Chunk {
 					var block = this.getBlock(i, ground, k)
 					if(random() < 0.05){
 						if(block === blockIds.crimsonNylium){
-							world.spawnBlock(wx, ground+1, wz, blockIds.crimsonRoots, type);
+							world.spawnBlock(wx, ground+1, wz, blockIds.crimsonRoots);
 						}else if(block === blockIds.warpedNylium){
-							world.spawnBlock(wx, ground+1, wz, blockIds.warpedRoots, type);
+							world.spawnBlock(wx, ground+1, wz, blockIds.warpedRoots);
 						}
 					}
 					//lava springs
-					if(random() < 0.05 && this.getBlock(i,ground,k, type) && this.type==="nether"){
+					if(random() < 0.05 && this.getBlock(i,ground,k) && this.type==="nether"){
 						let y = round(random(netherHeight))
 						if(this.getBlock(i,y,k) && !this.getBlock(i,y-1,k)){
 							this.setBlock(this.x+i,y,this.z+k,blockIds.Lava)
-							await blockData[blockIds.Lava].spawnFlow(this.x+i,y,this.z+k,type,world)
+							await blockData[blockIds.Lava].spawnFlow(this.x+i,y,this.z+k,world)
 						}
 					}
 
@@ -28604,8 +27995,8 @@ class Chunk {
 						let x = random(0, 16)
 						let y = random(10, 177)
 						let z = random(0, 16)
-						if(world.getBlock(wx+x,y,wz+z,this.type) === blockIds.netherrack && world.getBlock(wx+x,y+1,wz+z,this.type) === blockIds.netherrack && world.getBlock(wx+x,y-1,wz+z,this.type) === blockIds.netherrack){
-							world.setBlock(wx+x,y,wz+z, blockIds.netherQuartzOre, false,false,false,false,this.type)
+						if(world.getBlock(wx+x,y,wz+z) === blockIds.netherrack && world.getBlock(wx+x,y+1,wz+z) === blockIds.netherrack && world.getBlock(wx+x,y-1,wz+z) === blockIds.netherrack){
+							world.setBlock(wx+x,y,wz+z, blockIds.netherQuartzOre)
 						}
 					}
 					
@@ -28613,8 +28004,8 @@ class Chunk {
 						let x = random(0, 16)
 						let y = random(10, 177)
 						let z = random(0, 16)
-						if(world.getBlock(wx+x,y,wz+z,this.type) === blockIds.netherrack && world.getBlock(wx+x,y+1,wz+z,this.type) === blockIds.netherrack && world.getBlock(wx+x,y-1,wz+z,this.type) === blockIds.netherrack){
-							world.setBlock(wx+x,y,wz+z, blockIds.netherGoldOre, false,false,false,false,this.type)
+						if(world.getBlock(wx+x,y,wz+z) === blockIds.netherrack && world.getBlock(wx+x,y+1,wz+z) === blockIds.netherrack && world.getBlock(wx+x,y-1,wz+z) === blockIds.netherrack){
+							world.setBlock(wx+x,y,wz+z, blockIds.netherGoldOre)
 						}
 					}
 				}
@@ -28676,9 +28067,9 @@ class Chunk {
 
 				world.spawnBlock(0,top+4,0,blockIds.oakSign,"end")
 				const text = atob("QmV3YXJlIHRoZQpvbmUgdGhhdApyb2xscy4=")
-				world.setTags(0, top+4, 0, {rot:0,text,text2:text}, true, "end",true)
+				world.setTags(0, top+4, 0, {rot:0,text,text2:text}, true,true)
 			}
-		}else if(!world.usePreBeta){
+		}else if(!world.world.usePreBeta){
 			let topX, topZ, topx, topz, steepX, steepZ
 			for (let i = 0; i < 16; i++) {
 				wx = this.x + i
@@ -28687,10 +28078,10 @@ class Chunk {
 					ground = this.tops[k * 16 + i]
 					let biome = biomes[this.biomes[k * 16 + i]]
 					if(biome === "frozenPeaks" || biome === "snowySlopes" || biome === "jaggedPeaks" || biome === "windsweptHills" || biome === "windsweptGravellyHills"){
-						topX = world.getTop(wx+1,wz,type)
-						topZ = world.getTop(wx,wz+1,type)
-						topx = world.getTop(wx-1,wz,type)
-						topz = world.getTop(wx,wz-1,type)
+						topX = world.getTop(wx+1,wz)
+						topZ = world.getTop(wx,wz+1)
+						topx = world.getTop(wx-1,wz)
+						topz = world.getTop(wx,wz-1)
 						steepX = (topX-ground)-(topx-ground)
 						steepZ = (topZ-ground)-(topz-ground)
 						let steepness = sqrt(steepX*steepX+steepZ*steepZ)
@@ -29027,10 +28418,10 @@ class Chunk {
 					useRandom(1)
 					if(!underWater && ground < 64 && (under === blockIds.grass || under === blockIds.sand) && mapClamped(noiseProfile.noise(wx*0.1,5,wz*0.1),0.3,0.7) < sugarcane){
 						if(
-							world.getBlock(wx+1,ground,wz,this.type) === blockIds.Water ||
-							world.getBlock(wx-1,ground,wz,this.type) === blockIds.Water ||
-							world.getBlock(wx,ground,wz+1,this.type) === blockIds.Water ||
-							world.getBlock(wx,ground,wz-1,this.type) === blockIds.Water
+							world.getBlock(wx+1,ground,wz) === blockIds.Water ||
+							world.getBlock(wx-1,ground,wz) === blockIds.Water ||
+							world.getBlock(wx,ground,wz+1) === blockIds.Water ||
+							world.getBlock(wx,ground,wz-1) === blockIds.Water
 						){
 							let block = random() > biomeData[b][1]*0.2+0.9 ? blockIds.sugarCane|SLAB : blockIds.sugarCane|CROSS
 							this.setBlock(i,ground+1,k, block)
@@ -29050,15 +28441,15 @@ class Chunk {
 
 					if(!underWater && flowerType && blockData[under].type === "ground" && random(mapClamped(noiseProfile.noise(wx*0.1,2,wz*0.1),0.3,0.7)) > flowerDensity){
 						let f = flowerType[round(mapClamped(noiseProfile.noise(wx*flowerNoiseSize+flowerNoiseOffsetX,3,wz*flowerNoiseSize+flowerNoiseOffsetZ),0.3,0.7)*(flowerType.length-1))]
-						world.spawnBlock(wx, ground+1, wz, f, type)
+						world.spawnBlock(wx, ground+1, wz, f)
 					}
 					if((!underWater || seagrass) && grassType && blockData[under].type === "ground" && random(mapClamped(noiseProfile.noise(wx*0.1,4,wz*0.1),0.3,0.7)) > grassDensity){
 						let f = grassType[floor(random()**3*grassType.length)] //first items are more common than last items
-						world.spawnBlock(wx, ground+1, wz, f, type, seagrass)
+						world.spawnBlock(wx, ground+1, wz, f, seagrass)
 					}
 					if(!underWater && under === blockIds.grass && mapClamped(noiseProfile.noise(wx*0.1,6,wz*0.1),0.3,0.7) > 0.9){
 						if(random() > 0.5){
-							world.spawnBlock(wx, ground+1, wz, melonPatch ? blockIds.melon : blockIds.pumpkin, type)
+							world.spawnBlock(wx, ground+1, wz, melonPatch ? blockIds.melon : blockIds.pumpkin)
 							if(under === blockIds.grass || under === blockIds.mycelium) this.setBlock(i,ground,k,blockIds.dirt)
 						}
 					}
@@ -29071,11 +28462,11 @@ class Chunk {
 					if(kelp && random(mapClamped(noiseProfile.noise(wx*0.02,8,wz*0.02),0.3,0.7))>kelp){
 						let height = min(round(random(16,32)), 63-ground)
 						for(let l=0; l<height; l++){
-							world.spawnBlock(wx, ground+1+l, wz, l+1 === height ? blockIds.kelp : blockIds.kelpPlant, type,true)
+							world.spawnBlock(wx, ground+1+l, wz, l+1 === height ? blockIds.kelp : blockIds.kelpPlant,true)
 						}
 					}
 					if(lilyPad && random(256) < lilyPad && this.getBlock(i,waterHeight,k) === blockIds.Water && !this.getBlock(i,64,k)){
-						world.spawnBlock(wx, waterHeight+1, wz, blockIds.lilyPad, type)
+						world.spawnBlock(wx, waterHeight+1, wz, blockIds.lilyPad)
 					}
 					if(aboveGround === blockIds.Water && random() < (8-Math.max((60-ground)/2/*deeper water has less disks*/,0))/256){
 						let disk = waterTop ? round(random(4)) : round(random(-0.6,3)), block, underBlock, replace
@@ -29098,7 +28489,7 @@ class Chunk {
 					}
 					if(waterTop && biomeData[b][1] > 0.5 && random(256)<12){
 						let x = wx+round(random())*8-4, z = wz+round(random())*8-4
-						this.spawnRock(x,world.getTop(x,z,type),z,"mossy")
+						this.spawnRock(x,world.getTop(x,z),z,"mossy")
 					}
 					await yieldThread()
 				}
@@ -29147,9 +28538,9 @@ class Chunk {
 								this.setBlock(i,caveMax-l,k,blockIds.pointedDripstone|FLIP)
 							}
 							for(let l=1; l<h; l++){
-								blockData[blockIds.pointedDripstone].spawnUpdate(trueX+i,caveMin+l,trueZ+k,blockIds.pointedDripstone,this.world,type)
+								blockData[blockIds.pointedDripstone].spawnUpdate(trueX+i,caveMin+l,trueZ+k,blockIds.pointedDripstone,this.world)
 								if(caveMax-l <= caveMin+l) break
-								blockData[blockIds.pointedDripstone].spawnUpdate(trueX+i,caveMax-l,trueZ+k,blockIds.pointedDripstone|FLIP,this.world,type)
+								blockData[blockIds.pointedDripstone].spawnUpdate(trueX+i,caveMax-l,trueZ+k,blockIds.pointedDripstone|FLIP,this.world)
 							}
 						}
 					}else if(b === "lushCaves"){
@@ -29174,7 +28565,7 @@ class Chunk {
 							let grassType = this.patches.lushCaves
 							if(grassType && random() > 0.5){
 								let f = grassType[floor(random()**3*grassType.length)] //first items are more common than last items
-								world.spawnBlock(wx, caveMin+1, wz, f, type)
+								world.spawnBlock(wx, caveMin+1, wz, f)
 							}
 						}
 						this.setBlock(i,caveMax,k, blockIds.mossBlock)
@@ -29272,15 +28663,15 @@ class Chunk {
 				if(
 					(blockData[this.getBlock(x,y,z)].type||"").startsWith("rock") &&
 					(
-						!world.getBlock(wx+1,y,wz,this.type) ||
-						!world.getBlock(wx-1,y,wz,this.type) ||
-						!world.getBlock(wx,y,wz+1,this.type) ||
-						!world.getBlock(wx,y,wz-1,this.type)
+						!world.getBlock(wx+1,y,wz) ||
+						!world.getBlock(wx-1,y,wz) ||
+						!world.getBlock(wx,y,wz+1) ||
+						!world.getBlock(wx,y,wz-1)
 					)
 				){
 					let block = random(-16,y)<0 ? blockIds.Lava : blockIds.Water
 					this.setBlock(x,y,z,block)
-					await blockData[block].spawnFlow(wx,y,wz,type,world)
+					await blockData[block].spawnFlow(wx,y,wz,world)
 				}
 			}
 			//place snow
@@ -29304,11 +28695,11 @@ class Chunk {
 					block = this.getBlock(i,top,k)
 					if(top){
 						let times = 0
-						let minTop = max(min(world.getTop(wx+1,wz,this.type),world.getTop(wx-1,wz,this.type),world.getTop(wx,wz+1,this.type),world.getTop(wx,wz-1,this.type)), waterHeight)
-						/*while(!blockData[world.getBlock(wx+1,top,wz,this.type)].solid+
-							!blockData[world.getBlock(wx-1,top,wz,this.type)].solid+
-							!blockData[world.getBlock(wx,top,wz+1,this.type)].solid+
-							!blockData[world.getBlock(wx,top,wz-1,this.type)].solid
+						let minTop = max(min(world.getTop(wx+1,wz),world.getTop(wx-1,wz),world.getTop(wx,wz+1),world.getTop(wx,wz-1)), waterHeight)
+						/*while(!blockData[world.getBlock(wx+1,top,wz)].solid+
+							!blockData[world.getBlock(wx-1,top,wz)].solid+
+							!blockData[world.getBlock(wx,top,wz+1)].solid+
+							!blockData[world.getBlock(wx,top,wz-1)].solid
 						>2 && times<3){
 							this.setBlock(i,top,k,blockIds.air)
 							times++
@@ -29321,7 +28712,7 @@ class Chunk {
 							this.setBlock(i,minTop,k,blockIds.ice)
 						}else{
 							this.setBlock(i,minTop,k,blockIds.Water)
-							await blockData[blockIds.Water].spawnFlow(wx,minTop,wz,type,world)
+							await blockData[blockIds.Water].spawnFlow(wx,minTop,wz,world)
 						}
 					}
 				}
@@ -29357,8 +28748,8 @@ class Chunk {
 					}
 					let length = round(random(1,8))
 					for(var m=0; m<length; m++){
-						if(world.getBlock(x,y-m,z,type)) break
-						world.spawnBlock(x,y-m,z,block,type)
+						if(world.getBlock(x,y-m,z)) break
+						world.spawnBlock(x,y-m,z,block)
 					}
 				}else if(block === blockIds.cocoa){
 					switch(floor(random(3))){
@@ -29387,7 +28778,7 @@ class Chunk {
 							block = block | EAST
 							break
 					}
-					world.spawnBlock(x,y,z,block,type)
+					world.spawnBlock(x,y,z,block)
 				}else if(block === blockIds.mossCarpet){
 					block = block | VERTICALSLAB
 					switch(floor(random()*4)){
@@ -29408,14 +28799,14 @@ class Chunk {
 							block = block | EAST
 							break
 					}
-					world.spawnBlock(x,y,z,block,type)
+					world.spawnBlock(x,y,z,block)
 				}
 			}
 		}
 
 		//Structures
 		//dont use random after because generateStructureLayout calls randomSeed
-		if(trees && !world.superflat){
+		if(trees && !world.world.superflat){
 			let genStructs = []
 			for(let x = Math.floor((this.x-structureCheckDist)/structureSpacing)*structureSpacing; x <= Math.ceil((this.x+structureCheckDist)/structureSpacing)*structureSpacing; x+=structureSpacing){
 				for(let z = Math.floor((this.z-structureCheckDist)/structureSpacing)*structureSpacing; z <= Math.ceil((this.z+structureCheckDist)/structureSpacing)*structureSpacing; z+=structureSpacing){
@@ -29423,8 +28814,8 @@ class Chunk {
 					for(let s of structures){
 						i++
 						if(hash3(x,z,i)<s.chance){
-							let struct = world.structureData[x+","+z+","+type]
-							if(!struct) world.structureData[x+","+z+","+type] = struct = this.generateStructureLayout(x,z,s)
+							let struct = world.structureData[x+","+z]
+							if(!struct) world.structureData[x+","+z] = struct = this.generateStructureLayout(x,z,s)
 							genStructs.push(struct)
 							break
 						}
@@ -29442,7 +28833,7 @@ class Chunk {
 						z+d >= this.z
 					)) continue
 					if(jigsaw.onGround){
-						y = world.getTop(x+jigsaw.centerPos[0],z+jigsaw.centerPos[2],type)-jigsaw.centerPos[1]
+						y = world.getTop(x+jigsaw.centerPos[0],z+jigsaw.centerPos[2])-jigsaw.centerPos[1]
 					}
 					let {rotN, rotS, rotE, rotW} = jigsaw
 					for(let i=0;i<data.length;i+=4){
@@ -29471,7 +28862,7 @@ class Chunk {
 				}
 			}
 		}
-		/*if(trees && !world.superflat && random() > 0.96){
+		/*if(trees && !world.world.superflat && random() > 0.96){
 			let rnd = random(256)
 			let x = (rnd >> 4) + this.x
 			let z = (rnd & 15) + this.z
@@ -29680,12 +29071,12 @@ class Chunk {
 						y++
 						set = true
 					}
-					if(set) world.setBlock(x+this.x,y,z+this.z, blockIds.snow | blockMode, false,false,false,false,this.type)
+					if(set) world.setBlock(x+this.x,y,z+this.z, blockIds.snow | blockMode)
 				}
 				break weatherStuff
 			}
 		}
-		if(this.world.settings.mobSpawning){
+		if(this.world.world.settings.mobSpawning){
 			for(let s of this.sections) s.spawnMobs()
 		}
 	}
@@ -29693,11 +29084,10 @@ class Chunk {
 		if (this.loaded) {
 			return
 		}
-		const { world } = this
 		let chunkX = this.x >> 4
 		let chunkZ = this.z >> 4
 		let str = `${chunkX},${chunkZ},${this.type}`
-		let load = world.loadFrom[str]
+		let load = this.world.world.loadFrom[str]
 		if (load) {
 			let reader = new BitArrayReader(load)
 			let paletteLen = reader.read(32)
@@ -29759,7 +29149,7 @@ class Chunk {
 			let entsLen = reader.read(32)
 			for(let i=0; i<entsLen; i++){
 				let entLen = reader.read(16)
-				this.world.posEntity(reader.readToNew(entLen, true))
+				this.world.world.posEntity(reader.readToNew(entLen, true))
 			}
 			load = chunk
 
@@ -29771,7 +29161,7 @@ class Chunk {
 				if(tags) this.setTags(x,y,z,tags)
 			}
 
-			delete world.loadFrom[str]
+			delete this.world.world.loadFrom[str]
 		}
 		this.loaded = true
 	}
@@ -30127,12 +29517,12 @@ Remember to balance optimization with maintainability and readability. Sometimes
 		bab.add(entities.length,32)
 		let now = performance.now()
 		for(let i of entities){
-			let pos = this.world.getEntPos(i,now)
+			let pos = this.world.world.getEntPos(i,now)
 			bab.add(pos.bitLength,16)
 			bab.append(pos)
 		}
 		
-		this.world.loadFrom[`${this.x>>4},${this.z>>4},${this.type}`] = bab.array
+		this.world.world.loadFrom[`${this.x>>4},${this.z>>4},${this.type}`] = bab.array
 	}
 }
 
@@ -30168,60 +29558,60 @@ function doorSound(x,y,z,type,open, world){
 	world.playSound(x,y,z,i)
 }
 
-function fall(x,y,z,b,world, instant,dimension, solid = true){
-	if(!world.settings.blocksFall || world.getBlock(x,y-1,z,dimension)) return
+function fall(x,y,z,b,world, instant, solid = true){
+	if(!world.world.settings.blocksFall || world.getBlock(x,y-1,z)) return
 	if(instant){
-		world.setBlock(x,y,z, 0, false,false,false,false,dimension)
-		world.addEntity(new entities[entityIds.BlockEntity](b, x,y,z, solid),false,dimension)
+		world.setBlock(x,y,z, 0, false,false,false,false)
+		world.addEntity(new entities[entityIds.BlockEntity](b, x,y,z, solid),false)
 	}else{
 		world.setTimeout(() => {
-			if(world.getBlock(x,y-1,z,dimension)) return
+			if(world.getBlock(x,y-1,z)) return
 			
-			world.setBlock(x,y,z, 0, false,false,false,false,dimension)
-			world.addEntity(new entities[entityIds.BlockEntity](b, x,y,z, solid),false,dimension)
-		}, tickTime, x,y,z,dimension)
+			world.setBlock(x,y,z, 0, false,false,false,false)
+			world.addEntity(new entities[entityIds.BlockEntity](b, x,y,z, solid),false)
+		}, tickTime, x,y,z)
 	}
 	return true
 }
-function needsSupportingBlocks(x,y,z, b,world,dimension){ // if block under is gone, dissapear
-	if(!world.settings.blocksFall) return
-	var under = world.getBlock(x,y-1,z,dimension)
+function needsSupportingBlocks(x,y,z, b,world){ // if block under is gone, dissapear
+	if(!world.world.settings.blocksFall) return
+	var under = world.getBlock(x,y-1,z)
 	if(!under || !blockData[under].solid){
 		world.setTimeout(() => {
-			var under = world.getBlock(x,y-1,z,dimension)
+			var under = world.getBlock(x,y-1,z)
 			if(under && blockData[under].solid) return
-			world.setBlock(x,y,z, 0,false,false,false,false,dimension)
-			world.addItems(x,y,z,dimension,0,0,0,b&isCube,true)
-			world.blockParticles(b,x,y,z,30, "break",dimension)
+			world.setBlock(x,y,z, 0,false,false,false,false)
+			world.addItems(x,y,z,0,0,0,b&isCube,true)
+			world.blockParticles(b,x,y,z,30, "break")
 			world.blockSound(b, "dig", x,y,z)
-		}, tickTime, x,y,z,dimension)
+		}, tickTime, x,y,z)
 		return true
 	}
 }
-function putItemInContainer(x,y,z,dimension,id,durability,customName,lazy,world){
-	var tags = world.getTags(x,y,z,dimension)
+function putItemInContainer(x,y,z,id,durability,customName,lazy,world){
+	var tags = world.getTags(x,y,z)
 	if(typeof tags === "number") return false
 	if(!tags || !tags.contents){
-		var block = world.getBlock(x,y,z,dimension)
-		if(blockData[block].setContents) tags = blockData[block].setContents(x,y,z,dimension,world)
+		var block = world.getBlock(x,y,z)
+		if(blockData[block].setContents) tags = blockData[block].setContents(x,y,z,world)
 		else return false
 	}
 	for(var i=0; i<tags.contents.length; i++){
 		if(!tags.contents[i]){
 			tags.contents[i] = {id,amount:1,durability,customName}
-			if(!lazy) world.setTags(x,y,z,tags,false,dimension)
+			if(!lazy) world.setTags(x,y,z,tags)
 			return true
 		}else if(tags.contents[i].id === id && (!tags.contents[i].customName && !customName || tags.contents[i].customName === customName) && tags.contents[i].amount < blockData[id].stackSize){
 			tags.contents[i].amount++
-			if(!lazy) world.setTags(x,y,z,tags,false,dimension)
+			if(!lazy) world.setTags(x,y,z,tags)
 			return true
 		}
 	}
 	return false
 }
-function getContainerFullness(x,y,z,dimension,world){
-	var tags = world.getTags(x,y,z,dimension)
-	var block = world.getBlock(x,y,z,dimension)
+function getContainerFullness(x,y,z,world){
+	var tags = world.getTags(x,y,z)
+	var block = world.getBlock(x,y,z)
 	if(tags && blockData[block].name === "furnace"){
 		return (
 			(tags.input && tags.input.id && tags.input.amount / blockData[tags.input.id].stackSize || 0)
@@ -30244,8 +29634,8 @@ function getContainerFullness(x,y,z,dimension,world){
 	}
 }
 let nearEntityArray = []
-function pressurePlateHasPressure(x,y,z,dimension,world){
-	world.getEntitiesNear(x,y,z,dimension, 2, nearEntityArray)
+function pressurePlateHasPressure(x,y,z,world){
+	world.getEntitiesNear(x,y,z, 2, nearEntityArray)
 	for(var ent of nearEntityArray){
 		let w2 = ent.width/2, h2 = ent.height/2, d2 = ent.depth/2
 		if(x - 0.5 < ent.x + w2 &&
@@ -30255,7 +29645,7 @@ function pressurePlateHasPressure(x,y,z,dimension,world){
 			 z - 0.5 < ent.z + d2 &&
 			 z + 0.5 > ent.z - d2) return true
 	}
-	for(let ent of world.players){
+	for(let ent of world.world.players){
 		let w2 = ent.width/2, h2 = ent.height/2, d2 = ent.depth/2
 		if(x - 0.5 < ent.x + w2 &&
 			 x + 0.5 > ent.x - w2 &&
@@ -30290,22 +29680,22 @@ function oofSound(p){
 	p.world.sendAll({type:"playSound", data:"damage.classic_hurt", x:p.x,y:p.y,z:p.z})
 }
 function getEntityOrPlayer(id,world){
-	for(let p of world.players){
+	for(let p of world.world.players){
 		if(p.id === id) return p
 	}
-	for(let i=0; i<world.entities.length; i++){
-		if(world.entities[i].id === id){
-			return world.entities[i]
+	for(let i=0; i<world.world.entities.length; i++){
+		if(world.world.entities[i].id === id){
+			return world.world.entities[i]
 		}
 	}
 }
 function getPlayerByUsername(username2,world){
-	for(let p of world.players){
+	for(let p of world.world.players){
 		if(p.username === username2) return p
 	}
 }
 function getPlayerById(id,world){
-	for(let p of world.players){
+	for(let p of world.world.players){
 		if(p.id === id) return p
 	}
 }
@@ -30314,7 +29704,7 @@ let entPlayerCollided
 function entCollided(ent){
 	var w2 = ent.width/2, h2 = ent.height/2, d2 = ent.depth/2
 	entPlayerCollided = false
-	ent.world.getEntitiesNear(ent.x,ent.y,ent.z,ent.dimension, 2, nearEntityArray)
+	ent.world.getEntitiesNear(ent.x,ent.y,ent.z, 2, nearEntityArray)
 	for(var e of nearEntityArray){
 		if(e === ent || e.dimension !== ent.dimension) continue
 		let ew2 = e.width/2, eh2 = e.height/2, ed2 = e.depth/2
@@ -30325,7 +29715,7 @@ function entCollided(ent){
 		 ent.z - d2 < e.z + ed2 &&
 		 ent.z + d2 > e.z - ed2) return e
 	}
-	for(let e of ent.world.players){
+	for(let e of ent.world.world.players){
 		if(e === ent || e.dimension !== ent.dimension || e.hidden || e.die) continue
 		let ew2 = e.width/2, eh2 = e.height/2, ed2 = e.depth/2
 		if(ent.x - w2 < e.x + ew2 &&
@@ -30991,7 +30381,7 @@ class Quaternion{
 
 //piston extend & retract
 const pistonPushLimit = 12
-function pistonFindStickyBlocksConnectedTo(cx,cy,cz,tx,ty,tz,block,blocks,checkProp,dimension,world){
+function pistonFindStickyBlocksConnectedTo(cx,cy,cz,tx,ty,tz,block,blocks,checkProp,world){
 	//c = current position, t = direction
 	var spreadAt = [cx,cy,cz,block]
 	while(spreadAt.length){
@@ -30999,7 +30389,7 @@ function pistonFindStickyBlocksConnectedTo(cx,cy,cz,tx,ty,tz,block,blocks,checkP
 		var sy = spreadAt[1]
 		var sz = spreadAt[2]
 		var block2
-		block2 = world.getBlock(sx,sy,sz+1,dimension)
+		block2 = world.getBlock(sx,sy,sz+1)
 		if(block2 && !xyArrayHas(blocks,spreadAt,sx,sy,sz+1)){
 			if(!blockData[block2][checkProp]){
 				if(!tx && !ty && tz === 1) return false
@@ -31009,11 +30399,11 @@ function pistonFindStickyBlocksConnectedTo(cx,cy,cz,tx,ty,tz,block,blocks,checkP
 				if(blockData[block2].sticky){
 					spreadAt.push(sx,sy,sz+1,block2)
 				}else if(!(!tx && !ty && tz === -1)){
-					if(pistonFindStack(sx,sy,sz+1,tx,ty,tz,blocks,dimension,world) === false) return false
+					if(pistonFindStack(sx,sy,sz+1,tx,ty,tz,blocks,world) === false) return false
 				}
 			}
 		}
-		block2 = world.getBlock(sx,sy,sz-1,dimension)
+		block2 = world.getBlock(sx,sy,sz-1)
 		if(block2 && !xyArrayHas(blocks,spreadAt,sx,sy,sz-1)){
 			if(!blockData[block2][checkProp]){
 				if(!tx && !ty && tz === -1) return false
@@ -31023,11 +30413,11 @@ function pistonFindStickyBlocksConnectedTo(cx,cy,cz,tx,ty,tz,block,blocks,checkP
 				if(blockData[block2].sticky){
 					spreadAt.push(sx,sy,sz-1,block2)
 				}else if(!(!tx && !ty && tz === 1)){
-					if(pistonFindStack(sx,sy,sz-1,tx,ty,tz,blocks,dimension,world) === false) return false
+					if(pistonFindStack(sx,sy,sz-1,tx,ty,tz,blocks,world) === false) return false
 				}
 			}
 		}
-		block2 = world.getBlock(sx,sy+1,sz,dimension)
+		block2 = world.getBlock(sx,sy+1,sz)
 		if(block2 && !xyArrayHas(blocks,spreadAt,sx,sy+1,sz)){
 			if(!blockData[block2][checkProp]){
 				if(!tx && ty === 1 && !tz) return false
@@ -31037,11 +30427,11 @@ function pistonFindStickyBlocksConnectedTo(cx,cy,cz,tx,ty,tz,block,blocks,checkP
 				if(blockData[block2].sticky){
 					spreadAt.push(sx,sy+1,sz,block2)
 				}else if(!(!tx && ty === -1 && !tz)){
-					if(pistonFindStack(sx,sy+1,sz,tx,ty,tz,blocks,dimension,world) === false) return false
+					if(pistonFindStack(sx,sy+1,sz,tx,ty,tz,blocks,world) === false) return false
 				}
 			}
 		}
-		block2 = world.getBlock(sx,sy-1,sz,dimension)
+		block2 = world.getBlock(sx,sy-1,sz)
 		if(block2 && !xyArrayHas(blocks,spreadAt,sx,sy-1,sz)){
 			if(!blockData[block2][checkProp]){
 				if(!tx && ty === -1 && !tz) return false
@@ -31051,11 +30441,11 @@ function pistonFindStickyBlocksConnectedTo(cx,cy,cz,tx,ty,tz,block,blocks,checkP
 				if(blockData[block2].sticky){
 					spreadAt.push(sx,sy-1,sz,block2)
 				}else if(!(!tx && ty === 1 && !tz)){
-					if(pistonFindStack(sx,sy-1,sz,tx,ty,tz,blocks,dimension,world) === false) return false
+					if(pistonFindStack(sx,sy-1,sz,tx,ty,tz,blocks,world) === false) return false
 				}
 			}
 		}
-		block2 = world.getBlock(sx+1,sy,sz,dimension)
+		block2 = world.getBlock(sx+1,sy,sz)
 		if(block2 && !xyArrayHas(blocks,spreadAt,sx+1,sy,sz)){
 			if(!blockData[block2][checkProp]){
 				if(tx === 1 && !ty && !tz) return false
@@ -31065,11 +30455,11 @@ function pistonFindStickyBlocksConnectedTo(cx,cy,cz,tx,ty,tz,block,blocks,checkP
 				if(blockData[block2].sticky){
 					spreadAt.push(sx+1,sy,sz,block2)
 				}else if(!(tx === -1 && !ty && !tz)){
-					if(pistonFindStack(sx+1,sy,sz,tx,ty,tz,blocks,dimension,world) === false) return false
+					if(pistonFindStack(sx+1,sy,sz,tx,ty,tz,blocks,world) === false) return false
 				}
 			}
 		}
-		block2 = world.getBlock(sx-1,sy,sz,dimension)
+		block2 = world.getBlock(sx-1,sy,sz)
 		if(block2 && !xyArrayHas(blocks,spreadAt,sx-1,sy,sz)){
 			if(!blockData[block2][checkProp]){
 				if(tx === -1 && !ty && !tz) return false
@@ -31079,7 +30469,7 @@ function pistonFindStickyBlocksConnectedTo(cx,cy,cz,tx,ty,tz,block,blocks,checkP
 				if(blockData[block2].sticky){
 					spreadAt.push(sx-1,sy,sz,block2)
 				}else if(!(tx === 1 && !ty && !tz)){
-					if(pistonFindStack(sx-1,sy,sz,tx,ty,tz,blocks,dimension,world) === false) return false
+					if(pistonFindStack(sx-1,sy,sz,tx,ty,tz,blocks,world) === false) return false
 				}
 			}
 		}
@@ -31088,39 +30478,39 @@ function pistonFindStickyBlocksConnectedTo(cx,cy,cz,tx,ty,tz,block,blocks,checkP
 	}
 }
 win.pistonFindStickyBlocksConnectedTo = pistonFindStickyBlocksConnectedTo
-function pistonFindStack(x,y,z,tx,ty,tz,blocks,dimension,world){
+function pistonFindStack(x,y,z,tx,ty,tz,blocks,world){
 	var cx = x, cy = y, cz = z  //current position
 	for(var i=0; i<pistonPushLimit+1; i++){
 		cx += tx
 		cy += ty
 		cz += tz
-		var block = world.getBlock(cx,cy,cz,dimension)
+		var block = world.getBlock(cx,cy,cz)
 		if(block && !blockData[block].pistonPush) return false
 		if(blockData[block].sticky){
-			if(pistonFindStickyBlocksConnectedTo(cx,cy,cz,tx,ty,tz,block,blocks,"pistonPush",dimension,world) === false) return false
+			if(pistonFindStickyBlocksConnectedTo(cx,cy,cz,tx,ty,tz,block,blocks,"pistonPush",world) === false) return false
 		}
 		if(block){if(!xyArrayHas(blocks,null,cx,cy,cz)){blocks.push(cx,cy,cz,block)}}
 		else break
 	}
 }
-function getPistonPushedBlocks(x,y,z,tx,ty,tz,dimension,world){
+function getPistonPushedBlocks(x,y,z,tx,ty,tz,world){
 	var blocks = [x,y,z,0]
-	if(pistonFindStack(x,y,z,tx,ty,tz,blocks,dimension,world) === false) return false
+	if(pistonFindStack(x,y,z,tx,ty,tz,blocks,world) === false) return false
 	blocks.splice(0,4) //remove the temporary coordinates
 	if((blocks.length / 4) > pistonPushLimit) return false
 	
 	return blocks
 }
 win.getPistonPushedBlocks = getPistonPushedBlocks
-function getPistonPulledBlocks(x,y,z,tx,ty,tz,dimension,world){
+function getPistonPulledBlocks(x,y,z,tx,ty,tz,world){
 	var blocks = [x,y,z,0]
 	var cx = x+tx, cy = y+ty, cz = z+tz
 	cx += tx
 	cy += ty
 	cz += tz
-	var block = world.getBlock(cx,cy,cz,dimension)
+	var block = world.getBlock(cx,cy,cz)
 	if(blockData[block].sticky){
-		if(pistonFindStickyBlocksConnectedTo(cx,cy,cz,-tx,-ty,-tz,block,blocks,"pistonPull",dimension,world) === false) return false
+		if(pistonFindStickyBlocksConnectedTo(cx,cy,cz,-tx,-ty,-tz,block,blocks,"pistonPull",world) === false) return false
 	}
 	if(block && !xyArrayHas(blocks,null,cx,cy,cz) && blockData[block].pistonPull) blocks.push(cx,cy,cz,block)
 	
@@ -31233,45 +30623,31 @@ const worldGenArray = {
 	}
 }
 
-class World{
-	constructor({
-		trees = true, caves = true, fancyRivers = true, superflat = false,
-		preBeta, gameMode = "creative", cheats = true,
-		settings = defaultWorldSettings,
-		customChunkGenerate, customChunkPopulate
-	} = {}) {
+class World{ // aka trueWorld
+	constructor(options = {}){
+		let {
+			trees = true, caves = true, fancyRivers = true, superflat = false,
+			preBeta, gameMode = "creative", cheats = true,
+			settings = defaultWorldSettings,
+			customChunkGenerate, customChunkPopulate
+		} = options
 		this.version = version
 		this.usePreBeta = preBeta
-
-		//Initialize the world's arrays
-		this.chunks = []
-		this.netherChunks = []
-		this.endChunks = []
-		this.loaded = []
-		this.loadedNear = []
-		this.sortedChunks = []
-		this.chunkGenQueue = []
-		this.populateQueue = []
-		this.generateQueue = []
-		this.lightingQueue = []
-		this.loadQueue = []
-		this.timeoutQueue = []
-		this.updateQueue = []
-		this.loadFrom = {}
 		this.generatedChunks = 0
-		this.entities = []
+		this.loadFrom = {}
+		this[""] = new WorldDimension(this,"")
+		this["nether"] = new WorldDimension(this,"nether")
+		this["end"] = new WorldDimension(this,"end")
 		//this.resourcePacks = []
 		this.activeResourcePacks = []
 		this.ticking = false
+		this.entities = []
 		this.players = []
-		this.loadDistance = 4
-		this.loadedUpdate = true
 		this.playersInv = {}
 		this.trees = trees
 		this.caves = caves
 		this.fancyRivers = fancyRivers
 		this.superflat = superflat
-		this.structureData = {}//Structure data for temporary use while generating structure
 		this.gameMode = gameMode //game mode on join
 		this.cheats = cheats //game mode on join
 		this.spawnPoint = {
@@ -31286,6 +30662,16 @@ class World{
 		this.time = 375
 		this.skyLight = 0
 		this.settings = Object.assign({},settings)
+		this.loadDistance = 4
+		this.loaded = []
+		this.loadedNear = []
+		this.sortedChunks = []
+		this.chunkGenQueue = []
+		this.populateQueue = []
+		this.generateQueue = []
+		this.lightingQueue = []
+		this.loadQueue = []
+		this.loadedUpdate = true
 
 		this.commandNodes = []
 		/*this.commandNodes = defaultServerCommandNodes.map(r => ({...r, func:undefined}))
@@ -31372,7 +30758,8 @@ class World{
 			this.spawnPoint.y = this.superflat ? 4 : round(this.noiseProfile.noise(this.spawnPoint.x * generator.smooth, this.spawnPoint.z * generator.smooth) * generator.height) + generator.extra
 		}
 	}
-	serverChangeBlock(x,y,z,dimension,place,p,face,shift,blockMode){
+	serverChangeBlock(x,y,z,place,p,face,shift,blockMode){
+		let {dimension} = p
 		let holding = p.inventory.hotbar[p.inventory.hotbarSlot] ? p.inventory.hotbar[p.inventory.hotbarSlot].id : 0
 		let blockDat = blockData[holding], holdObj = p.inventory.hotbar[p.inventory.hotbarSlot]
 
@@ -31404,8 +30791,8 @@ class World{
 					break
 			}
 		}
-		let prevBlock = this.getBlock(x,y,z, dimension)
-		let prevTags = this.getTags(x,y,z, dimension)
+		let prevBlock = this[dimension].getBlock(x,y,z)
+		let prevTags = this[dimension].getTags(x,y,z)
 		let dnow = Date.now()
 		let breakTime
 		if(!place && p.survival){
@@ -31427,19 +30814,19 @@ class World{
 			return p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:prevBlock, dimension}})
 		}
 		if(place){//placed
-			let cblock = this.getBlock(ox,oy,oz,dimension)
+			let cblock = this[dimension].getBlock(ox,oy,oz)
 			if(blockData[cblock].onclick && !shift){
-				if(!blockData[cblock].onclick(ox,oy,oz,dimension,this,p,holdObj)){
+				if(!blockData[cblock].onclick(ox,oy,oz,this[dimension],p,holdObj)){
 					if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
 					return
 				}
 			}else if(holding && blockData[holding].shovel){
 				if(cblock === blockIds.grass || cblock === blockIds.dirt || cblock === blockIds.rootedDirt || cblock === blockIds.mycelium || cblock === blockIds.podzol){
-					this.setBlock(ox,oy,oz,blockIds.grass | TALLCROSS, false,false,false,false,p.dimension)
+					this[dimension].setBlock(ox,oy,oz,blockIds.grass | TALLCROSS)
 					holdObj.durability --
 				}
 				if(blockData[cblock].campfire){
-					this.setBlock(ox,oy,oz,blockData[cblock].id | SLAB, false,false,false,false,p.dimension)
+					this[dimension].setBlock(ox,oy,oz,blockData[cblock].id | SLAB)
 					holdObj.durability --
 				}
 				return
@@ -31448,46 +30835,46 @@ class World{
 				name = name[0].toUpperCase() + name.substring(1)
 				name = "stripped"+name
 				if(blockIds[name]){
-					this.setBlock(ox,oy,oz,blockIds[name], p.dimension)
+					this[dimension].setBlock(ox,oy,oz,blockIds[name])
 					holdObj.durability --
 				}
 				return
 			}else if(holding && cblock && blockData[holding].hoe){
-				if((blockData[cblock].name === "grass" || cblock === blockIds.dirt) && !this.getBlock(ox,oy+1,oz)){
-					this.setBlock(ox,oy,oz,blockIds.farmland, false,false,false,false,p.dimension)
+				if((blockData[cblock].name === "grass" || cblock === blockIds.dirt) && !this[dimension].getBlock(ox,oy+1,oz)){
+					this[dimension].setBlock(ox,oy,oz,blockIds.farmland)
 					holdObj.durability --
 				}
 				if(cblock === blockIds.rootedDirt){
-					this.setBlock(ox,oy,oz,blockIds.dirt, false,false,false,false,p.dimension)
-					this.addItems(ox, oy+0.5, oz,p.dimension, 0, 0, 0, blockIds.hangingRoots, true)
+					this[dimension].setBlock(ox,oy,oz,blockIds.dirt)
+					this[dimension].addItems(ox, oy+0.5, oz, 0, 0, 0, blockIds.hangingRoots, true)
 					holdObj.durability --
 				}
 				return
 			}else if(holding && cblock && blockData[holding].shears){
 				if(cblock === blockIds.pumpkin){
-					this.setBlock(ox,oy,oz,blockIds.carvedPumpkin, false,false,false,false,p.dimension)
-					this.addItems(ox, oy+0.5, oz,p.dimension, 0, 0, 0, blockIds.pumpkinSeeds, true, 4)
+					this[dimension].setBlock(ox,oy,oz,blockIds.carvedPumpkin)
+					this[dimension].addItems(ox, oy+0.5, oz, 0, 0, 0, blockIds.pumpkinSeeds, true, 4)
 					holdObj.durability --
 				}
 				return
 			}else if(holding && cblock && blockData[holding].name === "eyeOfEnder" && blockData[cblock].name === "endPortalFrame"){
-				this.setBlock(ox,oy,oz,cblock | SLAB, false,false,false,false,p.dimension)
-				blockData[cblock].eyeplace(ox,oy,oz,p.dimension,this)
-				this.blockSound(holding, "place", ox,oy,oz)
+				this[dimension].setBlock(ox,oy,oz,cblock | SLAB)
+				blockData[cblock].eyeplace(ox,oy,oz,this[dimension])
+				this[dimension].blockSound(holding, "place", ox,oy,oz)
 				return
 			}else if(holding && cblock && blockData[holding].flowerbed && blockData[holding].id === blockData[cblock].id){
-				blockData[cblock].addPetal(ox,oy,oz,dimension,this)
+				blockData[cblock].addPetal(ox,oy,oz,this[dimension])
 				return
 			}
 			if(blockDat.serveronuse && (blockDat.useAnywhere || cblock)){
-				let cont = blockDat.serveronuse(ox,oy,oz,cblock,dimension,this,face,holdObj,p)
+				let cont = blockDat.serveronuse(ox,oy,oz,cblock,this[dimension],face,holdObj,p)
 				if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
 				if(!cont) return
 			}
 		}
 		if(place){
 			if(!holding || blockDat.item) return
-			let under = this.getBlock(x,y-1,z, dimension)
+			let under = this[dimension].getBlock(x,y-1,z)
       let onPot = !side && blockData[under] && blockData[under].pot
       if(blockData[holding].potCross && onPot){
         blockMode = POTCROSS
@@ -31517,7 +30904,7 @@ class World{
         if(side) blockMode = SLAB
       }
       if(blockData[holding].lantern){
-        if(this.getBlock(x,y+1,z, dimension)){
+        if(this[dimension].getBlock(x,y+1,z)){
           blockMode = LANTERNHANG
         }else{
           blockMode = LANTERN
@@ -31620,7 +31007,7 @@ class World{
         block = blockData[holding].swId
       }
       if(blockData[holding].layers){
-        let b = this.getBlock(ox,oy,oz,dimension)
+        let b = this[dimension].getBlock(ox,oy,oz)
         let layer = 0
 				let state = b&isState
         if(state === LAYER1) layer = 1
@@ -31632,7 +31019,7 @@ class World{
         if(state === LAYER7) layer = 7
         if(state === LAYER8) layer = 8
         if(((b & isCube) === (holding & isCube)) && layer > 0 && layer < 8){
-					p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:this.getBlock(x,y,z, dimension), dimension}})
+					p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:this[dimension].getBlock(x,y,z), dimension}})
           x = ox, y = oy, z = oz
           layer ++
           switch(layer){
@@ -31714,34 +31101,34 @@ class World{
 			}
 			p.breakStart = dnow
 		}
-		let worked = this.setBlock(x, y, z, place ? holding : 0, false,false,false,false,dimension)
+		let worked = this[dimension].setBlock(x, y, z, place ? holding : 0)
 		if(worked === false) return p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:prevBlock, dimension}})
 		
 		if(drop){
 			if(Array.isArray(drop)){//drop multiple items
 				for(let d of drop){
 					if(typeof d === "string") d = blockIds[d]
-					this.addItems(x, y, z,dimension, 0, 0, 0, d, true, dropAmount,null,null,p.id)
+					this[dimension].addItems(x, y, z, 0, 0, 0, d, true, dropAmount,null,null,p.id)
 				}
 			}else{
-				this.addItems(x, y, z,dimension, 0, 0, 0, drop, true, dropAmount,null,null,p.id)
+				this[dimension].addItems(x, y, z, 0, 0, 0, drop, true, dropAmount,null,null,p.id)
 			}
 		}
 		if(place){
-			if(blockData[holding].onplace) blockData[holding].onplace(x,y,z,dimension,p,this)
+			if(blockData[holding].onplace) blockData[holding].onplace(x,y,z,p,this[dimension])
 			if(p.survival) holdObj.amount--
 			if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
 		}else{
-			this.blockParticles(prevBlock,x,y,z,30, "break",dimension)
+			this[dimension].blockParticles(prevBlock,x,y,z,30, "break")
 			if(blockData[prevBlock].onbreak){
-				blockData[prevBlock].onbreak(x,y,z, prevBlock, prevTags,dimension,this)
+				blockData[prevBlock].onbreak(x,y,z, prevBlock, prevTags,this[dimension])
 			}
-			this.blockSound(prevBlock, "dig", x, y, z)
-			if(p.survival && blockData[prevBlock].experience) this.addEntity(new entities[entityIds.ExperienceOrb](x, y, z, blockData[prevBlock].experience),false,dimension)
+			this[dimension].blockSound(prevBlock, "dig", x, y, z)
+			if(p.survival && blockData[prevBlock].experience) this[dimension].addEntity(new entities[entityIds.ExperienceOrb](x, y, z, blockData[prevBlock].experience))
 		}
 	}
 	entInteract(id,hit,cooldown,p){
-		let ent = getEntityOrPlayer(id,this)
+		let ent = getEntityOrPlayer(id,this[p.dimension])
 		let holdObj = p.inventory.hotbar[p.inventory.hotbarSlot]
 		let block = blockData[holdObj ? holdObj.id : 0]
 		if(hit){
@@ -31785,605 +31172,7 @@ class World{
 		}
 		if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
 	}
-	blockParticles(block,x,y,z,amount, type, dimension, dir, remote){
-    if(!remote) this.sendAll({
-      type:"particles", particleType:"blockParticles",
-      x,y,z,amount,dimension,data:{block,thisType:type,dir}
-    })
-  }
-	explode(x,y,z, r, type, dimension){
-		/*world.setBlock(x,y,z,blockIds.air);
-		for(var i=radius; i>0; i--){
-			sphereoidAt(x,y,z,i,i,i, blockIds.air)
-		}*/
-		//ball(x,y,z,r,r,r,0)
-		if(!type)this.setBlock(x,y,z, 0, false,false,false,false,dimension)
-		else if(type === "original") this.setBlock(x,y,z, this.getOriginalBlock(x,y,z,dimension), false,false,false,false,dimension)
-		/*let w2 = r * r
-		let h2 = w2
-		let d2 = w2
-		for (let Y = -r; Y < r; Y++) {
-			for (let X = -r; X <= r; X++) {
-				for (let Z = -r; Z <= r; Z++) {
-					let n = X * X / w2 + Y * Y / h2 + Z * Z / d2
-					if (n < 1) {
-						if(world.getBlock(X + x, Y + y, Z + z) === blockIds.tnt){
-							blockData[blockIds.tnt].explode(X+x,Y+y,Z+z, "explosion")
-						}
-						if(Math.random() > 0.5){
-							var time = Math.random()*1000
-							if(time < 10){
-								world.particles.push(new ExplodeParticle(X + x, Y + y, Z + z))
-							}else{
-								setTimeout(() => world.particles.push(new ExplodeParticle(X + x, Y + y, Z + z)), time)
-							}
-						}
-						if(!liquid){
-							var block = world.getBlock(X+x,Y+y,Z+z)
-							if(blockData[block].ongetexploded){
-								blockData[block].ongetexploded(x+X,y+Y,z+Z,block,world)
-							}
-							world.setBlock(X + x, Y + y, Z + z, 0)
-						}
-					}
-				}
-			}
-		}*/
-		//create rays rays coming from the center of the cube to each outer edge
-		let destroyed = {}, particles = []
-		for(var cx=0; cx<16; cx++){
-			for(var cy=0; cy<16; cy++){
-				for(var cz=0; cz<16; cz++){
-					if(!(cx === 0 || cx === 15 || cy === 0 || cy === 15 || cz === 0 || cz === 15)) continue
-					
-					var intensity =  (0.7 + rand(0.6)) * r
-					var x2 = cx / 16, y2 = cy / 16, z2 = cz / 16
-					//step 0.3 blocks each time
-					var d = abs(dist3(0,0,0, (x2-0.5)*2*r,(y2-0.5)*2*r,(z2-0.5)*2*r))
-					var step = (0.3/d)/2 //how much to go along ray
-					for(var i=0; i<1; i+=step){
-						var sx = round(lerp(i, x, (x2-0.5)*2*r+x))
-						var sy = round(lerp(i, y, (y2-0.5)*2*r+y))
-						var sz = round(lerp(i, z, (z2-0.5)*2*r+z))
-						intensity -= 0.3 * 0.75
-						var block = this.getBlock(sx,sy,sz, dimension)
-						var isDestroyed = destroyed[sx+","+sy+","+sz]
-						//if block isn't air, reduce intensity based on blast resistance
-						if(block && !isDestroyed){
-							var br = blockData[block].blastResistance || 0
-							intensity -= (br + 0.3) * 0.3
-							if(intensity > 0) {
-								destroyed[sx+","+sy+","+sz] = true
-								if(!type){
-									if(blockData[block].ongetexploded){
-										blockData[block].ongetexploded(sx,sy,sz,block,this,dimension)
-									}
-									this.setBlock(sx, sy, sz, 0, false,false,false,false, dimension)
-									if(round(rand(r-1)) === 0){
-										this.addItems(sx, sy, sz, dimension, 0, 0, 0, block, true)
-									}
-								}
-								if(block === blockIds.tnt){
-									blockData[blockIds.tnt].explode(sx,sy,sz, "explosion",dimension,this)
-								}else if(block === blockIds.untnt){
-									blockData[blockIds.untnt].explode(sx,sy,sz, "explosion",dimension,this)
-								}
-							}/*end if(intensity > 0)*/else{
-								continue
-							}
-						}
-						if(intensity > 0 && type === "original" && !isDestroyed){
-							this.setBlock(sx,sy,sz, this.getOriginalBlock(sx,sy,sz,dimension), false,false,false,false,dimension)
-						}
-						if(intensity > 0 && rand() > 0.995){
-							let time = rand()*1000
-							particles.push(sx,sy,sz,dimension,time)
-						}
-					}
-				}//end for loop
-			}
-		}
-		this.sendAll({type:"particles", particleType:"explosion", data:particles, dimension})
-		
-		//the calculation below is not from minecraft
-		let nearEntities = this.getEntitiesNear(x,y,z,dimension,r)
-		for(let ent of nearEntities){
-			if(ent.dimension !== dimension) continue
-			let dist = dist3(x,y,z, ent.x, ent.y, ent.z)
-			if(dist <= r){
-				let speed = (r-dist)
-				let X = ent.x - x
-				let Y = ent.y - y
-				let Z = ent.z - z
-				let velx = X/dist*speed, vely = Y/dist*speed, velz = Z/dist*speed
-				/*
-				velx = ((Math.sign(X)*r)-X)/5
-				vely = ((Math.sign(Y)*r)-Y)/5
-				velz = ((Math.sign(Z)*r)-Z)/5*/
-				if(ent.damage){
-					let damageTook = (r - dist) * 6
-					ent.damage(damageTook,velx,vely,velz)
-				}else{
-					ent.velx += velx
-					ent.vely += vely
-					ent.velz += velz
-				}
-			}
-		}
-		for(let ent of this.players){
-			if(ent.dimension !== dimension || ent.hidden || ent.die) continue
-			let dist = dist3(x,y,z, ent.x, ent.y, ent.z)
-			if(dist <= r){
-				let speed = (r-dist)
-				let X = ent.x - x
-				let Y = ent.y - y
-				let Z = ent.z - z
-				let velx = X/dist*speed, vely = Y/dist*speed, velz = Z/dist*speed
-				let damageTook = (r - dist) * 6
-				ent.damage(damageTook,ent.username+" blew up", false,null, x,y,z, null,velx,vely,velz)
-			}
-		}
-		explodeSound(x,y,z, r, this)
-	}
-	blockSound(blockID, type, x,y,z, volume){
-    let block = blockData[blockID]
-		if(typeof volume !== "number") volume = 1
-    
-    let sound, pitch = 1
-    switch(type){
-      case "place":
-        sound = block.placeSound || block.digSound
-        break;
-      case "dig":
-        sound = block.digSound
-        break;
-      case "step":
-        sound = block.stepSound
-        break;
-			case "lowStep":
-				sound = block.stepSound
-				pitch = 0.5
-        break;
-      case "breaking":
-        sound = block.stepSound
-				pitch = 0.5
-				volume *= 0.5
-        break;
-      case "land":
-        sound = block.landSound || block.digSound
-    }
-    if(typeof sound === "function") return sound()
-    if(Array.isArray(sound)){
-      sound = sound[Math.floor(Math.random()*sound.length)]
-    }
-    if(sound){
-      this.playSound(x,y,z,sound, volume, pitch)
-    }
-  }
-	playSound(x,y,z, name, volume = 1, pitch = 1){
-		this.sendAll({type:"playSound", data:name, volume, pitch, x,y,z, hasPos: (typeof x === "number")})
-	}
-	poof(x,y,z,amount,dimension, w,h,d, unremote){
-		if(!amount) amount = w*h*d*20
-    if(unremote) this.sendAll({
-      type:"particles",particleType:"poof",
-      x,y,z,dimension,amount,data:{w,h,d}
-    })
-  }
-	glint(x,y,z,dimension,remote){
-    if(!remote) this.sendAll({
-      type:"particles", particleType:"glint",
-      x,y,z,dimension
-    })
-  }
-	updateBlock(x, y, z, lazy, noOnupdate, sx,sy,sz, dimension) {
-		let chunks = dimension === "nether" ? this.netherChunks : (dimension === "end" ? this.endChunks : this.chunks)
-		let chunk = chunks[x >> 4] && chunks[x >> 4][z >> 4]
-		if (chunk && chunk.allGenerated) {
-			chunk.updateBlock(x & 15, y, z & 15, this, lazy, noOnupdate, sx,sy,sz)
-		}
-	}
-	getChunk(x, z, dimension) {
-		let chunks = dimension === "nether" ? this.netherChunks : (dimension === "end" ? this.endChunks : this.chunks)
-		return chunks[x >> 4] && chunks[x >> 4][z >> 4]
-	}
-	getOrNewChunk(x,z,dimension){
-		let chunks = dimension === "nether" ? this.netherChunks : (dimension === "end" ? this.endChunks : this.chunks)
-		const xm = x>>4, zm = z>>4
-		if (!chunks[xm]) {
-			chunks[xm] = []
-		}
-		if (!chunks[xm][zm]) {
-			return chunks[xm][zm] = new Chunk(xm<<4, zm<<4, dimension,this)
-		}
-		return chunks[xm][zm]
-	}
-	getBlock(x, y, z, dimension) {
-		if (y > maxHeight) {
-			return blockIds.air
-		} else if (y < minHeight) {
-			return blockIds.air
-		}
-		let chunks = dimension === "nether" ? this.netherChunks : (dimension === "end" ? this.endChunks : this.chunks)
-		if (!chunks[x >> 4] || !chunks[x >> 4][z >> 4]) {
-			return blockIds.air
-		}
-		return chunks[x >> 4][z >> 4].getBlock(x & 15, y, z & 15)
-	}
-	getOriginalBlock(x, y, z, dimension) {
-		let chunk = this.getChunk(x,z,dimension)
-		return chunk ? chunk.getOriginalBlock(x & 15, y, z & 15) : blockIds.air
-	}
-	setBlock(x, y, z, blockID, lazy, noOnupdate, remote, keepTags, dimension) {
-		let chunks = dimension === "nether" ? this.netherChunks : (dimension === "end" ? this.endChunks : this.chunks)
-		
-		if (!chunks[x >> 4] || !chunks[x >> 4][z >> 4]) {
-			return false
-		}
-		if(y < minHeight) return false
-		let chunk = chunks[x >> 4] && chunks[x >> 4][z >> 4]
-		
-		let xm = x & 15
-		let zm = z & 15
-		let prev = chunk.getBlock(xm,y,zm)
-		if (blockID) {
-			if(prev){ //block gets replaced
-				let prevData = blockData[prev]
-				chunk.deleteBlock(xm, y, zm, !lazy)
-				if (!lazy && chunk.allGenerated && (!prevData.transparent || prevData.lightLevel || prevData.decreaseLight) && chunk.lit) {
-					this.updateLight(x, y, z, false, prevData.lightLevel, dimension)
-				}
-			}
-			let data = blockData[blockID]
-			chunk.setBlock(xm, y, zm, blockID, !lazy)
-			if (!lazy && chunk.allGenerated && (!data.transparent || data.lightLevel || data.decreaseLight) && chunk.lit) {
-				this.updateLight(x, y, z, true, data.lightLevel, dimension)
-			}
-		} else {
-			let data = blockData[prev]
-			chunk.deleteBlock(xm, y, zm, !lazy)
-			if (!lazy && chunk.allGenerated && (!data.transparent || data.lightLevel || data.decreaseLight) && chunk.lit) {
-				this.updateLight(x, y, z, false, data.lightLevel, dimension)
-			}
-		}
-		
-		if (lazy) {
-			return
-		}
-		let prevTags = this.getTags(x,y,z, dimension)
-		if(!keepTags) this.setTags(x, y, z, undefined, remote, dimension)
-		for(let i = this.timeoutQueue.length-1; i>=0; i--){
-			let timeout = this.timeoutQueue[i]
-			if(timeout.x === x && timeout.y === y && timeout.z === z && timeout.dimension === dimension && (timeout.block === undefined || timeout.block === blockID)){
-				this.timeoutQueue.splice(i,1)
-				break
-			}
-		}
-		
-		let nameChanged = blockData[prev].name !== blockData[blockID || 0].name
-		if(!noOnupdate && prev && blockData[prev].ondelete && nameChanged){
-			blockData[prev].ondelete(x,y,z, prevTags, prev, dimension,this)
-		}
-		if(!noOnupdate && blockID && blockData[blockID].onset && nameChanged){
-			blockData[blockID].onset(x,y,z, dimension,this)
-		}
-		
-		if(!remote) this.sendAllInChunk({type:"setBlock", data:{x:x, y:y, z:z, block:blockID, dimension:dimension, keepTags:keepTags}},x>>4,z>>4,dimension)
 
-		//Update the 6 adjacent blocks and 1 changed block
-		if (xm && xm !== 15 && zm && zm !== 15) {
-			chunk.updateBlock(xm - 1, y, zm, this, lazy, false, x,y,z)
-			chunk.updateBlock(xm, y - 1, zm, this, lazy, false, x,y,z)
-			chunk.updateBlock(xm + 1, y, zm, this, lazy, false, x,y,z)
-			chunk.updateBlock(xm, y + 1, zm, this, lazy, false, x,y,z)
-			chunk.updateBlock(xm, y, zm - 1, this, lazy, false, x,y,z)
-			chunk.updateBlock(xm, y, zm + 1, this, lazy, false, x,y,z)
-		}
-		else {
-			this.updateBlock(x - 1, y, z, lazy, false, x,y,z, dimension)
-			this.updateBlock(x + 1, y, z, lazy, false, x,y,z, dimension)
-			this.updateBlock(x, y - 1, z, lazy, false, x,y,z, dimension)
-			this.updateBlock(x, y + 1, z, lazy, false, x,y,z, dimension)
-			this.updateBlock(x, y, z - 1, lazy, false, x,y,z, dimension)
-			this.updateBlock(x, y, z + 1, lazy, false, x,y,z, dimension)
-		}
-
-		chunk.updateBlock(xm, y, zm, this, lazy, noOnupdate, x,y,z)
-
-		// Update the corner chunks so shadows in adjacent chunks update correctly
-		if (xm | zm === 0) { this.updateBlock(x - 1, y, z - 1, lazy, true,x,y,z,dimension); }
-		if (xm === 15 && zm === 0) { this.updateBlock(x + 1, y, z - 1, lazy, true,x,y,z,dimension); }
-		if (xm === 0 && zm === 15) { this.updateBlock(x - 1, y, z + 1, lazy, true,x,y,z,dimension); }
-		if (xm & zm === 15) { this.updateBlock(x + 1, y, z + 1, lazy, true,x,y,z,dimension); }
-	}
-	tagUpdate(x,y,z,dimension,t){
-		var block = this.getBlock(x,y,z,dimension)
-		if(block && blockData[block].ontagsupdate) blockData[block].ontagsupdate(x,y,z,dimension,t,this)
-	}
-	tagsChanged(x,y,z, t, remote, dimension, lazy){
-		/*var str = x.toString(36)+","+y.toString(36)+","+z.toString(36)
-		var editedTags = dimension === "nether" ? this.netherEditedTags : (dimension === "end" ? this.endEditedTags : this.editedTags)
-		if(t){
-			if(!editedTags.includes(str)) editedTags.push(str)
-		}else{
-			if(editedTags.includes(str)){
-				editedTags.splice(editedTags.indexOf(str),1)
-			}
-		}*/
-		if(!lazy){
-			this.tagUpdate(x,y,z,dimension,t)
-			this.tagUpdate(x-1,y,z,dimension,t)
-			this.tagUpdate(x+1,y,z,dimension,t)
-			this.tagUpdate(x,y-1,z,dimension,t)
-			this.tagUpdate(x,y+1,z,dimension,t)
-			this.tagUpdate(x,y,z-1,dimension,t)
-			this.tagUpdate(x,y,z+1,dimension,t)
-		}
-		if(!remote){
-			this.sendAllInChunk({type:"setTags", x, y, z, data:t, dimension, lazy},x>>4,z>>4,dimension)
-		}
-	}
-	getTags(x,y,z,dimension){
-		if (y > maxHeight) {
-			return
-		} else if (y < minHeight) {
-			return
-		}
-		let chunks = dimension === "nether" ? this.netherChunks : (dimension === "end" ? this.endChunks : this.chunks)
-		if (!chunks[x >> 4] || !chunks[x >> 4][z >> 4]) {
-			return
-		}
-		return chunks[x >> 4][z >> 4].getTags(x & 15, y, z & 15)
-	}
-	getTagByName(x,y,z,n,dimension){
-		if (y > maxHeight) {
-			return
-		} else if (y < minHeight) {
-			return
-		}
-		return this.getChunk(x, z, dimension).getTagByName(x & 15, y, z & 15, n)
-	}
-	setTags(x,y,z,data, remote,dimension, lazy){
-		var chunks = dimension === "nether" ? this.netherChunks : (dimension === "end" ? this.endChunks : this.chunks)
-		if (!chunks[x >> 4] || !chunks[x >> 4][z >> 4]) {
-			return
-		}
-		if(y < minHeight) return
-		let chunk = chunks[x >> 4] && chunks[x >> 4][z >> 4]
-		
-		let xm = x & 15
-		let zm = z & 15
-		chunk.setTags(xm, y, zm, data)
-		this.tagsChanged(x,y,z,data, remote, dimension, lazy)
-	}
-	setTagByName(x,y,z,n,data, remote,dimension, lazy){
-		let chunks = dimension === "nether" ? this.netherChunks : (dimension === "end" ? this.endChunks : this.chunks)
-		if (!chunks[x >> 4] || !chunks[x >> 4][z >> 4]) {
-			return
-		}
-		if(y < minHeight) return
-		let chunk = chunks[x >> 4] && chunks[x >> 4][z >> 4]
-		
-		let xm = x & 15
-		let zm = z & 15
-		var t = chunk.setTagByName(xm, y, zm, n,data)
-		this.tagsChanged(x,y,z,t, remote,dimension, lazy)
-	}
-	updateTags(x,y,z,dimension,lazy){
-		var t = this.getTags(x,y,z,dimension)
-		this.tagsChanged(x,y,z,t,false,dimension,lazy)
-	}
-	getLight(x, y, z, blockLight = 0, dimension, fullOutside = 0) {
-		if(y < minHeight) return 0
-		let chunks = dimension === "nether" ? this.netherChunks : (dimension === "end" ? this.endChunks : this.chunks)
-		let chunk = chunks[x >> 4] && chunks[x >> 4][z >> 4]
-		if(chunk){
-			return chunk.getLight(x & 15, y, z & 15, blockLight, fullOutside)
-		}
-		return (!blockLight || fullOutside) * 15
-	}
-	setLight(x, y, z, level, block, dimension) {
-		let chunks = dimension === "nether" ? this.netherChunks : (dimension === "end" ? this.endChunks : this.chunks)
-		let chunk = chunks[x >> 4] && chunks[x >> 4][z >> 4]
-		if (chunk) {
-			return chunk.setLight(x & 15, y, z & 15, level, block)
-		}
-	}
-	updateLight(x, y, z, place, blockLight = 0, dimension) {
-		let chunk = this.getChunk(x, z, dimension)
-		let cx = x & 15
-		let cz = z & 15
-		let center = chunk.getLight(cx, y, cz, 0)
-		let centerExposed = chunk.getLight(cx, y, cz, 2)
-		let blight = chunk.getLight(cx, y, cz, 1)
-		let up = this.getLight(x, y+1, z, 0, dimension)
-		let upExposed = this.getLight(x, y+1, z, 2, dimension)
-		let down = this.getLight(x, y-1, z, 0, dimension)
-		let north = this.getLight(x, y, z+1, 0, dimension)
-		let south = this.getLight(x, y, z-1, 0, dimension)
-		let east = this.getLight(x+1, y, z, 0, dimension)
-		let west = this.getLight(x-1, y, z, 0, dimension)
-
-		/*if(place){ //set vertical column to 15
-			let spread = []
-			for(let x2 = x-1; x2 <= x+1; x2++) for(let z2 = z-1; z2 <= z+1; z2++){
-				//spread around side too so the sides won't get dark
-				let i = chunk.sections.length * 16 - 1
-				let cx2 = x2 & 15, cz2 = z2 & 15
-				for(; i >= 0; i--){
-					if(!blockData[chunk.getBlock(cx2,i,cz2)].transparent) break
-					if(chunk.getLight(cx2,i,cz2,0) !== 15){
-						chunk.setLight(cx2,i,cz2,15,0)
-						spread.push(x2,i,z2)
-					}
-				}
-			}
-			if(spread.length) chunk.spreadLight(spread, 14, true)
-		}*/
-
-		let spread = []
-		for (let i = 0; i <= 15; i++) spread[i] = []
-		if (!place) { // Block was removed; increase light levels
-			if (upExposed) {
-				let light = upExposed
-				for (let i = y; i >= minHeight; i--) {
-					let block = blockData[chunk.getBlock(cx, i, cz)]
-					if (block.transparent) {
-						if(block.decreaseLight){
-							light = max(light - block.decreaseLight,0)
-						}
-						chunk.setLight(cx, i, cz, light, 2)
-						if(light > chunk.getLight(cx, i, cz, 0)) chunk.setLight(cx, i, cz, light, 0)
-						spread[light].push(x, i, z)
-					} else {
-						break
-					}
-				}
-				for (let i = 0; i < spread.length; i++){
-					if(spread[i].length) chunk.spreadLight(spread[i], i-1, true)
-				}
-			} else {
-				center = max(up, down, north, south, east, west)
-				if (center > 0) center -= 1
-				this.setLight(x, y, z, center, 0, dimension)
-				if (center > 1) {
-					spread[center].push(x, y, z)
-					chunk.spreadLight(spread[center], center - 1, true)
-				}
-			}
-
-			// Block light levels
-			if (!blockLight || blockLight < blight) {
-				up = this.getLight(x, y+1, z, 1, dimension)
-				down = this.getLight(x, y-1, z, 1, dimension)
-				north = this.getLight(x, y, z+1, 1, dimension)
-				south = this.getLight(x, y, z-1, 1, dimension)
-				east = this.getLight(x+1, y, z, 1, dimension)
-				west = this.getLight(x-1, y, z, 1, dimension)
-				blight = max(up, down, north, south, east, west)
-				spread[blight].length = 0
-				if (blight > 0) blight -= 1
-				this.setLight(x, y, z, blight, 1, dimension)
-				if (blight > 1) {
-					spread[blight].push(x, y, z)
-					chunk.spreadLight(spread[blight], blight - 1, true, 1)
-				}
-				spread[blight].length = 0
-			}
-		}
-		else if (place && (center !== 0 || blight !== 0)) { // Block was placed; decrease light levels
-			let respread = []
-			for (let i = 0; i <= 15/*center + 1*/; i++) respread[i] = []
-			chunk.setLight(cx, y, cz, 0, 0)
-			chunk.setLight(cx, y, cz, 0, 1)
-			spread[center].push(x, y, z)
-
-			// Sky light
-			let light = centerExposed, startY = y
-			if(!blockData[chunk.getBlock(cx, y, cz)].transparent){
-				chunk.setLight(cx, y, cz, 0, 0)
-				chunk.setLight(cx, y, cz, 0, 1)
-				chunk.setLight(cx, y, cz, 0, 2)
-				spread[center].push(x, y, z)
-				startY--
-				light = 0
-			}
-			if(centerExposed){
-				for (let i = startY; i >= minHeight; i--) {
-					let block = blockData[chunk.getBlock(cx, i, cz)]
-					if (block.transparent) {
-						if(block.decreaseLight){
-							light = max(light - block.decreaseLight,0)
-						}
-						chunk.setLight(cx, i, cz, light, 2)
-						let prevLight = chunk.getLight(cx, i, cz, 0)
-						chunk.setLight(cx, i, cz, light, 0)
-						spread[prevLight].push(x, i, z)
-					} else {
-						break
-					}
-				}
-			}
-			for (let i = 0; i <= 15; i++){
-				if(spread[i].length) chunk.unSpreadLight(spread[i], i - 1, respread)
-			}
-			chunk.reSpreadLight(respread)
-
-			// Block light
-			if (blight) {
-				respread.length = 0
-				for (let i = 0; i <= 15/*blight + 1*/; i++) respread[i] = []
-				spread[blight].length = 0
-				spread[blight].push(x, y, z)
-				chunk.unSpreadLight(spread[blight], blight - 1, respread, 1)
-				chunk.reSpreadLight(respread, 1)
-				spread[blight].length = 0
-			}
-		}
-		if (place && blockLight) { // Light block was placed
-			this.setLight(x, y, z, blockLight, 1, dimension)
-			spread[blockLight].length = 0
-			spread[blockLight].push(x, y, z)
-			chunk.spreadLight(spread[blockLight], blockLight - 1, true, 1)
-		} else if (!place && blockLight) { // Light block was removed
-			this.setLight(x, y, z, 0, 1, dimension)
-			spread[blockLight].length = 0
-			spread[blockLight].push(x, y, z)
-			let respread = []
-			for (let i = 0; i <= 15/*blockLight + 1*/; i++) respread[i] = []
-			chunk.unSpreadLight(spread[blockLight], blockLight - 1, respread, 1)
-			chunk.reSpreadLight(respread, 1)
-		}
-	}
-	spawnBlock(x, y, z, blockID, dimension, force) {
-		//Sets a block anywhere without causing block updates around it. Only to be used in world gen.
-		
-		if(blockData[blockID].crossShape) blockID |= CROSS
-		if(blockData[blockID].tallcrossShape) blockID |= TALLCROSS
-		if(blockData[blockID].cactus) blockID |= CACTUS
-		if(blockData[blockID].randomRotateOnSpawn){
-			switch(round(hash3(x,y,z)*3)){
-				case 0:
-					blockID |= NORTH
-					break
-				case 1:
-					blockID |= WEST
-					break
-				case 2:
-					blockID |= SOUTH
-					break
-				case 3:
-					blockID |= EAST
-					break
-			}
-		}
-		
-		let chunkX = x >> 4
-		let chunkZ = z >> 4
-		let chunks = dimension === "nether" ? this.netherChunks : (dimension === "end" ? this.endChunks : this.chunks)
-		if (!chunks[chunkX]) {
-			chunks[chunkX] = []
-		}
-		let chunk = this.getOrNewChunk(x,z,dimension)
-		let solid = blockData[chunk.getBlock(x & 15, y, z & 15)].solid
-		if (chunk.allGenerated) {
-			//Only used if spawning a block post-gen
-			if(!solid) this.setBlock(x, y, z, blockID, false, false,false,false, dimension)
-		} else if (force || !solid) {
-			chunk.setBlock(x & 15, y, z & 15, blockID)
-		}
-	}
-	getBiome(x,y,z,dimension){
-		let chunks = dimension === "nether" ? this.netherChunks : (dimension === "end" ? this.endChunks : this.chunks)
-		if (!chunks[x >> 4] || !chunks[x >> 4][z >> 4]) {
-			return
-		}
-		let X = x & 15
-		let Z = z & 15
-		let caveMinY = chunks[x >> 4][z >> 4].caveY[Z * 16 + X]
-		let caveMaxY = chunks[x >> 4][z >> 4].caveY[Z * 16 + X + 256]
-		return biomes[y < caveMaxY && y > caveMinY ? (chunks[x >> 4][z >> 4].caveBiomes[Z * 16 + X]) : (chunks[x >> 4][z >> 4].biomes[Z * 16 + X])]
-	}
 	getEntity(id){
 		for(var i=0; i<this.entities.length; i++){
 			if(this.entities[i].id === id){
@@ -32499,36 +31288,6 @@ class World{
 		}
 		return bab*/
 	}
-	addEntity(ent, remote, dimension){
-		if(!ent.id) ent.id = generateID()
-		ent.world = this
-		if(dimension || dimension === "") ent.dimension = ent.chunkDimension = dimension
-		if(!remote && !ent.remote){
-			//host controls entities
-			this.sendEntityPos(ent)
-		}
-		this.entities.push(ent)
-		//if(ent.alwaysRender) this.alwaysRenderEntities.push(ent)
-		let chunk = this.getOrNewChunk(ent.chunkX<<4,ent.chunkZ<<4,ent.dimension)
-		chunk.entities.set(ent.id, ent)
-	}
-	deleteEntity(id, remote, i){
-		i = (i || i===0) ? i : this.getEntity(id)
-		let ent = this.entities[i]
-		if(!ent || remote && ent.noRemoteDelete) return
-		id = ent.id
-		if(!remote){
-			this.sendAllInChunk({type:"entityDelete", id}, ent.chunkX,ent.chunkZ,ent.dimension)
-		}
-		if(i || i===0) this.entities.splice(i, 1)
-		/*if(ent.alwaysRender){
-			let i = this.alwaysRenderEntities.indexOf(ent)
-			this.alwaysRenderEntities.splice(i,1)
-		}*/
-		const {chunkX, chunkZ} = ent
-		let chunk = this.getChunk(chunkX<<4,chunkZ<<4,ent.dimension)
-		if(chunk) delete chunk.entities.delete(id)
-	}
 	posEntity(p, m, preBetaVersion/*preBetaVersion only used in loadsave*/){
 		if (typeof p === "string") {
 			try {
@@ -32541,7 +31300,7 @@ class World{
 		let now = performance.now()
 		p = bitArrayToPacket(p,this.constructor.entityPacketType)
 		const entType = entityOrder[p.entId]
-		let ent = this.entities[this.getEntity(p.id)]
+		let ent = this.world.entities[this.getEntity(p.id)]
 		if(ent){
 			if(entType === "TextDisplay" && ent.text !== p.text) ent.setText(p.text)
 			if(entType === "Item" && ent.amount !== p.amount) ent.amount = p.amount, ent.willUpdateShape = true
@@ -32752,7 +31511,7 @@ class World{
 		}
 
 		if(i || i===0){
-			ent = this.entities[i]
+			ent = this.world.entities[i]
 			if(entType === "TextDisplay" && ent.text !== text) ent.setText(text)
 			if(entType === "Item" && ent.amount !== amount) ent.amount = amount, ent.willUpdateShape = true
 		}else{
@@ -32870,443 +31629,7 @@ class World{
 		ent.updateChunk()
 		return ent
 	}
-	sendEntityPos(ent){
-		this.sendAllInChunk({type:"entityPos", data:this.getEntPos(ent,performance.now()).array}, ent.chunkX,ent.chunkZ,ent.chunkDimension)
-	}
-	getEntities(p){
-		let x = p.x >> 4
-		let z = p.z >> 4
-		let {dimension, loadDistance} = p
-		loadDistance--
-		//if(!this.entities.length) return this.entities //its an empty array, so no problemslet minChunkX = x - d >> 4
-		let minChunkX = x - loadDistance
-		let maxChunkX = x + loadDistance
-		let minChunkZ = z - loadDistance
-		let maxChunkZ = z + loadDistance
-		let chunks = dimension === "nether" ? this.netherChunks : (dimension === "end" ? this.endChunks : this.chunks)
-		let arr = []
-		for (x = minChunkX; x <= maxChunkX; x++) {
-			for (z = minChunkZ; z <= maxChunkZ; z++) {
-				if (chunks[x] && chunks[x][z]) {
-					let chunk = chunks[x][z]
-					for(let [i,ent] of chunk.entities){
-						let now = performance.now()
-						//if(ent.remote) return
-						arr.push(this.getEntPos(ent,now).array)
-					}
-				}
-			}
-		}
-		return arr
-	}
-	getEntitiesNear(x,y,z,dimension,d, ret = []){
-		let chunks = dimension === "nether" ? this.netherChunks : (dimension === "end" ? this.endChunks : this.chunks)
-		let minChunkX = x - d >> 4
-		let maxChunkX = x + d >> 4
-		let minChunkY = y - d >> 4
-		let maxChunkY = y + d >> 4
-		let minChunkZ = z - d >> 4
-		let maxChunkZ = z + d >> 4
-		let section = null
-		ret.length = 0
-		let i = 0
-		for (x = minChunkX; x <= maxChunkX; x++) {
-			for (z = minChunkZ; z <= maxChunkZ; z++) {
-				if (chunks[x] && chunks[x][z]) {
-					let ents = chunks[x][z].entities
-					for(let [i,ent] of ents){
-						ret.push(ent)
-					}
-				}
-			}
-		}
-		return ret
-	}
-	addItems(x,y,z,dimension,vx,vy,vz,block,autoSetVel,amount = 1,durability,customName,from){
-		if(!block) return
-		var data = blockData[block]
-		while(amount){
-			var a = min(amount,data.stackSize)
-			amount -= a
-			this.addEntity(new entities[entityIds.Item](x, y, z, vx, vy, vz, block, autoSetVel, a,durability,customName,from),false,dimension)
-		}
-	}
-	
-	getRedstoneConnectedTo(x,y,z, level, dimension){
-		let spreaded = []
-		let spreadAt = []
-		spreadAt.push(x,y,z,0)
-		let tempblock
-		while(spreadAt.length){
-			let x = spreadAt[0]
-			let y = spreadAt[1]
-			let z = spreadAt[2]
-			let i = spreadAt[3]
-			if(i < level) {
-				if(!xyArrayHas(spreaded,spreadAt,x+1,y,z) && blockData[this.getBlock(x+1,y,z,dimension)].carryRedstone) spreadAt.push(x+1,y,z,i+1)
-				if(!xyArrayHas(spreaded,spreadAt,x-1,y,z) && blockData[this.getBlock(x-1,y,z,dimension)].carryRedstone) spreadAt.push(x-1,y,z,i+1)
-				if(!xyArrayHas(spreaded,spreadAt,x,y,z+1) && blockData[this.getBlock(x,y,z+1,dimension)].carryRedstone) spreadAt.push(x,y,z+1,i+1)
-				if(!xyArrayHas(spreaded,spreadAt,x,y,z-1) && blockData[this.getBlock(x,y,z-1,dimension)].carryRedstone) spreadAt.push(x,y,z-1,i+1)
-				if(!xyArrayHas(spreaded,spreadAt,x,y+1,z) && blockData[this.getBlock(x,y+1,z,dimension)].carryRedstone) spreadAt.push(x,y+1,z,i+1)
-				if(!xyArrayHas(spreaded,spreadAt,x,y-1,z) && blockData[this.getBlock(x,y-1,z,dimension)].carryRedstone) spreadAt.push(x,y-1,z,i+1)
-				
-				let tags = this.getTags(x,y,z, dimension), block = this.getBlock(x,y,z,dimension)
-				if(blockData[block].name === "redstoneDust"){
-					if(getTagBits(tags,"westUp",block) && !xyArrayHas(spreaded,spreadAt,x+1,y+1,z)) spreadAt.push(x+1,y+1,z,i+1)
-					if(getTagBits(tags,"eastUp",block) && !xyArrayHas(spreaded,spreadAt,x-1,y+1,z)) spreadAt.push(x-1,y+1,z,i+1)
-					if(getTagBits(tags,"northUp",block) && !xyArrayHas(spreaded,spreadAt,x,y+1,z+1)) spreadAt.push(x,y+1,z+1,i+1)
-					if(getTagBits(tags,"southUp",block) && !xyArrayHas(spreaded,spreadAt,x,y+1,z-1)) spreadAt.push(x,y+1,z-1,i+1)
-					
-					if(getTagBits(tags,"westDown",block) && !xyArrayHas(spreaded,spreadAt,x+1,y-1,z)) spreadAt.push(x+1,y-1,z,i+1)
-					if(getTagBits(tags,"eastDown",block) && !xyArrayHas(spreaded,spreadAt,x-1,y-1,z)) spreadAt.push(x-1,y-1,z,i+1)
-					if(getTagBits(tags,"northDown",block) && !xyArrayHas(spreaded,spreadAt,x,y-1,z+1)) spreadAt.push(x,y-1,z+1,i+1)
-					if(getTagBits(tags,"southDown",block) && !xyArrayHas(spreaded,spreadAt,x,y-1,z-1)) spreadAt.push(x,y-1,z-1,i+1)
-				}
-				if(blockData[block].rail){
-					tempblock = this.getBlock(x+1,y+1,z,dimension); if(!xyArrayHas(spreaded,spreadAt,x+1,y+1,z) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x+1,y+1,z,i+1)
-					tempblock = this.getBlock(x-1,y+1,z,dimension); if(!xyArrayHas(spreaded,spreadAt,x-1,y+1,z) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x-1,y+1,z,i+1)
-					tempblock = this.getBlock(x,y+1,z+1,dimension); if(!xyArrayHas(spreaded,spreadAt,x,y+1,z+1) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x,y+1,z+1,i+1)
-					tempblock = this.getBlock(x,y+1,z-1,dimension); if(!xyArrayHas(spreaded,spreadAt,x,y+1,z-1) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x,y+1,z-1,i+1)
 
-					tempblock = this.getBlock(x+1,y-1,z,dimension); if(!xyArrayHas(spreaded,spreadAt,x+1,y-1,z) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x+1,y-1,z,i+1)
-					tempblock = this.getBlock(x-1,y-1,z,dimension); if(!xyArrayHas(spreaded,spreadAt,x-1,y-1,z) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x-1,y-1,z,i+1)
-					tempblock = this.getBlock(x,y-1,z+1,dimension); if(!xyArrayHas(spreaded,spreadAt,x,y-1,z+1) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x,y-1,z+1,i+1)
-					tempblock = this.getBlock(x,y-1,z-1,dimension); if(!xyArrayHas(spreaded,spreadAt,x,y-1,z-1) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x,y-1,z-1,i+1)
-				}
-				spreaded.push(x,y,z,i)
-			}
-			spreadAt.splice(0,4)
-		}
-
-		return spreaded
-	}
-	spreadPower(x,y,z, level,dimension){
-		if(!level) return
-		var spread = this.getRedstoneConnectedTo(x,y,z,level,dimension)
-		for(var i=0; i<spread.length; i+=4){
-			var bx = spread[i]
-			var by = spread[i+1]
-			var bz = spread[i+2]
-			if(bx === x && by === y && bz === z) continue
-			var l = this.getRedstoneWirePower(bx,by,bz,dimension)
-			if(l !== this.getPower(bx,by,bz,dimension)) this.setPower(bx,by,bz, l,false,dimension)
-		}
-	}
-	unspreadPower(x,y,z, level, includeSource,dimension){
-		if(!level) return
-		var spread = this.getRedstoneConnectedTo(x,y,z,level,dimension)
-		var toUpdate = []
-		for(var n=0; n<level; n++){
-			for(var i=0; i<spread.length; i+=4){
-				var bx = spread[i]
-				var by = spread[i+1]
-				var bz = spread[i+2]
-				if(!includeSource && bx === x && by === y && bz === z) continue
-				var l = this.getRedstoneWirePower(bx,by,bz,dimension)
-				if(l !== this.getPower(bx,by,bz,dimension)) this.setPower(bx,by,bz, l, true,dimension), toUpdate[i] = true
-			}
-		}
-		for(var i=0; i<toUpdate.length; i+=4){
-			if(toUpdate[i]){
-				var x = spread[i], y = spread[i+1], z = spread[i+2]
-				this.powerChangeUpdate(x,y,z, x,y,z, false,dimension)
-				this.powerChangeUpdate(x+1,y,z, x,y,z, false,dimension)
-				this.powerChangeUpdate(x-1,y,z, x,y,z, false,dimension)
-				this.powerChangeUpdate(x,y,z+1, x,y,z, false,dimension)
-				this.powerChangeUpdate(x,y,z-1, x,y,z, false,dimension)
-				this.powerChangeUpdate(x,y+1,z, x,y,z, false,dimension)
-				this.powerChangeUpdate(x,y-1,z, x,y,z, false,dimension)
-				this.updateTags(x,y,z,dimension,true)
-			}
-		}
-		/*this.powerChangeUpdate(x+1,y,z)
-		this.powerChangeUpdate(x-1,y,z)
-		this.powerChangeUpdate(x,y,z+1)
-		this.powerChangeUpdate(x,y,z-1)*/
-	}
-	getPowerForWire(x,y,z,dimension,blue=0,rail=false){
-		let block = this.getBlock(x,y,z,dimension)
-		if(blockData[block].name === "redstoneDust" && blue !== (block & FLIP)) return 0
-		if(rail && !blockData[block].rail) return 0
-		return this.getPower(x,y,z,dimension)
-	}
-	getRedstoneWirePower(x,y,z,dimension){
-		let tags = this.getTags(x,y,z,dimension), block = this.getBlock(x,y,z,dimension), blue = block & FLIP
-		
-		let right = this.getPowerForWire(x+1,y,z,dimension,blue)
-		let left = this.getPowerForWire(x-1,y,z,dimension,blue)
-		let down = this.getPowerForWire(x,y,z+1,dimension,blue)
-		let up = this.getPowerForWire(x,y,z-1,dimension,blue)
-		let top = this.getPowerForWire(x,y+1,z,dimension,blue)
-		let bottom = this.getPowerForWire(x,y-1,z,dimension,blue)
-		let westUp = 0, eastUp = 0, northUp = 0, southUp = 0, westDown = 0, eastDown = 0, northDown = 0, southDown = 0
-		if(tags && blockData[block].name === "redstoneDust"){
-			westUp = getTagBits(tags,"westUp",block) ? this.getPowerForWire(x+1,y+1,z,dimension,blue) : 0
-			eastUp = getTagBits(tags,"eastUp",block) ? this.getPowerForWire(x-1,y+1,z,dimension,blue) : 0
-			northUp = getTagBits(tags,"northUp",block) ? this.getPowerForWire(x,y+1,z+1,dimension,blue) : 0
-			southUp = getTagBits(tags,"southUp",block) ? this.getPowerForWire(x,y+1,z-1,dimension,blue) : 0
-			westDown = getTagBits(tags,"westDown",block) ? this.getPowerForWire(x+1,y-1,z,dimension,blue) : 0
-			eastDown = getTagBits(tags,"eastDown",block) ? this.getPowerForWire(x-1,y-1,z,dimension,blue) : 0
-			northDown = getTagBits(tags,"northDown",block) ? this.getPowerForWire(x,y-1,z+1,dimension,blue) : 0
-			southDown = getTagBits(tags,"southDown",block) ? this.getPowerForWire(x,y-1,z-1,dimension,blue) : 0
-		}
-		if(blockData[block].rail){
-			westUp = this.getPowerForWire(x+1,y+1,z,dimension,0,true)
-			eastUp = this.getPowerForWire(x-1,y+1,z,dimension,0,true)
-			northUp = this.getPowerForWire(x,y+1,z+1,dimension,0,true)
-			southUp = this.getPowerForWire(x,y+1,z-1,dimension,0,true)
-			westDown = this.getPowerForWire(x+1,y-1,z,dimension,0,true)
-			eastDown = this.getPowerForWire(x-1,y-1,z,dimension,0,true)
-			northDown = this.getPowerForWire(x,y-1,z+1,dimension,0,true)
-			southDown = this.getPowerForWire(x,y-1,z-1,dimension,0,true)
-		}
-		let level = max(right,left,down,up, top,bottom, northUp,southUp,eastUp,westUp, northDown,southDown,eastDown,westDown,this.redstoneComponentPowering(x,y,z,dimension)+1) - 1
-		if(this.getSurroundingBlockPower(x,y,z,dimension) === "strong"){
-			level = 15
-		}
-		return level < 0 ? 0 : level
-	}
-	repeaterIsPowering(x,y,z,rx,ry,rz,dimension){
-		var block = this.getBlock(rx,ry,rz,dimension)
-		if(block && (blockData[block].name === "repeater" || blockData[block].logicGate || blockData[block].name === "comparator")){
-			return blockData[block].canHavePower(rx,ry,rz,x,y,z,dimension,this)
-		}
-		return 0
-	}
-	observerIsPowering(x,y,z,rx,ry,rz,dimension){
-		var block = this.getBlock(rx,ry,rz,dimension)
-		if(block && blockData[block].name === "observer"){
-			return blockData[block].canHavePower(rx,ry,rz,x,y,z,dimension,this)
-		}
-		return 0
-	}
-	redstoneComponentPowering(x,y,z,dimension){
-		return max(
-			this.repeaterIsPowering(x,y,z,x+1,y,z,dimension),
-			this.repeaterIsPowering(x,y,z,x-1,y,z,dimension),
-			this.repeaterIsPowering(x,y,z,x,y,z+1,dimension),
-			this.repeaterIsPowering(x,y,z,x,y,z-1,dimension),
-
-			this.observerIsPowering(x,y,z,x+1,y,z,dimension),
-			this.observerIsPowering(x,y,z,x-1,y,z,dimension),
-			this.observerIsPowering(x,y,z,x,y+1,z,dimension),
-			this.observerIsPowering(x,y,z,x,y-1,z,dimension),
-			this.observerIsPowering(x,y,z,x,y,z+1,dimension),
-			this.observerIsPowering(x,y,z,x,y,z-1,dimension)
-		)
-	}
-	getRedstonePower(x,y,z,dimension){
-		var right = this.getPower(x+1,y,z,dimension)
-		var left = this.getPower(x-1,y,z,dimension)
-		var down = this.getPower(x,y,z+1,dimension)
-		var up = this.getPower(x,y,z-1,dimension)
-		var top = this.getPower(x,y+1,z,dimension)
-		var bottom = this.getPower(x,y-1,z,dimension)
-		var level = max(right,left,down,up,top,bottom, this.redstoneComponentPowering(x,y,z,dimension))
-		return level
-	}
-	getRepeaterPower(x,y,z,fx,fy,fz,dimension){
-		var level = max(this.getPower(fx,fy,fz,dimension), this.repeaterIsPowering(x,y,z,fx,fy,fz,dimension), this.observerIsPowering(x,y,z,fx,fy,fz,dimension))
-		return level
-	}
-	getPower(x,y,z,dimension){
-		return this.getTagByName(x,y,z,"power",dimension) || 0
-	}
-	setPower(x,y,z, level, lazy,dimension){
-		var block = this.getBlock(x,y,z,dimension)
-		if(block && blockData[block].noSetPower) return
-		let tagBits = blockData[block].tagBits
-		if(tagBits){
-			this.setTagByName(x,y,z,"power",level,lazy,dimension,true)
-		}else{
-			var tags = this.getTags(x,y,z,dimension) || {}
-			if(level) tags.power = level
-			else delete tags.power
-			this.setTags(x,y,z,tags,false,dimension,true)
-		}
-		this.updateBlock(x,y,z,false,true,null,null,null,dimension)
-		
-		if(lazy) return //don't update blocks if lazy
-		
-		this.powerChangeUpdate(x,y,z, x,y,z, false,dimension)
-		this.powerChangeUpdate(x+1,y,z, x,y,z, false,dimension)
-		this.powerChangeUpdate(x-1,y,z, x,y,z, false,dimension)
-		this.powerChangeUpdate(x,y,z+1, x,y,z, false,dimension)
-		this.powerChangeUpdate(x,y,z-1, x,y,z, false,dimension)
-		this.powerChangeUpdate(x,y+1,z, x,y,z, false,dimension)
-		this.powerChangeUpdate(x,y-1,z, x,y,z, false,dimension)
-	}
-	blockPowerNames = {top:"blockPowerTop",bottom:"blockPowerBottom",north:"blockPowerNorth",south:"blockPowerSouth",east:"blockPowerEast",west:"blockPowerWest"}
-	setBlockPower(x,y,z, type, fromDir,dimension){
-		var block = this.getBlock(x,y,z,dimension)
-		if(block && blockData[block].noSetPower) return
-		if(type !== null && type !== "weak" && type !== "strong") {type = null; console.error("Oh no! It can only be strong or weak or null. But it was",type)}
-		let tagBits = blockData[block].tagBits
-		type = !type ? 0 : (type === "strong" ? 2 : 1)
-		if(tagBits){
-			this.setTagByName(x,y,z,this.blockPowerNames[fromDir],type,false,dimension)
-		}else{
-			var tags = this.getTags(x,y,z,dimension) || {}
-			if(type){
-				if(!tags.blockPower) tags.blockPower = {}
-				tags.blockPower[fromDir] = type
-			}else if(tags.blockPower){
-				delete tags.blockPower[fromDir]
-				if(!tags.blockPower.top && !tags.blockPower.bottom && !tags.blockPower.north && !tags.blockPower.south && !tags.blockPower.east && !tags.blockPower.west) delete tags.blockPower
-			}
-			this.setTags(x,y,z,tags,false,dimension)
-		}
-		
-		this.powerChangeUpdate(x,y,z, x,y,z, true,dimension)
-		if(fromDir !== "west") this.powerChangeUpdate(x+1,y,z, x,y,z, true,dimension)
-		if(fromDir !== "east") this.powerChangeUpdate(x-1,y,z, x,y,z, true,dimension)
-		if(fromDir !== "north") this.powerChangeUpdate(x,y,z+1, x,y,z, true,dimension)
-		if(fromDir !== "south") this.powerChangeUpdate(x,y,z-1, x,y,z, true,dimension)
-		if(fromDir !== "top") this.powerChangeUpdate(x,y+1,z, x,y,z, true,dimension)
-		if(fromDir !== "bottom") this.powerChangeUpdate(x,y-1,z, x,y,z, true,dimension)
-	}
-	getBlockPower(x,y,z, dir,dimension){
-		var tags = this.getTags(x,y,z,dimension)
-		if(!tags) return null
-		let block = this.getBlock(x,y,z,dimension)
-		let tagBits = blockData[block].tagBits
-		let power
-		if(tagBits){
-			if(dir){
-				power = this.getTagByName(x,y,z,this.blockPowerNames[dir],dimension)
-			}else{
-				power = max(
-					this.getTagByName(x,y,z,this.blockPowerNames["top"],dimension),
-					this.getTagByName(x,y,z,this.blockPowerNames["bottom"],dimension),
-					this.getTagByName(x,y,z,this.blockPowerNames["north"],dimension),
-					this.getTagByName(x,y,z,this.blockPowerNames["south"],dimension),
-					this.getTagByName(x,y,z,this.blockPowerNames["east"],dimension),
-					this.getTagByName(x,y,z,this.blockPowerNames["west"],dimension),
-				)
-			}
-		}else{
-			var blockPower = tags.blockPower
-			if(!blockPower) return null
-			
-			if(dir){
-				power = blockPower[dir]
-			}else{
-				power = max(blockPower.top, blockPower.bottom, blockPower.north, blockPower.south, blockPower.east, blockPower.west)
-			}
-		}
-		return !power ? null : (power === 2 ? "strong" : "weak")
-	}
-	getSurroundingBlockPower(x,y,z,dimension){
-		var north = this.getBlockPower(x,y,z-1,null,dimension)
-		var south = this.getBlockPower(x,y,z+1,null,dimension)
-		var east = this.getBlockPower(x-1,y,z,null,dimension)
-		var west = this.getBlockPower(x+1,y,z,null,dimension)
-		var top = this.getBlockPower(x,y+1,z,null,dimension)
-		var bottom = this.getBlockPower(x,y-1,z,null,dimension)
-		if(top === "strong" || bottom === "strong" || north === "strong" || south === "strong" || east === "strong" || west === "strong"){
-			return "strong"
-		}else if(top === "weak" || bottom === "weak" || north === "weak" || south === "weak" || east === "weak" || west === "weak"){
-			return "weak"
-		}
-		return null
-	}
-	powerChangeUpdate(x,y,z,sx,sy,sz, blockPowerChanged,dimension){
-		var block = this.getBlock(x,y,z,dimension)
-		if(block && blockData[block].onpowerupdate){
-			blockData[block].onpowerupdate(x,y,z,sx,sy,sz, blockPowerChanged,dimension,this)
-		}
-	}
-	getBlockRotation(block){
-		switch(block&ROTATION){
-			case NORTH:
-				return 0
-			case EAST:
-				return 1
-			case SOUTH:
-				return 2
-			case WEST:
-				return 3
-		}
-	}
-	getRotationBlock(rot){
-		switch(rot){
-			case 0:
-				return NORTH
-			case 1:
-				return EAST
-			case 2:
-				return SOUTH
-			case 3:
-				return WEST
-		}
-	}
-	canStairConnect(sourceBlock,otherBlock,isBack){
-		if((sourceBlock&FLIP) !== (otherBlock&FLIP)) return
-		let sourceRot = this.getBlockRotation(sourceBlock)
-		let otherRot = this.getBlockRotation(otherBlock)
-		let rotDiff = mod(sourceRot-otherRot,4)
-		if((otherBlock&isState) === STAIR){
-			if(rotDiff === 1) return 1
-			else if(rotDiff === 3) return -1
-		}else if((otherBlock&isState) === CORNERSTAIRIN){
-			if(rotDiff === 0 && isBack || rotDiff === 1 && !isBack) return 1
-			else if(rotDiff === 3 && isBack || rotDiff === 2 && !isBack) return -1
-		}else if((otherBlock&isState) === CORNERSTAIROUT){
-			if(rotDiff === 1 && isBack || rotDiff === 0 && !isBack) return 1
-			else if(rotDiff === 2 && isBack || rotDiff === 3 && !isBack) return -1
-		}
-	}
-	setTimeout(func,time,x,y,z,dimension,block){
-		let exist
-		if(x || x === 0) for(let i = this.timeoutQueue.length-1; i>=0; i--){
-			let timeout = this.timeoutQueue[i]
-			if(timeout.x === x && timeout.y === y && timeout.z === z && timeout.dimension === dimension){
-				exist = timeout
-				break
-			}
-		}
-		if(exist){
-			exist.func = func
-			exist.time = performance.now() + time
-			exist.x = x, exist.y = y, exist.z = z, exist.dimension = dimension
-		}else this.timeoutQueue.push({
-			func,
-			time:performance.now() + time,
-			x,y,z,dimension
-		})
-	}
-	doBlockUpdate(x,y,z,dimension,sx,sy,sz){
-		let block = this.getBlock(x,y,z,dimension)
-		if(blockData[block].onupdate) blockData[block].onupdate(x,y,z,block,this,sx,sy,sz,dimension)
-		else if((block & isState) === STAIR && blockData[block].shape.varients.includes(shapes.stair)){//stair corner update
-			let front, back //front is lower side
-			switch(block&ROTATION){
-				case NORTH:
-					front = this.getBlock(x,y,z-1,dimension)
-					back = this.getBlock(x,y,z+1,dimension)
-					break
-				case SOUTH:
-					front = this.getBlock(x,y,z+1,dimension)
-					back = this.getBlock(x,y,z-1,dimension)
-					break
-				case EAST:
-					front = this.getBlock(x-1,y,z,dimension)
-					back = this.getBlock(x+1,y,z,dimension)
-					break
-				case WEST:
-					front = this.getBlock(x+1,y,z,dimension)
-					back = this.getBlock(x-1,y,z,dimension)
-					break
-			}
-			let connectBack = this.canStairConnect(block,back,true)
-			let connectFront = this.canStairConnect(block,front,false)
-			if(connectBack || connectFront) this.setTimeout(() => {
-				if(connectBack === -1 || connectFront === -1) block = block&(~ROTATION) | this.getRotationBlock(mod(this.getBlockRotation(block)+1,4))
-				if(connectBack) this.setBlock(x,y,z,(block&(~isState))|CORNERSTAIROUT,false,false,false,false,dimension)
-				else if(connectFront) this.setBlock(x,y,z,(block&(~isState))|CORNERSTAIRIN,false,false,false,false,dimension)
-			},tickTime)
-		}
-	}
 	loadChunks(){
 		this.chunkGenQueue.length = 0
 		this.lightingQueue.length = 0
@@ -33328,7 +31651,7 @@ class World{
 			let maxChunkZ = cz + loadDistance + 3
 			for (let x = minChunkX; x <= maxChunkX; x++) {
 				for (let z = minChunkZ; z <= maxChunkZ; z++) {
-					let chunk = this.getOrNewChunk(x*16,z*16,p.dimension)
+					let chunk = this[p.dimension].getOrNewChunk(x*16,z*16)
 					if(maxDist(cx, cz, x, z) <= loadDistance){
 						if(!chunk.allGenerated && !this.chunkGenQueue.includes(chunk)) chunkPlayerDistArr.push(chunk)
 						if(!this.loadedNear.includes(chunk)){
@@ -33342,6 +31665,21 @@ class World{
 			}
 			this.chunkGenQueue.push(...chunkPlayerDistArr.sort(sortChunks))
 		}
+	}
+	tickUpdates(world,now){
+		for(let i = world.timeoutQueue.length-1; i>=0; i--){
+			if(now - world.timeoutQueue[i].time >= 0) world.timeoutQueue.splice(i,1)[0].func()
+		}
+		for(let i=0; i<world.updateQueue.length; i+=7){
+			let x = world.updateQueue[i]
+			let y = world.updateQueue[i+1]
+			let z = world.updateQueue[i+2]
+			let sx = world.updateQueue[i+3]
+			let sy = world.updateQueue[i+4]
+			let sz = world.updateQueue[i+5]
+			world.doBlockUpdate(x,y,z,sx,sy,sz)
+		}
+		world.updateQueue.length = 0
 	}
 	async tick() {
 		let tickStart = performance.now()
@@ -33391,32 +31729,10 @@ class World{
 		else if(time > 150 && time < 275) this.skyLight = (time - 150) / 125 //get brighter
 		else if(time >= 850 || time <= 150) this.skyLight = 0
 		else this.skyLight = 1
-
-		for (let c of this.loadedNear) {
-			c.tick()
-		}
-		for(let ent of this.entities){
-			if(ent.updateAlways) ent.updateAlways()
-		}
 		for(let i in this.players){
 			this.players[i].update()
 			this.players[i].updateLoaded()
 		}
-		
-		for(let i = this.timeoutQueue.length-1; i>=0; i--){
-			if(tickStart - this.timeoutQueue[i].time >= 0) this.timeoutQueue.splice(i,1)[0].func()
-		}
-		for(let i=0; i<this.updateQueue.length; i+=7){
-			let x = this.updateQueue[i]
-			let y = this.updateQueue[i+1]
-			let z = this.updateQueue[i+2]
-			let dimension = this.updateQueue[i+3]
-			let sx = this.updateQueue[i+4]
-			let sy = this.updateQueue[i+5]
-			let sz = this.updateQueue[i+6]
-			this.doBlockUpdate(x,y,z,dimension,sx,sy,sz)
-		}
-		this.updateQueue.length = 0
 
 		if(this.superflat === "island" && this.islandGenerator.stage < 10){
 			if(!this.islandGenerator.promise){
@@ -33427,6 +31743,17 @@ class World{
 			if(this.islandGenerator.stage >= 10) this.islandGenerator.promiseResolve()
 			return
 		}
+
+		for (let c of this.loadedNear) {
+			c.tick()
+		}
+		for(let ent of this.entities){
+			if(ent.updateAlways) ent.updateAlways()
+		}
+		
+		this.tickUpdates(this[""],tickStart)
+		this.tickUpdates(this["nether"],tickStart)
+		this.tickUpdates(this["end"],tickStart)
 
 		if(this.ticking) return
 		this.ticking = true
@@ -33488,11 +31815,7 @@ class World{
     let done = true
 		for (let i = x - 3; i <= x + 3; i++) {//if you change the size, change the adding in loadChunks
 			for (let j = z - 3; j <= z + 3; j++) {
-				let chunk = this.getChunk(i*16,j*16,dimension)
-				/*if(!chunk){
-					done = false
-					continue
-				}*/
+				let chunk = this[dimension].getChunk(i*16,j*16)
 				if ((!chunk.generated || !chunk.caves && !this.usePreBeta) && !this.generateQueue.includes(chunk)) {
 					this.generateQueue.push(chunk)
 					done = false
@@ -33508,7 +31831,7 @@ class World{
 				}
 			}
 		}
-		let chunk = this.getChunk(x*16,z*16,dimension)
+		let chunk = this[dimension].getChunk(x*16,z*16)
 		if(done) chunk.canSendClient = true
 		if (!chunk.lit && !this.lightingQueue.includes(chunk)) {
 			this.lightingQueue.push(chunk)
@@ -33516,17 +31839,8 @@ class World{
 		}
 		return done
 	}
-	getTop(x,z,dimension){
-		let chunk = this.getChunk(x,z,dimension)
-		return chunk && chunk.tops[(z&15) * 16 + (x&15)] || 0
-	}
-	getSolidTop(x,z,dimension){
-		let chunk = this.getChunk(x,z,dimension)
-		return chunk && chunk.solidTops[(z&15) * 16 + (x&15)] || 0
-	}
 	
 	getSaveString(){
-		let world = this
 		let loadFrom = this.loadFrom
 
 		let worldTypeBits1 = this.superflat==="island" ? 2 : (this.superflat === "void" ? 3 : this.superflat)
@@ -33543,19 +31857,19 @@ class World{
 		for (let c of version) bab.add(c.charCodeAt(0), 8)
 		bab.add(worldTypeBits2,1)
 
-		for (let x in this.chunks) {
-			for (let z in this.chunks[x]) {
-				this.chunks[x][z].unload()
+		for (let x in this[""].chunks) {
+			for (let z in this[""].chunks[x]) {
+				this[""].chunks[x][z].unload()
 			}
 		}
-		for (let x in this.netherChunks) {
-			for (let z in this.netherChunks[x]) {
-				this.netherChunks[x][z].unload()
+		for (let x in this["nether"].chunks) {
+			for (let z in this["nether"].chunks[x]) {
+				this["nether"].chunks[x][z].unload()
 			}
 		}
-		for (let x in this.endChunks) {
-			for (let z in this.endChunks[x]) {
-				this.endChunks[x][z].unload()
+		for (let x in this["end"].chunks) {
+			for (let z in this["end"].chunks[x]) {
+				this["end"].chunks[x][z].unload()
 			}
 		}
 
@@ -33653,7 +31967,7 @@ class World{
 			if(survivLength){
 				inv.survivStr = reader.readToArrayBits(survivLength)
 				let asdf = new Player()
-				asdf.world = this
+				asdf.world = this[""]
 				asdf.respawn()
 				this.loadSurvivStr(new BitArrayReader(inv.survivStr,true),preBetaVersion,asdf)
 				this.cheats = asdf.cheats
@@ -33747,7 +32061,9 @@ class World{
 			for(let j=0; j<tagsCount; j++){
 				let index = reader.read(9)
 				chunk.add(index,9)
-				if(reader.read(1)){
+				let bit = reader.read(1)
+				chunk.add(bit,1)
+				if(bit){
 					chunk.addString(reader.readString(16),16)
 				}else{
 					chunk.add(reader.read(32),32)
@@ -34402,7 +32718,6 @@ window.parent.postMessage({ready:true}, "*")
 		}
 		p.lastSendEntities = 0
 		p.updateingLoadedI = 0
-		p.world = this
 		p.inventory.slotMapPlace = new Map()
 		p.inventory.slotMapIdx = new Map()
 		p.inventory.prevSlots = []
@@ -34422,6 +32737,7 @@ window.parent.postMessage({ready:true}, "*")
 				p.cheats = world.cheats//will be overwritten if inv exists
 				p.gameMode = world.gameMode
 
+				p.world = world[""]//temporaryily
 				p.respawn()
 				let inv = world.playersInv[host ? ":host" : username]
 				if(inv){//older stuff
@@ -34432,7 +32748,17 @@ window.parent.postMessage({ready:true}, "*")
 						inv.survivStr = atoarr(inv.survivStr)
 					}
 					if(inv.survivStr && inv.survivStr.length){
-						world.loadSurvivStr(new BitArrayReader(inv.survivStr),false,p)
+						try{
+							world.loadSurvivStr(new BitArrayReader(inv.survivStr),false,p)
+						}catch(e){
+							console.error(e)
+							p.cheats = world.cheats
+							p.gameMode = world.gameMode
+							p.spawnPoint.x = world.spawnPoint.x
+							p.spawnPoint.y = world.spawnPoint.y
+							p.spawnPoint.z = world.spawnPoint.z
+							p.respawn()
+						}
 					}
 					if(inv.inv && inv.inv.length){
 						world.loadInv(new BitArrayReader(inv.inv),p)
@@ -34510,7 +32836,7 @@ window.parent.postMessage({ready:true}, "*")
 				let now = performance.now()
 				if(now - p.lastSendEntities > 125){
 					p.lastSendEntities = now
-					let entities = world.getEntities(p), arr = [], length = 0
+					let entities = world[p.dimension].getEntities(p), arr = [], length = 0
 					for(let i=0; i<entities.length; i++){
 						let ent = entities[i]
 						let l = ent.length
@@ -34544,7 +32870,7 @@ window.parent.postMessage({ready:true}, "*")
 				sendOthers(data)
 			}else if(data.type === "hit"){
 				if(data.isEntity){
-					let ent = world.entities[world.getEntity(data.TO)]
+					let ent = world.entities[world[p.dimension].getEntity(data.TO)]
 					if(ent) ent.onhit(data.damage,false, data.velx,data.velz, data.id)
 				}else world.sendPlayer(data,data.TO)
 			}else if(data.type === "message"){
@@ -34559,14 +32885,14 @@ window.parent.postMessage({ready:true}, "*")
 				world.setTags(data.x,data.y,data.z,data.data, true, data.dimension, data.lazy)
 				sendOthers(data)
 			}*/else if(data.type === "serverChangeBlock"){
-				world.serverChangeBlock(data.x,data.y,data.z,data.dimension,data.place,p,data.face,data.shift,data.blockMode)
+				world.serverChangeBlock(data.x,data.y,data.z,data.place,p,data.face,data.shift,data.blockMode)
 			}else if(data.type === "entityPos"){
 				let ent = world.posEntity(new BitArrayReader(data.data, true), true)
-				return world.deleteEntity(ent.id)
-				sendOthers(data)
+				return world[p.dimension].deleteEntity(ent.id)
+				//sendOthers(data)
 			}else if(data.type === "entityDelete"){
-				world.deleteEntity(data.id, true)
-				sendOthers(data)
+				//world[p.dimension].deleteEntity(data.id, true)
+				//sendOthers(data)
 			}/*else if(data.type === "entEvent"){
 				var ent = world && world.entities[world.getEntity(data.id)]
 				if(!ent) return
@@ -34639,7 +32965,7 @@ window.parent.postMessage({ready:true}, "*")
 							let change = nitem ? pitem.amount-nitem.amount : pitem.amount
 							let d = p.direction
 							let place = inventory.slotMapPlace.get(data.idxs[0])
-							if(p.survival || place !== "holding" && p.cheats) world.addItems(p.x, p.y, p.z, p.dimension, d.x/4, d.y/4, d.z/4, pitem.id, false, change,pitem.durability,pitem.customName,p.id)
+							if(p.survival || place !== "holding" && p.cheats) world[p.dimension].addItems(p.x, p.y, p.z, d.x/4, d.y/4, d.z/4, pitem.id, false, change,pitem.durability,pitem.customName,p.id)
 							break check
 						}
 					}
@@ -34739,9 +33065,9 @@ window.parent.postMessage({ready:true}, "*")
 						p.setLevel()
 						p.resendHealth = true
 					}
-					world.playSound(p.x,p.y,p.z,"anvil.land")
-					setTimeout(()=>world.playSound(p.x,p.y,p.z,"anvil.land"),500)
-					setTimeout(()=>world.playSound(p.x,p.y,p.z,"anvil.land"),1000)
+					world[p.dimension].playSound(p.x,p.y,p.z,"anvil.land")
+					setTimeout(()=>world[p.dimension].playSound(p.x,p.y,p.z,"anvil.land"),500)
+					setTimeout(()=>world[p.dimension].playSound(p.x,p.y,p.z,"anvil.land"),1000)
 				}
 				if(anvilUpdate) updateAnvil()
 			}else if(data.type === "hotbar"){
@@ -34751,10 +33077,10 @@ window.parent.postMessage({ready:true}, "*")
 				updateAnvil()
 			}else if(data.type === "containerChangeCommandBlock"){
 				let {containerData} = p.inventory
-				world.setTagByName(containerData.x,containerData.y,containerData.z,"data",data.data,false,containerData.dimension)
+				world[containerData.dimension].setTagByName(containerData.x,containerData.y,containerData.z,"data",data.data,false)
 			}else if(data.type === "containerChangeSign"){
 				let {containerData} = p.inventory
-				world.setTagByName(containerData.x,containerData.y,containerData.z,data.side?"text2":"text",data.data,false,containerData.dimension)
+				world[containerData.dimension].setTagByName(containerData.x,containerData.y,containerData.z,data.side?"text2":"text",data.data)
 			}else if(data.type === "entInteract"){
 				world.entInteract(data.data,data.hit,data.cooldown,p)
 			}else if(data.type === "respawn"){
@@ -34799,7 +33125,7 @@ window.parent.postMessage({ready:true}, "*")
 						item.durability = blockData[item.id].durability
 					}else if(item.durability <= 0){
 						p.inventory.hotbar[i] = 0
-						world.playSound(p.x,p.y,p.z,"random.break")
+						world[p.dimension].playSound(p.x,p.y,p.z,"random.break")
 					}
 				}
 			}
@@ -34810,7 +33136,7 @@ window.parent.postMessage({ready:true}, "*")
 			for(let i=0; i<p.loadChunks.length; i+=2){
 				if(this.updateingLoadedI !== id) break
 				let x = p.loadChunks[i], z = p.loadChunks[i+1]
-				let chunk = world.getChunk(x*16,z*16,p.dimension)
+				let chunk = world[p.dimension].getChunk(x*16,z*16)
 				if(chunk && chunk.canSendClient){
 					if(host) c.send({type:"chunkData",x,z})
 					else c.send({
@@ -34900,16 +33226,16 @@ window.parent.postMessage({ready:true}, "*")
 				p.inventory[place] = item
 			}else if(place === "furnaceInput"){
 				containerData.data.input = item
-				world.updateTags(containerData.x,containerData.y,containerData.z,containerData.dimension)
+				world[containerData.dimension].updateTags(containerData.x,containerData.y,containerData.z)
 			}else if(place === "furnaceOutput"){
 				containerData.data.output = item
-				world.updateTags(containerData.x,containerData.y,containerData.z,containerData.dimension)
+				world[containerData.dimension].updateTags(containerData.x,containerData.y,containerData.z)
 			}else if(place === "furnaceFuel"){
 				containerData.data.fuel = item
-				world.updateTags(containerData.x,containerData.y,containerData.z,containerData.dimension)
+				world[containerData.dimension].updateTags(containerData.x,containerData.y,containerData.z)
 			}else if(place === "chest" || place === "dispenser" || place === "hopper"){
 				containerData.data.contents[idx] = item
-				world.updateTags(containerData.x,containerData.y,containerData.z,containerData.dimension)
+				world[containerData.dimension].updateTags(containerData.x,containerData.y,containerData.z)
 			}
 			let len = p.inventory.slotMapPlace.size
 			let prevSlots = p.inventory.prevSlots
@@ -34933,7 +33259,7 @@ window.parent.postMessage({ready:true}, "*")
 			}
 			if(item){
 				let d = p.direction
-				world.addItems(p.x, p.y, p.z, p.dimension, d.x/4, d.y/4, d.z/4, item.id, false, item.amount,item.durability,item.customName,p.id)
+				world[containerData.dimension].addItems(p.x, p.y, p.z, d.x/4, d.y/4, d.z/4, item.id, false, item.amount,item.durability,item.customName,p.id)
 			}
 		}
 		let tempCraftGrid = new Array(9)
@@ -34993,13 +33319,13 @@ window.parent.postMessage({ready:true}, "*")
 			//below: for containers
 			if(p.inventory.currentContainer === "furnace" || p.inventory.currentContainer === "chest" || p.inventory.currentContainer === "dispenser" || p.inventory.currentContainer === "hopper"){
 				let containerData = p.inventory.containerData
-				let tags = world.getTags(containerData.x,containerData.y,containerData.z,containerData.dimension)
-				let block = world.getBlock(containerData.x, containerData.y, containerData.z,containerData.dimension)
+				let tags = world[containerData.dimension].getTags(containerData.x,containerData.y,containerData.z)
+				let block = world[containerData.dimension].getBlock(containerData.x, containerData.y, containerData.z)
 				let {currentContainer} = p.inventory
 				const bname = blockData[block].name
 				if(currentContainer === "furnace" && bname === "furnace" || currentContainer === "chest" && (bname === "chest" || bname === "barrel") || currentContainer === "dispenser" && (bname === "dispenser" || bname === "dropper") || currentContainer === "hopper" && bname === "hopper"){
 					if(!tags || !tags.contents){
-						tags = blockData[block].setContents(containerData.x,containerData.y,containerData.z,containerData.dimension,world)
+						tags = blockData[block].setContents(containerData.x,containerData.y,containerData.z,world[containerData.dimension])
 					}
 				}else{
 					p.inventory.currentContainer = null
@@ -35008,18 +33334,18 @@ window.parent.postMessage({ready:true}, "*")
 				}
 				if(p.inventory.currentContainer === "furnace"){
 					c.send({type:"containerChangeFurnace",burnProgress:tags.burnProgress,progress:tags.progress})
-					blockData[blockIds.furnace].update(containerData.x,containerData.y,containerData.z,containerData.dimension,world)
+					blockData[blockIds.furnace].update(containerData.x,containerData.y,containerData.z,world[containerData.dimension])
 				}
 				p.inventory.containerData.data = tags
 			}else if(p.inventory.currentContainer === "commandBlock" || p.inventory.currentContainer === "sign"){
 				let containerData = p.inventory.containerData
-				let tags = world.getTags(containerData.x,containerData.y,containerData.z,containerData.dimension)
-				let block = world.getBlock(containerData.x, containerData.y, containerData.z,containerData.dimension)
+				let tags = world[containerData.dimension].getTags(containerData.x,containerData.y,containerData.z)
+				let block = world[containerData.dimension].getBlock(containerData.x, containerData.y, containerData.z)
 				let {currentContainer} = p.inventory
 				if(currentContainer === "commandBlock" && blockData[block].commandBlock){
 					if(!tags || !tags.commandBlock){
 						tags = {commandBlock:true,data:"",output:""}
-						world.setTags(containerData.x, containerData.y, containerData.z,tags,false,containerData.dimension)
+						world[containerData.dimension].setTags(containerData.x, containerData.y, containerData.z,tags)
 					}
 				}else if(currentContainer === "sign" && blockData[block].sign && tags && tags.sign){
 				}else{
@@ -35071,13 +33397,6 @@ window.parent.postMessage({ready:true}, "*")
       }
     }
   }
-	sendAllInChunk(msg,x,z,dimension){
-		for(let p of this.players){
-			if(p.dimension === dimension && maxDist(x,z,round(p.x/16),round(p.z/16)) <= p.loadDistance){
-				p.connection.send(msg)
-			}
-		}
-	}
 	/*requestAllInvs(){
 		let promises = []
 		for(let p of this.players){
@@ -35095,6 +33414,1089 @@ window.parent.postMessage({ready:true}, "*")
 			this.modContainer.contentWindow.postMessage({close:true})
 			this.modContainer.remove()
 		}
+	}
+}
+class WorldDimension{
+	constructor(world,dimension) {
+		this.world = world
+		this.dimension = dimension
+
+		//Initialize the world's arrays
+		this.chunks = []
+		this.timeoutQueue = []
+		this.updateQueue = []
+		this.structureData = {}//Structure data for temporary use while generating structure
+	}
+	sendAll(msg){
+		for(let p of this.world.players){
+			if(p.dimension === this.dimension) p.connection.send(msg)
+		}
+	}
+	sendAllInChunk(msg,x,z){
+		for(let p of this.world.players){
+			if(p.dimension === this.dimension && maxDist(x,z,round(p.x/16),round(p.z/16)) <= p.loadDistance){
+				p.connection.send(msg)
+			}
+		}
+	}
+	blockParticles(block,x,y,z,amount, type, dir, remote){
+    if(!remote) this.sendAll({
+      type:"particles", particleType:"blockParticles",
+      x,y,z,amount,dimension:this.dimension,data:{block,thisType:type,dir}
+    })
+  }
+	explode(x,y,z, r, type){
+		/*world.setBlock(x,y,z,blockIds.air);
+		for(var i=radius; i>0; i--){
+			sphereoidAt(x,y,z,i,i,i, blockIds.air)
+		}*/
+		//ball(x,y,z,r,r,r,0)
+		if(!type)this.setBlock(x,y,z, 0)
+		else if(type === "original") this.setBlock(x,y,z, this.getOriginalBlock(x,y,z))
+		/*let w2 = r * r
+		let h2 = w2
+		let d2 = w2
+		for (let Y = -r; Y < r; Y++) {
+			for (let X = -r; X <= r; X++) {
+				for (let Z = -r; Z <= r; Z++) {
+					let n = X * X / w2 + Y * Y / h2 + Z * Z / d2
+					if (n < 1) {
+						if(world.getBlock(X + x, Y + y, Z + z) === blockIds.tnt){
+							blockData[blockIds.tnt].explode(X+x,Y+y,Z+z, "explosion")
+						}
+						if(Math.random() > 0.5){
+							var time = Math.random()*1000
+							if(time < 10){
+								world.particles.push(new ExplodeParticle(X + x, Y + y, Z + z))
+							}else{
+								setTimeout(() => world.particles.push(new ExplodeParticle(X + x, Y + y, Z + z)), time)
+							}
+						}
+						if(!liquid){
+							var block = world.getBlock(X+x,Y+y,Z+z)
+							if(blockData[block].ongetexploded){
+								blockData[block].ongetexploded(x+X,y+Y,z+Z,block,world)
+							}
+							world.setBlock(X + x, Y + y, Z + z, 0)
+						}
+					}
+				}
+			}
+		}*/
+		//create rays rays coming from the center of the cube to each outer edge
+		let destroyed = {}, particles = []
+		for(var cx=0; cx<16; cx++){
+			for(var cy=0; cy<16; cy++){
+				for(var cz=0; cz<16; cz++){
+					if(!(cx === 0 || cx === 15 || cy === 0 || cy === 15 || cz === 0 || cz === 15)) continue
+					
+					var intensity =  (0.7 + rand(0.6)) * r
+					var x2 = cx / 16, y2 = cy / 16, z2 = cz / 16
+					//step 0.3 blocks each time
+					var d = abs(dist3(0,0,0, (x2-0.5)*2*r,(y2-0.5)*2*r,(z2-0.5)*2*r))
+					var step = (0.3/d)/2 //how much to go along ray
+					for(var i=0; i<1; i+=step){
+						var sx = round(lerp(i, x, (x2-0.5)*2*r+x))
+						var sy = round(lerp(i, y, (y2-0.5)*2*r+y))
+						var sz = round(lerp(i, z, (z2-0.5)*2*r+z))
+						intensity -= 0.3 * 0.75
+						var block = this.getBlock(sx,sy,sz)
+						var isDestroyed = destroyed[sx+","+sy+","+sz]
+						//if block isn't air, reduce intensity based on blast resistance
+						if(block && !isDestroyed){
+							var br = blockData[block].blastResistance || 0
+							intensity -= (br + 0.3) * 0.3
+							if(intensity > 0) {
+								destroyed[sx+","+sy+","+sz] = true
+								if(!type){
+									if(blockData[block].ongetexploded){
+										blockData[block].ongetexploded(sx,sy,sz,block,this)
+									}
+									this.setBlock(sx, sy, sz, 0)
+									if(round(rand(r-1)) === 0){
+										this.addItems(sx, sy, sz, 0, 0, 0, block, true)
+									}
+								}
+								if(block === blockIds.tnt){
+									blockData[blockIds.tnt].explode(sx,sy,sz, "explosion",this)
+								}else if(block === blockIds.untnt){
+									blockData[blockIds.untnt].explode(sx,sy,sz, "explosion",this)
+								}
+							}/*end if(intensity > 0)*/else{
+								continue
+							}
+						}
+						if(intensity > 0 && type === "original" && !isDestroyed){
+							this.setBlock(sx,sy,sz, this.getOriginalBlock(sx,sy,sz))
+						}
+						if(intensity > 0 && rand() > 0.995){
+							let time = rand()*1000
+							particles.push(sx,sy,sz,this.dimension,time)
+						}
+					}
+				}//end for loop
+			}
+		}
+		this.sendAll({type:"particles", particleType:"explosion", data:particles, dimension:this.dimension})
+		
+		//the calculation below is not from minecraft
+		let nearEntities = this.getEntitiesNear(x,y,z,r)
+		for(let ent of nearEntities){
+			let dist = dist3(x,y,z, ent.x, ent.y, ent.z)
+			if(dist <= r){
+				let speed = (r-dist)
+				let X = ent.x - x
+				let Y = ent.y - y
+				let Z = ent.z - z
+				let velx = X/dist*speed, vely = Y/dist*speed, velz = Z/dist*speed
+				/*
+				velx = ((Math.sign(X)*r)-X)/5
+				vely = ((Math.sign(Y)*r)-Y)/5
+				velz = ((Math.sign(Z)*r)-Z)/5*/
+				if(ent.damage){
+					let damageTook = (r - dist) * 6
+					ent.damage(damageTook,velx,vely,velz)
+				}else{
+					ent.velx += velx
+					ent.vely += vely
+					ent.velz += velz
+				}
+			}
+		}
+		for(let ent of this.world.players){
+			if(ent.dimension !== this.dimension || ent.hidden || ent.die) continue
+			let dist = dist3(x,y,z, ent.x, ent.y, ent.z)
+			if(dist <= r){
+				let speed = (r-dist)
+				let X = ent.x - x
+				let Y = ent.y - y
+				let Z = ent.z - z
+				let velx = X/dist*speed, vely = Y/dist*speed, velz = Z/dist*speed
+				let damageTook = (r - dist) * 6
+				ent.damage(damageTook,ent.username+" blew up", false,null, x,y,z, null,velx,vely,velz)
+			}
+		}
+		explodeSound(x,y,z, r, this)
+	}
+	blockSound(blockID, type, x,y,z, volume){
+    let block = blockData[blockID]
+		if(typeof volume !== "number") volume = 1
+    
+    let sound, pitch = 1
+    switch(type){
+      case "place":
+        sound = block.placeSound || block.digSound
+        break;
+      case "dig":
+        sound = block.digSound
+        break;
+      case "step":
+        sound = block.stepSound
+        break;
+			case "lowStep":
+				sound = block.stepSound
+				pitch = 0.5
+        break;
+      case "breaking":
+        sound = block.stepSound
+				pitch = 0.5
+				volume *= 0.5
+        break;
+      case "land":
+        sound = block.landSound || block.digSound
+    }
+    if(typeof sound === "function") return sound()
+    if(Array.isArray(sound)){
+      sound = sound[Math.floor(Math.random()*sound.length)]
+    }
+    if(sound){
+      this.playSound(x,y,z,sound, volume, pitch)
+    }
+  }
+	playSound(x,y,z, name, volume = 1, pitch = 1){
+		this.sendAll({type:"playSound", data:name, volume, pitch, x,y,z, hasPos: (typeof x === "number")})
+	}
+	poof(x,y,z,amount, w,h,d, unremote){
+		if(!amount) amount = w*h*d*20
+    if(unremote) this.sendAll({
+      type:"particles",particleType:"poof",
+      x,y,z,dimension:this.dimension,amount,data:{w,h,d}
+    })
+  }
+	glint(x,y,z,dimension,remote){
+    if(!remote) this.sendAll({
+      type:"particles", particleType:"glint",
+      x,y,z,dimension:this.dimension
+    })
+  }
+	updateBlock(x, y, z, lazy, noOnupdate, sx,sy,sz) {
+		let chunk = this.chunks[x >> 4] && this.chunks[x >> 4][z >> 4]
+		if (chunk && chunk.allGenerated) {
+			chunk.updateBlock(x & 15, y, z & 15, this, lazy, noOnupdate, sx,sy,sz)
+		}
+	}
+	getChunk(x, z) {
+		return this.chunks[x >> 4] && this.chunks[x >> 4][z >> 4]
+	}
+	getOrNewChunk(x,z){
+		const xm = x>>4, zm = z>>4
+		if (!this.chunks[xm]) {
+			this.chunks[xm] = []
+		}
+		if (!this.chunks[xm][zm]) {
+			return this.chunks[xm][zm] = new Chunk(xm<<4, zm<<4,this)
+		}
+		return this.chunks[xm][zm]
+	}
+	getBlock(x, y, z) {
+		if (y > maxHeight) {
+			return blockIds.air
+		} else if (y < minHeight) {
+			return blockIds.air
+		}
+		if (!this.chunks[x >> 4] || !this.chunks[x >> 4][z >> 4]) {
+			return blockIds.air
+		}
+		return this.chunks[x >> 4][z >> 4].getBlock(x & 15, y, z & 15)
+	}
+	getOriginalBlock(x, y, z) {
+		let chunk = this.getChunk(x,z)
+		return chunk ? chunk.getOriginalBlock(x & 15, y, z & 15) : blockIds.air
+	}
+	setBlock(x, y, z, blockID, lazy, noOnupdate, remote, keepTags) {
+		if (!this.chunks[x >> 4] || !this.chunks[x >> 4][z >> 4]) {
+			return false
+		}
+		if(y < minHeight) return false
+		let chunk = this.chunks[x >> 4] && this.chunks[x >> 4][z >> 4]
+		
+		let xm = x & 15
+		let zm = z & 15
+		let prev = chunk.getBlock(xm,y,zm)
+		if (blockID) {
+			if(prev){ //block gets replaced
+				let prevData = blockData[prev]
+				chunk.deleteBlock(xm, y, zm, !lazy)
+				if (!lazy && chunk.allGenerated && (!prevData.transparent || prevData.lightLevel || prevData.decreaseLight) && chunk.lit) {
+					this.updateLight(x, y, z, false, prevData.lightLevel)
+				}
+			}
+			let data = blockData[blockID]
+			chunk.setBlock(xm, y, zm, blockID, !lazy)
+			if (!lazy && chunk.allGenerated && (!data.transparent || data.lightLevel || data.decreaseLight) && chunk.lit) {
+				this.updateLight(x, y, z, true, data.lightLevel)
+			}
+		} else {
+			let data = blockData[prev]
+			chunk.deleteBlock(xm, y, zm, !lazy)
+			if (!lazy && chunk.allGenerated && (!data.transparent || data.lightLevel || data.decreaseLight) && chunk.lit) {
+				this.updateLight(x, y, z, false, data.lightLevel)
+			}
+		}
+		
+		if (lazy) {
+			return
+		}
+		let prevTags = this.getTags(x,y,z)
+		if(!keepTags) this.setTags(x, y, z, undefined, remote)
+		for(let i = this.timeoutQueue.length-1; i>=0; i--){
+			let timeout = this.timeoutQueue[i]
+			if(timeout.x === x && timeout.y === y && timeout.z === z && (timeout.block === undefined || timeout.block === blockID)){
+				this.timeoutQueue.splice(i,1)
+				break
+			}
+		}
+		
+		let nameChanged = blockData[prev].name !== blockData[blockID || 0].name
+		if(!noOnupdate && prev && blockData[prev].ondelete && nameChanged){
+			blockData[prev].ondelete(x,y,z, prevTags, prev,this)
+		}
+		if(!noOnupdate && blockID && blockData[blockID].onset && nameChanged){
+			blockData[blockID].onset(x,y,z,this)
+		}
+		
+		if(!remote) this.sendAllInChunk({type:"setBlock", data:{x:x, y:y, z:z, block:blockID, dimension:this.dimension, keepTags:keepTags}},x>>4,z>>4)
+
+		//Update the 6 adjacent blocks and 1 changed block
+		if (xm && xm !== 15 && zm && zm !== 15) {
+			chunk.updateBlock(xm - 1, y, zm, this, lazy, false, x,y,z)
+			chunk.updateBlock(xm, y - 1, zm, this, lazy, false, x,y,z)
+			chunk.updateBlock(xm + 1, y, zm, this, lazy, false, x,y,z)
+			chunk.updateBlock(xm, y + 1, zm, this, lazy, false, x,y,z)
+			chunk.updateBlock(xm, y, zm - 1, this, lazy, false, x,y,z)
+			chunk.updateBlock(xm, y, zm + 1, this, lazy, false, x,y,z)
+		}
+		else {
+			this.updateBlock(x - 1, y, z, lazy, false, x,y,z)
+			this.updateBlock(x + 1, y, z, lazy, false, x,y,z)
+			this.updateBlock(x, y - 1, z, lazy, false, x,y,z)
+			this.updateBlock(x, y + 1, z, lazy, false, x,y,z)
+			this.updateBlock(x, y, z - 1, lazy, false, x,y,z)
+			this.updateBlock(x, y, z + 1, lazy, false, x,y,z)
+		}
+
+		chunk.updateBlock(xm, y, zm, this, lazy, noOnupdate, x,y,z)
+
+		// Update the corner chunks so shadows in adjacent chunks update correctly
+		if (xm | zm === 0) { this.updateBlock(x - 1, y, z - 1, lazy, true,x,y,z); }
+		if (xm === 15 && zm === 0) { this.updateBlock(x + 1, y, z - 1, lazy, true,x,y,z); }
+		if (xm === 0 && zm === 15) { this.updateBlock(x - 1, y, z + 1, lazy, true,x,y,z); }
+		if (xm & zm === 15) { this.updateBlock(x + 1, y, z + 1, lazy, true,x,y,z); }
+	}
+	tagUpdate(x,y,z,t){
+		var block = this.getBlock(x,y,z)
+		if(block && blockData[block].ontagsupdate) blockData[block].ontagsupdate(x,y,z,t,this)
+	}
+	tagsChanged(x,y,z, t, remote, lazy){
+		/*var str = x.toString(36)+","+y.toString(36)+","+z.toString(36)
+		var editedTags = dimension === "nether" ? this.netherEditedTags : (dimension === "end" ? this.endEditedTags : this.editedTags)
+		if(t){
+			if(!editedTags.includes(str)) editedTags.push(str)
+		}else{
+			if(editedTags.includes(str)){
+				editedTags.splice(editedTags.indexOf(str),1)
+			}
+		}*/
+		if(!lazy){
+			this.tagUpdate(x,y,z,t)
+			this.tagUpdate(x-1,y,z,t)
+			this.tagUpdate(x+1,y,z,t)
+			this.tagUpdate(x,y-1,z,t)
+			this.tagUpdate(x,y+1,z,t)
+			this.tagUpdate(x,y,z-1,t)
+			this.tagUpdate(x,y,z+1,t)
+		}
+		if(!remote){
+			this.sendAllInChunk({type:"setTags", x, y, z, data:t, dimension:this.dimension, lazy},x>>4,z>>4)
+		}
+	}
+	getTags(x,y,z){
+		if (y > maxHeight) {
+			return
+		} else if (y < minHeight) {
+			return
+		}
+		if (!this.chunks[x >> 4] || !this.chunks[x >> 4][z >> 4]) {
+			return
+		}
+		return this.chunks[x >> 4][z >> 4].getTags(x & 15, y, z & 15)
+	}
+	getTagByName(x,y,z,n){
+		if (y > maxHeight) {
+			return
+		} else if (y < minHeight) {
+			return
+		}
+		return this.getChunk(x, z).getTagByName(x & 15, y, z & 15, n)
+	}
+	setTags(x,y,z,data, remote, lazy){
+		if (!this.chunks[x >> 4] || !this.chunks[x >> 4][z >> 4]) {
+			return
+		}
+		if(y < minHeight) return
+		let chunk = this.chunks[x >> 4] && this.chunks[x >> 4][z >> 4]
+		
+		let xm = x & 15
+		let zm = z & 15
+		chunk.setTags(xm, y, zm, data)
+		this.tagsChanged(x,y,z,data, remote, lazy)
+	}
+	setTagByName(x,y,z,n,data, remote, lazy){
+		if (!this.chunks[x >> 4] || !this.chunks[x >> 4][z >> 4]) {
+			return
+		}
+		if(y < minHeight) return
+		let chunk = this.chunks[x >> 4] && this.chunks[x >> 4][z >> 4]
+		
+		let xm = x & 15
+		let zm = z & 15
+		var t = chunk.setTagByName(xm, y, zm, n,data)
+		this.tagsChanged(x,y,z,t, remote, lazy)
+	}
+	updateTags(x,y,z,lazy){
+		var t = this.getTags(x,y,z)
+		this.tagsChanged(x,y,z,t,false,lazy)
+	}
+	getLight(x, y, z, blockLight = 0, fullOutside = 0) {
+		if(y < minHeight) return 0
+		let chunk = this.chunks[x >> 4] && this.chunks[x >> 4][z >> 4]
+		if(chunk){
+			return chunk.getLight(x & 15, y, z & 15, blockLight, fullOutside)
+		}
+		return (!blockLight || fullOutside) * 15
+	}
+	setLight(x, y, z, level, block) {
+		let chunk = this.chunks[x >> 4] && this.chunks[x >> 4][z >> 4]
+		if (chunk) {
+			return chunk.setLight(x & 15, y, z & 15, level, block)
+		}
+	}
+	updateLight(x, y, z, place, blockLight = 0) {
+		let chunk = this.getChunk(x, z)
+		let cx = x & 15
+		let cz = z & 15
+		let center = chunk.getLight(cx, y, cz, 0)
+		let centerExposed = chunk.getLight(cx, y, cz, 2)
+		let blight = chunk.getLight(cx, y, cz, 1)
+		let up = this.getLight(x, y+1, z, 0)
+		let upExposed = this.getLight(x, y+1, z, 2)
+		let down = this.getLight(x, y-1, z, 0)
+		let north = this.getLight(x, y, z+1, 0)
+		let south = this.getLight(x, y, z-1, 0)
+		let east = this.getLight(x+1, y, z, 0)
+		let west = this.getLight(x-1, y, z, 0)
+
+		/*if(place){ //set vertical column to 15
+			let spread = []
+			for(let x2 = x-1; x2 <= x+1; x2++) for(let z2 = z-1; z2 <= z+1; z2++){
+				//spread around side too so the sides won't get dark
+				let i = chunk.sections.length * 16 - 1
+				let cx2 = x2 & 15, cz2 = z2 & 15
+				for(; i >= 0; i--){
+					if(!blockData[chunk.getBlock(cx2,i,cz2)].transparent) break
+					if(chunk.getLight(cx2,i,cz2,0) !== 15){
+						chunk.setLight(cx2,i,cz2,15,0)
+						spread.push(x2,i,z2)
+					}
+				}
+			}
+			if(spread.length) chunk.spreadLight(spread, 14, true)
+		}*/
+
+		let spread = []
+		for (let i = 0; i <= 15; i++) spread[i] = []
+		if (!place) { // Block was removed; increase light levels
+			if (upExposed) {
+				let light = upExposed
+				for (let i = y; i >= minHeight; i--) {
+					let block = blockData[chunk.getBlock(cx, i, cz)]
+					if (block.transparent) {
+						if(block.decreaseLight){
+							light = max(light - block.decreaseLight,0)
+						}
+						chunk.setLight(cx, i, cz, light, 2)
+						if(light > chunk.getLight(cx, i, cz, 0)) chunk.setLight(cx, i, cz, light, 0)
+						spread[light].push(x, i, z)
+					} else {
+						break
+					}
+				}
+				for (let i = 0; i < spread.length; i++){
+					if(spread[i].length) chunk.spreadLight(spread[i], i-1, true)
+				}
+			} else {
+				center = max(up, down, north, south, east, west)
+				if (center > 0) center -= 1
+				this.setLight(x, y, z, center, 0)
+				if (center > 1) {
+					spread[center].push(x, y, z)
+					chunk.spreadLight(spread[center], center - 1, true)
+				}
+			}
+
+			// Block light levels
+			if (!blockLight || blockLight < blight) {
+				up = this.getLight(x, y+1, z, 1)
+				down = this.getLight(x, y-1, z, 1)
+				north = this.getLight(x, y, z+1, 1)
+				south = this.getLight(x, y, z-1, 1)
+				east = this.getLight(x+1, y, z, 1)
+				west = this.getLight(x-1, y, z, 1)
+				blight = max(up, down, north, south, east, west)
+				spread[blight].length = 0
+				if (blight > 0) blight -= 1
+				this.setLight(x, y, z, blight, 1)
+				if (blight > 1) {
+					spread[blight].push(x, y, z)
+					chunk.spreadLight(spread[blight], blight - 1, true, 1)
+				}
+				spread[blight].length = 0
+			}
+		}
+		else if (place && (center !== 0 || blight !== 0)) { // Block was placed; decrease light levels
+			let respread = []
+			for (let i = 0; i <= 15/*center + 1*/; i++) respread[i] = []
+			chunk.setLight(cx, y, cz, 0, 0)
+			chunk.setLight(cx, y, cz, 0, 1)
+			spread[center].push(x, y, z)
+
+			// Sky light
+			let light = centerExposed, startY = y
+			if(!blockData[chunk.getBlock(cx, y, cz)].transparent){
+				chunk.setLight(cx, y, cz, 0, 0)
+				chunk.setLight(cx, y, cz, 0, 1)
+				chunk.setLight(cx, y, cz, 0, 2)
+				spread[center].push(x, y, z)
+				startY--
+				light = 0
+			}
+			if(centerExposed){
+				for (let i = startY; i >= minHeight; i--) {
+					let block = blockData[chunk.getBlock(cx, i, cz)]
+					if (block.transparent) {
+						if(block.decreaseLight){
+							light = max(light - block.decreaseLight,0)
+						}
+						chunk.setLight(cx, i, cz, light, 2)
+						let prevLight = chunk.getLight(cx, i, cz, 0)
+						chunk.setLight(cx, i, cz, light, 0)
+						spread[prevLight].push(x, i, z)
+					} else {
+						break
+					}
+				}
+			}
+			for (let i = 0; i <= 15; i++){
+				if(spread[i].length) chunk.unSpreadLight(spread[i], i - 1, respread)
+			}
+			chunk.reSpreadLight(respread)
+
+			// Block light
+			if (blight) {
+				respread.length = 0
+				for (let i = 0; i <= 15/*blight + 1*/; i++) respread[i] = []
+				spread[blight].length = 0
+				spread[blight].push(x, y, z)
+				chunk.unSpreadLight(spread[blight], blight - 1, respread, 1)
+				chunk.reSpreadLight(respread, 1)
+				spread[blight].length = 0
+			}
+		}
+		if (place && blockLight) { // Light block was placed
+			this.setLight(x, y, z, blockLight, 1)
+			spread[blockLight].length = 0
+			spread[blockLight].push(x, y, z)
+			chunk.spreadLight(spread[blockLight], blockLight - 1, true, 1)
+		} else if (!place && blockLight) { // Light block was removed
+			this.setLight(x, y, z, 0, 1)
+			spread[blockLight].length = 0
+			spread[blockLight].push(x, y, z)
+			let respread = []
+			for (let i = 0; i <= 15/*blockLight + 1*/; i++) respread[i] = []
+			chunk.unSpreadLight(spread[blockLight], blockLight - 1, respread, 1)
+			chunk.reSpreadLight(respread, 1)
+		}
+	}
+	spawnBlock(x, y, z, blockID, force) {
+		//Sets a block anywhere without causing block updates around it. Only to be used in world gen.
+		
+		if(blockData[blockID].crossShape) blockID |= CROSS
+		if(blockData[blockID].tallcrossShape) blockID |= TALLCROSS
+		if(blockData[blockID].cactus) blockID |= CACTUS
+		if(blockData[blockID].randomRotateOnSpawn){
+			switch(round(hash3(x,y,z)*3)){
+				case 0:
+					blockID |= NORTH
+					break
+				case 1:
+					blockID |= WEST
+					break
+				case 2:
+					blockID |= SOUTH
+					break
+				case 3:
+					blockID |= EAST
+					break
+			}
+		}
+		
+		let chunkX = x >> 4
+		let chunkZ = z >> 4
+		if (!this.chunks[chunkX]) {
+			this.chunks[chunkX] = []
+		}
+		let chunk = this.getOrNewChunk(x,z)
+		let solid = blockData[chunk.getBlock(x & 15, y, z & 15)].solid
+		if (chunk.allGenerated) {
+			//Only used if spawning a block post-gen
+			if(!solid) this.setBlock(x, y, z, blockID)
+		} else if (force || !solid) {
+			chunk.setBlock(x & 15, y, z & 15, blockID)
+		}
+	}
+	getBiome(x,y,z){
+		if (!this.chunks[x >> 4] || !this.chunks[x >> 4][z >> 4]) {
+			return
+		}
+		let X = x & 15
+		let Z = z & 15
+		let caveMinY = this.chunks[x >> 4][z >> 4].caveY[Z * 16 + X]
+		let caveMaxY = this.chunks[x >> 4][z >> 4].caveY[Z * 16 + X + 256]
+		return biomes[y < caveMaxY && y > caveMinY ? (this.chunks[x >> 4][z >> 4].caveBiomes[Z * 16 + X]) : (this.chunks[x >> 4][z >> 4].biomes[Z * 16 + X])]
+	}
+	addEntity(ent, remote){
+		if(!ent.id) ent.id = generateID()
+		ent.world = this
+		ent.dimension = ent.chunkDimension = this.dimension, ent.world = this
+		if(!remote && !ent.remote){
+			//host controls entities
+			this.sendEntityPos(ent)
+		}
+		this.world.entities.push(ent)
+		//if(ent.alwaysRender) this.alwaysRenderEntities.push(ent)
+		let chunk = this.getOrNewChunk(ent.chunkX<<4,ent.chunkZ<<4)
+		chunk.entities.set(ent.id, ent)
+	}
+	deleteEntity(id, remote, i){
+		i = (i || i===0) ? i : this.world.getEntity(id)
+		let ent = this.world.entities[i]
+		if(!ent || remote && ent.noRemoteDelete) return
+		id = ent.id
+		if(!remote){
+			this.sendAllInChunk({type:"entityDelete", id}, ent.chunkX,ent.chunkZ)
+		}
+		if(i || i===0) this.world.entities.splice(i, 1)
+		/*if(ent.alwaysRender){
+			let i = this.alwaysRenderEntities.indexOf(ent)
+			this.alwaysRenderEntities.splice(i,1)
+		}*/
+		const {chunkX, chunkZ} = ent
+		let chunk = this.getChunk(chunkX<<4,chunkZ<<4)
+		if(chunk) delete chunk.entities.delete(id)
+	}
+	sendEntityPos(ent){
+		this.sendAllInChunk({type:"entityPos", data:this.world.getEntPos(ent,performance.now()).array}, ent.chunkX,ent.chunkZ)
+	}
+	
+	getEntities(p){
+		let x = p.x >> 4
+		let z = p.z >> 4
+		let {loadDistance} = p
+		loadDistance--
+		//if(!this.entities.length) return this.entities //its an empty array, so no problemslet minChunkX = x - d >> 4
+		let minChunkX = x - loadDistance
+		let maxChunkX = x + loadDistance
+		let minChunkZ = z - loadDistance
+		let maxChunkZ = z + loadDistance
+		let arr = []
+		for (x = minChunkX; x <= maxChunkX; x++) {
+			for (z = minChunkZ; z <= maxChunkZ; z++) {
+				if (this.chunks[x] && this.chunks[x][z]) {
+					let chunk = this.chunks[x][z]
+					for(let [i,ent] of chunk.entities){
+						let now = performance.now()
+						//if(ent.remote) return
+						arr.push(this.world.getEntPos(ent,now).array)
+					}
+				}
+			}
+		}
+		return arr
+	}
+	getEntitiesNear(x,y,z,d, ret = []){
+		let minChunkX = x - d >> 4
+		let maxChunkX = x + d >> 4
+		let minChunkY = y - d >> 4
+		let maxChunkY = y + d >> 4
+		let minChunkZ = z - d >> 4
+		let maxChunkZ = z + d >> 4
+		let section = null
+		ret.length = 0
+		let i = 0
+		for (x = minChunkX; x <= maxChunkX; x++) {
+			for (z = minChunkZ; z <= maxChunkZ; z++) {
+				if (this.chunks[x] && this.chunks[x][z]) {
+					let ents = this.chunks[x][z].entities
+					for(let [i,ent] of ents){
+						ret.push(ent)
+					}
+				}
+			}
+		}
+		return ret
+	}
+	addItems(x,y,z,vx,vy,vz,block,autoSetVel,amount = 1,durability,customName,from){
+		if(!block) return
+		var data = blockData[block]
+		while(amount){
+			var a = min(amount,data.stackSize)
+			amount -= a
+			this.addEntity(new entities[entityIds.Item](x, y, z, vx, vy, vz, block, autoSetVel, a,durability,customName,from))
+		}
+	}
+	
+	getRedstoneConnectedTo(x,y,z, level){
+		let spreaded = []
+		let spreadAt = []
+		spreadAt.push(x,y,z,0)
+		let tempblock
+		while(spreadAt.length){
+			let x = spreadAt[0]
+			let y = spreadAt[1]
+			let z = spreadAt[2]
+			let i = spreadAt[3]
+			if(i < level) {
+				if(!xyArrayHas(spreaded,spreadAt,x+1,y,z) && blockData[this.getBlock(x+1,y,z)].carryRedstone) spreadAt.push(x+1,y,z,i+1)
+				if(!xyArrayHas(spreaded,spreadAt,x-1,y,z) && blockData[this.getBlock(x-1,y,z)].carryRedstone) spreadAt.push(x-1,y,z,i+1)
+				if(!xyArrayHas(spreaded,spreadAt,x,y,z+1) && blockData[this.getBlock(x,y,z+1)].carryRedstone) spreadAt.push(x,y,z+1,i+1)
+				if(!xyArrayHas(spreaded,spreadAt,x,y,z-1) && blockData[this.getBlock(x,y,z-1)].carryRedstone) spreadAt.push(x,y,z-1,i+1)
+				if(!xyArrayHas(spreaded,spreadAt,x,y+1,z) && blockData[this.getBlock(x,y+1,z)].carryRedstone) spreadAt.push(x,y+1,z,i+1)
+				if(!xyArrayHas(spreaded,spreadAt,x,y-1,z) && blockData[this.getBlock(x,y-1,z)].carryRedstone) spreadAt.push(x,y-1,z,i+1)
+				
+				let tags = this.getTags(x,y,z), block = this.getBlock(x,y,z)
+				if(blockData[block].name === "redstoneDust"){
+					if(getTagBits(tags,"westUp",block) && !xyArrayHas(spreaded,spreadAt,x+1,y+1,z)) spreadAt.push(x+1,y+1,z,i+1)
+					if(getTagBits(tags,"eastUp",block) && !xyArrayHas(spreaded,spreadAt,x-1,y+1,z)) spreadAt.push(x-1,y+1,z,i+1)
+					if(getTagBits(tags,"northUp",block) && !xyArrayHas(spreaded,spreadAt,x,y+1,z+1)) spreadAt.push(x,y+1,z+1,i+1)
+					if(getTagBits(tags,"southUp",block) && !xyArrayHas(spreaded,spreadAt,x,y+1,z-1)) spreadAt.push(x,y+1,z-1,i+1)
+					
+					if(getTagBits(tags,"westDown",block) && !xyArrayHas(spreaded,spreadAt,x+1,y-1,z)) spreadAt.push(x+1,y-1,z,i+1)
+					if(getTagBits(tags,"eastDown",block) && !xyArrayHas(spreaded,spreadAt,x-1,y-1,z)) spreadAt.push(x-1,y-1,z,i+1)
+					if(getTagBits(tags,"northDown",block) && !xyArrayHas(spreaded,spreadAt,x,y-1,z+1)) spreadAt.push(x,y-1,z+1,i+1)
+					if(getTagBits(tags,"southDown",block) && !xyArrayHas(spreaded,spreadAt,x,y-1,z-1)) spreadAt.push(x,y-1,z-1,i+1)
+				}
+				if(blockData[block].rail){
+					tempblock = this.getBlock(x+1,y+1,z); if(!xyArrayHas(spreaded,spreadAt,x+1,y+1,z) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x+1,y+1,z,i+1)
+					tempblock = this.getBlock(x-1,y+1,z); if(!xyArrayHas(spreaded,spreadAt,x-1,y+1,z) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x-1,y+1,z,i+1)
+					tempblock = this.getBlock(x,y+1,z+1); if(!xyArrayHas(spreaded,spreadAt,x,y+1,z+1) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x,y+1,z+1,i+1)
+					tempblock = this.getBlock(x,y+1,z-1); if(!xyArrayHas(spreaded,spreadAt,x,y+1,z-1) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x,y+1,z-1,i+1)
+
+					tempblock = this.getBlock(x+1,y-1,z); if(!xyArrayHas(spreaded,spreadAt,x+1,y-1,z) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x+1,y-1,z,i+1)
+					tempblock = this.getBlock(x-1,y-1,z); if(!xyArrayHas(spreaded,spreadAt,x-1,y-1,z) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x-1,y-1,z,i+1)
+					tempblock = this.getBlock(x,y-1,z+1); if(!xyArrayHas(spreaded,spreadAt,x,y-1,z+1) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x,y-1,z+1,i+1)
+					tempblock = this.getBlock(x,y-1,z-1); if(!xyArrayHas(spreaded,spreadAt,x,y-1,z-1) && blockData[tempblock].rail && blockData[tempblock].carryRedstone) spreadAt.push(x,y-1,z-1,i+1)
+				}
+				spreaded.push(x,y,z,i)
+			}
+			spreadAt.splice(0,4)
+		}
+
+		return spreaded
+	}
+	spreadPower(x,y,z, level){
+		if(!level) return
+		var spread = this.getRedstoneConnectedTo(x,y,z,level)
+		for(var i=0; i<spread.length; i+=4){
+			var bx = spread[i]
+			var by = spread[i+1]
+			var bz = spread[i+2]
+			if(bx === x && by === y && bz === z) continue
+			var l = this.getRedstoneWirePower(bx,by,bz)
+			if(l !== this.getPower(bx,by,bz)) this.setPower(bx,by,bz, l)
+		}
+	}
+	unspreadPower(x,y,z, level, includeSource){
+		if(!level) return
+		var spread = this.getRedstoneConnectedTo(x,y,z,level)
+		var toUpdate = []
+		for(var n=0; n<level; n++){
+			for(var i=0; i<spread.length; i+=4){
+				var bx = spread[i]
+				var by = spread[i+1]
+				var bz = spread[i+2]
+				if(!includeSource && bx === x && by === y && bz === z) continue
+				var l = this.getRedstoneWirePower(bx,by,bz)
+				if(l !== this.getPower(bx,by,bz)) this.setPower(bx,by,bz, l, true), toUpdate[i] = true
+			}
+		}
+		for(var i=0; i<toUpdate.length; i+=4){
+			if(toUpdate[i]){
+				var x = spread[i], y = spread[i+1], z = spread[i+2]
+				this.powerChangeUpdate(x,y,z, x,y,z)
+				this.powerChangeUpdate(x+1,y,z, x,y,z)
+				this.powerChangeUpdate(x-1,y,z, x,y,z)
+				this.powerChangeUpdate(x,y,z+1, x,y,z)
+				this.powerChangeUpdate(x,y,z-1, x,y,z)
+				this.powerChangeUpdate(x,y+1,z, x,y,z)
+				this.powerChangeUpdate(x,y-1,z, x,y,z)
+				this.updateTags(x,y,z,true)
+			}
+		}
+		/*this.powerChangeUpdate(x+1,y,z)
+		this.powerChangeUpdate(x-1,y,z)
+		this.powerChangeUpdate(x,y,z+1)
+		this.powerChangeUpdate(x,y,z-1)*/
+	}
+	getPowerForWire(x,y,z,blue=0,rail=false){
+		let block = this.getBlock(x,y,z)
+		if(blockData[block].name === "redstoneDust" && blue !== (block & FLIP)) return 0
+		if(rail && !blockData[block].rail) return 0
+		return this.getPower(x,y,z)
+	}
+	getRedstoneWirePower(x,y,z){
+		let tags = this.getTags(x,y,z), block = this.getBlock(x,y,z), blue = block & FLIP
+		
+		let right = this.getPowerForWire(x+1,y,z,blue)
+		let left = this.getPowerForWire(x-1,y,z,blue)
+		let down = this.getPowerForWire(x,y,z+1,blue)
+		let up = this.getPowerForWire(x,y,z-1,blue)
+		let top = this.getPowerForWire(x,y+1,z,blue)
+		let bottom = this.getPowerForWire(x,y-1,z,blue)
+		let westUp = 0, eastUp = 0, northUp = 0, southUp = 0, westDown = 0, eastDown = 0, northDown = 0, southDown = 0
+		if(tags && blockData[block].name === "redstoneDust"){
+			westUp = getTagBits(tags,"westUp",block) ? this.getPowerForWire(x+1,y+1,z,blue) : 0
+			eastUp = getTagBits(tags,"eastUp",block) ? this.getPowerForWire(x-1,y+1,z,blue) : 0
+			northUp = getTagBits(tags,"northUp",block) ? this.getPowerForWire(x,y+1,z+1,blue) : 0
+			southUp = getTagBits(tags,"southUp",block) ? this.getPowerForWire(x,y+1,z-1,blue) : 0
+			westDown = getTagBits(tags,"westDown",block) ? this.getPowerForWire(x+1,y-1,z,blue) : 0
+			eastDown = getTagBits(tags,"eastDown",block) ? this.getPowerForWire(x-1,y-1,z,blue) : 0
+			northDown = getTagBits(tags,"northDown",block) ? this.getPowerForWire(x,y-1,z+1,blue) : 0
+			southDown = getTagBits(tags,"southDown",block) ? this.getPowerForWire(x,y-1,z-1,blue) : 0
+		}
+		if(blockData[block].rail){
+			westUp = this.getPowerForWire(x+1,y+1,z,0,true)
+			eastUp = this.getPowerForWire(x-1,y+1,z,0,true)
+			northUp = this.getPowerForWire(x,y+1,z+1,0,true)
+			southUp = this.getPowerForWire(x,y+1,z-1,0,true)
+			westDown = this.getPowerForWire(x+1,y-1,z,0,true)
+			eastDown = this.getPowerForWire(x-1,y-1,z,0,true)
+			northDown = this.getPowerForWire(x,y-1,z+1,0,true)
+			southDown = this.getPowerForWire(x,y-1,z-1,0,true)
+		}
+		let level = max(right,left,down,up, top,bottom, northUp,southUp,eastUp,westUp, northDown,southDown,eastDown,westDown,this.redstoneComponentPowering(x,y,z)+1) - 1
+		if(this.getSurroundingBlockPower(x,y,z) === "strong"){
+			level = 15
+		}
+		return level < 0 ? 0 : level
+	}
+	repeaterIsPowering(x,y,z,rx,ry,rz){
+		var block = this.getBlock(rx,ry,rz)
+		if(block && (blockData[block].name === "repeater" || blockData[block].logicGate || blockData[block].name === "comparator")){
+			return blockData[block].canHavePower(rx,ry,rz,x,y,z,this)
+		}
+		return 0
+	}
+	observerIsPowering(x,y,z,rx,ry,rz){
+		var block = this.getBlock(rx,ry,rz)
+		if(block && blockData[block].name === "observer"){
+			return blockData[block].canHavePower(rx,ry,rz,x,y,z,this)
+		}
+		return 0
+	}
+	redstoneComponentPowering(x,y,z){
+		return max(
+			this.repeaterIsPowering(x,y,z,x+1,y,z),
+			this.repeaterIsPowering(x,y,z,x-1,y,z),
+			this.repeaterIsPowering(x,y,z,x,y,z+1),
+			this.repeaterIsPowering(x,y,z,x,y,z-1),
+
+			this.observerIsPowering(x,y,z,x+1,y,z),
+			this.observerIsPowering(x,y,z,x-1,y,z),
+			this.observerIsPowering(x,y,z,x,y+1,z),
+			this.observerIsPowering(x,y,z,x,y-1,z),
+			this.observerIsPowering(x,y,z,x,y,z+1),
+			this.observerIsPowering(x,y,z,x,y,z-1)
+		)
+	}
+	getRedstonePower(x,y,z){
+		var right = this.getPower(x+1,y,z)
+		var left = this.getPower(x-1,y,z)
+		var down = this.getPower(x,y,z+1)
+		var up = this.getPower(x,y,z-1)
+		var top = this.getPower(x,y+1,z)
+		var bottom = this.getPower(x,y-1,z)
+		var level = max(right,left,down,up,top,bottom, this.redstoneComponentPowering(x,y,z))
+		return level
+	}
+	getRepeaterPower(x,y,z,fx,fy,fz){
+		var level = max(this.getPower(fx,fy,fz), this.repeaterIsPowering(x,y,z,fx,fy,fz), this.observerIsPowering(x,y,z,fx,fy,fz))
+		return level
+	}
+	getPower(x,y,z){
+		return this.getTagByName(x,y,z,"power") || 0
+	}
+	setPower(x,y,z, level, lazy){
+		var block = this.getBlock(x,y,z)
+		if(block && blockData[block].noSetPower) return
+		let tagBits = blockData[block].tagBits
+		if(tagBits){
+			this.setTagByName(x,y,z,"power",level,lazy,true)
+		}else{
+			var tags = this.getTags(x,y,z) || {}
+			if(level) tags.power = level
+			else delete tags.power
+			this.setTags(x,y,z,tags,false,true)
+		}
+		this.updateBlock(x,y,z)
+		
+		if(lazy) return //don't update blocks if lazy
+		
+		this.powerChangeUpdate(x,y,z, x,y,z)
+		this.powerChangeUpdate(x+1,y,z, x,y,z)
+		this.powerChangeUpdate(x-1,y,z, x,y,z)
+		this.powerChangeUpdate(x,y,z+1, x,y,z)
+		this.powerChangeUpdate(x,y,z-1, x,y,z)
+		this.powerChangeUpdate(x,y+1,z, x,y,z)
+		this.powerChangeUpdate(x,y-1,z, x,y,z)
+	}
+	blockPowerNames = {top:"blockPowerTop",bottom:"blockPowerBottom",north:"blockPowerNorth",south:"blockPowerSouth",east:"blockPowerEast",west:"blockPowerWest"}
+	setBlockPower(x,y,z, type, fromDir){
+		var block = this.getBlock(x,y,z)
+		if(block && blockData[block].noSetPower) return
+		if(type !== null && type !== "weak" && type !== "strong") {type = null; console.error("Oh no! It can only be strong or weak or null. But it was",type)}
+		let tagBits = blockData[block].tagBits
+		type = !type ? 0 : (type === "strong" ? 2 : 1)
+		if(tagBits){
+			this.setTagByName(x,y,z,this.blockPowerNames[fromDir],type,false)
+		}else{
+			var tags = this.getTags(x,y,z) || {}
+			if(type){
+				if(!tags.blockPower) tags.blockPower = {}
+				tags.blockPower[fromDir] = type
+			}else if(tags.blockPower){
+				delete tags.blockPower[fromDir]
+				if(!tags.blockPower.top && !tags.blockPower.bottom && !tags.blockPower.north && !tags.blockPower.south && !tags.blockPower.east && !tags.blockPower.west) delete tags.blockPower
+			}
+			this.setTags(x,y,z,tags)
+		}
+		
+		this.powerChangeUpdate(x,y,z, x,y,z, true)
+		if(fromDir !== "west") this.powerChangeUpdate(x+1,y,z, x,y,z, true)
+		if(fromDir !== "east") this.powerChangeUpdate(x-1,y,z, x,y,z, true)
+		if(fromDir !== "north") this.powerChangeUpdate(x,y,z+1, x,y,z, true)
+		if(fromDir !== "south") this.powerChangeUpdate(x,y,z-1, x,y,z, true)
+		if(fromDir !== "top") this.powerChangeUpdate(x,y+1,z, x,y,z, true)
+		if(fromDir !== "bottom") this.powerChangeUpdate(x,y-1,z, x,y,z, true)
+	}
+	getBlockPower(x,y,z, dir){
+		var tags = this.getTags(x,y,z)
+		if(!tags) return null
+		let block = this.getBlock(x,y,z)
+		let tagBits = blockData[block].tagBits
+		let power
+		if(tagBits){
+			if(dir){
+				power = this.getTagByName(x,y,z,this.blockPowerNames[dir])
+			}else{
+				power = max(
+					this.getTagByName(x,y,z,this.blockPowerNames["top"]),
+					this.getTagByName(x,y,z,this.blockPowerNames["bottom"]),
+					this.getTagByName(x,y,z,this.blockPowerNames["north"]),
+					this.getTagByName(x,y,z,this.blockPowerNames["south"]),
+					this.getTagByName(x,y,z,this.blockPowerNames["east"]),
+					this.getTagByName(x,y,z,this.blockPowerNames["west"]),
+				)
+			}
+		}else{
+			var blockPower = tags.blockPower
+			if(!blockPower) return null
+			
+			if(dir){
+				power = blockPower[dir]
+			}else{
+				power = max(blockPower.top, blockPower.bottom, blockPower.north, blockPower.south, blockPower.east, blockPower.west)
+			}
+		}
+		return !power ? null : (power === 2 ? "strong" : "weak")
+	}
+	getSurroundingBlockPower(x,y,z){
+		var north = this.getBlockPower(x,y,z-1)
+		var south = this.getBlockPower(x,y,z+1)
+		var east = this.getBlockPower(x-1,y,z)
+		var west = this.getBlockPower(x+1,y,z)
+		var top = this.getBlockPower(x,y+1,z)
+		var bottom = this.getBlockPower(x,y-1,z)
+		if(top === "strong" || bottom === "strong" || north === "strong" || south === "strong" || east === "strong" || west === "strong"){
+			return "strong"
+		}else if(top === "weak" || bottom === "weak" || north === "weak" || south === "weak" || east === "weak" || west === "weak"){
+			return "weak"
+		}
+		return null
+	}
+	powerChangeUpdate(x,y,z,sx,sy,sz, blockPowerChanged){
+		var block = this.getBlock(x,y,z)
+		if(block && blockData[block].onpowerupdate){
+			blockData[block].onpowerupdate(x,y,z,sx,sy,sz, blockPowerChanged,this)
+		}
+	}
+	getBlockRotation(block){
+		switch(block&ROTATION){
+			case NORTH:
+				return 0
+			case EAST:
+				return 1
+			case SOUTH:
+				return 2
+			case WEST:
+				return 3
+		}
+	}
+	getRotationBlock(rot){
+		switch(rot){
+			case 0:
+				return NORTH
+			case 1:
+				return EAST
+			case 2:
+				return SOUTH
+			case 3:
+				return WEST
+		}
+	}
+	canStairConnect(sourceBlock,otherBlock,isBack){
+		if((sourceBlock&FLIP) !== (otherBlock&FLIP)) return
+		let sourceRot = this.getBlockRotation(sourceBlock)
+		let otherRot = this.getBlockRotation(otherBlock)
+		let rotDiff = mod(sourceRot-otherRot,4)
+		if((otherBlock&isState) === STAIR){
+			if(rotDiff === 1) return 1
+			else if(rotDiff === 3) return -1
+		}else if((otherBlock&isState) === CORNERSTAIRIN){
+			if(rotDiff === 0 && isBack || rotDiff === 1 && !isBack) return 1
+			else if(rotDiff === 3 && isBack || rotDiff === 2 && !isBack) return -1
+		}else if((otherBlock&isState) === CORNERSTAIROUT){
+			if(rotDiff === 1 && isBack || rotDiff === 0 && !isBack) return 1
+			else if(rotDiff === 2 && isBack || rotDiff === 3 && !isBack) return -1
+		}
+	}
+	setTimeout(func,time,x,y,z,block){
+		let exist
+		if(x || x === 0) for(let i = this.timeoutQueue.length-1; i>=0; i--){
+			let timeout = this.timeoutQueue[i]
+			if(timeout.x === x && timeout.y === y && timeout.z === z){
+				exist = timeout
+				break
+			}
+		}
+		if(exist){
+			exist.func = func
+			exist.time = performance.now() + time
+			exist.x = x, exist.y = y, exist.z = z
+		}else this.timeoutQueue.push({
+			func,
+			time:performance.now() + time,
+			x,y,z
+		})
+	}
+	doBlockUpdate(x,y,z,sx,sy,sz){
+		let block = this.getBlock(x,y,z)
+		if(blockData[block].onupdate) blockData[block].onupdate(x,y,z,block,this,sx,sy,sz)
+		else if((block & isState) === STAIR && blockData[block].shape.varients.includes(shapes.stair)){//stair corner update
+			let front, back //front is lower side
+			switch(block&ROTATION){
+				case NORTH:
+					front = this.getBlock(x,y,z-1)
+					back = this.getBlock(x,y,z+1)
+					break
+				case SOUTH:
+					front = this.getBlock(x,y,z+1)
+					back = this.getBlock(x,y,z-1)
+					break
+				case EAST:
+					front = this.getBlock(x-1,y,z)
+					back = this.getBlock(x+1,y,z)
+					break
+				case WEST:
+					front = this.getBlock(x+1,y,z)
+					back = this.getBlock(x-1,y,z)
+					break
+			}
+			let connectBack = this.canStairConnect(block,back,true)
+			let connectFront = this.canStairConnect(block,front,false)
+			if(connectBack || connectFront) this.setTimeout(() => {
+				if(connectBack === -1 || connectFront === -1) block = block&(~ROTATION) | this.getRotationBlock(mod(this.getBlockRotation(block)+1,4))
+				if(connectBack) this.setBlock(x,y,z,(block&(~isState))|CORNERSTAIROUT)
+				else if(connectFront) this.setBlock(x,y,z,(block&(~isState))|CORNERSTAIRIN)
+			},tickTime)
+		}
+	}
+	getTop(x,z){
+		let chunk = this.getChunk(x,z)
+		return chunk && chunk.tops[(z&15) * 16 + (x&15)] || 0
+	}
+	getSolidTop(x,z){
+		let chunk = this.getChunk(x,z)
+		return chunk && chunk.solidTops[(z&15) * 16 + (x&15)] || 0
 	}
 }
 win.ServerWorld = World

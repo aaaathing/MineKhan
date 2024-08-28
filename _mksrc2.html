@@ -22619,9 +22619,9 @@ r 11 y  n  n  n
 			if(chunk) delete chunk.entities[id]
 			ent.delete() //better name: ondelete
 			id = ent.id
-      if(!remote){
+      /*if(!remote){
         send({type:"entityDelete", id})
-      }
+      }*/
 			if(ent.alwaysRender){
 				let i = this.alwaysRenderEntities.indexOf(ent)
 				this.alwaysRenderEntities.splice(i,1)
