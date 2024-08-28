@@ -8872,7 +8872,7 @@ Comments starts with # and ends at the end of the line.</span><br>
 						verts[7] = Xz
 						verts[10] = xz
 					}
-          let c = this.getCurrent(x,y,z,dimension,level,true,world)
+          let c = this.getCurrent(x,y,z,level,true,world)
           if(!c.x && !c.z) return
 					c.x = -c.x
           tex[0] -= 0.5, tex[1] -= 0.5, tex[2] -= 0.5, tex[3] -= 0.5, tex[4] -= 0.5, tex[5] -= 0.5, tex[6] -= 0.5, tex[7] -= 0.5
@@ -8935,17 +8935,17 @@ Comments starts with # and ends at the end of the line.</span><br>
       },
 			customShape:function(x,y,z,dimension,block,face,verts,tex,texCoord,tags,originalShapeVerts){
 				let inside = originalShapeVerts.t === "in"
-        if(this.isThisHere(x,y+1,z,dimension,world)){ //full block
+        if(this.isThisHere(x,y+1,z,world)){ //full block
 					if(face === "top") return false
-          if(face === "bottom") return !this.isThisHere(x,y-1,z,dimension,world)
-          if(face === "north" && this.isThisHere(x,y,z+1,dimension,world) && this.isThisHere(x,y+1,z+1,dimension,world)) return false
-          if(face === "south" && this.isThisHere(x,y,z-1,dimension,world) && this.isThisHere(x,y+1,z-1,dimension,world)) return false
-          if(face === "east" && this.isThisHere(x+1,y,z,dimension,world) && this.isThisHere(x+1,y+1,z,dimension,world)) return false
-          if(face === "west" && this.isThisHere(x-1,y,z,dimension,world) && this.isThisHere(x-1,y+1,z,dimension,world)) return false
-          if(face === "north" && !this.isThisHere(x,y,z+1,dimension,world)) return
-          if(face === "south" && !this.isThisHere(x,y,z-1,dimension,world)) return
-          if(face === "east" && !this.isThisHere(x+1,y,z,dimension,world)) return
-          if(face === "west" && !this.isThisHere(x-1,y,z,dimension,world)) return
+          if(face === "bottom") return !this.isThisHere(x,y-1,z,world)
+          if(face === "north" && this.isThisHere(x,y,z+1,world) && this.isThisHere(x,y+1,z+1,world)) return false
+          if(face === "south" && this.isThisHere(x,y,z-1,world) && this.isThisHere(x,y+1,z-1,world)) return false
+          if(face === "east" && this.isThisHere(x+1,y,z,world) && this.isThisHere(x+1,y+1,z,world)) return false
+          if(face === "west" && this.isThisHere(x-1,y,z,world) && this.isThisHere(x-1,y+1,z,world)) return false
+          if(face === "north" && !this.isThisHere(x,y,z+1,world)) return
+          if(face === "south" && !this.isThisHere(x,y,z-1,world)) return
+          if(face === "east" && !this.isThisHere(x+1,y,z,world)) return
+          if(face === "west" && !this.isThisHere(x-1,y,z,world)) return
           var idx = 0
           switch(face){
             case "north":
@@ -8978,11 +8978,11 @@ Comments starts with # and ends at the end of the line.</span><br>
           tex[1] = tex[3] = 0
           return
         }
-        if(face === "north" && this.isThisHere(x,y,z+1,dimension,world)) return false
-        if(face === "south" && this.isThisHere(x,y,z-1,dimension,world)) return false
-        if(face === "east" && this.isThisHere(x+1,y,z,dimension,world)) return false
-        if(face === "west" && this.isThisHere(x-1,y,z,dimension,world)) return false
-        if(face === "bottom" && this.isThisHere(x,y-1,z,dimension,world)) return false
+        if(face === "north" && this.isThisHere(x,y,z+1,world)) return false
+        if(face === "south" && this.isThisHere(x,y,z-1,world)) return false
+        if(face === "east" && this.isThisHere(x+1,y,z,world)) return false
+        if(face === "west" && this.isThisHere(x-1,y,z,world)) return false
+        if(face === "bottom" && this.isThisHere(x,y-1,z,world)) return false
         this.getFace(x,y,z,dimension,block,face,verts,tex,texCoord,inside)
       },
 			customCullFace:function(x2,y2,z2,dimension,block,type,face,otherDir,data,sourceData,getBlock,blocks,x,y,z){
@@ -11286,7 +11286,7 @@ return//*/
       }
       if(blockData[block[3]].getCurrent && !p.spectator){
         var me = blockData[block[3]]
-        var c = me.getCurrent(x,y,z,p.dimension,undefined,undefined,world)
+        var c = me.getCurrent(x,y,z,undefined,undefined,world)
         p.velocity.x += (c.x||0)/64
         p.velocity.z += (c.z||0)/64
         var under = world.getBlock(x,y-1,z,p.dimension)
@@ -11301,11 +11301,11 @@ return//*/
       if(blockData[block[3]].quicksand){
         quicksand = true
       }
-			if(blockData[block[3]].clientontouch){
+			if(blockData[block[3]].ontouch){
 				let dist = max(abs(x-p.x),abs(z-p.z),abs(y-p.y))
 				if(dist<closestTouch){
 					closestTouch = dist
-					ontouch = blockData[block[3]].clientontouch
+					ontouch = blockData[block[3]].ontouch
 					touchX = x, touchY = y, touchZ = z
 				}
 			}
@@ -14169,7 +14169,7 @@ r 11 y  n  n  n
 		}
 		fillLight() {
 			if(host){
-				let otherChunk = serverWorld.getChunk(this.x*16,this.z*16,this.type)
+				let otherChunk = serverWorld[this.type].getChunk(this.x*16,this.z*16)
 				if(otherChunk && otherChunk.lit){
 					this.loadCopyLight()
 					let n = this.world.getChunk(this.x*16+16,this.z*16,this.type)
@@ -14749,7 +14749,7 @@ r 11 y  n  n  n
 			}*/
 		}
 		loadCopy(){
-			let serverChunk = serverWorld.getChunk(this.x,this.z,this.type)
+			let serverChunk = serverWorld[this.type].getChunk(this.x,this.z)
 			let importants = []
 			for(let s = 0; s < serverChunk.sections.length; s++){
 				this.sections[s] = new Section(this.x, s*16+minHeight, this.z, this)
@@ -14810,7 +14810,7 @@ r 11 y  n  n  n
 			}*/
 		}
 		loadCopyLight(){
-			let serverChunk = serverWorld.getChunk(this.x,this.z,this.type)
+			let serverChunk = serverWorld[this.type].getChunk(this.x,this.z)
 			let importants = []
 			for(let s = 0; s < serverChunk.sections.length; s++){
 				this.sections[s].skyLight.set((serverChunk.sections[s] || emptySection).skyLight)
@@ -15322,7 +15322,7 @@ r 11 y  n  n  n
             }
             if(blockData[block].getCurrent){
               var me = blockData[block]
-              var c = me.getCurrent(x,y,z,this.dimension,undefined,undefined,this.world)
+              var c = me.getCurrent(x,y,z,undefined,undefined,this.world)
               this.velx += (c.x||0)/64
               this.velz += (c.z||0)/64
               var under = this.world.getBlock(x,y-1,z,this.dimension)
@@ -19339,7 +19339,7 @@ r 11 y  n  n  n
             }
             if(blockData[block].getCurrent){
               var me = blockData[block]
-              var c = me.getCurrent(x,y,z,this.dimension,undefined,undefined,this.world)
+              var c = me.getCurrent(x,y,z,undefined,undefined,this.world)
               this.velx += (c.x||0)/64
               this.velz += (c.z||0)/64
               var under = this.world.getBlock(x,y-1,z,this.dimension)
@@ -31139,7 +31139,7 @@ p.camera.transformation.elements.set(matrix)//*/
           ctx.fillStyle = "#000"
 					let chunkLoadAmount = 0
 					if(host){
-						let chunk = serverWorld.getChunk(x*16,z*16,p.dimension)
+						let chunk = serverWorld[p.dimension].getChunk(x*16,z*16)
 						if (chunk) {
             	if(chunk.populated && chunk.generated) ctx.fillStyle = "#080", chunkLoadAmount = 3
 							else if(chunk.caves && chunk.generated) ctx.fillStyle = "#666", chunkLoadAmount = 2
