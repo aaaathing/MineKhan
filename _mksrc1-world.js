@@ -19906,7 +19906,7 @@ constVersion(version)
 
 {//Commands
 let copiedBlocks
-function fillBlocks(x,y,z,x2,y2,z2, blockID, dimension,world){
+function fillBlocks(x,y,z,x2,y2,z2, blockID,world){
 	if(x>x2){var px=x; x=x2; x2=px}
 	if(y>y2){var py=y; y=y2; y2=py}
 	if(z>z2){var pz=z; z=z2; z2=pz}
@@ -19918,7 +19918,7 @@ function fillBlocks(x,y,z,x2,y2,z2, blockID, dimension,world){
 		}
 	}
 }
-function copy(x,y,z,x2,y2,z2, dimension,world){
+function copy(x,y,z,x2,y2,z2,world){
 	if(x>x2){var px=x; x=x2; x2=px}
 	if(y>y2){var py=y; y=y2; y2=py}
 	if(z>z2){var pz=z; z=z2; z2=pz}
@@ -19936,7 +19936,7 @@ function copy(x,y,z,x2,y2,z2, dimension,world){
 		copiedBlocks.push(xRow);
 	}
 }
-function paste(x,y,z,dimension,world){
+function paste(x,y,z,world){
 	for(var X = 0; X<copiedBlocks.length; X++){
 		var xRow = copiedBlocks[X];
 		for(var Y=0; Y<xRow.length; Y++){
@@ -19950,7 +19950,7 @@ function paste(x,y,z,dimension,world){
 		}
 	}
 }
-function replaceBlocks(x,y,z,x2,y2,z2, replace, into, dimension,world){
+function replaceBlocks(x,y,z,x2,y2,z2, replace, into,world){
 	if(x>x2){var px=x; x=x2; x2=px}
 	if(y>y2){var py=y; y=y2; y2=py}
 	if(z>z2){var pz=z; z=z2; z2=pz}
@@ -19971,26 +19971,26 @@ function fromPlayer(p,world){
 }
 function fillToPlayer(id,p,world){
 	//fills at player feet
-	fillBlocks(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z), id, p.dimension,world)
+	fillBlocks(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z), id,world)
 	world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
 function copyToPlayer(p,world){
-	copy(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z), p.dimension,world);
+	copy(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z),world);
 	p.copiedBlocksCmd = copiedBlocks
 	world.sendPlayer({type:"clientCmd",data:"copySelect",args:{w:copiedBlocks.length,h:copiedBlocks[0].length,d:copiedBlocks[0][0].length}},p.id)
 }
 function pasteAtPlayer(p,world){
 	copiedBlocks = p.copiedBlocksCmd
-	paste(round(p.x), round(p.y-1), round(p.z), p.dimension,world)
+	paste(round(p.x), round(p.y-1), round(p.z),world)
 	world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
 function replaceAtPlayer(replace,into,p,world){
-	replaceBlocks(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z), replace, into, p.dimension, world)
+	replaceBlocks(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z), replace, into, world)
 	world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
 
 let cancelShape = 0
-async function hcyl(width, height, depth, id, X,Y,Z, dimension,world) {
+async function hcyl(width, height, depth, id, X,Y,Z,world) {
 	let cid = cancelShape
 	let w2 = width * width
 	let d2 = depth * depth
@@ -20002,7 +20002,7 @@ async function hcyl(width, height, depth, id, X,Y,Z, dimension,world) {
 				let n = x * x / w2 + z * z / d2
 				let n2 = x * x / w3 + z * z / d3
 				if (n < 1 && n2 >= 1) {
-					world.setBlock(round(X + x), round(Y + y), round(Z + z), id, false,false,false,false, dimension)
+					world.setBlock(round(X + x), round(Y + y), round(Z + z), id)
 					await sleep(10)
 					if(cancelShape > cid) return
 				}
@@ -20011,7 +20011,7 @@ async function hcyl(width, height, depth, id, X,Y,Z, dimension,world) {
 	}
 }
 
-async function cyl(width, height, depth, id, X,Y,Z, dimension,world) {
+async function cyl(width, height, depth, id, X,Y,Z,world) {
 	let cid = cancelShape
 	let w2 = width * width
 	let d2 = depth * depth
@@ -20020,7 +20020,7 @@ async function cyl(width, height, depth, id, X,Y,Z, dimension,world) {
 			for (let z = floor(-depth); z <= ceil(depth); z++) {
 				let n = x * x / w2 + z * z / d2
 				if (n < 1) {
-					world.setBlock(round(X + x), round(Y + y), round(Z + z), id, false,false,false,false, dimension)
+					world.setBlock(round(X + x), round(Y + y), round(Z + z), id)
 					await sleep(10)
 					if(cancelShape > cid) return
 				}
@@ -20029,7 +20029,7 @@ async function cyl(width, height, depth, id, X,Y,Z, dimension,world) {
 	}
 }
 
-async function sphereoid(w, h, d, id, X,Y,Z, dimension,world) {
+async function sphereoid(w, h, d, id, X,Y,Z,world) {
 	let cid = cancelShape
 	let w2 = w * w
 	let h2 = h * h
@@ -20044,7 +20044,7 @@ async function sphereoid(w, h, d, id, X,Y,Z, dimension,world) {
 				let n = x * x / w2 + y * y / h2 + z * z / d2
 				let n2 = x * x / w3 + y * y / h3 + z * z / d3
 				if (n < 1 && n2 >= 1) {
-					world.setBlock(round(X + x), round(Y + y), round(Z + z), id, false,false,false,false, dimension)
+					world.setBlock(round(X + x), round(Y + y), round(Z + z), id)
 					await sleep(10)
 					if(cancelShape > cid) return
 				}
@@ -20052,7 +20052,7 @@ async function sphereoid(w, h, d, id, X,Y,Z, dimension,world) {
 		}
 	}
 }
-async function ball(w, h, d, id, X,Y,Z, dimension,world) {
+async function ball(w, h, d, id, X,Y,Z,world) {
 	let cid = cancelShape
 	let w2 = w * w
 	let h2 = h * h
@@ -20063,7 +20063,7 @@ async function ball(w, h, d, id, X,Y,Z, dimension,world) {
 			for (let z = floor(-d); z <= ceil(d); z++) {
 				let n = x * x / w2 + y * y / h2 + z * z / d2
 				if (n < 1) {
-					world.setBlock(round(X + x), round(Y + y), round(Z + z), id, false,false,false,false, dimension)
+					world.setBlock(round(X + x), round(Y + y), round(Z + z), id)
 					await sleep(10)
 					if(cancelShape > cid) return
 				}
@@ -20111,617 +20111,6 @@ types can be: root,literal,argument,redirect
 if func exists, the node can be run with it at the end of stack
 next is array of node ids
 */
-/*let defaultServerCommandNodes = [
-	{
-		type:"root",
-		next:[
-			'fromPlayer', 'fillToPlayer', 'copyToPlayer', 'pasteAtPlayer', 'replaceToPlayer', 'cancelFrom', 'shape', 'cancelShape',
-			'give', 'kill', 'time', 'weather', 'teleportToPlayer', 'teleport', 'playSound', 'title', 'setBlock', 'getBlock', 'setTag', 'getTag',
-			'echo', 'var', 'solve', 'getPos', 'wait', 'getTime', 'blockInfo', 'seed', 'trigger', 'effect', 'clear', 'clearHistory',
-			'gameMode', 'spectatePlayer', 'reloadChunks', 'ban', 'unban', 'whitelist', 'online', 'sendEval', 'help'
-		]
-	},
-	,];const lateraaa=[//todo below
-	{
-		type:"literal",
-		id:"fromPlayer",
-		name: "fromPlayer",
-		info: "Sets starting position to player position",
-		func: (args,pos,scope,world) => fromPlayer(pos,world),
-		anonymousFunc: null
-	},
-	{
-		type:"literal",
-		id:"fillToPlayer",
-		name: "fillToPlayer",
-		next:["blockNameFillToPlayer"],
-		info: "Fills from starting position to player position",
-		anonymousFunc: null,
-		func: (args,pos,scope,world) => {
-			let id = blockIds[args.block_name]
-			if(!args.block_name) id = 0
-			fillToPlayer(id,pos,world)
-		},
-	},
-	{
-		type:"literal",
-		name: "copyToPlayer",
-		info: "Copys blocks from starting position to player position",
-		func: (args,pos,scope,world) => copyToPlayer(pos,world),
-		anonymousFunc: null
-	},
-	{
-		type:"literal",
-		name: "pasteAtPlayer",
-		info: "Pastes copied blocks at the player's position",
-		func: (args,pos,scope,world) => pasteAtPlayer(pos,world),
-		anonymousFunc: null
-	},
-	{
-		type:"literal",
-		name: "replaceToPlayer",
-		args: ["replace_what", "with_what"],
-		argValues:{replace_what:"type:block",with_what:"type:block"},
-		func: (args,pos,scope,world) => {
-			let replace = blockIds[args.replace_what]
-			if(!args.replace_what) replace = 0
-			let into = blockIds[args.with_what]
-			if(!args.with_what) into = 0
-			replaceAtPlayer(replace,into,pos,world)
-		},
-		anonymousFunc: null
-	},
-	{
-		type:"literal",
-		name:"cancelFrom",
-		info:"Delete starting position",
-		client:true
-	},
-	{
-		type:"literal",
-		name: "shape",
-		info: "Type can be: sphere, hollowSphere, cylinder, hollowCylinder",
-		args: ["type","width", "height", "depth", "block_name", "x", "y", "z"],
-		argValues: {block_name:"type:block",x:"type:x",y:"type:y",z:"type:z",type:["sphere","hollowSphere","cylinder","hollowCylinder"],width:"type:number",height:"type:number",depth:"type:number"},
-		func: (args,pos,scope,world) => {
-			let id = blockIds[args.block_name]
-			if(!args.block_name) id = 0
-			let x = args.x ? parseFloat(args.x) : pos.x,
-					y = args.y ? parseFloat(args.y) : pos.y,
-					z = args.z ? parseFloat(args.z) : pos.z,
-					width = parseFloat(args.width) || 0,
-					height = parseFloat(args.height) || 0,
-					depth = parseFloat(args.depth) || 0
-			if(args.type === "sphere") return ball(width, height, depth, id, x,y,z, pos.dimension, world)
-			else if(args.type === "hollowSphere") return sphereoid(width, height, depth, id, x,y,z, pos.dimension, world)
-			else if(args.type === "cylinder") return cyl(width, height, depth, id, x,y,z, pos.dimension, world)
-			else if(args.type === "hollowCylinder") return hcyl(width, height, depth, id, x,y,z, pos.dimension, world)
-			else return ["No such shape: "+args.type,"error"]
-		}
-	},
-	{
-		type:"literal",
-		name:"cancelShape",
-		info:"Stop generating shapes currently being generated.",
-		func: () => {
-			cancelShape++
-		}
-	},
-	{
-		type:"literal",
-		name: "give",
-		args: ["target", "block_name", "amount"],
-		argValues:{block_name:"type:block",target:["type:player","@s","@a","@p"],amount:"type:number"},
-		info: "Gives the target the the specified amount of specified blocks",
-		func: (args,pos,scope,world) => {
-			let id = blockIds[args.block_name]
-			let amount = parseInt(args.amount) || 1
-			let arr = parseTarget(args.target,pos,world)
-			if(arr){
-				for(let i of arr){
-					world.addItems(i.x,i.y,i.z,i.dimension,0,0,0,id,false,amount)
-				}
-			}else return ["No such target: "+args.target,"error"]
-		}
-	},
-	{
-		type:"literal",
-		name: "kill",
-		args: ["target","message"],
-		argValues:{target:["type:player","@s","@a","@e","@p"]},
-		info: "Target can be: @s, your username, someone's uername, @a, @e",
-		func: (args,pos,scope,world) => {
-			if(world.world.settings.killCmdOff) return ["Kill command is disabled on this world.","error"]
-			args.target = args.target || "@s"
-			let arr = parseTarget(args.target,pos,world)
-			if(arr){
-				for(let i of arr){
-					if(i.type === "Player"){
-						world.sendPlayer({type:"kill", data:args.message || pos.username+" killed "+(args.target === "@a" ? "everyone" : args.target)+" with the kill command."},i.id)
-					}else{
-						world.deleteEntity(i.id)
-					}
-				}
-			}else return ["No such target: "+args.target,"error"]
-		}
-	},
-	{
-		type:"literal",
-		name: "time",
-		args: ["mode","n"],
-		argValues:{mode:["set","add","subtract"],n:["day","night","type:number"]},
-		info: "mode can be: set, add, subtract. n is the time to set to. 1000 is a day. n an also be: day, night",
-		func: (args,pos,scope,world) => {
-			let time
-			if(args.n === "day") time = 500
-			else if(args.n === "night") time = 0
-			else time = parseInt(args.n) || 0
-
-			if(args.mode === "set"){
-				world.time = time
-			}else if(args.mode === "add"){
-				world.time += time
-			}else if(args.mode === "subtract"){
-				world.time -= time
-			}else{
-				return ["No such mode: "+args.mode,"error"]
-			}
-		}
-	},
-	{
-		type:"literal",
-		name: "weather",
-		args: ["w"],
-		argValues:{w:["clear","rain","snow"]},
-		info: "w is the weather to set to. It can be clear, rain, or snow",
-		func: (args,pos,scope,world) => {
-			if(args.w === "rain") world.weather = "rain"
-			else if(args.w === "snow") world.weather = "snow"
-			else world.weather = ""
-		}
-	},
-	{
-		type:"literal",
-		name:"teleportToPlayer",
-		names:["tpPlayer","tpp","tptp"],
-		args: ["to_who","who"],
-		argValues:{to_who:["@s","type:player"],who:["@s","type:player"]},
-		info: "Teleport player [who] to [to_who]. who is optional.",
-		func: (args,pos,scope,world) => {
-			let to = parseTarget(args.to_who,pos,world)
-			to = to && to[0]
-			let who = parseTarget(args.who,pos,world)
-			if(!to) return ["Player doesn't exsist: "+args.to_who,"error"]
-			if(!who || !who.length) who = [pos]
-			for(let e of who) world.sendPlayer({type:"tp",x:to.x,y:to.y,z:to.z,dimension:to.dimension},e.id)
-		}
-	},
-	//Trexler made this command but it has been modified
-	{
-		type:"literal",
-		name: "teleport",
-		names:["tp"],
-		args: ["target","x","y","z","dimension"],
-		argValues:{x:"type:x",y:"type:y",z:"type:z",dimension:"type:dimension",target:["@s","type:player"]},
-		info: "x, y, and z are the coordinates to teleport to. dimension is optional.",
-		func: (args,pos,scope,world) => {
-			let target = parseTarget(args.target,pos,world)
-			if(!target || !target[0]) return ["No such target: "+args.target,"error"]
-
-			if(!args.x || !args.y || !args.z) return ["You need to set the coordinates.","error"]
-			let px = pos.x, py = pos.y, pz = pos.z
-
-			let x = parsePosition(args.x,px)
-			let y = parsePosition(args.y,py)
-			let z = parsePosition(args.z,pz)
-			if(isNaN(x)) x = px
-			if(isNaN(y)) y = py
-			if(isNaN(z)) z = pz
-
-			let dimension = args.dimension || pos.dimension
-
-			for(let t of target) world.sendPlayer({type:"tp",x,y,z,dimension},t.id)
-		}
-	},
-	{
-		type:"literal",
-		name:"playSound",
-		args:["sound", "volume", "pitch"],
-		argValues:{sound:"type:sound",volume:"type:number",pitch:"type:number"},
-		info:"Plays a sound. Sound can be any sound, for example: click, block.grass.dig1, entity.generic.explode1. Volume is a number from 0 to 1.",
-		func: (args,pos,scope,world) => {
-			if(!args.sound) return ["The first argument (sound) is required.","error"]
-			let volume = parseFloat(args.volume) || 1
-			let pitch = parseFloat(args.pitch) || 1
-			world.playSound(null,null,null,args.sound, volume, pitch)
-			//return ["That sound doesn't exist.","error"]
-		}
-	},
-	{
-		type:"literal",
-		name:"title",
-		args:['text','subtext','color','fadeIn','fadeOut','stay'],
-		argValues:{fadeIn:"type:number",fadeOut:"type:number",stay:"type:number"},
-		info:"Shows text on screen. fadeIn and fadeOut and stay are miliseconds.",
-		func: (args,pos,scope,world) => {
-			args.text = args.text || "/title"
-			args.fadeIn = (args.fadeIn || args.fadeIn === 0) ? parseFloat(args.fadeIn) : 500
-			args.fadeOut = (args.fadeOut || args.fadeOut === 0) ? parseFloat(args.fadeOut) : 2000
-			args.stay = (args.stay || args.stay === 0) ? parseFloat(args.stay) : 1000
-			world.sendAll({type:"title",data:args.text,sub:args.subtext,color:args.color,fadeIn:args.fadeIn,fadeOut:args.fadeOut,stay:args.stay})
-		}
-	},
-	{
-		type:"literal",
-		name:"setBlock",
-		args:["x","y","z","dimension","block"],
-		argValues:{block:"type:block",x:"type:x",y:"type:y",z:"type:z",dimension:"type:dimension"},
-		info:"Sets a block at a specified position.",
-		func: (args,pos,scope,world) => {
-			let block = blockIds[args.block]
-			if(block === undefined) block = parseInt(args.block)
-			if(!blockData[block]) return ["No such block "+block,"error"]
-			let x = parsePosition(args.x,pos.x,true),
-					y = parsePosition(args.y,pos.y,true),
-					z = parsePosition(args.z,pos.z,true),
-					dimension = args.dimension || pos.dimension
-			world.setBlock(x,y,z,block,false,false,false,false,dimension)
-		}
-	},
-	{
-		type:"literal",
-		name:"getBlock",
-		args:["x","y","z","dimension"],
-		argValues:{x:"type:x",y:"type:y",z:"type:z",dimension:"type:dimension"},
-		info:"Gets a block at the specified position and sets a variable called block_name.",
-		func: (args,pos,scope,world) => {
-			let x = parsePosition(args.x,pos.x,true),
-					y = parsePosition(args.y,pos.y,true),
-					z = parsePosition(args.z,pos.z,true),
-					dimension = args.dimension || pos.dimension
-			scope.block_name = blockData[world.getBlock(x,y,z,dimension)].name
-		}
-	},
-	{
-		type:"literal",
-		name:"setTag",
-		args:["x","y","z","dimension","tag_name","tag_data"],
-		argValues:{x:"type:x",y:"type:y",z:"type:z",dimension:"type:dimension"},
-		info:"Sets a specified tag at a specified position. tag_name can be JSON or raw text.",
-		func: (args,pos,scope,world) => {
-			let data
-			try{
-				data = JSON.parse(args.tag_data)
-			}catch{
-				data = args.tag_data
-			}
-			let x = parsePosition(args.x,pos.x,true),
-					y = parsePosition(args.y,pos.y,true),
-					z = parsePosition(args.z,pos.z,true),
-					dimension = args.dimension || pos.dimension
-			try{
-				world.setTagByName(x,y,z,args.tag_name,data, false,dimension)
-			}catch(e){
-				return [e.message,"error"]
-			}
-		}
-	},
-	{
-		type:"literal",
-		name:"getTag",
-		args:["x","y","z","dimension","tag_name"],
-		argValues:{x:"type:x",y:"type:y",z:"type:z",dimension:"type:dimension"},
-		info:"Gets a specified tag at the specified position and sets a variable called tag_data. tag_data will be JSON string if not a string.",
-		func: (args,pos,scope,world) => {
-			let x = parsePosition(args.x,pos.x,true),
-					y = parsePosition(args.y,pos.y,true),
-					z = parsePosition(args.z,pos.z,true),
-					dimension = args.dimension || pos.dimension
-			scope.tag_data = world.getTagByName(x,y,z,args.tag_name,dimension)
-			if(typeof scope.tag_data !== "string") scope.tag_data = JSON.stringify(scope.tag_data)
-		}
-	},
-	/*{
-		name:"online",
-		noCheats: true,
-		info: "Lists people that are in this world.",
-		func: (args,pos,scope,world) => {
-			let arr = world.world.players.map(u => u.username)
-			let str = "<span style='color:lime;'>"+arr.length + " players online: " + arr.join(", ")
-			let bannedLength = 0
-      for(let b in world.banned) bannedLength ++
-      if(bannedLength){
-        str += "<br>"
-        str += bannedLength + " players banned: "
-        for(let b in world.banned) str += b + ", "
-        str = str.slice(0,str.length-2)
-      }
-      if(world.whitelist){
-        str += "<br>"
-        str += world.whitelist.length + " players whitelisted: "+world.whitelist.join(", ")
-      }
-			return [str,""]
-		}
-	},*-/
-	{
-		type:"literal",
-		name:"echo",
-		args:["data"],
-		info:"Outputs data.",
-		func: args => {
-			return [args.data+"",""]
-		}
-	},
-	{
-		type:"literal",
-		name:"var",
-		args:["name","value"],
-		info:"Set a variable to a value. Value can be empty.",
-		func: (args,pos,scope) => {
-			if(!args.name) return ["Error: name required.","error"]
-			scope[args.name] = args.value
-		}
-	},
-	{
-		type:"literal",
-		name:"solve",
-		args:["value1","operation","value2"],
-		argValues:{operation:["+","-","/","*","<",">","=","round","floor","ceil","sin","cos","tan","sqrt","%"]},
-		info:"Calculate operation on value1 and value2 and sets a variabled called value. Some operations don't use value2. Example: /solve 1 + 1",
-		func: (args,pos,scope) => {
-			let value1 = typeof args.value1 === "number" ? args.value1 : parseFloat(args.value1), value2 = typeof args.value2 === "number" ? args.value2 : parseFloat(args.value2)
-			if(isNaN(value1) || isNaN(args.value1)) value1 = args.value1
-			if(isNaN(value2) || isNaN(args.value2)) value2 = args.value2
-			switch(args.operation){
-				case "+":
-					scope.value = value1+value2
-					break
-				case "-":
-					scope.value = value1-value2
-					break
-				case "*":
-					scope.value = value1*value2
-					break
-				case "/":
-					scope.value = value1/value2
-					break
-				case "<":
-					scope.value = value1<value2
-					break
-				case ">":
-					scope.value = value1>value2
-					break
-				case "=":
-					scope.value = value1===value2
-					break
-				case "round":
-					scope.value = round(value1)
-					break
-				case "floor":
-					scope.value = floor(value1)
-					break
-				case "ceil":
-					scope.value = ceil(value1)
-					break
-				case "sin":
-					scope.value = sin(value1)
-					break
-				case "cos":
-					scope.value = cos(value1)
-					break
-				case "tan":
-					scope.value = tan(value1)
-					break
-				case "sqrt":
-					scope.value = sqrt(value1)
-					break
-				case "%":
-					scope.value = value1 % value2
-					break
-				default:
-					return ["No such operation called "+args.operation,"error"]
-			}
-			//scope.value += "" //convert to string
-		}
-	},
-	{
-		type:"literal",
-		name:"getPos",
-		names:["gp"],
-		args:["target"],
-		argValues:{target:["type:player","@s","@p"]},
-		info:"Gets position of specified target and sets target_x, target_y, target_z, target_dimension, target_name. Target can be @s, @p, or a username.",
-		func: (args,pos,scope,world) => {
-			args.target = args.target || "@s"
-			let arr = parseTarget(args.target,pos,world)
-			if(!arr || !arr[0]) return ["No such target: "+args.target,"error"]
-			let t = arr[0]
-			scope.target_x = t.x
-			scope.target_y = t.y
-			scope.target_z = t.z
-			scope.target_dimension = t.dimension
-			scope.target_name = t.username || t.name
-		}
-	},
-	{
-		type:"literal",
-		name:"wait",
-		args:["time"],
-		argValues:{time:["type:number"]},
-		info:"Wait for time miliseconds.",
-		func: args => {
-			return sleep(parseFloat(args.time))
-		}
-	},
-	{
-		type:"literal",
-		name:"getTime",
-		args:["timestart"],
-		argValues:{timestart:["type:number"]},
-		info:"Sets time to the current time in miliseconds. If timestart is specified, the time is subtracted from timestart.",
-		func: (args,pos,scope) => {
-			scope.time = Date.now()
-			if(args.timestart) scope.time -= parseInt(args.timestart)
-		}
-	},
-	{
-		type:"literal",
-		name:"blockInfo",
-		names:["bi"],
-		args:["block"],
-		argValues:{block:["type:block"]},
-		func: args => {
-			let block = blockData[blockIds[args.block]]
-			if(!block){
-				return ["No such block "+args.block,"error"]
-			}
-			let str = ''
-			for(let i in block){
-				if(i === "shape") continue
-				str += i+": "
-				if(typeof block[i] === "function") str += "function() { [code] }"
-				else if(typeof block[i] === "string") str += block[i]
-				else str += JSON.stringify(block[i])
-				str += "<br>"
-			}
-			return [str,""]
-		},
-		noCheats:true
-	},
-	{
-		type:"literal",
-		name:"seed",
-		noCheats:true,
-		func: (args,pos,scope,world) => [world.worldSeed+"",""]
-	},
-	{
-		type:"literal",
-		name:"trigger",
-		args:["condition","x","y","z","dimension"],
-		argValues:{x:"type:x",y:"type:y",z:"type:z",dimension:"type:dimension",condition:"type:boolean"},
-		info:"Trigger a command block at specified position if condition is a true value. condition may be a variable.",
-		func: (args,pos,scope,world) => {
-			if(!args.condition) return
-			let x = parsePosition(args.x,pos.x,true),
-					y = parsePosition(args.y,pos.y,true),
-					z = parsePosition(args.z,pos.z,true),
-					dimension = args.dimension || pos.dimension
-			let block = world.getBlock(x,y,z,dimension)
-			if(blockData[block].commandBlock){
-				blockData[block].trigger(x,y,z,dimension,world)
-			}
-		}
-	},
-	{
-		type:"literal",
-		name:"effect",
-		args:["target","name","time","level","hide_particles"],
-		argValues:{target:["type:player","@a","@e","@p"], name:["wither","blur"], time:["type:number"], level:"type:number", show_particles:"type:boolean"},
-		info:"Start a effect on target. time is in seconds. level should be more than zero.",
-		func: (args,pos,scope,world) => {
-			let arr = parseTarget(args.target,pos,world)
-			if(!arr || !arr[0]) return ["No such target: "+args.target,"error"]
-			let time = parseFloat(args.time)
-			let level = parseFloat(args.level)
-			let showParticles = args.hide_particles !== "true"
-			for(let ent of arr){
-				if(ent.applyEffect) ent.applyEffect(args.name, level,time,showParticles)
-			}
-		}
-	},
-
-	//client side commands
-	{
-		type:"literal",
-		name: "clear",
-		info: "Clears shown messages",
-		client:true,
-		noCheats: true
-	},
-	{
-		type:"literal",
-		name:"clearHistory",
-		info:"Clears chat history and input history.",
-		names:"ch",
-		client:true,
-		noCheats: true
-	},
-	{
-		type:"literal",
-		name:"gameMode",
-		names: ["gm"],
-		args: ["mode"],
-		argValues:{mode:["creative","c","survival","s","spectator","l"]},
-		info: "mode can be: creative, c, survival, s, spectator",
-		client:true,
-	},
-	{
-		type:"literal",
-		name:"spectatePlayer",
-		names:["sp"],
-		args:["username","remote_control"],
-		argValues:{username:"type:player",remote_control:"type:boolean"},
-		info:"Spectate a player. If remote_control is set to true and you are the host or certain people, remote control will be enabled.",
-		client:true,
-	},
-	{
-		type:"literal",
-		name:"reloadChunks",
-		info:"Reload chunks. May cause freezing.",
-		client:true,
-	},
-	{
-		type:"literal",
-		name: "ban",
-		args: ["username","reason"],
-		argValues:{username:"type:player"},
-		info: "Bans a player. They cannot rejoin the world. Reason is the reason why you banned them. Only bans them until multiplayer turns off",
-		client:true,
-		noCheats:true
-	},
-	{
-		type:"literal",
-		name: "unban",
-		args: ["username"],
-		argValues:{username:"type:banned"},
-		info: "Unbans a player.",
-		client:true,
-		noCheats:true
-	},
-	{
-		type:"literal",
-		name:"whitelist",
-		args: ["action","username"],
-		argValues:{action:["enable","disable","add","remove"],username:["type:player","type:whitelisted"]},
-		info: "Allow certain people to join. Uses:<br>/whitelist enable<br>/whitelist disable<br>/whitelist add username<br>/whitelist remove username",
-		client:true,
-		noCheats: true
-	},
-	{
-		type:"literal",
-		name:"online",
-		noCheats: true,
-		info: "Lists people that are in this world.",
-		client:true,
-	},
-	{
-		type:"literal",
-		name:"sendEval",
-		args:["target","data"],
-		argValues:{target:["type:player","@a","@A"]},
-		info:"Send javascript to players. Can only be used by certain people. Target can be: username, @a, @A. If target isn't specified, it sends it to all players except you. If target is @A, it send to everyone including you.",
-		client:true,
-	},
-	{
-		type:"literal",
-		name:"help",
-		names:["?"],
-		args:["command_name"],
-		client:true,
-		noCheats:true
-	}
-]
-win.defaultServerCommandNodes = defaultServerCommandNodes*/
 let tempWorldForCommand
 class CommandNode{
 	constructor(type, name, func, info, argType, redirect, anonymousFunc, noCheats){
@@ -20769,17 +20158,17 @@ function initDefaultCommands(world){
 		(args,pos,scope) => {
 			let id = blockIds[args.block_name]
 			if(!args.block_name) id = 0
-			fillToPlayer(id,pos,world)
+			fillToPlayer(id,pos,world[pos.dimension])
 		},"block",false)),
-		CommandNode.l("copyToPlayer",(args,pos,scope) => copyToPlayer(pos,world),"Copys blocks from starting position to current position",false),
-		CommandNode.l("pasteAtPlayer", (args,pos,scope) => pasteAtPlayer(pos,world), "Pastes copied blocks at the current position",false),
+		CommandNode.l("copyToPlayer",(args,pos,scope) => copyToPlayer(pos,world[pos.dimension]),"Copys blocks from starting position to current position",false),
+		CommandNode.l("pasteAtPlayer", (args,pos,scope) => pasteAtPlayer(pos,world[pos.dimension]), "Pastes copied blocks at the current position",false),
 		CommandNode.l("replaceToPlayer",null,"Replace certain blocks from starting position to current position with a certain block").then(CommandNode.a("replace_what",null,"block").then(CommandNode.a("with_what",
 		(args,pos,scope) => {
 			let replace = blockIds[args.replace_what]
 			if(!args.replace_what) replace = 0
 			let into = blockIds[args.with_what]
 			if(!args.with_what) into = 0
-			replaceAtPlayer(replace,into,pos,world)
+			replaceAtPlayer(replace,into,pos,world[pos.dimension])
 		},"block",false))),
 		CommandNode.l("cancelFrom","client","Delete starting position"),
 		CommandNode.l("shape",null,"Creates a shape of certain shape.").then(
@@ -20787,65 +20176,65 @@ function initDefaultCommands(world){
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return ball(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, pos.dimension, world)
+				return ball(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, world[pos.dimension])
 			},"block").then(CommandNode.a("x",null,"number").then(CommandNode.a("y",null,"number").then(CommandNode.a("z",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return ball(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, pos.dimension, world)
+				return ball(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, world[pos.dimension])
 			},"number")))))))),
 			CommandNode.l("hollowSphere").then(CommandNode.a("width",null,"number").then(CommandNode.a("height",null,"number").then(CommandNode.a("depth",null,"number").then(CommandNode.a("block_name",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return sphereoid(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, pos.dimension, world)
+				return sphereoid(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, world[pos.dimension])
 			},"block").then(CommandNode.a("x",null,"number").then(CommandNode.a("y",null,"number").then(CommandNode.a("z",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return sphereoid(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, pos.dimension, world)
+				return sphereoid(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, world[pos.dimension])
 			},"number")))))))),
 			CommandNode.l("cylinder").then(CommandNode.a("width",null,"number").then(CommandNode.a("height",null,"number").then(CommandNode.a("depth",null,"number").then(CommandNode.a("block_name",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return cyl(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, pos.dimension, world)
+				return cyl(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, world[pos.dimension])
 			},"block").then(CommandNode.a("x",null,"number").then(CommandNode.a("y",null,"number").then(CommandNode.a("z",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return cyl(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, pos.dimension, world)
+				return cyl(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, world[pos.dimension])
 			},"number")))))))),
 			CommandNode.l("hollowCylinder").then(CommandNode.a("width",null,"number").then(CommandNode.a("height",null,"number").then(CommandNode.a("depth",null,"number").then(CommandNode.a("block_name",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return hcyl(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, pos.dimension, world)
+				return hcyl(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, world[pos.dimension])
 			},"block").then(CommandNode.a("x",null,"number").then(CommandNode.a("y",null,"number").then(CommandNode.a("z",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(!args.block_name) id = 0
-				return hcyl(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, pos.dimension, world)
+				return hcyl(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, world[pos.dimension])
 			},"number"))))))))
 		),
 		CommandNode.l("cancelShape", () => {cancelShape++}, "Stop generating shapes currently being generated."),
 		CommandNode.l("give",null,"Gives the target the the specified amount of specified blocks").then(CommandNode.a("target",null,"target").then(CommandNode.a("block_name",
 		(args,pos,scope) => {
 			let id = blockIds[args.block_name]
-			let arr = parseTarget(args.target,pos,world)
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(arr.length){
 				for(let i of arr){
-					world.addItems(i.x,i.y,i.z,i.dimension,0,0,0,id,false,1)
+					world[i.dimension].addItems(i.x,i.y,i.z,0,0,0,id,false,1)
 				}
 			}else return ["No such target: "+args.target,"error"]
 		},"block").then(CommandNode.a("amount",
 		(args,pos,scope) => {
 			let id = blockIds[args.block_name]
 			let amount = args.amount || 1
-			let arr = parseTarget(args.target,pos,world)
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(arr.length){
 				for(let i of arr){
-					world.addItems(i.x,i.y,i.z,i.dimension,0,0,0,id,false,amount)
+					world[i.dimension].addItems(i.x,i.y,i.z,0,0,0,id,false,amount)
 				}
 			}else return ["No such target: "+args.target,"error"]
 		},"number")))),
@@ -20853,14 +20242,14 @@ function initDefaultCommands(world){
 		(args,pos,scope) => {
 			if(world.world.settings.killCmdOff) return ["Kill command is disabled on this world.","error"]
 			args.target = args.target || "@s"
-			let arr = parseTarget(args.target,pos,world)
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(arr.length){
 				for(let i of arr){
 					if(i.type === "Player"){
 						i.health = 0
 						i.damage(1,pos.username+" killed "+(args.target === "@a" ? "everyone" : args.target)+" with the kill command.")
 					}else{
-						world.deleteEntity(i.id)
+						world[i.dimension].deleteEntity(i.id)
 					}
 				}
 			}else return ["No such target: "+args.target,"error"]
@@ -20868,14 +20257,14 @@ function initDefaultCommands(world){
 		(args,pos,scope) => {
 			if(world.world.settings.killCmdOff) return ["Kill command is disabled on this world.","error"]
 			args.target = args.target || "@s"
-			let arr = parseTarget(args.target,pos,world)
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(arr.length){
 				for(let i of arr){
 					if(i.type === "Player"){
 						i.health = 0
 						i.damage(1,arg.message)
 					}else{
-						world.deleteEntity(i.id)
+						world[i.dimension].deleteEntity(i.id)
 					}
 				}
 			}else return ["No such target: "+args.target,"error"]
@@ -20892,12 +20281,12 @@ function initDefaultCommands(world){
 		tp = CommandNode.l("teleport",null,"Teleport certain player/self to location/entity/player").then(CommandNode.a("target",null,"target").then(
 			CommandNode.a("x",null,"x").then(CommandNode.a("y",null,"y").then(CommandNode.a("z",
 			(args,pos) => {
-				let arr = parseTarget(args.target,pos,world)
+				let arr = parseTarget(args.target,pos,world[pos.dimension])
 				for(let e of arr) e.tp(args.x,args.y,args.z)
 			}, "z"))),
 			CommandNode.a("to_target",
 			(args,pos) => {
-				let arr = parseTarget(args.target,pos,world), to = parseTarget(args.to_target,pos,world)[0]
+				let arr = parseTarget(args.target,pos,world[pos.dimension]), to = parseTarget(args.to_target,pos,world[pos.dimension])[0]
 				if(!to) return ["No such target: "+args.target,"error"]
 				for(let e of arr) e.tp(args.x,args.y,args.z)
 			},"target")
@@ -20905,13 +20294,13 @@ function initDefaultCommands(world){
 		CommandNode.r("tp",tp),
 		CommandNode.l("playSound",null,"Plays a sound. Volume should be a number from 0 to 1.").then(CommandNode.a("sound",
 		(args,pos,scope) => {
-			world.playSound(null,null,null,args.sound, 1, 1)
+			world.sendAll({type:"playSound", data:args.sound, volume:1, pitch:1})
 		},"sound").then(CommandNode.a("volume",
 		(args,pos,scope) => {
-			world.playSound(null,null,null,args.sound, parseFloat(args.volume), 1)
+			world.sendAll({type:"playSound", data:args.sound, volume:parseFloat(args.volume), pitch:1})
 		},"number").then(CommandNode.a("pitch",
 		(args,pos,scope) => {
-			world.playSound(null,null,null,args.sound, parseFloat(args.volume), parseFloat(args.pitch))
+			world.sendAll({type:"playSound", data:args.sound, volume:parseFloat(args.volume), pitch:parseFloat(args.pitch)})
 		},"number")))),
 		CommandNode.l("title",null,"Shows text on screen. fadeIn and fadeOut and stay are miliseconds.").then(CommandNode.a("text", args => {world.sendAll({type:"title",data:args.text,fadeIn:500,fadeOut:1000,stay:2000})}).then(CommandNode.a("subtext", args => {world.sendAll({type:"title",data:args.text,sub:args.subtext,fadeIn:500,fadeOut:1000,stay:2000})}).then(CommandNode.a("color", args => {world.sendAll({type:"title",data:args.text,sub:args.subtext,color:args.color,fadeIn:500,fadeOut:1000,stay:2000})}).then(
 			CommandNode.a("fadeIn",null,"number").then(CommandNode.a("fadeOut",null,"number").then(CommandNode.a("stay",args => {world.sendAll({type:"title",data:args.text,sub:args.subtext,color:args.color,fadeIn:args.fadeIn,fadeOut:args.fadeOut,stay:args.stay})},"number")))
@@ -20921,16 +20310,16 @@ function initDefaultCommands(world){
 			let block = blockIds[args.block]
 			if(block === undefined) block = parseInt(args.block)
 			if(!blockData[block]) return ["No such block "+block,"error"]
-			world.setBlock(args.x,args.y,args.z,block,false,false,false,false,pos.dimension)
+			world[pos.dimension].setBlock(args.x,args.y,args.z,block)
 		},"block"))))),
 		CommandNode.l("getBlock",null,"Gets a block at the specified position and sets a variable called block_name.").then(CommandNode.a("x",null,"x").then(CommandNode.a("y",null,"y").then(CommandNode.a("z",
 		(args,pos,scope) => {
-			scope.block_name = blockData[world.getBlock(args.x,args.y,args.z,pos.dimension)].name
+			scope.block_name = blockData[world[i.dimension].getBlock(args.x,args.y,args.z,pos.dimension)].name
 		},"z")))),
 		CommandNode.l("getPos",null,"Gets position of specified target and sets target_x, target_y, target_z, target_dimension, target_name. Target can be @s, @p, or a username.").then(CommandNode.a("target",
 		(args,pos,scope) => {
 			args.target = args.target || "@s"
-			let arr = parseTarget(args.target,pos,world)
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(!arr.length) return ["No such target: "+args.target,"error"]
 			let t = arr[0]
 			scope.target_x = t.x
@@ -20943,7 +20332,7 @@ function initDefaultCommands(world){
 		CommandNode.l("seed", () => [world.worldSeed+"",""], null,null,true),
 		CommandNode.l("effect",null,"Start a effect on target. time is in seconds. level should be more than zero.").then(CommandNode.a("target",null,"target").then(CommandNode.a("name").then(CommandNode.a("time",null,"number").then(CommandNode.a("level",
 		(args,pos,scope) => {
-			let arr = parseTarget(args.target,pos,world)
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(!arr.length) return ["No such target: "+args.target,"error"]
 			let time = parseFloat(args.time)
 			let level = parseFloat(args.level)
@@ -20952,7 +20341,7 @@ function initDefaultCommands(world){
 			}
 		},"number").then(CommandNode.a("hide_particles",
 		(args,pos,scope) => {
-			let arr = parseTarget(args.target,pos,world)
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(!arr.length) return ["No such target: "+args.target,"error"]
 			let time = parseFloat(args.time)
 			let level = parseFloat(args.level)
@@ -20975,7 +20364,7 @@ function initDefaultCommands(world){
 		CommandNode.l("clearHistory","client","Clears chat history and input history.",null,true),
 		sp = CommandNode.l("spectatePlayer",null,"Spectate a player. If remote_control is set to true and you are the host or certain people, remote control will be enabled.").then(CommandNode.a("username",
 		(args,pos) =>{
-			let player = getPlayerByUsername(arg.username,world)
+			let player = getPlayerByUsername(arg.username,world[pos.dimension])
 			if(player){
 				pos.gameMode = "spectator"
 				pos.riding = null
@@ -20984,7 +20373,7 @@ function initDefaultCommands(world){
 			}else return ["Player doesn't exist: "+args.username,"error"]
 		}).then(CommandNode.a("remoteControl",
 		(args,pos) =>{
-			let player = getPlayerByUsername(arg.username,world)
+			let player = getPlayerByUsername(arg.username,world[pos.dimension])
 			if(player){
 				pos.gameMode = "spectator"
 				pos.riding = null
@@ -22119,8 +21508,8 @@ class Player extends Entity{
 	saveInv(){
 		let inv = this.world.world.playersInv[this.host ? ":host" : this.username]
 		if(!inv) inv = this.world.world.playersInv[this.host ? ":host" : this.username] = {}
-		inv.survivStr = this.world.getSurvivStr(this).array
-		inv.inv = this.world.getInv(this).array
+		inv.survivStr = this.world.world.getSurvivStr(this).array
+		inv.inv = this.world.world.getInv(this).array
 	}
 	addAchievment(name){
 		let id = achievmentIds[name]
@@ -32452,7 +31841,6 @@ class World{ // aka trueWorld
 	}
 	
 	getSaveString(){
-		let world = this
 		let loadFrom = this.loadFrom
 
 		let worldTypeBits1 = this.superflat==="island" ? 2 : (this.superflat === "void" ? 3 : this.superflat)
@@ -32470,18 +31858,18 @@ class World{ // aka trueWorld
 		bab.add(worldTypeBits2,1)
 
 		for (let x in this[""].chunks) {
-			for (let z in this.chunks[x]) {
-				this.chunks[x][z].unload()
+			for (let z in this[""].chunks[x]) {
+				this[""].chunks[x][z].unload()
 			}
 		}
 		for (let x in this["nether"].chunks) {
-			for (let z in this.chunks[x]) {
-				this.chunks[x][z].unload()
+			for (let z in this["nether"].chunks[x]) {
+				this["nether"].chunks[x][z].unload()
 			}
 		}
 		for (let x in this["end"].chunks) {
-			for (let z in this.chunks[x]) {
-				this.chunks[x][z].unload()
+			for (let z in this["end"].chunks[x]) {
+				this["end"].chunks[x][z].unload()
 			}
 		}
 
@@ -33488,7 +32876,7 @@ window.parent.postMessage({ready:true}, "*")
 				world.serverChangeBlock(data.x,data.y,data.z,data.place,p,data.face,data.shift,data.blockMode)
 			}else if(data.type === "entityPos"){
 				let ent = world.posEntity(new BitArrayReader(data.data, true), true)
-				return world.deleteEntity(ent.id)
+				return world[p.dimension].deleteEntity(ent.id)
 				//sendOthers(data)
 			}else if(data.type === "entityDelete"){
 				world.deleteEntity(data.id, true)
