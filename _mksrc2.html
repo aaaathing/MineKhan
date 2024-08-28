@@ -24105,6 +24105,10 @@ p.camera.transformation.elements.set(matrix)//*/
     })
     Button.add(width / 2 - 235*ss, height / 2 + 160*ss, 40*ss, 40*ss, "?", "main menu", r => changeScene("options help"), null, "Help")
     Button.add(width / 2 + 235*ss, height / 2 + 160*ss, 40*ss, 40*ss, "🌐", "main menu", r => changeScene("options languages"), null, "Languages")
+    Button.add(100*ss, 60, 200*ss, 20*ss, "Suggest things to add", "main menu", r => {
+			let a=prompt("What do you want to be added to MineKhan that can make it more fun?")
+			if(a)fetch("/server/suggest",{method:"POST",body:a})
+		})
 		
 		doc.documentElement.style.setProperty("--vh", height+"px")
 		doc.documentElement.style.setProperty("--vw", width+"px")
