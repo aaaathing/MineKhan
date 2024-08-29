@@ -24,8 +24,7 @@ thingMaker's credits (not Willard's)
  * I created the survival mode and mob shapes and mob code.
  * The biomes were originally made to look like Minecraft biomes, but have been improved after I looked at a lot of images (possibly hundreds).
  * For terrain generation, some methods came from https://github.com/misode/deepslate
- * The command system was inspired by Brigadier (https://github.com/Mojang/brigadier).
- * There may be other credits not listed here
+ * There may be other things not listed here
 Q&A:
 	why is there world in arguments? so it works when copied to servers with multiple worlds
 
@@ -54,12 +53,12 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
     <meta property="og:image" content="assets/images/e/sij.jpg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
     <meta name="theme-color" id="themeColor">
-		<style>
+		<!--<style>
 			@font-face{
         font-family: 'thefontmonospace';
         src:url('Monocraft.ttf');
       }
-    </style>
+    </style>-->
 		<link rel="icon" type="image/x-icon" href="favicon.ico" id="icon">
 	</head>
 	<style>
@@ -423,7 +422,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 			flex-direction:column;
     }
 		#messageHints, #messagesHolder.command #messageInput, #messagesHolder.command #messageOverlay{
-			font-family:thefontmonospace;
+			font-family:thefont;
 		}
 		#messageHints{
 			margin-top:auto;
@@ -753,7 +752,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
       left:10%;
       width:80%;
       height:80%;
-      font:16px thefontmonospace;
+      font:16px thefont;
       z-index:1;
 			background:#0008;
 			padding:8px;
@@ -763,7 +762,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		#commandBlockInput, #commandBlockOverlay{
 			width:100%;
 			height:200px;
-			font:16px thefontmonospace;
+			font:16px thefont;
 			padding:8px;
 			box-sizing:border-box;
 			border: 1px solid gray;
@@ -7267,7 +7266,12 @@ Spaces can be used to seperate values unless it is inside quotes.<br>
 Surround a value with qoutes to make the spaces inside part of the value.<br>
 You can type multiple commands by separating each by a new line or &&.<br>
 Type $ in front of a value to acess the variable with that name.<br>
-Comments starts with # and ends at the end of the line.</span><br>
+Comments starts with # and ends at the end of the line.<br>
+Addition: +
+Subtraction: -
+Multiplication: *
+Division: //
+</span>
 `
 			Messages.add(str)
 		}
@@ -7352,7 +7356,7 @@ Comments starts with # and ends at the end of the line.</span><br>
 
 	let unsupported = []
 	let replaceWithEl = document.createElement("span")
-	const {CommandReader} = win
+	const {parseCmd} = win
   let Messages = {
     span:document.createElement("span"),
     array: [],
@@ -7522,7 +7526,7 @@ Comments starts with # and ends at the end of the line.</span><br>
 			let toPlay = !messageInput.value
       if(toPlay) play()
       if(messageInput.value[0] === "/"){
-        this.add("<span style='font-family:thefontmonospace;'>"+messageOverlay.innerHTML+"</span>")
+        this.add("<span style='font-family:thefont;'>"+messageOverlay.innerHTML+"</span>")
         this.history.unshift(messageInput.value)
 				runCmd(messageInput.value)
         /*runCmd(messageInput.value,p3,(output,newOutputs) => {
@@ -7534,360 +7538,143 @@ Comments starts with # and ends at the end of the line.</span><br>
       messageInput.value = ""
 			Messages.updateInput()
     },
-		/*hilightSingleCommand(value, fullValue, fullIdx, doHints){
-			let hasSlash = value[0] === "/" ? "/" : ""
-			let prevHint = this.hints[this.hintIdx]
-			let argValue = "", args = [], argQuotes = [], originalArgs = [], originalArgValue = ""
-			let amount = 0, str = "", cmd = "", spaceIdx = -1, inQuotes = false, quoteType = null, hadQuotes = false, cmdObj, spaceType = [], argIsVar = false, argsIsVar = []
-			let hintBeginIdx = fullIdx
-			let remaining, remainingIdx
-			for(let i=0; i<value.length; i++){
-				let noRaw = !cmdObj || !cmdObj.args || !cmdObj.lastArgRaw || amount !== cmdObj.args.length
-				let doOriginal = true
-				if(!inQuotes && (!hasSlash || i !== 0) && value[i] === "/" && noRaw){
-					remaining = value.substring(i) //another command, stop parsing
-					remainingIdx = i
-					doHints = false
-					break
-				}
-				if(noRaw && (value[i] === "'" || value[i] === '"') && (!inQuotes || quoteType === value[i])){
-					inQuotes = !inQuotes
-					quoteType = value[i]
-					hadQuotes = true
-				}else if(noRaw && (value[i] === " " || value[i] === "\n") && !inQuotes){
-					amount++
-					spaceIdx = i
-					hintBeginIdx = i+fullIdx+1
-					if(amount !== 1) args.push(argValue), argQuotes.push(hadQuotes && quoteType)
-					else cmdObj = getCmd(cmd)
-					spaceType.push(value[i])
-					argValue = ""
-					hadQuotes = false
-					doOriginal = false
-					originalArgs.push(originalArgValue)
-					originalArgValue = ""
-					if(amount !== 1) argsIsVar.push(argIsVar)
-					argIsVar = false
-				}else if(value[i] === "$" && !argValue && !inQuotes) argIsVar = true
-				else if(amount === 0 && (!hasSlash || i !== 0)) cmd += value[i]
-				else argValue += value[i]
-				if(doOriginal) originalArgValue += value[i]
-			}
-			if(doHints) this.hints.length = this.hintsPart.length = 0
-			argQuotes.push(hadQuotes && quoteType)
-			originalArgs.push(originalArgValue)
-			argsIsVar.push(argIsVar)
-			let overlay = ""
-			let valuesBefore = fullValue.substring(0,hintBeginIdx)
-			if(spaceIdx !== -1){
-				if(cmdObj){
-					str += "<span style='color:lightblue;'>/"+sanitize(cmdObj.name)+"</span><span style='color:#aaa;'>"
-					overlay += "<span style='color:lightblue;'>"+hasSlash+sanitize(cmd)+"</span>"
-				}else overlay = "<span style='color:#f55;'>"+hasSlash+sanitize(cmd)+"</span>"
-				if(cmdObj && cmdObj.args){
-					for(i=0; i<cmdObj.args.length; i++){
-						let raw = cmdObj.lastArgRaw && i+1 === cmdObj.args.length
-						if(i+1 === amount) str += "</span><span style='color:"+(raw ? "#f5f" : "white")+";'>"
-						str += " "+sanitize(cmdObj.args[i])
-						if(i+1 === amount) str += "</span><span style='color:#aaa;'>"
-						if(i+1 < originalArgs.length){
-							if(argQuotes[i]) overlay += "<span style='color:#ff5;'>"
-							else if(argsIsVar[i]) overlay += "<span style='color:#f85;'>"
-							else if(raw) overlay += "<span style='color:#f5f;'>"
-							overlay += spaceType[i]+sanitize(originalArgs[i+1])
-							if(argQuotes[i] || argsIsVar[i] || raw) overlay += "</span>"
-						}
-					}
-					str += "</span>"
-					if(originalArgs.length-1 > cmdObj.args.length){
-						overlay += "<span style='color:#f55;'>"
-						for(let i=cmdObj.args.length+1; i<originalArgs.length; i++){
-							overlay += spaceType[i-1] + sanitize(originalArgs[i])
-						}
-						overlay += "</span>"
-					}
-					cmd = cmdObj
-					if(doHints && cmd.args[amount-1] && cmd.argValues && cmd.argValues[cmd.args[amount-1]]){
-						let types = cmd.argValues[cmd.args[amount-1]]
-						for(var type of types){
-							let count = 0
-							if(type === "type:number"){
-								this.hintsPart.push("1")
-								this.hints.push(valuesBefore+"1")
-							}else if(type === "type:block"){
-								count = 0
-								for(i=1; i<BLOCK_COUNT; i++){
-									if(blockData[i].name.includes(argValue)){
-										this.hintsPart.push(blockData[i].name)
-										this.hints.push(valuesBefore+blockData[i].name)
-										count++
-									}
-									if(count>50) break
-								}
-							}else if(type === "type:x"){
-								let pos = (round(p.x*100)/100)+""
-								this.hintsPart.push(pos)
-								this.hints.push(valuesBefore+pos)
-								this.hintsPart.push("~")
-								this.hints.push(valuesBefore+"~")
-							}else if(type === "type:y"){
-								let pos = (round(p.y*100)/100)+""
-								this.hintsPart.push(pos)
-								this.hints.push(valuesBefore+pos)
-								this.hintsPart.push("~")
-								this.hints.push(valuesBefore+"~")
-							}else if(type === "type:z"){
-								let pos = (round(p.z*100)/100)+""
-								this.hintsPart.push(pos)
-								this.hints.push(valuesBefore+pos)
-								this.hintsPart.push("~")
-								this.hints.push(valuesBefore+"~")
-							}else if(type === "type:dimension"){
-								this.hintsPart.push("overworld")
-								this.hints.push(valuesBefore+"overworld")
-								this.hintsPart.push("nether")
-								this.hints.push(valuesBefore+"nether")
-								this.hintsPart.push("end")
-								this.hints.push(valuesBefore+"end")
-							}else if(type === "type:sound"){
-								count = 0
-								for(i of soundNames){
-									if(i.includes(argValue)){
-										this.hintsPart.push(i)
-										this.hints.push(valuesBefore+i)
-										count++
-									}
-									if(count>50) break
-								}
-							}else if(type === "type:player"){
-								this.hintsPart.push(p.username)
-								this.hints.push(valuesBefore+p.username)
-								count++
-								if(multiplayer){
-									count = 0
-									for(i in players){
-										if(players[i].username && players[i].username.includes(argValue)){
-											this.hintsPart.push(players[i].username)
-											this.hints.push(valuesBefore+players[i].username)
-											count++
-										}
-										if(count>50) break
-									}
-								}
-							}else if(type === "type:banned"){
-								if(multiplayer){
-									count = 0
-									for(i in banned){
-										if(i.includes(argValue)){
-											this.hintsPart.push(i)
-											this.hints.push(valuesBefore+i)
-											count++
-										}
-										if(count>50) break
-									}
-								}
-							}else if(type === "type:whitelisted"){
-								if(multiplayer && whitelist){
-									count = 0
-									for(i of whitelist){
-										if(i.includes(argValue)){
-											this.hintsPart.push(i)
-											this.hints.push(valuesBefore+i)
-											count++
-										}
-										if(count>50) break
-									}
-								}
-							}else if(type === "type:boolean"){
-								this.hintsPart.push("true","false")
-								this.hints.push(valuesBefore+"true",valuesBefore+"false")
-							}else{
-								this.hintsPart.push(sanitize(type))
-								this.hints.push(valuesBefore+type)
-							}
-						}
-					}
-					if(doHints && messageInput.prevValue !== value){
-						let idx = Messages.hints.indexOf(prevHint)
-						this.hintIdx = idx === -1 ? 0 : idx
-					}
-					if(doHints) for(let i=0; i<this.hintsPart.length; i++){
-						let h = this.hintsPart[i]
-						let b = this.hintIdx === i
-						let idx = h.indexOf(argValue)
-						if(argValue && idx !== -1) h = h.substring(0,idx)+"<span style='color:white;'>"+h.substring(idx,idx+argValue.length)+"</span>"+h.substring(idx+argValue.length,h.length)
-						str += "<br>"+(b ? "<b style='color:yellow;background:#44f;' id='selectedHint'>" : (argValue ? "<span style='color:#aaa;'>" : ""))+h+(b ? "</b>" : (argValue ? "</span>" : ""))
-					}
-				}else{
-					overlay += "<span style='color:#f55;'>"
-					for(let i=1; i<originalArgs.length; i++){
-						overlay += spaceType[i-1] + sanitize(originalArgs[i])
-					}
-					overlay += "</span>"
-				}
-			}else{
-				cmdObj = getCmd(cmd)
-				overlay = (cmdObj ? "<span style='color:lightblue;'>" : "")+hasSlash+sanitize(cmd)+(cmdObj ? "</span>" : "")
-				amount = 0
-				if(doHints){
-					this.hintsPart.push(...cmds)
-					for(i of this.hintsPart){
-						if(i.name.toLowerCase().includes(cmd.toLowerCase())){
-							var b = this.hintIdx === this.hints.length
-							str += (b ? "<b style='color:yellow;background:#44f;' id='selectedHint'>" : "")+"/"+i.name+(b ? "</b>" : "")+"<br>"
-							this.hints.push(valuesBefore+"/"+i.name)
-							amount++
-						}
-						if(amount>50) break
-					}
-				}
-			}
-			return {str,overlay,remaining,remainingIdx}
-		},
-		hilightCommand(value,doHints = false){
-			let remaining = value, str = "", overlay = "", remainingIdx = 0
-			while(remaining){
-				let r = this.hilightSingleCommand(remaining,value,remainingIdx,doHints)
-				remaining = r.remaining
-				str = r.str
-				overlay += r.overlay
-				remainingIdx += r.remainingIdx
-			}
-			return {str,overlay:overlay.replace(/\n/g,"<br>")}
+		/*hintReplaces(hintEnd,hintStart,next){
+			let doHintHere = this.doHints && this.cursor >= hintStart && this.cursor <= hintEnd
+			if(!doHintHere) return
+			this.hintObj.hintStart = hintStart
+			this.hintObj.hintEnd = hintEnd
+			this.hintObj.next = next
 		},*/
-		highlight:{
-			lines(reader){
-				let arr = []
-				while(reader.nextTokenType !== "end"){
-					try{//can fail by unknown chars
-						if(reader.nextTokenType === "/") reader.read("/")
-						try{
-							arr.push(...this.nodes(reader,cmds[0]))
-						}catch{
-							let prevIdx = reader.idx
-							arr.push("color:#f55",prevIdx)
-							while(!reader.stackEnd){
-								reader.read()
-							}
-							arr.push(null,reader.prevTokenEnd)
-						}
-						if(reader.nextTokenType === "&&" || reader.nextTokenType === "\n") reader.read("&&","\n")
-					}catch{
-						arr.push("color:#f55",reader.idx,null,reader.str.length)
-						break
-					}
-				}
-				return arr
-			},
-			nodes(reader,parentNode){
-				if(parentNode.type === "redirect"){
-					parentNode = cmds[parentNode.redirect]
-				}
-				if(!parentNode.next.length) throw true
-				let hintStart = reader.tokenStart, hintEnd = reader.idx
-				let ret
-				let error
-				for(let n of parentNode.next){//find the best match in the next nodes
-					let node = cmds[n]
-					let prevIdx = reader.tokenStart
-					let newReader = reader.clone()
-					let arr = []
-					if(node.type === "literal" || node.type === "redirect"){
-						let string
-						arr.push("color:#ade",prevIdx)
-						try{
-							string = newReader.read("string")
-						}catch{}
-						if(string && string.toLowerCase() === node.name.toLowerCase()){
-							arr.push(null,newReader.prevTokenEnd)
-						}else continue
-					}else if(node.type === "argument"){
-						let thisOne
-						arr.push("outline:1px solid #885",hintStart)
-						try{
-							thisOne = this.add(newReader,node.argType)
-						}catch{}
-						if(thisOne) arr.push(...thisOne)
-						else continue
-						arr.push(null,newReader.prevTokenEnd)
-					}
-					let result
-					if(!newReader.stackEndNoSpace){
-						try{
-							result = this.nodes(newReader,node)
-						}catch{}
-						if(result){
-							arr.push(...result)
-						}else continue
-					}
-					reader.goTo(newReader)
-					ret = arr
+		highlightLastCmd:null,
+		hilight(tree,arr){
+			switch(tree[0]){
+				case "all":
+					for(let i=1; i<tree.length; i++) this.hilight(tree[i],arr)
 					break
-				}
-				if(!ret){
-					let prevIdx = reader.idx
-					while(!reader.stackEnd){
-						reader.read()
+				case "cmd":
+					for(let i=1; i<tree.length; i++){
+						if(tree[i][0] === "string") arr.push("color:#ade" , tree[i].start)
+						this.hilight(tree[i],arr)
+						if(tree[i][0] === "string") arr.push(null, tree[i].end)
 					}
-					ret = ["color:#f55",prevIdx,null,reader.prevTokenEnd]
-				}
-				this.hintReplaces(hintEnd,hintStart,parentNode.next)
-				return ret
-			},
-			add(reader){
-				let ret = this.mult(reader)
-				while(reader.nextTokenType === "+" || reader.nextTokenType === "-"){
-					let type = reader.nextTokenType
-					ret.push("color:yellow",reader.tokenStart,null,reader.idx)
-					reader.read()
-					ret.push(...this.mult(reader))
-				}
-				return ret
-			},
-			mult(reader){
-				let ret = this.value(reader)
-				while(reader.nextTokenType === "*" || reader.nextTokenType === "/"){
-					let type = reader.nextTokenType
-					ret.push("color:yellow",reader.tokenStart,null,reader.idx)
-					reader.read()
-					ret.push(...this.value(reader))
-				}
-				return ret
-			},
-			value(reader,argType){
-				let prevIdx = reader.tokenStart
-				if(reader.nextTokenType === "$"){
-					reader.read("$")
-					reader.read("string")
-					return ["color:#f85",prevIdx,null,reader.prevTokenEnd]
-				}else if(reader.nextTokenType === "("){
-					reader.read()
-					let ret = ["color:orange",reader.prevTokenStart,null,reader.prevTokenEnd,...this.add(reader),"color:orange",reader.tokenStart,null,reader.idx]
-					reader.read(")")
-					return ret
-				}else if(reader.nextTokenType === "~"){
-					reader.read()
-					return ["color:#aaf",reader.prevTokenStart,null,reader.prevTokenEnd]
-				}else{
-					reader.read("string")
-					return []
-				}
-			},
-			hintReplaces(hintEnd,hintStart,next){
-				let doHintHere = this.doHints && this.cursor >= hintStart && this.cursor <= hintEnd
-				if(!doHintHere) return
-				this.hintObj.hintStart = hintStart
-				this.hintObj.hintEnd = hintEnd
-				this.hintObj.next = next
+					this.highlightLastCmd = tree
+					/*let last = tree[tree.length-1]
+					if(last.stackEndNoSpace){
+						if(tree.length > 2){
+							let f
+							try{
+								f = searchCmdStack(cmds,cmds[0],tree.slice(0,tree.length-1),1,{})
+							}catch{}
+							if(f) this.hintReplaces(last.end,last.start,f)
+						}else this.hintReplaces(last.nextTokenStart,last.nextTokenStart,cmds[0])
+					}else{
+						let f
+						try{
+							f = searchCmdStack(cmds,cmds[0],tree,1,{})
+						}catch{}
+						if(f) this.hintReplaces(last.nextTokenStart,last.nextTokenStart,f)
+					}*/
+					break
+				case "+":
+				case "-":
+				case "*":
+				case "//":
+					this.hilight(tree[1],arr)
+					arr.push("color:#ff0", tree.start, null, tree.end)
+					this.hilight(tree[2],arr)
+					break
+				case "get":
+					arr.push("#f85",tree.start, null,tree.end)
+					break
 			}
 		},
+		/*find possible next ones*/
+		getCmdNexts(parentNode, stack,stacki, prefix="/"){
+			if(parentNode.type === "redirect"){
+				parentNode = cmds[parentNode.redirect]
+			}
+			let thisCur = stacki+(stack.stackEndNoSpace?0:-1) === stack.length-1
+			if(thisCur){
+				for(let n of parentNode.next){
+					let node = cmds[n]
+					if(node.type === "literal" || node.type === "redirect"){
+						this.addHint(node.name)
+					}else if(node.type === "argument"){
+						let count
+						switch(node.argType){
+							case "block":
+								count = 0
+								for(let i=1; i<BLOCK_COUNT; i++){
+									if(blockData[i].name.includes(this.highlightReplaces)){
+										this.addHint(blockData[i].name)
+										count++
+									}
+									if(count>50) break
+								}
+								break
+							case "target":
+								count = 0
+								this.addHint("@s","@s - self")
+								this.addHint("@a","@a - all players")
+								this.addHint("@e","@e - all entities")
+								this.addHint("@p","@p - closest player")
+								this.addHint(p.username)
+								for(let i in players){
+									if(players[i].username.includes(this.highlightReplaces)){
+										this.addHint(players[i].username)
+										count++
+									}
+									if(count>50) break
+								}
+								break
+							case "x": this.addHint(p.x.toFixed(2)); this.addHint("~","~ - current x"); break
+							case "y": this.addHint(p.y.toFixed(2)); this.addHint("~","~ - current y"); break
+							case "z": this.addHint(p.z.toFixed(2)); this.addHint("~","~ - current z"); break
+							case "sound":
+								for(i of soundNames){
+									if(i.includes(this.highlightReplaces)){
+										this.addHint(i)
+										count++
+									}
+									if(count>50) break
+								}
+								break
+							case "gameMode":
+								this.addHint("creative")
+								this.addHint("c")
+								this.addHint("survival")
+								this.addHint("s")
+								this.addHint("spectator")
+								this.addHint("l")
+								break
+						}
+					}
+				}
+			}
+			if(!parentNode.next.length){
+				if(stack.length+(stack.stackEndNoSpace?0:1) > 2 ) this.highlightFullCmds += prefix+"<br>"
+			}else{
+				for(let n of parentNode.next){
+					let node = cmds[n]
+					if(node.type === "literal" || node.type === "redirect"){
+						if(stacki+(stack.stackEndNoSpace?1:0)>stack.length-1 || (stack[stacki][0] === "string" && node.name.toLowerCase() === stack[stacki][1].toLowerCase())){
+							this.getCmdNexts(node, stack,stacki+1, prefix+(thisCur?"<span style='color:white;'>":"")+node.name+(thisCur?"</span> ":" "))
+						}
+					}else if(node.type === "argument"){
+						this.getCmdNexts(node, stack,stacki+1, prefix+(thisCur?"<span style='color:white;'>&lt;":"&lt;")+node.name+(thisCur?"&gt;</span> ":"&gt; "))
+					}
+				}
+			}
+		},
+		highlightLastTree:[],
 		hints:new Map(),
 		addHint(value,short=value){
-			if(!value.toLowerCase().includes(this.highlight.replaces.toLowerCase())) return
-			this.highlight.hintObj.hintsPart.push(short)
-			this.highlight.hintObj.hints.push(this.highlight.valuesBefore+value)
+			if(!value.toLowerCase().includes(this.highlightReplaces.toLowerCase())) return
+			this.hintObj.hintsPart.push(short)
+			this.hintObj.hints.push(this.highlightValuesBefore+value)
 		},
 		hilightCommand(input,doHints){
+			const value = input.value
 			/*commandParser.set(value, this.hilightOnEat)
 			this.hilightOut = ""
 			this.hilightPrevIdx = 0
@@ -7896,21 +7683,29 @@ Comments starts with # and ends at the end of the line.</span><br>
 			}catch{
 				this.hilightOut += "<span style='color:#f55;'>"+this.hilightIn.slice(this.hilightPrevIdx)+"</span>"
 			}*/
-			const value = input.value
 			let prevHint, hintObj = this.hints.get(input)
 			if(!hintObj) this.hints.set(input, hintObj = {hints:[],hintsPart:[],hintIdx:0})
 			if(doHints){
 				hintObj.hints.length = hintObj.hintsPart.length = 0
 				prevHint = hintObj.hints[hintObj.hintIdx]
 			}
-			let reader = new CommandReader(value)
+			this.hintObj = hintObj
+			/*let reader = new CommandReader(value)
 			hintObj.hintStart = null
 			hintObj.hintEnd = null
 			hintObj.next = null
 			this.highlight.hintObj = hintObj
 			this.highlight.cursor = input.selectionEnd
 			this.highlight.doHints = doHints
-			let arr = this.highlight.lines(reader)
+			let arr = this.highlight.lines(reader)*/
+			let arr = []
+			let tree = this.highlightLastTree
+			try{
+				tree = parseCmd(value)
+			}catch{}
+			this.highlightLastTree = tree
+			this.highlightLastCmd = null
+			this.hilight(tree,arr)
 			let overlay = ""
 			overlay += value.substring(0, arr[1])
 			for(let i=0; i<arr.length; i+=2){
@@ -7936,69 +7731,27 @@ Comments starts with # and ends at the end of the line.</span><br>
 			}*/
 			let hintStr = ""
 			if(doHints){
-				let replaces = value.substring(hintObj.hintStart,hintObj.hintEnd)
-				this.highlight.valuesBefore = value.substring(0,hintObj.hintStart)//for addhint()
-				this.highlight.replaces = replaces
-				if(hintObj.next) for(let n of hintObj.next){
-					let node = cmds[n]//do hints
-					if(node.type === "literal" || node.type === "redirect"){
-						this.addHint(node.name)
-					}else if(node.type === "argument"){
-						let count
-						switch(node.argType){
-							case "block":
-								count = 0
-								for(let i=1; i<BLOCK_COUNT; i++){
-									if(blockData[i].name.includes(replaces)){
-										this.addHint(blockData[i].name)
-										count++
-									}
-									if(count>50) break
-								}
-								break
-							case "target":
-								count = 0
-								this.addHint("@s","@s - self")
-								this.addHint("@a","@a - all players")
-								this.addHint("@e","@e - all entities")
-								this.addHint("@p","@p - closest player")
-								this.addHint(p.username)
-								for(let i in players){
-									if(players[i].username.includes(replaces)){
-										this.addHint(players[i].username)
-										count++
-									}
-									if(count>50) break
-								}
-								break
-							case "x": this.addHint(p.x.toFixed(2)); this.addHint("~","~ - current x"); break
-							case "y": this.addHint(p.y.toFixed(2)); this.addHint("~","~ - current y"); break
-							case "z": this.addHint(p.z.toFixed(2)); this.addHint("~","~ - current z"); break
-							case "sound":
-								for(i of soundNames){
-									if(i.includes(replaces)){
-										this.addHint(i)
-										count++
-									}
-									if(count>50) break
-								}
-								break
-							case "gameMode":
-								this.addHint("creative")
-								this.addHint("c")
-								this.addHint("survival")
-								this.addHint("s")
-								this.addHint("spectator")
-								this.addHint("l")
-								break
-						}
-					}
+				let replaceStart,replaceEnd, replaces
+				let lastCmd = this.highlightLastCmd
+				this.highlightFullCmds = ""
+				if(lastCmd){
+					if(lastCmd.stackEndNoSpace){
+						replaceStart = lastCmd[lastCmd.length-1].start
+						replaceEnd = lastCmd[lastCmd.length-1].end
+					}else replaceStart = replaceEnd = lastCmd.nextTokenStart
+					
+					replaces = value.substring(replaceStart,replaceEnd)
+					this.highlightValuesBefore = value.substring(0,replaceStart)//for addhint()
+					this.highlightReplaces = replaces
+					this.getCmdNexts(cmds[0],lastCmd,1)
 				}
+				
 				if(hintObj.prevInput !== value){
 					hintObj.prevInput = value
 					let idx = hintObj.hints.indexOf(prevHint)
 					hintObj.hintIdx = idx === -1 ? 0 : idx
 				}
+				hintStr += "<span style='color:#aaa;'>"+this.highlightFullCmds+"</span>"
 				for(let i=0; i<hintObj.hintsPart.length; i++){
 					let h = hintObj.hintsPart[i]
 					let b = hintObj.hintIdx === i

@@ -19967,26 +19967,26 @@ function replaceBlocks(x,y,z,x2,y2,z2, replace, into,world){
 
 function fromPlayer(p,world){
 	p.prevPosCmd = [round(p.x), round(p.y), round(p.z)]
-	world.sendPlayer({type:"clientCmd",data:"fromPlayer",args:{x:round(p.x),y:round(p.y),z:round(p.z)}},p.id)
+	world.world.sendPlayer({type:"clientCmd",data:"fromPlayer",args:{x:round(p.x),y:round(p.y),z:round(p.z)}},p.id)
 }
 function fillToPlayer(id,p,world){
 	//fills at player feet
 	fillBlocks(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z), id,world)
-	world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
+	world.world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
 function copyToPlayer(p,world){
 	copy(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z),world);
 	p.copiedBlocksCmd = copiedBlocks
-	world.sendPlayer({type:"clientCmd",data:"copySelect",args:{w:copiedBlocks.length,h:copiedBlocks[0].length,d:copiedBlocks[0][0].length}},p.id)
+	world.world.sendPlayer({type:"clientCmd",data:"copySelect",args:{w:copiedBlocks.length,h:copiedBlocks[0].length,d:copiedBlocks[0][0].length}},p.id)
 }
 function pasteAtPlayer(p,world){
 	copiedBlocks = p.copiedBlocksCmd
 	paste(round(p.x), round(p.y-1), round(p.z),world)
-	world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
+	world.world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
 function replaceAtPlayer(replace,into,p,world){
 	replaceBlocks(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z), replace, into, world)
-	world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
+	world.world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
 
 let cancelShape = 0
@@ -20153,7 +20153,7 @@ function initDefaultCommands(world){
 			if(!args.name) return ["Error: name required.","error"]
 			scope[args.name] = args.value
 		},null,null,true))),
-		CommandNode.l("fromPlayer", (args,pos,scope) => fromPlayer(pos,world), "Sets starting position to current position", false),
+		CommandNode.l("fromPlayer", (args,pos,scope) => fromPlayer(pos,world[pos.dimension]), "Sets starting position to current position", false),
 		CommandNode.l("fillToPlayer",null,"Fills from starting position to current position").then(CommandNode.a("block_name",
 		(args,pos,scope) => {
 			let id = blockIds[args.block_name]
@@ -20418,12 +20418,58 @@ const {initDefaultCommands} = win
 }*/
 const isString = /\p{L}|\p{N}|\?|_|@|\./u, isSpace = /[^\S\n]/
 class CommandReader{
-	constructor(str, noRead){
+	constructor(str, noRead, tokens = []){
 		this.str = str
 		this.idx = 0
 		this.tokenStart = 0
 		this.prevTokenEnd = 0
 		this.prevTokenStart = 0
+		this.tokens = tokens
+		if(!tokens.length){
+			let idx = 0
+			let tokenStart = 0, tokenEnd = 0
+			findingToken:while(idx < str.length){
+				tokenStart = idx
+				let c = str[idx]
+				if(c === "/"  && str[idx+1] === "/") tokens.push("//",null), idx+=2
+				else if(c === "/" || c === "$" || c === "\n" || c === "+" || c === "-" || c === "*" || c === "(" || c === ")" || c === "~") tokens.push(c,null), idx++
+				else if(c === "&" && str[idx+1] === "&") tokens.push("&&",null), idx+=2
+				else if(isSpace.test(c)){
+					idx++
+					c = str[idx]
+					continue findingToken
+				}else if(c === "#"){//comment
+					while(c !== "\n" && c){
+						idx++
+						c = str[idx]
+					}
+					continue findingToken
+				}else if(c === '"' || c === "'"){
+					const q = c
+					let data = ""
+					idx++
+					c = str[idx]
+					while(c !== q && c){
+						data += c
+						idx++
+						c = str[idx]
+					}
+					tokens.push("string",data)
+					idx++
+				}else if(isString.test(c)){ //characters like: a b c 1 2 3
+					let data = ""
+					do{
+						data += c
+						idx++
+						c = str[idx]
+					}while(isString.test(c) && c)
+					tokens.push("string",data)
+				}else throw "§cSyntax error: Unknown character "+c
+				tokenEnd = idx
+				tokens.push(tokenStart,tokenEnd)
+			}
+			tokens.push("end",null,idx,str.length)
+		}
 		if(!noRead) this.read()
 	}
 	read(){
@@ -20433,62 +20479,24 @@ class CommandReader{
 			}
 			throw "§cSyntax error: Unexpected "+this.nextTokenType+", Expected: "+Array.prototype.join.call(arguments," ")
 		}
-		let prevToken = this.nextTokenData
-		this.prevTokenEnd = this.idx
-		//get next token
-		const {str} = this
-		let c = str[this.idx]
-		while(isSpace.test(c) || c === "#"){
-			if(c === "#"){//comment
-				while(c !== "\n" && c){
-					this.idx++
-					c = str[this.idx]
-				}
-			}else{//space
-				this.idx++
-				c = str[this.idx]
-			}
-		}
-		this.nextTokenData = null
-		this.prevTokenStart = this.tokenStart
-		this.tokenStart = this.idx
-		if(this.idx >= str.length){
-			this.nextTokenType = "end"
-			return prevToken
-		}
-		if(c === "/" || c === "$" || c === "\n" || c === "+" || c === "-" || c === "*" || c === "(" || c === ")" || c === "~") this.nextTokenType = c, this.idx++
-		else if(c === "&" && str[this.idx+1] === "&") this.nextTokenType = "&&", this.idx+=2
-		else if(c === '"' || c === "'"){
-			const q = c
-			this.nextTokenType = "string"
-			this.nextTokenData = ""
-			this.idx++
-			c = str[this.idx]
-			while(c !== q && c){
-				this.nextTokenData += c
-				this.idx++
-				c = str[this.idx]
-			}
-			this.idx++
-		}else if(isString.test(c)){
-			this.nextTokenType = "string"
-			this.nextTokenData = ""
-			do{
-				this.nextTokenData += c
-				this.idx++
-				c = str[this.idx]
-			}while(isString.test(c) && c)
-		}else throw "§cSyntax error: Unknown character "+c
+		let prevToken = this.tokens[this.idx+1]
+		this.prevTokenStart = this.tokens[this.idx+2]
+		this.prevTokenEnd = this.tokens[this.idx+3]
+		if(this.idx === this.tokens.length-1) return prevToken
+		this.idx += 4
+		this.nextTokenType = this.tokens[this.idx]
+		this.nextTokenData = this.tokens[this.idx+1]
+		this.tokenStart = this.tokens[this.idx+2]
 		return prevToken
 	}
 	get stackEnd(){
-		return this.nextTokenType === "&&" || this.nextTokenType === "\n" || this.nextTokenType === "end"
+		return this.nextTokenType === "/" || this.nextTokenType === "end"
 	}
 	get stackEndNoSpace(){
-		return (this.nextTokenType === "&&" || this.nextTokenType === "\n" || this.nextTokenType === "end") && this.prevTokenEnd === this.tokenStart
+		return (this.nextTokenType === "/" || this.nextTokenType === "end") && this.prevTokenEnd === this.tokenStart
 	}
 	clone(){
-		let other = new this.constructor(this.str,true)
+		let other = new this.constructor(this.str,true,this.tokens)
 		other.idx = this.idx
 		other.nextTokenType = this.nextTokenType
 		other.nextTokenData = this.nextTokenData
@@ -20512,132 +20520,65 @@ class CommandReader{
 win.CommandReader = CommandReader
 //use something like this: https://wiki.vg/Command_Data
 {
-function parseLines(reader,world){
+function parseLines(reader){
 	let cmds = ["all"]
 	while(reader.nextTokenType !== "end"){
 		if(reader.nextTokenType === "/") reader.read("/")
-		/*let currentNode = world.commandNodes[0]//root node
-		let args = {}
-		while(reader.nextTokenType !== "&&" && reader.nextTokenType !== "\n" && reader.nextTokenType !== "end"){
-			if(currentNode.next){
-				let found
-				for(let n of currentNode.next){//find next node that matches input
-					let node = world.commandNodes[world.commandIds[n]]
-					if(node.type === "literal"){
-						if(reader.nextTokenType === "string" && reader.nextTokenData === node.name){
-							currentNode = node
-							found = true
-							break
-						}
-					}else if(node.type === "argument"){
-						currentNode = node
-						found = true
-						break
-					}
-				}
-				if(!found) throw "§cUnknown command: No next node after "+currentNode.name+" for "+reader.nextTokenType+" "+reader.nextTokenData
-			}else throw "§cUnknown command: No next nodes for "+currentNode.name
-			if(node.type === "literal"){
-				reader.read("string")
-			}else if(currentNode.type === "argument"){
-				args[currentNode.name] = parseValue(reader)
-			}
-		}*/
-		/*let name = this.eat("string")
-		let args = {}
-		let cmd = getCmd(name,world)
-		let argIdx = 0
-		while(this.nextTokenType !== "&&" && this.nextTokenType !== "\n" && this.nextTokenType !== "end"){
-			args[cmd.args[argIdx++]] = this.parseValue()
-		}*/
-		let args = {}
-		cmds.push(["cmd",parseNodes(reader,world.commandNodes[0],args,world),args])
-		if(reader.nextTokenType === "&&" || reader.nextTokenType === "\n") reader.read("&&","\n")
+		let nodes = ["cmd"]
+		while(!reader.stackEnd){
+			let n = parseAdd(reader)
+			nodes.push(n)
+		}
+		if(reader.stackEndNoSpace) nodes.stackEndNoSpace = true
+		else nodes.nextTokenStart = reader.tokenStart
+		cmds.push(nodes)
 	}
 	return cmds
 }
-function parseNodes(reader,parentNode,args,world){
-	if(parentNode.type === "redirect"){
-		parentNode = world.commandNodes[parentNode.redirect]
-	}
-	if(!parentNode.next.length) throw "§cUnknown command: No more nodes after "+parentNode.name
-	let error
-	for(let n of parentNode.next){//find the best match in the next nodes
-		let node = world.commandNodes[n]
-		let newReader = reader.clone()
-		if(node.type === "literal" || node.type === "redirect"){
-			if(newReader.read("string").toLowerCase() !== node.name.toLowerCase()) continue
-		}else if(node.type === "argument"){
-			let thisOne
-			try{
-				thisOne = parseAdd(newReader,node.argType)
-			}catch(e){
-				error = e
-			}
-			if(thisOne !== undefined){
-				args[node.name] = thisOne
-			}else continue
-		}
-		let result
-		if(newReader.stackEnd){//last node in stack
-			if(node.type === "redirect"){
-				result = world.commandNodes[node.redirect]
-			}else result = node
-			if(!result.func){
-				error = "§cUnknown command: Incomplete command at "+node.name
-				continue
-			}
-		}else{
-			try{
-				result = parseNodes(newReader,node,args,world)
-			}catch(e){
-				error = e
-			}
-		}
-		if(result !== undefined){
-			reader.goTo(newReader)
-			return result
-		}
-	}
-	throw error || "§cUnknown command: Node does not go after "+parentNode.name
-}
-function parseAdd(reader,argType){
-	let ret = parseMult(reader,argType)
+function parseAdd(reader){
+	let ret = parseMult(reader)
 	while(reader.nextTokenType === "+" || reader.nextTokenType === "-"){
 		let type = reader.nextTokenType
 		reader.read()
-		ret = [type, ret, parseMult(reader,argType)]
+		let start = reader.prevTokenStart, end = reader.prevTokenEnd
+		ret = [type, ret, parseMult(reader)]
+		ret.start = start, ret.end = end
 	}
 	return ret
 }
-function parseMult(reader,argType){
-	let ret = parseValue(reader,argType)
-	while(reader.nextTokenType === "*" || reader.nextTokenType === "/"){
+function parseMult(reader){
+	let ret = parseValue(reader)
+	while(reader.nextTokenType === "*" || reader.nextTokenType === "//"){
 		let type = reader.nextTokenType
 		reader.read()
-		ret = [type, ret, parseValue(reader,argType)]
+		let start = reader.prevTokenStart, end = reader.prevTokenEnd
+		ret = [type, ret, parseValue(reader)]
+		ret.start = start, ret.end = end
 	}
 	return ret
 }
-function parseValue(reader,argType){
+function parseValue(reader){
+	let start = reader.tokenStart
+	let ret
 	if(reader.nextTokenType === "$"){
 		reader.read("$")
-		return ["get",reader.read("string")]
+		ret = ["get",reader.read("string")]
 	}else if(reader.nextTokenType === "("){
 		reader.read()
-		let ret = parseAdd(reader)
+		ret = parseAdd(reader)
 		reader.read(")")
-		return ret
 	}else if(reader.nextTokenType === "~"){
 		reader.read()
-		return ["~"+argType]
+		ret = ["~"]
 	}else{
 		let v = reader.read("string")
 		if(!isNaN(v)) v = +v
 		else if(v === "true") v = true
 		else if(v === "false") v = false
-		return v
+		ret = ["string",v]
 	}
+	ret.start = start, ret.end = reader.prevTokenEnd
+	return ret
 }
 function parseCmd(str,world){
 	let reader = new CommandReader(str)
@@ -20646,41 +20587,7 @@ function parseCmd(str,world){
 win.parseCmd = parseCmd
 }
 const {parseCmd} = win
-/*function parseCmd(str,scope,world){
-	let hasSlash = str[0] === "/" ? "/" : ""
-	if(hasSlash) str = str.substring(1) //remove leading slash if there is one
-	let args = []
-	let val = "", inQuotes = false, quoteType = null, argIsVar = false
-	let remaining
-	let cmd
-	for(let i=0; i<str.length; i++){
-		let noRaw = !cmd || !cmd.args || !cmd.lastArgRaw || args.length !== cmd.args.length
-		if(str[i] === "/" && !(hasSlash && i === 0) && !inQuotes && noRaw){
-			remaining = str.substring(i)
-			break
-		}
-		if(noRaw && (str[i] === "'" || str[i] === '"') && (!inQuotes || quoteType === str[i])){
-			inQuotes = !inQuotes
-			quoteType = str[i]
-		}else if(str[i] === "$" && !inQuotes && !val){//starts with $
-			argIsVar = true
-		}else if(noRaw && (str[i] === " " || str[i] === "\n") && !inQuotes){
-			if(argIsVar) val = scope[val]
-			args.push(val)
-			if(args.length === 1) cmd = getCmd(val,world)
-			val = ""
-			argIsVar = false
-		}else val += str[i]
-	}
-	if(argIsVar) val = scope[val]
-	args.push(val)
-	if(args.length === 1) cmd = getCmd(val,world)
-	let name = args.shift()
-	args = cmd && cmd.args ? Object.fromEntries(args.filter((v,i) => i in cmd.args).map((v, i) => [cmd.args[i],v])) : {}
-	return [args,remaining,name,cmd]
-}*/
 async function runCmd(str, pos, world, anonymous = false, cb = emptyFunc, cheats = true){
-	let remaining = str
 	let output = [], newOutputs = []
 	let scope = {}
 	let cmds
@@ -20694,30 +20601,58 @@ async function runCmd(str, pos, world, anonymous = false, cb = emptyFunc, cheats
 			return cb(output,newOutputs)
 		}else throw e
 	}
-	/*while(remaining){
-		let [args,remain,name,cmd] = parseCmd(remaining,scope,world)
-		remaining = remain
-		await runParsedCommand(name,cmd,args,pos,scope,newOutputs,output,world,anonymous,cb,cheats)
-	}*/
 	output.push(...newOutputs)
 	return cb(output,newOutputs)
 }
-async function runParsedCommand(data,pos,scope,newOutputs,output,world,anonymous,cb,cheats){//Used if client runs server command
-	if(!Array.isArray(data)) return data
+function searchCmdStack(commandNodes,parentNode,stack,stacki,args){
+	if(parentNode.type === "redirect"){
+		parentNode = commandNodes[parentNode.redirect]
+	}
+	if(!parentNode.next.length) throw "§cUnknown command: No more nodes after "+parentNode.name
+	let error
+	for(let n of parentNode.next){//find the best match in the next nodes
+		let node = commandNodes[n]
+		if(node.type === "literal" || node.type === "redirect"){
+			if(stack[stacki][0] !== "string" || stack[stacki][1].toLowerCase() !== node.name.toLowerCase()) continue
+		}else if(node.type === "argument"){
+			args[node.name] = stack[stacki]
+			if(typeof args[node.name] === "object") args[node.name].argType = node.argType
+		}
+		let result
+		if(stacki === stack.length-1){//last node in stack
+			if(node.type === "redirect"){
+				result = commandNodes[node.redirect]
+			}else result = node
+			if(!result.func){
+				error = "§cUnknown command: Incomplete command at "+node.name
+				continue
+			}
+		}else{
+			try{
+				result = searchCmdStack(commandNodes,node,stack,stacki+1,args)
+			}catch(e){
+				error = e
+			}
+		}
+		if(result !== undefined){
+			return result
+		}
+	}
+	throw error || "§cUnknown command: Node does not go after "+parentNode.name
+}
+win.searchCmdStack = searchCmdStack
+async function runParsedCommand(data,pos,scope,newOutputs,output,world,anonymous,cb,cheats, argType=null){//Used if client runs server command
 	const action = data[0]
 	if(action === "cmd"){
-		let cmd = data[1], args = data[2]
-		/*if(!cmd){
-			throw "§cError: no such command called §f"+name
-		}*/
+		let actualArgs = {}
+		let cmd = searchCmdStack(world.commandNodes,world.commandNodes[0],data,1,actualArgs)
 		if(!cheats && !cmd.noCheats){
 			throw "§cError: Command requires cheats"
 		}
-		let func = anonymous ? cmd.anonymousFunc !== false && (cmd.anonymousFunc || cmd.func) : cmd.func
-		let actualArgs = {}
-		for(let i in args){
-			actualArgs[i] = await runParsedCommand(args[i],pos,scope,newOutputs,output,world,anonymous,cb,cheats)
+		for(let i in actualArgs){
+			actualArgs[i] = await runParsedCommand(actualArgs[i],pos,scope,newOutputs,output,world,anonymous,cb,cheats,actualArgs[i].argType)
 		}
+		let func = anonymous ? cmd.anonymousFunc !== false && (cmd.anonymousFunc || cmd.func) : cmd.func
 		if(cmd.func === "client"){
 			if(anonymous) throw "§cCannot run command "+cmd.name
 			else world.sendPlayer({type:"clientCmd",data:cmd.name,args:actualArgs},pos.id)
@@ -20737,15 +20672,14 @@ async function runParsedCommand(data,pos,scope,newOutputs,output,world,anonymous
 			throw "§cError: Incomplete command at "+cmd.name
 		}
 	}else if(action === "all"){
-		for(let i=1; i<data.length; i++) await runParsedCommand(data[i],pos,scope,newOutputs,output,world,anonymous,cb,cheats)
+		for(let i=1; i<data.length; i++) await runParsedCommand(data[i],pos,scope,newOutputs,output,world,anonymous,cb,cheats,argType)
 	}else if(action === "get") return scope[data[1]]
-	else if(action === "+") return await runParsedCommand(data[1],pos,scope,newOutputs,output,world,anonymous,cb,cheats)+await runParsedCommand(data[2],pos,scope,newOutputs,output,world,anonymous,cb,cheats)
-	else if(action === "-") return await runParsedCommand(data[1],pos,scope,newOutputs,output,world,anonymous,cb,cheats)-await runParsedCommand(data[2],pos,scope,newOutputs,output,world,anonymous,cb,cheats)
-	else if(action === "*") return await runParsedCommand(data[1],pos,scope,newOutputs,output,world,anonymous,cb,cheats)*await runParsedCommand(data[2],pos,scope,newOutputs,output,world,anonymous,cb,cheats)
-	else if(action === "/") return await runParsedCommand(data[1],pos,scope,newOutputs,output,world,anonymous,cb,cheats)/await runParsedCommand(data[2],pos,scope,newOutputs,output,world,anonymous,cb,cheats)
-	else if(action === "~x") return pos.x
-	else if(action === "~y") return pos.y
-	else if(action === "~z") return pos.z
+	else if(action === "+") return await runParsedCommand(data[1],pos,scope,newOutputs,output,world,anonymous,cb,cheats,argType)+await runParsedCommand(data[2],pos,scope,newOutputs,output,world,anonymous,cb,cheats,argType)
+	else if(action === "-") return await runParsedCommand(data[1],pos,scope,newOutputs,output,world,anonymous,cb,cheats,argType)-await runParsedCommand(data[2],pos,scope,newOutputs,output,world,anonymous,cb,cheats,argType)
+	else if(action === "*") return await runParsedCommand(data[1],pos,scope,newOutputs,output,world,anonymous,cb,cheats,argType)*await runParsedCommand(data[2],pos,scope,newOutputs,output,world,anonymous,cb,cheats,argType)
+	else if(action === "/") return await runParsedCommand(data[1],pos,scope,newOutputs,output,world,anonymous,cb,cheats,argType)/await runParsedCommand(data[2],pos,scope,newOutputs,output,world,anonymous,cb,cheats,argType)
+	else if(action === "~") return argType === "x" ? pos.x : argType === "y" ? pos.y : argType === "z" ? pos.z : null
+	else if(action === "string") return data[1]
 	else throw "Invalid action "+action
 }
 /*async function runCmdFromClient(name,args,pos,scope,world,id,cheats){
