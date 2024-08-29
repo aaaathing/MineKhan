@@ -2118,6 +2118,7 @@ const blockData = [
 		solid: false,
 		transparent: true,
 		shadow: false,
+		shade:false,
 		crossShape: true,
 		drop: "wheatSeeds",
 		dropAmount:[0,1],
@@ -19966,26 +19967,26 @@ function replaceBlocks(x,y,z,x2,y2,z2, replace, into,world){
 }
 
 function fromPlayer(p,world){
-	p.prevPosCmd = [round(p.x), round(p.y), round(p.z)]
-	world.world.sendPlayer({type:"clientCmd",data:"fromPlayer",args:{x:round(p.x),y:round(p.y),z:round(p.z)}},p.id)
+	p.prevPosCmd = [round(p.x), ceil(p.y-p.height*0.5), round(p.z)]
+	world.world.sendPlayer({type:"clientCmd",data:"fromPlayer",args:{x:p.prevPosCmd[0],y:p.prevPosCmd[1],z:p.prevPosCmd[2]}},p.id)
 }
 function fillToPlayer(id,p,world){
 	//fills at player feet
-	fillBlocks(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z), id,world)
+	fillBlocks(p.prevPosCmd[0], p.prevPosCmd[1], p.prevPosCmd[2], round(p.x), ceil(p.y-p.height*0.5), round(p.z), id,world)
 	world.world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
 function copyToPlayer(p,world){
-	copy(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z),world);
+	copy(p.prevPosCmd[0], p.prevPosCmd[1], p.prevPosCmd[2], round(p.x), ceil(p.y-p.height*0.5), round(p.z),world);
 	p.copiedBlocksCmd = copiedBlocks
 	world.world.sendPlayer({type:"clientCmd",data:"copySelect",args:{w:copiedBlocks.length,h:copiedBlocks[0].length,d:copiedBlocks[0][0].length}},p.id)
 }
 function pasteAtPlayer(p,world){
 	copiedBlocks = p.copiedBlocksCmd
-	paste(round(p.x), round(p.y-1), round(p.z),world)
+	paste(round(p.x), ceil(p.y-p.height*0.5), round(p.z),world)
 	world.world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
 function replaceAtPlayer(replace,into,p,world){
-	replaceBlocks(p.prevPosCmd[0], p.prevPosCmd[1]-1, p.prevPosCmd[2], round(p.x), round(p.y-1), round(p.z), replace, into, world)
+	replaceBlocks(p.prevPosCmd[0], p.prevPosCmd[1], p.prevPosCmd[2], round(p.x), ceil(p.y-p.height*0.5), round(p.z), replace, into, world)
 	world.world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
 
@@ -21805,6 +21806,7 @@ class Player extends Entity{
 				this.lastGetOxygen = now
 				this.oxygen = (floor(this.oxygen/2)*2) + 2
 			}
+			if(this.liquid) this.lastY = this.y
 		}else{
 			this.burnTimer = 0
 			if(this.burning){
@@ -24615,7 +24617,7 @@ class Section {
 		let maxChunkX = this.x + x + 32 >> 4
 		let minChunkZ = this.z + z - 32 >> 4
 		let maxChunkZ = this.z + z + 32 >> 4
-		let chunks = this.chunks
+		let chunks = this.world.world.chunks
 		let block = this.getBlock(x,y,z), light = max(this.getLight(x,y,z,0)*this.world.skyLight,this.getLight(x,y,z,1))
 		let under = this.chunk.getBlock(x,y+this.y-1,z,0,true)
 		if(this.type === "" && !block && light > 10 && under === blockIds.grass){
@@ -24688,7 +24690,7 @@ class Section {
 		let maxChunkX = this.x + x + 32 >> 4
 		let minChunkZ = this.z + z - 32 >> 4
 		let maxChunkZ = this.z + z + 32 >> 4
-		let chunks = this.chunks
+		let chunks = this.world.world.chunks
 		let light = max(this.getLight(x,y,z,0)*this.world.skyLight,this.getLight(x,y,z,1))
 		let under = this.chunk.getBlock(x,y+this.y-1,z,0,true)
 		let biome = world.getBiome(x+this.x,y+this.y,z+this.z)
@@ -25658,7 +25660,7 @@ class Chunk {
 				}
 			}
 		}else{
-			let {blocks,tops,biomes,minY,maxY,waterTops,caveBiomes,caveY} = await doWork({generate:true,trueX,trueZ,seed:this.world.worldSeed,fancyRivers:this.world.world.fancyRivers,caves:!this.caves})
+			let {blocks,tops,biomes,minY,maxY,waterTops,caveBiomes,caveY} = await doWork({generate:true,trueX,trueZ,seed:this.world.world.worldSeed,fancyRivers:this.world.world.fancyRivers,caves:!this.caves})
 			this.tops.set(tops)
 			this.solidTops.set(tops)
 			this.biomes = biomes
@@ -26231,7 +26233,7 @@ class Chunk {
 				for(let y2=0; y2<=leafRadius; y2++){
 					let n = x2 * x2 / w2 + z2 * z2 / w2 + y2 * y2 / w2
 					let n2 = x2 * x2 / w3 + y2 * y2 / w3 + z2 * z2 / w3
-					if(n>0.5) n += this.world.caveNoise((wx+x2)*1.5, (top+y2)*1.5, (wz+z2)*1.5)*0.5
+					if(n>0.5) n += this.world.world.caveNoise((wx+x2)*1.5, (top+y2)*1.5, (wz+z2)*1.5)*0.5
 					if (n < 1 && n2 > 1) {
 					let thisy = top-leafRadius+2+y2
 						world.spawnBlock(wx+x2, thisy, wz+z2, leaf)
@@ -26587,7 +26589,7 @@ class Chunk {
 					for (let lz = -w; lz <= w; lz++) {
 						let n = lx * lx / w2 + ly * ly / h2 + lz * lz / w2
 						if(n > 0.2){
-							n += this.world.caveNoise((lx + x)*3.3, (ly + y)*3.3, (lz + z)*3.3)*0.8
+							n += this.world.world.caveNoise((lx + x)*3.3, (ly + y)*3.3, (lz + z)*3.3)*0.8
 						}
 						if (n < 1) {
 							world.spawnBlock(lx + x, ly + y, lz + z, leaf)
@@ -26769,7 +26771,7 @@ class Chunk {
 						n += this.world.caveNoise((wx+x)*3.3, j*3.3, (wz+z)*3.3)*0.8
 					}*/
 					let mult = 1/Math.hypot(x,z)*2
-					n += this.world.caveNoise(wx+x*mult, (j+n)*0.5, wz+z*mult)*0.8
+					n += this.world.world.caveNoise(wx+x*mult, (j+n)*0.5, wz+z*mult)*0.8
 					if (n < 1) {
 						world.spawnBlock(wx + x+1, j, wz + z+1, leaf)
 					}
@@ -26799,7 +26801,7 @@ class Chunk {
 				for(let z=-floor(size); z<=ceil(size); z++){
 					let n = x**2 / s2 + z**2 / s2
 					let mult = 1/Math.hypot(x,z)*2
-					n += this.world.caveNoise(wx+x*mult, (j+n)*0.5, wz+z*mult)*2*noiseAmountHigh
+					n += this.world.world.caveNoise(wx+x*mult, (j+n)*0.5, wz+z*mult)*2*noiseAmountHigh
 					if(noiseAmount>0.8) n = lerp((noiseAmount-0.8)/0.2, n,1.2)
 					if (n < 1) {
 						world.spawnBlock(wx + x, j, wz + z, leaf)
@@ -26854,7 +26856,7 @@ class Chunk {
 					//if(j < (top-h)+4){ //Make thinner
 					//	n += ((top-h)+4-j)/4
 					//}
-					n += this.world.caveNoise((wx+x), j, (wz+z))*2.5*noiseAmount
+					n += this.world.world.caveNoise((wx+x), j, (wz+z))*2.5*noiseAmount
 					if(noiseAmount>0.8) n = lerp((noiseAmount-0.8)/0.2, n,1.2)
 					if (n < 1) {
 						world.spawnBlock(wx + x+1, j, wz + z+1, leaf)
@@ -27015,7 +27017,7 @@ class Chunk {
 				const horizontalSubtract = ((x/oreW)**2 + (z/oreW)**2)**2
 				for(let y=oreH-1;y>=-oreH;y--){
 					if(blockData[world.getBlock(X+x,Y+y,Z+z)].solid) break //Skip to next column
-					const n = mapClamped(this.world.noiseProfile.noise((X+x)*oreWeirdness*4,(Y+y)*oreWeirdness*1.5,(Z+z)*oreWeirdness*4),0.1,0.7)
+					const n = mapClamped(this.world.world.noiseProfile.noise((X+x)*oreWeirdness*4,(Y+y)*oreWeirdness*1.5,(Z+z)*oreWeirdness*4),0.1,0.7)
 					//const n2 = this.world.noiseProfile.noise((Y+y)*oreWeirdness,(Z+z)*oreWeirdness*4,(X+x)*oreWeirdness*4)
 					const subtract = ((y+oreH)/oreH/2) + horizontalSubtract//preferMiddle((y+oreH)/oreH/2, 0.1, 0,1)
 					if(n>subtract){
@@ -27024,13 +27026,13 @@ class Chunk {
 						}else if(type === "small"){
 							block = blockIds.cobblestone
 						}else if(type === "flat"){
-							if(!world.getBlock(X+x,Y+y+1,Z+z) && this.world.caveNoise((X+x)*0.5,(Y+y)*0.5,(Z+z)*0.5) > 0.65){
+							if(!world.getBlock(X+x,Y+y+1,Z+z) && this.world.world.caveNoise((X+x)*0.5,(Y+y)*0.5,(Z+z)*0.5) > 0.65){
 								block = blockIds.grass
 							}else{
 								block = blockIds.limestone
 							}
 						}else{
-							if(!world.getBlock(X+x,Y+y+1,Z+z) && this.world.caveNoise((X+x)*0.25,(Y+y)*0.25,(Z+z)*0.25) > 0.6){
+							if(!world.getBlock(X+x,Y+y+1,Z+z) && this.world.world.caveNoise((X+x)*0.25,(Y+y)*0.25,(Z+z)*0.25) > 0.6){
 								block = blockIds.grass
 								if(random()>0.75) world.spawnBlock(X+x,Y+y+1,Z+z, blockIds.TallGrass, this.type, true)
 							}else{
@@ -27197,7 +27199,7 @@ class Chunk {
 					}
 					let n = x * x / w2 + z * z / w2 + y2 * y2 / h2
 					if(n > 0.6){
-						n += this.world.caveNoise((wx+x2)*2, (top+y2), (wz+z2)*2)*0.4
+						n += this.world.world.caveNoise((wx+x2)*2, (top+y2), (wz+z2)*2)*0.4
 					}
 					if (n < 1) {
 						world.spawnBlock(wx+x2, top+y2, wz+z2, leaf2 && hash3(wx+x2, top+y2, wz+z2) > 0.2 ? leaf2 : leaf)
@@ -27214,8 +27216,8 @@ class Chunk {
 		let offX, offZ, pOffX, pOffZ
 		for (let j = ground + 1; j < top; j++) {
 			pOffX = offX, pOffZ = offZ
-			offX = round(lerp(Math.min((j-ground-1)*0.25,1),0,world.noiseProfile.generator.noise3d(wx,j*0.05,wz))*8)
-			offZ = round(lerp(Math.min((j-ground-1)*0.25,1),0,world.noiseProfile.generator.noise3d(wx,-j*0.05,wz)*8))
+			offX = round(lerp(Math.min((j-ground-1)*0.25,1),0,world.world.noiseProfile.generator.noise3d(wx,j*0.05,wz))*8)
+			offZ = round(lerp(Math.min((j-ground-1)*0.25,1),0,world.world.noiseProfile.generator.noise3d(wx,-j*0.05,wz)*8))
 			world.spawnBlock(wx+offX, j, wz+offZ, tree)
 			world.spawnBlock(wx + 1+offX, j, wz+offZ, tree)
 			world.spawnBlock(wx+offX, j, wz + 1+offZ, tree)
@@ -27238,8 +27240,8 @@ class Chunk {
 			let endX = topX+round(random(-6,6))
 			let endZ = topZ+round(random(-6,6))
 			let startY = round(random(max(ground+5,top-16),top-5))
-			let startX = wx+round(world.noiseProfile.generator.noise3d(wx,startY*0.05,wz)*8)
-			let startZ = wz+round(world.noiseProfile.generator.noise3d(wx,-startY*0.05,wz)*8)
+			let startX = wx+round(world.world.noiseProfile.generator.noise3d(wx,startY*0.05,wz)*8)
+			let startZ = wz+round(world.world.noiseProfile.generator.noise3d(wx,-startY*0.05,wz)*8)
 			branch.length = 0
 			line3D(endX,top,endZ,startX,startY,startZ,branch)
 			for(let bi=0; bi<branch.length; bi+=3){
@@ -27259,7 +27261,7 @@ class Chunk {
 					}
 					let n = x * x / w2 + z * z / w2 + y2 * y2 / h2
 					if(n > 0.6){
-						n += this.world.caveNoise((topX+x2)*0.4, (top+y2), (topZ+z2)*0.4)*0.4
+						n += this.world.world.caveNoise((topX+x2)*0.4, (top+y2), (topZ+z2)*0.4)*0.4
 					}
 					if (n < 1) {
 						world.spawnBlock(topX+x2, top+y2, topZ+z2, leaf)
@@ -27404,7 +27406,7 @@ class Chunk {
 				for(let z2=-w; z2<=w; z2++){
 					for(let y2=floor(-h); y2<=ceil(h); y2++){
 						let n = x2 * x2 / w2 + z2 * z2 / w2 + y2 * y2 / h2
-						if(n > 0.5) n += this.world.caveNoise((wx+x2)*1.5, (top+y2)*1.5, (wz+z2)*1.5)*0.5
+						if(n > 0.5) n += this.world.world.caveNoise((wx+x2)*1.5, (top+y2)*1.5, (wz+z2)*1.5)*0.5
 						if (n < 1) {
 							world.spawnBlock(x+x2, y+y2, z+z2, leaf)
 							if(!world.getBlock(x+x2,y+y2-1,z+z2)){//hanging leaves
@@ -27518,7 +27520,7 @@ class Chunk {
 			for(let y2=-bottomH; y2<=topH; y2++){
 				for(let z2=-radius; z2<=radius; z2++){
 					let n = x2 * x2 / w2 + z2 * z2 / w2 + y2 * y2 / (y2>0 ? topH : bottomH)
-					if(n > 0.5) n += this.world.caveNoise((wx+x2)*1.5, (waterHeight+y2)*1.5, (wz+z2)*1.5)*0.5
+					if(n > 0.5) n += this.world.world.caveNoise((wx+x2)*1.5, (waterHeight+y2)*1.5, (wz+z2)*1.5)*0.5
 					if (n < 1) {
 						world.spawnBlock(wx+x2, waterHeight+y2, wz+z2, ice)
 					}
@@ -27705,13 +27707,12 @@ class Chunk {
 	}
 	async populate() {
 		const world = this.world
-		const {trees} = world
+		const {trees} = world.world
 		seedHash(world.worldSeed)
 		randomSeed(hash(this.x, this.z) * 210000000)
-		const {noiseProfile} = world
+		const {noiseProfile} = world.world
 		let wx = 0, wz = 0, ground = 0
 		let trueX = this.x, trueY = this.y, trueZ = this.z
-		let biome = 0
 		const type = this.type
 		worldGenArray.clear() //generate extras like vines
 
@@ -31604,7 +31605,7 @@ class World{ // aka trueWorld
 		for(let i = world.timeoutQueue.length-1; i>=0; i--){
 			if(now - world.timeoutQueue[i].time >= 0) world.timeoutQueue.splice(i,1)[0].func()
 		}
-		for(let i=0; i<world.updateQueue.length; i+=7){
+		for(let i=0; i<world.updateQueue.length; i+=6){
 			let x = world.updateQueue[i]
 			let y = world.updateQueue[i+1]
 			let z = world.updateQueue[i+2]
@@ -32602,13 +32603,16 @@ window.parent.postMessage({ready:true}, "*")
 		p.level = reader.read(16); p.setLevel()
 		p.didEndPoem = Boolean(reader.read(1))
 		p.lastY = preBetaVersion ? reader.read(8) : reader.read(11,true)
+		if(!reader.canRead) return
 		let effectsLen = reader.read(8)
 		p.effects = {}
 		for(let i=0; i<effectsLen; i++){
 			p.effects[reader.readBasicString()] = {level:reader.read(8), time:reader.read(32), showParticles:reader.read(1)}
 		}
+		if(!reader.canRead) return
 		p.riding = reader.readBasicString() || null
-		if(reader.canRead) p.doingPortal = reader.read(32)
+		if(!reader.canRead) return
+		p.doingPortal = reader.read(32)
 	}
 
 	onpos(){

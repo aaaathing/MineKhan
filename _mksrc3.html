@@ -7605,7 +7605,7 @@ Division: //
 							case "block":
 								count = 0
 								for(let i=1; i<BLOCK_COUNT; i++){
-									if(blockData[i].name.includes(this.highlightReplaces)){
+									if(blockData[i].name.toLowerCase().includes(this.highlightReplaces.toLowerCase())){
 										this.addHint(blockData[i].name)
 										count++
 									}
@@ -7620,7 +7620,7 @@ Division: //
 								this.addHint("@p","@p - closest player")
 								this.addHint(p.username)
 								for(let i in players){
-									if(players[i].username.includes(this.highlightReplaces)){
+									if(players[i].username.toLowerCase().includes(this.highlightReplaces.toLowerCase())){
 										this.addHint(players[i].username)
 										count++
 									}
@@ -7632,7 +7632,7 @@ Division: //
 							case "z": this.addHint(p.z.toFixed(2)); this.addHint("~","~ - current z"); break
 							case "sound":
 								for(i of soundNames){
-									if(i.includes(this.highlightReplaces)){
+									if(i.toLowerCase().includes(this.highlightReplaces.toLowerCase())){
 										this.addHint(i)
 										count++
 									}
@@ -11216,7 +11216,7 @@ return//*/
           p.velocity.y *= 0.2
         }
       }
-			let drag = liquid ? 0.35 : powder ? 0.2 : spikyBush ? 0.175 : quicksand ? 0.00005 : (p.onGround ? 0.5 : 0.85)
+			let drag = liquid ? 0.7 : powder ? 0.2 : spikyBush ? 0.175 : quicksand ? 0.00005 : (p.onGround ? 0.5 : 0.85)
       if(blockData[p.standingOn].slide) drag = blockData[p.standingOn].slide
 			p.velocity.z += (p.velocity.z * drag - p.velocity.z)
 			p.velocity.x += (p.velocity.x * drag - p.velocity.x)
@@ -11318,10 +11318,10 @@ return//*/
 		if (liquid){
 			//p.jumpSpeed = 0.135;
 			if (controlMap.jump.pressed){
-				p.velocity.y += 0.15
+				p.velocity.y += 0.125
 			}
 			if (controlMap.sneak.pressed){
-				p.velocity.y -= 0.15
+				p.velocity.y -= 0.125
 			}
 		}
 		if(powder){
@@ -23022,14 +23022,14 @@ r 11 y  n  n  n
 				blockFill = true
 			}
 			if(p.selectStart){
-				let w = round(p.x)-p.selectStart[0], h = round(p.y)-p.selectStart[1], d = round(p.z)-p.selectStart[2]
+				let w = round(p.x)-p.selectStart[0], h = ceil(p.y-p.height*0.5)-p.selectStart[1], d = round(p.z)-p.selectStart[2]
 				let ws = Math.sign(w)||1, hs = Math.sign(h)||1, ds = Math.sign(d)||1
 				w += ws, h += hs, d += ds
 				matrix.set(p.camera.transformation.elements)
 				p.camera.transformation.scale(w, h, d)
 				gl.uniform1i(glCache.uTrans, 1)
 				gl.disable(gl.CULL_FACE)
-				block2((p.selectStart[0]+(w-ws)*0.5)/w, (p.selectStart[1]+(h-hs)*0.5-1)/h, (p.selectStart[2]+(d-ds)*0.5)/d, "selectBlocks", p.camera)
+				block2((p.selectStart[0]+(w-ws)*0.5)/w, (p.selectStart[1]+(h-hs)*0.5)/h, (p.selectStart[2]+(d-ds)*0.5)/d, "selectBlocks", p.camera)
 				p.camera.transformation.elements.set(matrix)
 				gl.uniform1i(glCache.uTrans, 0)
 				gl.enable(gl.CULL_FACE)
@@ -23709,7 +23709,6 @@ p.camera.transformation.elements.set(matrix)//*/
 			for (let button of this.all) {
 				if (button.click(e)) {
 					this.draw()
-          playSound("click")
 					break
 				}
 			}
@@ -29407,7 +29406,7 @@ p.camera.transformation.elements.set(matrix)//*/
   }
   document.addEventListener("mousedown", tryPlayMusic)
   document.addEventListener("touchstart", tryPlayMusic)
-  document.body.onmousedown = e => {if(e.target && e.target.tagName.toLowerCase() === "button") playSound("click")}
+  //document.body.onmousedown = e => {if(e.target && e.target.tagName.toLowerCase() === "button") playSound("click")}
 	const mediaAction = () => alert("You can't do that!")
   navigator.mediaSession.setActionHandler('play', mediaAction);
 	navigator.mediaSession.setActionHandler('pause', mediaAction);
