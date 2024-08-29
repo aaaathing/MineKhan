@@ -3326,7 +3326,7 @@ const blockData = [
 		name:"furnace",
 		Name:"Furnace",
 		textures: ["furnaceTop","furnaceTop","furnaceSide","furnaceFront","furnaceSide","furnaceSide"],
-		SW: true,
+		rotate: true,
 		tagBits: null,
 		setContents: function(x,y,z,world){
 			var data = {furnace:true, input:0, fuel:0, output:0, smeltStart:0, burnStart:0, canBurn:false, smelting:false, xp:0}
@@ -24617,7 +24617,7 @@ class Section {
 		let maxChunkX = this.x + x + 32 >> 4
 		let minChunkZ = this.z + z - 32 >> 4
 		let maxChunkZ = this.z + z + 32 >> 4
-		let chunks = this.world.world.chunks
+		let chunks = this.world.chunks
 		let block = this.getBlock(x,y,z), light = max(this.getLight(x,y,z,0)*this.world.skyLight,this.getLight(x,y,z,1))
 		let under = this.chunk.getBlock(x,y+this.y-1,z,0,true)
 		if(this.type === "" && !block && light > 10 && under === blockIds.grass){
@@ -24690,7 +24690,7 @@ class Section {
 		let maxChunkX = this.x + x + 32 >> 4
 		let minChunkZ = this.z + z - 32 >> 4
 		let maxChunkZ = this.z + z + 32 >> 4
-		let chunks = this.world.world.chunks
+		let chunks = this.world.chunks
 		let light = max(this.getLight(x,y,z,0)*this.world.skyLight,this.getLight(x,y,z,1))
 		let under = this.chunk.getBlock(x,y+this.y-1,z,0,true)
 		let biome = world.getBiome(x+this.x,y+this.y,z+this.z)
@@ -24983,16 +24983,16 @@ class Section {
 			}
 		}
 	}
-	//block: 1:block light, 2:spreaded sky light, 3:exposed sky light
+	/** block: 1:block light, 2:sky light, 3:spread from sky light, 4:spread from block light */
 	getLight(x, y, z, block = 0) {
 		let i = x * 256 + y * 16 + z
-		return block === 1 ? this.blockLight[i] : (block === 2 ? this.skyLight[i]>>4 : this.skyLight[i]&15)
+		let arr = (block&1) ? this.blockLight : this.skyLight
+		return (arr[i] & 15 << ((block&2)<<1)) >> ((block&2)<<1)
 	}
 	setLight(x, y, z, level, block = 0) {
 		let i = x * 256 + y * 16 + z
-		let arr = block === 1 ? this.blockLight : this.skyLight
-		if(block === 2) arr[i] = (arr[i]&15) | level << 4
-		else arr[i] = (arr[i]&240) | level
+		let arr = (block&1) ? this.blockLight : this.skyLight
+		arr[i] = level << ((block&2)<<1) | arr[i] & ~(15 << ((block&2)<<1))
 	}
 	getTags(x, y, z){
 		return this.tags[x * 256 + y * 16 + z]
@@ -25155,8 +25155,14 @@ class Chunk {
 	}
 	setTags(x,y,z,data){
 		y -= minHeight
-		let s = y >> 4
-		if(s < this.sections.length && s >= 0) this.sections[s].setTags(x, y & 15, z, data)
+		if (!this.sections[y >> 4]) {
+			do {
+				let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
+				if(this.lit) section.skyLight.fill(15)
+				this.sections.push(section)
+			} while (!this.sections[y >> 4])
+		}
+		this.sections[y>>4].setTags(x, y & 15, z, data)
 	}
 	setTagByName(x,y,z,n,data){
 		y -= minHeight
@@ -25177,6 +25183,7 @@ class Chunk {
 						if (!blockSpread[data.lightLevel]) blockSpread[data.lightLevel] = []
 						blockSpread[data.lightLevel].push(x + this.x, y, z + this.z)
 						this.setLight(x, y, z, data.lightLevel, 1)
+						this.setLight(x, y, z, data.lightLevel, 3)
 					}
 					if (!stop && !data.transparent) {
 						this.tops[z * 16 + x] = y
@@ -25196,21 +25203,21 @@ class Chunk {
 		for (let x = 0; x < 16; x++) {
 			for (let z = 0; z < 16; z++) {
 				for (let y = this.tops[z * 16 + x] + 1; y <= max; y++) {
-					let light = this.getLight(x, y+1, z, 2)
+					let light = this.getLight(x, y+1, z, 0)
 					if(!spread[light]) spread[light] = []
-					if (this.getLight(x+1,y,z,2) < light) {
+					if (this.getLight(x+1,y,z,0) < light) {
 						spread[light].push(x + this.x, y, z + this.z)
 						continue
 					}
-					if (this.getLight(x-1,y,z,2) < light) {
+					if (this.getLight(x-1,y,z,0) < light) {
 						spread[light].push(x + this.x, y, z + this.z)
 						continue
 					}
-					if (this.getLight(x,y,z+1,2) < light) {
+					if (this.getLight(x,y,z+1,0) < light) {
 						spread[light].push(x + this.x, y, z + this.z)
 						continue
 					}
-					if (this.getLight(x,y,z-z,2) < light) {
+					if (this.getLight(x,y,z-z,0) < light) {
 						spread[light].push(x + this.x, y, z + this.z)
 						continue
 					}
@@ -25240,17 +25247,24 @@ class Chunk {
 	}
 	setLight(x, y, z, level, blockLight) {
 		y -= minHeight
-		if(this.sections[y >> 4]) this.sections[y >> 4].setLight(x, y & 15, z, level, blockLight)
+		if (!this.sections[y >> 4]) {
+			do {
+				let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
+				if(this.lit) section.skyLight.fill(15)
+				this.sections.push(section)
+			} while (!this.sections[y >> 4])
+		}
+		this.sections[y >> 4].setLight(x, y & 15, z, level, blockLight)
 	}
-	getLight(x, y, z, blockLight = 0, fullOutside) {
+	getLight(x, y, z, blockLight = 0) {
 		y -= minHeight
-		if (!this.sections[y >> 4]) return (!blockLight || fullOutside) * 15
+		if (!this.sections[y >> 4]) return !(blockLight&1) * 15
 		return this.sections[y >> 4].getLight(x, y & 15, z, blockLight)
 	}
 	trySpread(x, y, z, level, spread, blockLight, update = false) {
 		if(y < minHeight) return
 		
-		if (this.world.getLight(x, y, z, blockLight, 1) < level) {
+		if (this.world.getLight(x, y, z, blockLight) < level) {
 			//let chunk = this.world.getChunk(x,z)
 			if (blockData[this.world.getBlock(x, y, z)].transparent) {
 				this.world.setLight(x, y, z, level, blockLight)
@@ -25280,18 +25294,18 @@ class Chunk {
 	tryUnSpread(x, y, z, level, spread, respread, blockLight) {
 		if(y < minHeight) return
 		
-		let light = this.world.getLight(x, y, z, blockLight, 1)
-		let expose = !blockLight && this.world.getLight(x, y, z, 2)
+		let light = this.world.getLight(x, y, z, blockLight)
+		let spreadSource = this.world.getLight(x, y, z, blockLight|2, this.type) //won't be 0 if light source here
 		let trans = blockData[this.world.getBlock(x, y, z)].transparent
 		if (light === level) {
 			if (trans) {
-				this.world.setLight(x, y, z, 0, blockLight)
+				this.world.setLight(x, y, z, spreadSource, blockLight, this.type)
 				spread.push(x, y, z)
 			}
-		} else if (light > level && !expose) {
+			if(spreadSource) respread[spreadSource].push(x, y, z)
+		} else if (light > level) {
 			respread[light].push(x, y, z)
 		}
-		if(expose) respread[expose].push(x, y, z)
 	}
 	unSpreadLight(blocks, level, respread, blockLight) {
 		let spread = []
@@ -30192,8 +30206,8 @@ function isCave(x, y, z, world) {
 	// TODO: replace with a crawler system of some sort, that will never rely on a head position in un-generated chunks.
 	let smooth = 0.02
 	let caveSize = 0.0055
-	return abs(0.5 - world.caveNoise(x * smooth, y * smooth, z * smooth)) < caveSize
-		&& abs(0.5 - world.caveNoise(y * smooth, z * smooth, x * smooth)) < caveSize
+	return abs(0.5 - world.world.caveNoise(x * smooth, y * smooth, z * smooth)) < caveSize
+		&& abs(0.5 - world.world.caveNoise(y * smooth, z * smooth, x * smooth)) < caveSize
 }
 
 class PVector {
@@ -30939,7 +30953,7 @@ class World{ // aka trueWorld
 			}
       
       if(side && blockData[holding].swId){
-        block = blockData[holding].swId
+        holding = blockData[holding].swId
       }
       if(blockData[holding].layers){
         let b = this[dimension].getBlock(ox,oy,oz)
@@ -32336,10 +32350,116 @@ class World{ // aka trueWorld
 			}
 		}
 
+		for(let i in chunks) chunks[i] = this.loadOldSaveConvert(i,chunks[i])
 		this.loadFrom = chunks
 
 		this.spawnPoint.y = this.superflat ? 6 : (round(this.noiseProfile.noise(8 * generator.smooth, 8 * generator.smooth) * generator.height) + 2 + generator.extra)
-		Object.assign(this.settings, defaultWorldSettings)
+		Object.assign(this.settings, defaultWorldSettings, {mobSpawning:false})
+	}
+	loadOldSaveConvert(j,loadFrom){
+		let blockSet = new Set()
+		let sectionMap = {}, sectionTags = {}, sectionTagsLength = {}
+		{
+			const section = loadFrom, blocks = section.blocks, tags = section.tags
+			let [sx, sz, dimension] = j.split(",")
+			sx = +sx, sz = +sz
+			for(let i in blocks){
+				blockSet.add(blocks[i])
+				const z = (i & 15)+sz*16, x = ((i >> 4) & 15)+sx*16, y = (i >> 8) & 255
+				let str = `${x>>3},${y>>3},${z>>3},${dimension}`
+				if (!sectionMap[str]) {
+					sectionMap[str] = []
+					for (let k = 0; k < 6; k++) sectionMap[str].push(new Int32Array(8*8*8).fill(-1))
+					sectionTags[str] = []
+					sectionTagsLength[str] = 0
+				}
+
+				sectionMap[str][0][(y & 7) << 6 | (x & 7) << 3 | z & 7] = blocks[i]
+				sectionMap[str][1][(y & 7) << 6 | (z & 7) << 3 | x & 7] = blocks[i]
+				sectionMap[str][2][(x & 7) << 6 | (y & 7) << 3 | z & 7] = blocks[i]
+				sectionMap[str][3][(x & 7) << 6 | (z & 7) << 3 | y & 7] = blocks[i]
+				sectionMap[str][4][(z & 7) << 6 | (x & 7) << 3 | y & 7] = blocks[i]
+				sectionMap[str][5][(z & 7) << 6 | (y & 7) << 3 | x & 7] = blocks[i]
+				if(tags[i]){
+					sectionTags[str][(y & 7) << 6 | (x & 7) << 3 | z & 7] = typeof tags[i] === "number" ? tags[i] : JSON.stringify(tags[i]).substring(0,65535)
+					sectionTagsLength[str]++
+				}
+			}
+		}
+		let bab = new BitArrayBuilder()
+		let sections = Object.entries(sectionMap)
+		let blocks = Array.from(blockSet)
+		let palette = {}
+		blocks.forEach((block, index) => palette[block] = index)
+		let paletteBits = BitArrayBuilder.bits(blocks.length)
+		bab.add(blocks.length, 32)
+		for (let block of blocks) bab.add(block, 32)
+		bab.add(sections.length, 32)
+		for (let [coords, section] of sections) {
+			let [sx, sy, sz] = coords.split(",")
+			sx = +sx, sy = +sy, sz = +sz
+			bab.add(sx, 1).add(sy, 8).add(sz, 1)
+
+			// Determine the most compact orientation by checking all 6!
+			let bestBAB = null
+			for (let i = 0; i < 6; i++) {
+				let bab = new BitArrayBuilder()
+
+				let blocks = section[i]
+				bab.add(i, 3)
+
+				let run = null
+				let runs = []
+				let singles = []
+				for (let i = 0; i < blocks.length; i++) {
+					const block = blocks[i]
+					if (block >= 0) {
+						if (!run && i < blocks.length - 2 && blocks[i + 1] >= 0 && blocks[i + 2] >= 0) {
+							run = [i, []]
+							runs.push(run)
+						}
+						if (run) {
+							if (run[1].length && block === run[1][run[1].length-1][1]) run[1][run[1].length-1][0]++
+							else run[1].push([1, block])
+						}
+						else singles.push([i, blocks[i]])
+					}
+					else run = null
+				}
+
+				bab.add(runs.length, 8)
+				bab.add(singles.length, 9)
+				for (let [start, blocks] of runs) {
+					// Determine the number of bits needed to store the lengths of each block type
+					let maxBlocks = 0
+					for (let block of blocks) maxBlocks = Math.max(maxBlocks, block[0])
+					let lenBits = BitArrayBuilder.bits(maxBlocks)
+
+					bab.add(start, 9).add(blocks.length, 9).add(lenBits, 4)
+					for (let [count, block] of blocks) bab.add(count - 1, lenBits).add(palette[block], paletteBits)
+				}
+				for (let [index, block] of singles) {
+					bab.add(index, 9).add(palette[block], paletteBits)
+				}
+				bab.add(sectionTagsLength[coords],9)
+				if(sectionTagsLength[coords]) for(let i in sectionTags[coords]){
+					let tags = sectionTags[coords][i]
+					bab.add(i,9)
+					if(typeof tags === "number"){
+						bab.add(0,1)
+						bab.add(tags,32)
+					}else{
+						bab.add(1,1)
+						bab.addString(tags,16)
+					}
+				}
+				if (!bestBAB || bab.bitLength < bestBAB.bitLength) {
+					bestBAB = bab
+				}
+			}
+			bab.append(bestBAB)
+		}
+		return bab.array
 	}
 	loadInv(reader,p){
 		let {inventory} = p
@@ -32383,23 +32503,21 @@ class World{ // aka trueWorld
 		let inv = arr[1].split(",")
 		let hotb = arr[0].split(",")
 		
-		inventory.hotbar = []
 		for(let i=0; i<18; i+=2){
 			if(hotb[i]){
-				inventory.hotbar.push({
+				p.inventory.hotbar[i/2] = ({
 					id: parseInt(hotb[i]) || 0,
 					amount: parseInt(hotb[i+1]) || 0
 				})
-			}else inventory.hotbar.push(0)
+			}
 		}
-		inventory.main = []
 		for(let i=0; i<inv.length; i+=2){
 			if(inv[i]){
-				inventory.main.push({
+				p.inventory.main[i/2] = ({
 					id: parseInt(inv[i]) || 0,
 					amount: parseInt(inv[i+1]) || 0
 				})
-			}else inventory.main.push(0)
+			}
 		}
 		if(arr.length < 3) return
 		inv = arr[3].split(",")
@@ -32407,13 +32525,13 @@ class World{ // aka trueWorld
 		for(let i=0; i<len; i++){
 			hotb[i] = parseInt(hotb[i]) || 0
 			if(hotb[i] && inventory.hotbar[i]){
-				inventory.hotbar[i].durability = hotb[i]
+				p.inventory.hotbar[i].durability = hotb[i]
 			}
 		}
 		for(let i=0; i<inv.length; i++){
 			inv[i] = parseInt(inv[i]) || 0
 			if(inv[i] && inventory.main[i]){
-				inventory.main[i].durability = inv[i]
+				p.inventory.main[i].durability = inv[i]
 			}
 		}
 		
@@ -32422,12 +32540,12 @@ class World{ // aka trueWorld
 		hotb = arr[4].split(",")
 		for(let i=0; i<len; i++){
 			if(hotb[i]){
-				inventory.hotbar[i].customName = hotb[i]
+				p.inventory.hotbar[i].customName = hotb[i]
 			}
 		}
 		for(let i=0; i<inv.length; i++){
 			if(inv[i]){
-				inventory.main[i].customName = inv[i]
+				p.inventory.main[i].customName = inv[i]
 			}
 		}
 	}
@@ -32614,6 +32732,24 @@ window.parent.postMessage({ready:true}, "*")
 		if(!reader.canRead) return
 		p.doingPortal = reader.read(32)
 	}
+	loadOldSurvivStr(str,p){
+		let arr = str.split(",")
+		p.health = parseInt(arr[0])
+		p.witherEffect = parseInt(arr[1])
+		p.itherTime = parseInt(arr[2])
+		p.witherDamage = parseInt(arr[3])
+		p.spawnPoint.x = parseInt(arr[4]) || 0
+		p.spawnPoint.y = parseInt(arr[5]) || 0
+		p.spawnPoint.z = parseInt(arr[6]) || 0
+		p.food = parseInt(arr[7]); if(isNaN(p.food)) p.food = 20
+		p.foodSaturation = parseFloat(arr[8]) || 0, p.foodExhaustion = parseFloat(arr[9]) || 0
+		p.oxygen = parseInt(arr[10]); if(!p.oxygen) p.oxygen = 20
+		this.time = parseFloat(arr[11]) || 0
+		this.cheats = p.cheats = arr[12] ? arr[12] === "1" : !this.survival
+		p.freezeEffect = parseInt(arr[13])
+		p.XP = parseFloat(arr[14]) || 0
+		p.level = parseInt(arr[15]) || 0; p.setLevel()
+	}
 
 	onpos(){
 		/*let entities = this.getEntities(), arr = [], length = 0
@@ -32680,9 +32816,11 @@ window.parent.postMessage({ready:true}, "*")
 				let inv = world.playersInv[host ? ":host" : username]
 				if(inv){//older stuff
 					if(typeof inv.inv === "string"){
+						if(inv.inv.inclues(";")) this.loadOldInv(inv.inv,p), inv.inv = null
 						inv.inv = atoarr(inv.inv)
 					}
 					if(typeof inv.survivStr === "string"){
+						if(inv.survivStr.inclues(";")) this.loadOldSurvivStr(inv.survivStr,p), inv.survivStr = null
 						inv.survivStr = atoarr(inv.survivStr)
 					}
 					if(inv.survivStr && inv.survivStr.length){
@@ -32697,6 +32835,9 @@ window.parent.postMessage({ready:true}, "*")
 							p.spawnPoint.z = world.spawnPoint.z
 							p.respawn()
 						}
+					}
+					if(inv.x !== undefined){
+						p.x = inv.x, p.y = inv.y, p.z = inv.z
 					}
 					if(inv.inv && inv.inv.length){
 						world.loadInv(new BitArrayReader(inv.inv),p)
@@ -33612,13 +33753,6 @@ class WorldDimension{
 		let zm = z & 15
 		let prev = chunk.getBlock(xm,y,zm)
 		if (blockID) {
-			if(prev){ //block gets replaced
-				let prevData = blockData[prev]
-				chunk.deleteBlock(xm, y, zm, !lazy)
-				if (!lazy && chunk.allGenerated && (!prevData.transparent || prevData.lightLevel || prevData.decreaseLight) && chunk.lit) {
-					this.updateLight(x, y, z, false, prevData.lightLevel)
-				}
-			}
 			let data = blockData[blockID]
 			chunk.setBlock(xm, y, zm, blockID, !lazy)
 			if (!lazy && chunk.allGenerated && (!data.transparent || data.lightLevel || data.decreaseLight) && chunk.lit) {
@@ -33755,13 +33889,13 @@ class WorldDimension{
 		var t = this.getTags(x,y,z)
 		this.tagsChanged(x,y,z,t,false,lazy)
 	}
-	getLight(x, y, z, blockLight = 0, fullOutside = 0) {
+	getLight(x, y, z, blockLight = 0) {
 		if(y < minHeight) return 0
 		let chunk = this.chunks[x >> 4] && this.chunks[x >> 4][z >> 4]
 		if(chunk){
-			return chunk.getLight(x & 15, y, z & 15, blockLight, fullOutside)
+			return chunk.getLight(x & 15, y, z & 15, blockLight)
 		}
-		return (!blockLight || fullOutside) * 15
+		return !(blockLight&1) * 15
 	}
 	setLight(x, y, z, level, block) {
 		let chunk = this.chunks[x >> 4] && this.chunks[x >> 4][z >> 4]
@@ -33784,27 +33918,11 @@ class WorldDimension{
 		let east = this.getLight(x+1, y, z, 0)
 		let west = this.getLight(x-1, y, z, 0)
 
-		/*if(place){ //set vertical column to 15
-			let spread = []
-			for(let x2 = x-1; x2 <= x+1; x2++) for(let z2 = z-1; z2 <= z+1; z2++){
-				//spread around side too so the sides won't get dark
-				let i = chunk.sections.length * 16 - 1
-				let cx2 = x2 & 15, cz2 = z2 & 15
-				for(; i >= 0; i--){
-					if(!blockData[chunk.getBlock(cx2,i,cz2)].transparent) break
-					if(chunk.getLight(cx2,i,cz2,0) !== 15){
-						chunk.setLight(cx2,i,cz2,15,0)
-						spread.push(x2,i,z2)
-					}
-				}
-			}
-			if(spread.length) chunk.spreadLight(spread, 14, true)
-		}*/
-
 		let spread = []
 		for (let i = 0; i <= 15; i++) spread[i] = []
+		let blspread = [] // block light spread
 		if (!place) { // Block was removed; increase light levels
-			if (upExposed) {
+			if (upExposed) { // Exposed to sky light
 				let light = upExposed
 				for (let i = y; i >= minHeight; i--) {
 					let block = blockData[chunk.getBlock(cx, i, cz)]
@@ -33841,14 +33959,20 @@ class WorldDimension{
 				east = this.getLight(x+1, y, z, 1)
 				west = this.getLight(x-1, y, z, 1)
 				blight = max(up, down, north, south, east, west)
-				spread[blight].length = 0
 				if (blight > 0) blight -= 1
 				this.setLight(x, y, z, blight, 1)
 				if (blight > 1) {
-					spread[blight].push(x, y, z)
-					chunk.spreadLight(spread[blight], blight - 1, true, 1)
+					blspread.push(x, y, z)
+					chunk.spreadLight(blspread, blight - 1, true, 1)
 				}
-				spread[blight].length = 0
+			}
+			if (blockLight) { // Light block was removed
+				this.setLight(x, y, z, 0, 1)
+				blspread.push(x, y, z)
+				let respread = []
+				for (let i = 0; i <= 15/*blockLight + 1*/; i++) respread[i] = []
+				chunk.unSpreadLight(blspread, blockLight - 1, respread, 1)
+				chunk.reSpreadLight(respread, 1)
 			}
 		}
 		else if (place && (center !== 0 || blight !== 0)) { // Block was placed; decrease light levels
@@ -33856,20 +33980,13 @@ class WorldDimension{
 			for (let i = 0; i <= 15/*center + 1*/; i++) respread[i] = []
 			chunk.setLight(cx, y, cz, 0, 0)
 			chunk.setLight(cx, y, cz, 0, 1)
+			chunk.setLight(cx, y, cz, 0, 2)
 			spread[center].push(x, y, z)
 
 			// Sky light
-			let light = centerExposed, startY = y
-			if(!blockData[chunk.getBlock(cx, y, cz)].transparent){
-				chunk.setLight(cx, y, cz, 0, 0)
-				chunk.setLight(cx, y, cz, 0, 1)
-				chunk.setLight(cx, y, cz, 0, 2)
-				spread[center].push(x, y, z)
-				startY--
-				light = 0
-			}
-			if(centerExposed){
-				for (let i = startY; i >= minHeight; i--) {
+			if(upExposed){
+				let light = upExposed
+				for (let i = y; i >= minHeight; i--) {
 					let block = blockData[chunk.getBlock(cx, i, cz)]
 					if (block.transparent) {
 						if(block.decreaseLight){
@@ -33879,6 +33996,8 @@ class WorldDimension{
 						let prevLight = chunk.getLight(cx, i, cz, 0)
 						chunk.setLight(cx, i, cz, light, 0)
 						spread[prevLight].push(x, i, z)
+					} else if(i === y) {
+						light = 0
 					} else {
 						break
 					}
@@ -33887,32 +34006,31 @@ class WorldDimension{
 			for (let i = 0; i <= 15; i++){
 				if(spread[i].length) chunk.unSpreadLight(spread[i], i - 1, respread)
 			}
+			//chunk.unSpreadLight(spread[0], 0, respread)
 			chunk.reSpreadLight(respread)
 
 			// Block light
 			if (blight) {
 				respread.length = 0
 				for (let i = 0; i <= 15/*blight + 1*/; i++) respread[i] = []
-				spread[blight].length = 0
-				spread[blight].push(x, y, z)
-				chunk.unSpreadLight(spread[blight], blight - 1, respread, 1)
+				blspread.push(x, y, z)
+				chunk.unSpreadLight(blspread, blight - 1, respread, 1)
 				chunk.reSpreadLight(respread, 1)
-				spread[blight].length = 0
 			}
-		}
-		if (place && blockLight) { // Light block was placed
-			this.setLight(x, y, z, blockLight, 1)
-			spread[blockLight].length = 0
-			spread[blockLight].push(x, y, z)
-			chunk.spreadLight(spread[blockLight], blockLight - 1, true, 1)
-		} else if (!place && blockLight) { // Light block was removed
-			this.setLight(x, y, z, 0, 1)
-			spread[blockLight].length = 0
-			spread[blockLight].push(x, y, z)
-			let respread = []
-			for (let i = 0; i <= 15/*blockLight + 1*/; i++) respread[i] = []
-			chunk.unSpreadLight(spread[blockLight], blockLight - 1, respread, 1)
-			chunk.reSpreadLight(respread, 1)
+			if (blockLight) { // Light block was placed
+				up = this.getLight(x, y+1, z, 1)
+				down = this.getLight(x, y-1, z, 1)
+				north = this.getLight(x, y, z+1, 1)
+				south = this.getLight(x, y, z-1, 1)
+				east = this.getLight(x+1, y, z, 1)
+				west = this.getLight(x-1, y, z, 1)
+				blight = max(max(up, down, north, south, east, west)-1, blockLight)
+				this.setLight(x, y, z, blight, 1)
+				this.setLight(x, y, z, blockLight, 3)
+				blspread.length = 0
+				blspread.push(x, y, z)
+				chunk.spreadLight(blspread, blight - 1, true, 1)
+			}
 		}
 	}
 	spawnBlock(x, y, z, blockID, force) {
