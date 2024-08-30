@@ -1961,18 +1961,18 @@ With touch screen:
       if(typeof e === "string") e = {message:e}
 			e.asdf_error_time = Date.now()
       errors.push(e)
-			let html = "<br><div style='border:1px solid red; padding:8px;'>"
+			let msg
 			if(e.stack){
-				html += e.stack.replace(/\n/g,"<br>").replace(/ /g,"&nbsp;")
+				msg = e.stack.replace(/\n/g,"<br>").replace(/ /g,"&nbsp;")
 			}else{
-				html += e.message
-				if(e.lineno || e.colno) html += "<br>Error occured at "
-				if(e.lineno) html += "line "+e.lineno
-				if(e.colno) html += " column "+e.colno
+				msg = e.message
+				if(e.lineno || e.colno) msg += "<br>Error occured at "
+				if(e.lineno) msg += "line "+e.lineno
+				if(e.colno) msg += " column "+e.colno
 			}
-			html += "</div>"
-			errorData.insertAdjacentHTML('beforeend',html)
+			errorData.insertAdjacentHTML('beforeend',"<br><div style='border:1px solid red; padding:8px;'>"+msg+"</div>")
       errorScreen.style.display = "block"
+			if(window.sendError && errors.length<5) sendError(e.stack)
     }
     addEventListener("error", logError)
 		addEventListener("unhandledrejection", e => logError(e.reason))
@@ -21092,7 +21092,9 @@ r 11 y  n  n  n
 		}
 	}
 
-	function sendError(err){fetch("/server/know/mkError",{method:"POST",body:err,headers:{Authorization:userSessionString}}).catch(console.error)}
+	function sendError(err){fetch("/server/know/minekhan/error",{method:"POST",body:err,headers:{Authorization:userSessionString}}).catch(console.error)}
+	win.sendError = sendError
+	
   let host = false
 	{
 		function initSingleplayer(){
