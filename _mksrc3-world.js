@@ -11168,7 +11168,7 @@ const blockData = [
 			let running = world.getTagByName(x,y,z,"running")
 			if(data && !running){
 				world.setTagByName(x,y,z,"running",true,false)
-				runCmd(data,{x,y,z,dimension:world.dimension},world,true, output => {
+				runCmd(data,{x,y,z,dimension:world.dimension},world.world,true, output => {
 					let outputHTML = "none"
 					outputHTML = ""
 					for(let i=0; i<output.length; i+=2){
@@ -20615,7 +20615,10 @@ async function runCmd(str, pos, world, anonymous = false, cb = emptyFunc, cheats
 			newOutputs.push(e,"error")
 			output.push(...newOutputs)
 			return cb(output,newOutputs)
-		}else throw e
+		}else{
+			if(e instanceof Error) e.message += "\nrunning command: "+str
+			throw e
+		}
 	}
 	output.push(...newOutputs)
 	return cb(output,newOutputs)
@@ -24692,7 +24695,7 @@ class Section {
 	}
 	spawnMobs(){
 		if(!this.chunk.lit) return
-		if(this.world.world.usePreBeta) return this.oldSpawnMobs()
+		if(this.world.world.worldType === "alpha") return this.oldSpawnMobs()
 		let {world} = this
 		let x = Math.random() * 16 | 0
 		let y = Math.random() * 16 | 0
@@ -25078,7 +25081,7 @@ class Chunk {
 		this.caves = this.type !== "" || !caves
 		this.generated = false; // Terrain
 		this.generating = false //is it currently generating?
-		this.populated = world.world.superflat === true || world.world.superflat === "void" // Trees and ores
+		this.populated = false // Trees and ores
 		this.lit = false
 		this.lazy = false
 		this.edited = false
@@ -25369,7 +25372,7 @@ class Chunk {
 		}
 	}
 	carveCaves() {
-		if(this.world.world.usePreBeta || this.world.world.superflat){
+		if(this.world.world.worldType !== "large"){
 			for (let i = (-minHeight)>>4; i < this.sections.length; i++) {
 				if (!this.sections[i].caves) {
 					this.sections[i].carveCaves()
@@ -25411,7 +25414,7 @@ class Chunk {
 		//}
 		let gen = 0, floatGen = 0
 		if(this.world.customChunkGenerate && !this.world.customChunkGenerate(this)){
-		}else if(this.world.world.usePreBeta && this.type === "" && !this.world.world.superflat){
+		}else if(this.world.world.worldType === "alpha" && this.type === ""){
 		for (let i = 0; i < 16; i++) {
 			for (let k = 0; k < 16; k++) {
 				floatGen = noiseProfile.noise((trueX + i) * smoothness, (trueZ + k) * smoothness) * hilliness + generator.extra
@@ -25617,19 +25620,19 @@ class Chunk {
 					}
 				}
 			}
-		}else if(this.world.world.superflat === "island"){
+		}else if(this.world.world.worldType === "island"){
+			let islandGenerator = this.world.world.islandGenerator
 			for (let i = 0; i < 16; i++) {
 				for (let k = 0; k < 16; k++) {
-					let wx = trueX + i, wz = trueZ + k
-					let gen = this.world.islandGenerator.GetHeight(x*16+i, z*16+k)
+					let gen = islandGenerator.GetHeight(x*16+i, z*16+k)
 					this.tops[k*16+i] = gen
-					if (this.world.islandGenerator.GetWaterDepth(x*16+i, z*16+k) > 0) {
+					if (islandGenerator.GetWaterDepth(x*16+i, z*16+k) > 0) {
 						this.setBlock(i, gen, k, blockIds.Water);
 						this.setBlock(i, gen - 1, k, blockIds.Water)
 						this.setBlock(i, gen - 2, k, blockIds.dirt)
 						this.setBlock(i, gen - 3, k, blockIds.dirt)
 					}   else {
-						let biomeHere = this.world.islandGenerator.GetBiomeType(x*16+i, z*16+k);
+						let biomeHere = islandGenerator.GetBiomeType(x*16+i, z*16+k);
 						if (biomeHere === -3161286) {
 							this.setBlock(i, gen, k, blockIds.sand)
 							this.setBlock(i, gen - 1, k, blockIds.sand)
@@ -25669,13 +25672,13 @@ class Chunk {
 					this.setBlock(i, 0, k, blockIds.bedrock)
 				}
 			}
-		}else if(this.world.world.superflat === "void"){
+		}else if(this.world.world.worldType === "void"){
 			for (let i = 0; i < 16; i++) {
 				for (let k = 0; k < 16; k++) {
 					this.biomes[k * 16 + i] = biomeIds.void
 				}
 			}
-		}else if(this.world.world.superflat){
+		}else if(this.world.world.worldType === "superflat"){
 			for (let i = 0; i < 16; i++) {
 				for (let k = 0; k < 16; k++) {
 					this.tops[k * 16 + i] = 4;
@@ -27746,7 +27749,7 @@ class Chunk {
 		worldGenArray.clear() //generate extras like vines
 
 		if(this.world.customChunkPopulate && !this.world.customChunkPopulate(this)){
-		}else if((world.world.usePreBeta || world.world.superflat === "island") && type === ""){
+		}else if((world.world.worldType === "alpha" || world.world.worldType === "island") && type === ""){
 			const flowers = this.allFlowers
 			const clayReplaceable = [blockIds.dirt, blockIds.stone, blockIds.gravel]
 			const dirtReplaceable = [blockIds.stone,blockIds.gravel]
@@ -28033,7 +28036,7 @@ class Chunk {
 				const text = atob("QmV3YXJlIHRoZQpvbmUgdGhhdApyb2xscy4=")
 				world.setTags(0, top+4, 0, {rot:0,text,text2:text}, true,true)
 			}
-		}else if(!world.world.usePreBeta){
+		}else if(world.world.worldType === "large"){
 			let topX, topZ, topx, topz, steepX, steepZ
 			for (let i = 0; i < 16; i++) {
 				wx = this.x + i
@@ -28770,7 +28773,7 @@ class Chunk {
 
 		//Structures
 		//dont use random after because generateStructureLayout calls randomSeed
-		if(trees && !world.world.superflat){
+		if(trees && world.world.worldType === "alpha"){
 			let genStructs = []
 			for(let x = Math.floor((this.x-structureCheckDist)/structureSpacing)*structureSpacing; x <= Math.ceil((this.x+structureCheckDist)/structureSpacing)*structureSpacing; x+=structureSpacing){
 				for(let z = Math.floor((this.z-structureCheckDist)/structureSpacing)*structureSpacing; z <= Math.ceil((this.z+structureCheckDist)/structureSpacing)*structureSpacing; z+=structureSpacing){
@@ -30590,13 +30593,12 @@ const worldGenArray = {
 class World{ // aka trueWorld
 	constructor(options = {}){
 		let {
-			trees = true, caves = true, fancyRivers = true, superflat = false,
-			preBeta, gameMode = "creative", cheats = true,
+			trees = true, caves = true, fancyRivers = true, worldType = "alpha",
+			gameMode = "creative", cheats = true,
 			settings = defaultWorldSettings,
 			customChunkGenerate, customChunkPopulate
 		} = options
 		this.version = version
-		this.usePreBeta = preBeta
 		this.generatedChunks = 0
 		this.loadFrom = {}
 		this[""] = new WorldDimension(this,"")
@@ -30611,7 +30613,7 @@ class World{ // aka trueWorld
 		this.trees = trees
 		this.caves = caves
 		this.fancyRivers = fancyRivers
-		this.superflat = superflat
+		this.worldType = worldType
 		this.gameMode = gameMode //game mode on join
 		this.cheats = cheats //game mode on join
 		this.spawnPoint = {
@@ -30707,7 +30709,7 @@ class World{ // aka trueWorld
 		this.customChunkPopulate = customChunkPopulate
 	}
 	findSpawnPoint(){
-		if(!this.usePreBeta && !this.superflat){
+		if(this.worldType === "large"){
 			this.loadPromises.push(
 				doWork({findLand:true, seed:this.worldSeed}, progress => {
 					this.spawnPoint.landProg = progress
@@ -30719,7 +30721,7 @@ class World{ // aka trueWorld
 				})
 			)
 		}else{
-			this.spawnPoint.y = this.superflat ? 4 : round(this.noiseProfile.noise(this.spawnPoint.x * generator.smooth, this.spawnPoint.z * generator.smooth) * generator.height) + generator.extra
+			this.spawnPoint.y = this.worldType === "superflat" ? 4 : round(this.noiseProfile.noise(this.spawnPoint.x * generator.smooth, this.spawnPoint.z * generator.smooth) * generator.height) + generator.extra
 		}
 	}
 	serverChangeBlock(x,y,z,place,p,face,shift,blockMode,rotate,flip){
@@ -31716,7 +31718,7 @@ class World{ // aka trueWorld
 			this.players[i].updateLoaded()
 		}
 
-		if(this.superflat === "island" && this.islandGenerator.stage < 10){
+		if(this.worldType === "island" && this.islandGenerator.stage < 10){
 			if(!this.islandGenerator.promise){
 				this.islandGenerator.promise = new Promise(resolve => this.islandGenerator.promiseResolve = resolve)
 				this.loadPromises.push(this.islandGenerator.promise)
@@ -31798,7 +31800,7 @@ class World{ // aka trueWorld
 		for (let i = x - 3; i <= x + 3; i++) {//if you change the size, change the adding in loadChunks
 			for (let j = z - 3; j <= z + 3; j++) {
 				let chunk = this[dimension].getChunk(i*16,j*16)
-				if ((!chunk.generated || !chunk.caves && !this.usePreBeta) && !this.generateQueue.includes(chunk)) {
+				if ((!chunk.generated || (!chunk.caves && this.worldType === "large")) && !this.generateQueue.includes(chunk)) {
 					this.generateQueue.push(chunk)
 					done = false
 				}
@@ -31825,8 +31827,8 @@ class World{ // aka trueWorld
 	getSaveString(){
 		let loadFrom = this.loadFrom
 
-		let worldTypeBits1 = this.superflat==="island" ? 2 : (this.superflat === "void" ? 3 : this.superflat)
-		let worldTypeBits2 = this.usePreBeta ? 1 : 0
+		let worldTypeBits1 = this.worldType==="island" ? 2 : (this.worldType === "void" ? 3 : (this.worldType === "superflat" ? 1 : 0))
+		let worldTypeBits2 = this.worldType === "large" ? 1 : 0
 		let weatherBits = this.weather==="rain" ? 1 : (this.weather === "snow" ? 2 : 0)
 
 		let bab = new BitArrayBuilder()
@@ -31916,13 +31918,9 @@ class World{ // aka trueWorld
 		}
 		let preBetaVersion = verMoreThan("1.1.0",this.version.replace(/(Alpha|Beta) /, ''))
 		let worldTypeBits2 = preBetaVersion ? 1 : reader.read(1)
-		if(worldTypeBits2 && worldTypeBits1 === 0){
-			this.superflat = false, this.usePreBeta = true
-		}else{
-			this.superflat = worldTypeBits1 === 2 ? "island" : (worldTypeBits1 === 3 ? "void" : Boolean(worldTypeBits1))
-			this.usePreBeta = false
-		}
-		
+
+		this.worldType = worldTypeBits2 ? "large" : (worldTypeBits1 === 2 ? "island" : (worldTypeBits1 === 3 ? "void" : (worldTypeBits1 ? "superflat" : "alpha")))
+
 		if(onlyMetdata) return
 
 		if(!verMoreThan(this.version.replace(/(Alpha|Beta) /, ''),"1.1.1")){
@@ -32217,11 +32215,10 @@ class World{ // aka trueWorld
 		reader.skip(1)
 		reader.skip(1)
 
-		this.superflat = Boolean(reader.read(1))
+		this.worldType = Boolean(reader.read(1)) ? "superflat" : "alpha"
 		this.caves = reader.read(1)
 		this.trees = reader.read(1)
 		this.version = "Alpha " + [reader.read(8), reader.read(8), reader.read(8)].join(".")
-		this.usePreBeta = !this.superflat //Superflat and other types can be upgraded
 
 		if(onlyMetdata) return
 
@@ -32287,7 +32284,7 @@ class World{ // aka trueWorld
 
 		this.loadFrom = chunks
 
-		this.spawnPoint.y = this.superflat ? 6 : (round(this.noiseProfile.noise(8 * generator.smooth, 8 * generator.smooth) * generator.height) + 2 + generator.extra)
+		this.spawnPoint.y = this.worldType === "superflat" ? 6 : (round(this.noiseProfile.noise(8 * generator.smooth, 8 * generator.smooth) * generator.height) + 2 + generator.extra)
 		Object.assign(this.settings, defaultWorldSettings)
 	}
 	loadOldSave(str, onlyMetdata){
@@ -32310,11 +32307,11 @@ class World{ // aka trueWorld
 		inv.z = parseInt(playerData[2], 36)
 		let options = parseInt(playerData[5], 36)
 		let v = data[0].replace("Alpha ","")
-		this.superflat = options >> 1 & 3
-		if(this.superflat === 0) this.superflat = false
-		if(this.superflat === 1) this.superflat = true
-		if(this.superflat === 2) this.superflat = "island"
-		if(this.superflat === 3) this.superflat = "void"
+		let worldType = options >> 1 & 3
+		if(worldType === 0) this.worldType = "alpha"
+		if(worldType === 1) this.worldType = "superflat"
+		if(worldType === 2) this.worldType = "island"
+		if(worldType === 3) this.worldType = "void"
 		this.caves = options >> 4 & 1
 		this.trees = options >> 5 & 1
 		this.gameMode = (options >> 6 & 1) ? "survival" : "creative"
@@ -32322,7 +32319,6 @@ class World{ // aka trueWorld
 
 		let version = data.shift()
 		this.version = version
-		this.usePreBeta = !this.superflat //Superflat and other types can be upgraded
 
 		if(onlyMetdata) return
 
@@ -32386,7 +32382,7 @@ class World{ // aka trueWorld
 		for(let i in chunks) chunks[i] = this.loadOldSaveConvert(i,chunks[i])
 		this.loadFrom = chunks
 
-		this.spawnPoint.y = this.superflat ? 6 : (round(this.noiseProfile.noise(8 * generator.smooth, 8 * generator.smooth) * generator.height) + 2 + generator.extra)
+		this.spawnPoint.y = this.worldType === "superflat" ? 6 : (round(this.noiseProfile.noise(8 * generator.smooth, 8 * generator.smooth) * generator.height) + 2 + generator.extra)
 		Object.assign(this.settings, defaultWorldSettings, {mobSpawning:false})
 	}
 	loadOldSaveConvert(j,loadFrom){

@@ -54,3 +54,5 @@ if(document.title.toLowerCase().includes("falconcraft") || location.href.toLower
   //stop()
   //setTimeout(() => document.documentElement.innerHTML = "<h1 style='font:100px cursive;'>error</h1>", 10000)
 }
+
+window.sendError = function sendError(err){fetch("/server/know/minekhan/error",{method:"POST",body:err,headers:{Authorization:userSessionString}}).catch(console.error)}
