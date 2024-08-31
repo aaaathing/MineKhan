@@ -10537,13 +10537,13 @@ return//*/
 		let reach = settings.reach
 
 		let blockState = world.getBlock(p2.x, p2.y, p2.z, p.dimension)
-		if (blockState && !(blockData[blockState].noHitbox && !(holding && blockData[holding].allHitbox))) {
+		/*if (blockState && !(blockData[blockState].noHitbox && !(holding && blockData[holding].allHitbox))) {
 			hitBox.pos = [ p2.x, p2.y, p2.z ]
 			hitBox.closest = 0
 			hitBox.shape = blockData[blockState].shape
       if(hitBox.shape.hitbox) hitBox.shape = hitBox.shape.hitbox
 			return
-		}
+		}*/
 
 		let pd = p.direction
 
@@ -12112,7 +12112,7 @@ return//*/
 			let prevBlock = world.getBlock(pos[0],pos[1],pos[2],p.dimension)
 			world.setBlock(pos[0],pos[1],pos[2], 0, false,true,true,false,p.dimension)
 			p.lastBreak = Date.now()
-      world.serverChangeBlock(pos[0],pos[1],pos[2],p.dimension,false,hitBox.face,0)
+			send({type:"serverChangeBlock",x:pos[0],y:pos[1],z:pos[2],dimension:p.dimension,place:false,face:hitBox.face,shift:p.sneaking,blockMode:0,rotate:0,flip:0})
 		}
 	}
   /*function replaceItem(id){
@@ -12182,6 +12182,25 @@ return//*/
         holding = blockIds[useAs]
       }
     }
+
+		let mode = holding < isCube ? blockMode : 0
+		let rotate = 0, flip = 0
+		let pi = Math.PI / 4
+		if (p.ry <= pi) {} // North; default
+		else if (p.ry < 3 * pi) {
+			rotate = WEST
+		} else if (p.ry < 5 * pi) {
+			rotate = SOUTH
+		} else if (p.ry < 7 * pi) {
+			rotate = EAST
+		}
+		if (hitBox.face !== "top" && (hitBox.face === "bottom" || (p.direction.y * hitBox.closest + p.y+p.cOffsetY) % 1 < 0.5)) {
+			flip = FLIP
+		}
+		let predictBlock = holding|mode
+		let shape = holding && blockData[predictBlock].shape
+		if (shape && shape.rotate) predictBlock |= rotate
+		if (shape && shape.flip) predictBlock |= flip
     
 		if(hitBox.pos){
 			let onclick = blockData[cblock].onclientclick
@@ -12194,14 +12213,14 @@ return//*/
       item = true
     }
 		if(item){
-			world.serverChangeBlock(pos ? pos[0] : p2.x, pos ? pos[1] : p2.y, pos ? pos[2] : p2.z, p.dimension,true,hitBox.face,0)
+			send({type:"serverChangeBlock",x:pos?pos[0]:p2.x,y:pos?pos[1]:p2.y,z:pos?pos[2]:p2.z,dimension:p.dimension,place:true,face:hitBox.face,shift:p.sneaking,blockMode:0,rotate,flip})
 			p.lastPlace = Date.now()
 			if(blockData[holding].onuse && pos) blockData[holding].onuse(x,y,z, cblock,p.dimension)
 			return
 		}
 		if(cblock && blockData[cblock].onclick){
 			p.lastPlace = Date.now()
-			world.serverChangeBlock(x,y,z,p.dimension,true,hitBox.face, 0)
+			send({type:"serverChangeBlock",x,y,z,dimension:p.dimension,place:true,face:hitBox.face,shift:p.sneaking,blockMode:0,rotate,flip})
 			return
 		}
 		if(!hitBox.pos || !holding) {
@@ -12233,31 +12252,12 @@ return//*/
     var blocking = blockData[holding].solid && inBox(nx, ny, nz, 1, 1, 1)
     var canPlace = (!hitboxBlock) || (blockData[hitboxBlock].noHitbox)
 		if (!blocking && canPlace) {
-      let block = holding
-      
 			pos[0] = nx, pos[1] = ny, pos[2] = nz
 			//changeWorldBlock(block < isCube && !blockData[block].item ? (block | blockMode) : block)if(pos && pos[1] >= minHeight && pos[1] < maxHeight) {
 			if(pos && pos[1] >= minHeight && pos[1] < maxHeight){
-				let mode = block < isCube ? blockMode : 0
-				let shape = block && blockData[block|mode].shape
-				if (shape && shape.rotate) {
-					let pi = Math.PI / 4
-					if (p.ry <= pi) {} // North; default
-					else if (p.ry < 3 * pi) {
-						mode |= WEST
-					} else if (p.ry < 5 * pi) {
-						mode |= SOUTH
-					} else if (p.ry < 7 * pi) {
-						mode |= EAST
-					}
-				}
-
-				if (shape && shape.flip && hitBox.face !== "top" && (hitBox.face === "bottom" || (p.direction.y * hitBox.closest + p.y+p.cOffsetY) % 1 < 0.5)) {
-					mode |= FLIP
-				}
-				world.setBlock(nx,ny,nz, block|mode, false,true,true,false,p.dimension)
+				world.setBlock(nx,ny,nz, predictBlock, false,true,true,false,p.dimension)
 				p.lastPlace = Date.now()
-				world.serverChangeBlock(x,y,z,p.dimension,true,hitBox.face, mode)
+				send({type:"serverChangeBlock",x,y,z,dimension:p.dimension,place:true,face:hitBox.face,shift:p.sneaking,blockMode:mode,rotate,flip})
 			}
       //if(p.survival) inventory.hotbar[inventory.hotbarSlot].animation = 1.5 //animation because you used one of the blocks
       
@@ -12267,7 +12267,7 @@ return//*/
       }*/
       
       //play sound
-      blockSound(block, "place", x,y,z)
+      blockSound(predictBlock, "place", x,y,z)
 		}
     holding = pholding
 	}
@@ -15820,7 +15820,7 @@ r 11 y  n  n  n
   
   entities[entities.length] = class EnderPearl extends BlockEntity{
 		static name2 = "EnderPearl"
-    constructor(x,y,z,velx,vely,velz){
+    constructor(x,y,z,velx,vely,velz,from){
       super(blockIds.enderPearl, x,y,z)
       this.velx = velx
       this.vely = vely
@@ -21983,9 +21983,6 @@ r 11 y  n  n  n
 			this.sunDir = new PVector(0,0,0)
 			this.particles = []
 		}
-		serverChangeBlock(x,y,z,dimension,place,face,blockMode){
-			return send({type:"serverChangeBlock",x,y,z,dimension,place,face,shift:controlMap.sneak.pressed,blockMode})
-		}
 		getAdjacentSubchunks(x, y, z, type, dimension) {
       let minChunkX = x - 16 >> 4
 			let maxChunkX = x + 16 >> 4
@@ -22762,7 +22759,7 @@ r 11 y  n  n  n
       let time = worldTime % 1000
       if(p.dimension === "nether" || p.dimension === "end"){
         skyLight = 0.5
-      }else{
+      }else{ //if you change this, change server
         if(time > 725 && time < 800) skyLight = mapFrom(time, 800,725) //get darker
         else if(time > 200 && time < 275) skyLight = mapFrom(time, 200,275) //get brighter
         else if(time >= 800 || time <= 200) skyLight = 0

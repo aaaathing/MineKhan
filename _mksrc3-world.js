@@ -970,7 +970,7 @@ const blockData = [
 			world.unspreadPower(x,y,z, 16)
 		},
 		damage:1,
-		dieMessage: () => username+" died from radiation from block of redstone."
+		dieMessage: p => p.username+" died from radiation from block of redstone."
 	},
 	{ name: "lapisBlock", Name:"Block of Lapis Lazuli", hardness:3, type:"metal2",category:"build", stoneSound:true},
 	{ name: "emeraldBlock", Name:"Block of Emerald", hardness:5, type:"metal3",category:"build", stoneSound:true},
@@ -1529,7 +1529,7 @@ const blockData = [
 			}else if(sum === 4) block = this.id | PANE
 			if((b & FLIP) === FLIP) block |= FLIP //blue redstone
 			if(world.getBlock(x,y,z) !== block){
-				world.setBlock(x,y,z,block)
+				world.setBlock(x,y,z,block,false,false,false,true)
 				//world.updateBlock(x,y,z,false,false,null,null,null,dimension)
 			}
 			if(pnorthUp != northUp) world.updateBlock(x,y+1,z+1), world.unspreadPower(x,y+1,z+1,world.getPower(x,y+1,z+1), true)
@@ -6156,6 +6156,7 @@ const blockData = [
 		burnEnt:true,
 		transparent:true,
 		shadow:false,
+		shade:false,
 		solid:false,
 		lightLevel:15,
 		ambientSound:"fire.fire",
@@ -7047,9 +7048,6 @@ const blockData = [
 			if(!block) return
 			if(face === "top" && blockData[block].name === "farmland"){
 				return "tomatoPlant"
-			}else{
-				Messages.write("tomato seeds need to be planted on farmland")
-				p.lastPlace = Date.now()
 			}
 		},
 		category:"nature"
@@ -9217,6 +9215,7 @@ const blockData = [
 		damage:2,
 		burnEnt:true,
 		transparent:true,
+		shade:false,
 		shadow:false,
 		solid:false,
 		lightLevel:15,
@@ -11127,7 +11126,7 @@ const blockData = [
 			world.setBlock(x,y,z,block)
 		},
 		tick:function(block,x,y,z,world){
-			let power = round(world.getLight(x, y, z, 0)*world.skyLight)
+			let power = round(world.getLight(x, y, z, 0)*world.world.skyLight)
 			if(block === (this.id | SLAB)) power = 15 - power
 			let prev = world.getPower(x,y,z)
 			if(prev !== power){
@@ -11707,7 +11706,10 @@ const blockData = [
 		transparent:true,
 		shadow:false,
 		solid:false,
-		groundLeaves:true
+		groundLeaves:true,
+		randomRotate:true,
+		randomRotateTop:true,
+		randomRotateBottom:true,
 	},
 	{
 		name:"strippedCherryWood",
@@ -11733,20 +11735,23 @@ const blockData = [
 		liquidBreakable:"drop",
 		category:"nature",
 		randomRotateOnSpawn:true,
-		addPetal:function(x,y,z,world){
-			let block = world.getBlock(x,y,z), target, rot = block&ROTATION
-			switch(block & (~ROTATION)){
-				case this.id:
-					target = this.id | SLAB
-					break
-				case this.id|SLAB:
-					target = this.id | STAIR
-					break
-				case this.id|STAIR:
-					target = this.id | DOOR
-					break
+		onclick:function(x,y,z,world,p,holdObj){
+			if(holdObj && (holdObj.id&isCube) === this.id){
+				let block = world.getBlock(x,y,z), target, rot = block&ROTATION
+				switch(block & (~ROTATION)){
+					case this.id:
+						target = this.id | SLAB
+						break
+					case this.id|SLAB:
+						target = this.id | STAIR
+						break
+					case this.id|STAIR:
+						target = this.id | DOOR
+						break
+				}
+				if(target) world.setBlock(x,y,z,target|rot)
+				else return true
 			}
-			if(target) world.setBlock(x,y,z,target|rot)
 		},
 		tint:grassTint,
 		biomeTintEast:true,
@@ -11764,6 +11769,9 @@ const blockData = [
 		liquidBreakable:"drop",
 		category:"nature",
 		type:"plant2",
+		randomRotate:true,
+		randomRotateTop:true,
+		randomRotateBottom:true,
 		allHitbox: true
 	},
 	{
@@ -11811,7 +11819,10 @@ const blockData = [
 		transparent:true,
 		shadow:false,
 		solid:false,
-		groundLeaves:true
+		groundLeaves:true,
+		randomRotate:true,
+		randomRotateTop:true,
+		randomRotateBottom:true,
 	},
 	{
 		name:"groundBerries",
@@ -17417,7 +17428,7 @@ let packetTypes = [
 	["saveProg",["data","basicString"]],
 	["canSendPos"],
 	["setTags",["x","int"],["y","int"],["z","int"],packetDimension,["data","json"],["lazy","boolean"]],
-	["serverChangeBlock",["x","int"],["y","int"],["z","int"],packetDimension,["place","boolean"],packetFace,["shift","boolean"],["blockMode","uint"]],
+	["serverChangeBlock",["x","int"],["y","int"],["z","int"],packetDimension,["place","boolean"],packetFace,["shift","boolean"],["blockMode","uint"],["rotate","uint"],["flip","uint"]],
 	["entityPos",["data","bitArray"]],
 	["entityDelete",["id","basicString"]],
 	["entityPosAll", ["data","array",[null,"bitArray"]]],
@@ -18397,12 +18408,12 @@ function initShapes() {
 		doorSound(x,y,z,this.name === "ironTrapdoor"?"iron_trapdoor":"wooden_trapdoor",false,world)
 	}
 	function clickBed(x,y,z,world,p){
-    if(dimension !== "") return world.explode(x,y,z,5,false)
+    if(p.dimension !== "") return world.explode(x,y,z,5,false)
     p.spawnPoint.x = x
     p.spawnPoint.y = y+1
     p.spawnPoint.z = z
     p.connection.send({type:"message",data:"Respawn point set",fromServer:true})
-    if(world.skyLight < 0.5){
+    if(world.world.skyLight < 0.5){
       let block = world.getBlock(x,y,z)
       y += 0.25
       p.rx = Math.PI2
@@ -19574,6 +19585,10 @@ function initShapes() {
 		}
 		if(baseBlock.coralBlock){
 			makeBlock(new Array(6).fill("dead"+baseBlock.name[0].toUpperCase()+baseBlock.name.substring(1)), shapes.cube, slabBlock,baseBlock, "Dead "+baseBlock.Name)
+		}
+		if(baseBlock.coral){
+			baseBlock.shape = shapes.cross
+			makeBlock(new Array(6).fill("dead"+baseBlock.name[0].toUpperCase()+baseBlock.name.substring(1)), shapes.cross, slabBlock,baseBlock, "Dead "+baseBlock.Name)
 		}
 		if(baseBlock.coralFan){
 			baseBlock.shape = shapes.coralFan
@@ -21584,7 +21599,7 @@ class Player extends Entity{
 			damageY /= damageBlockAmount
 			damageZ /= damageBlockAmount
       this.lastBlockHarm = now
-      let msg = damageBlock.dieMessage ? damageBlock.dieMessage() : damageBlock.burnEnt ? (this.username+" burned up while touching "+damageBlock.Name) : (this.username+" died because of "+damageBlock.name+". You should avoid it next time.")
+      let msg = damageBlock.dieMessage ? damageBlock.dieMessage(this) : damageBlock.burnEnt ? (this.username+" burned up while touching "+damageBlock.Name) : (this.username+" died because of "+damageBlock.name+". You should avoid it next time.")
       let type = damageBlock.burnEnt ? "fire" : ""
       this.damage(takeDamage, msg, false, type, damageX, damageY, damageZ)
     }
@@ -22346,8 +22361,8 @@ entities[entities.length] = class BlockDisplay extends BlockEntity{
 }
 entities[entities.length] = class EnderPearl extends BlockEntity{
 	static name2 = "EnderPearl"
-	constructor(x,y,z,velx,vely,velz){
-		super(blockIds.enderPearl, x,y,z,from)
+	constructor(x,y,z,velx,vely,velz,from){
+		super(blockIds.enderPearl, x,y,z)
 		this.velx = velx
 		this.vely = vely
 		this.velz = velz
@@ -23753,7 +23768,7 @@ entities[entities.length] = class Zombie extends Mob{
 	killMessage(username){return username+" died from some small punches from a Zombie."}
 	update(){
 		this.mobUpdate(now)
-		if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0)*this.world.skyLight > 11){
+		if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0)*this.world.world.skyLight > 11){
 			this.burnTimer += 0.2
 		}
 	}
@@ -23798,7 +23813,7 @@ entities[entities.length] = class Skeleton extends Mob{
 	}
 	update(){
 		this.mobUpdate(now)
-		if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0)*this.world.skyLight > 11){
+		if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0)*this.world.world.skyLight > 11){
 			this.burnTimer += 0.2
 		}
 	}
@@ -24618,7 +24633,7 @@ class Section {
 		let minChunkZ = this.z + z - 32 >> 4
 		let maxChunkZ = this.z + z + 32 >> 4
 		let chunks = this.world.chunks
-		let block = this.getBlock(x,y,z), light = max(this.getLight(x,y,z,0)*this.world.skyLight,this.getLight(x,y,z,1))
+		let block = this.getBlock(x,y,z), light = max(this.getLight(x,y,z,0)*this.world.world.skyLight,this.getLight(x,y,z,1))
 		let under = this.chunk.getBlock(x,y+this.y-1,z,0,true)
 		if(this.type === "" && !block && light > 10 && under === blockIds.grass){
 			for(let x2=minChunkX; x2<=maxChunkX; x2++) for(let z2=minChunkZ; z2<=maxChunkZ; z2++){
@@ -24691,7 +24706,7 @@ class Section {
 		let minChunkZ = this.z + z - 32 >> 4
 		let maxChunkZ = this.z + z + 32 >> 4
 		let chunks = this.world.chunks
-		let light = max(this.getLight(x,y,z,0)*this.world.skyLight,this.getLight(x,y,z,1))
+		let light = max(this.getLight(x,y,z,0)*this.world.world.skyLight,this.getLight(x,y,z,1))
 		let under = this.chunk.getBlock(x,y+this.y-1,z,0,true)
 		let biome = world.getBiome(x+this.x,y+this.y,z+this.z)
 		let passiveMobs = biomeData[biome][2]
@@ -29540,7 +29555,7 @@ function needsSupportingBlocks(x,y,z, b,world){ // if block under is gone, dissa
 function putItemInContainer(x,y,z,id,durability,customName,lazy,world){
 	var tags = world.getTags(x,y,z)
 	if(typeof tags === "number") return false
-	if(!tags || !tags.contents){
+	if(!tags){
 		var block = world.getBlock(x,y,z)
 		if(blockData[block].setContents) tags = blockData[block].setContents(x,y,z,world)
 		else return false
@@ -30707,7 +30722,7 @@ class World{ // aka trueWorld
 			this.spawnPoint.y = this.superflat ? 4 : round(this.noiseProfile.noise(this.spawnPoint.x * generator.smooth, this.spawnPoint.z * generator.smooth) * generator.height) + generator.extra
 		}
 	}
-	serverChangeBlock(x,y,z,place,p,face,shift,blockMode){
+	serverChangeBlock(x,y,z,place,p,face,shift,blockMode,rotate,flip){
 		let {dimension} = p
 		let holding = p.inventory.hotbar[p.inventory.hotbarSlot] ? p.inventory.hotbar[p.inventory.hotbarSlot].id : 0
 		let blockDat = blockData[holding], holdObj = p.inventory.hotbar[p.inventory.hotbarSlot]
@@ -30811,18 +30826,26 @@ class World{ // aka trueWorld
 				blockData[cblock].eyeplace(ox,oy,oz,this[dimension])
 				this[dimension].blockSound(holding, "place", ox,oy,oz)
 				return
-			}else if(holding && cblock && blockData[holding].flowerbed && blockData[holding].id === blockData[cblock].id){
-				blockData[cblock].addPetal(ox,oy,oz,this[dimension])
-				return
 			}
 			if(blockDat.serveronuse && (blockDat.useAnywhere || cblock)){
 				let cont = blockDat.serveronuse(ox,oy,oz,cblock,this[dimension],face,holdObj,p)
 				if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
 				if(!cont) return
 			}
-		}
-		if(place){
-			if(!holding || blockDat.item) return
+
+			if(holding && blockData[holding].useAs){
+	      let useAs = blockData[holding].useAs
+	      if(typeof useAs === "function"){
+	        useAs = useAs(x,y,z,cblock,face)
+	        if(typeof useAs === "string" && blockIds[useAs]){
+	          holding = blockIds[useAs]
+	        }else holding = useAs
+	      }else{
+	        holding = blockIds[useAs]
+	      }
+	    }
+			if(!holding || blockData[holding].item) return
+			if(!p.cheats) blockMode = 0
 			let under = this[dimension].getBlock(x,y-1,z)
       let onPot = !side && blockData[under] && blockData[under].pot
       if(blockData[holding].potCross && onPot){
@@ -30998,6 +31021,15 @@ class World{ // aka trueWorld
           blockMode = LAYER1
         }
       }
+			let shape = holding && blockData[holding|blockMode].shape
+			if (shape && shape.rotate){
+				if(rotate === SOUTH) blockMode |= SOUTH
+				if(rotate === EAST) blockMode |= EAST
+				if(rotate === WEST) blockMode |= WEST
+			}
+			if (shape && shape.flip){
+				if(flip === FLIP) blockMode |= FLIP
+			}
 			holding |= blockMode
 		}
 		let dropAmount, drop
@@ -31674,9 +31706,10 @@ class World{ // aka trueWorld
 		}
 
 		let time = this.time % 1000
-		if(time > 725 && time < 850) this.skyLight = 1 - ((time - 725) / 125) //get darker
-		else if(time > 150 && time < 275) this.skyLight = (time - 150) / 125 //get brighter
-		else if(time >= 850 || time <= 150) this.skyLight = 0
+		//if you change this, change client
+		if(time > 725 && time < 800) this.skyLight = mapFrom(time, 800,725) //get darker
+		else if(time > 200 && time < 275) this.skyLight = mapFrom(time, 200,275) //get brighter
+		else if(time >= 800 || time <= 200) this.skyLight = 0
 		else this.skyLight = 1
 		for(let i in this.players){
 			this.players[i].update()
@@ -32816,12 +32849,18 @@ window.parent.postMessage({ready:true}, "*")
 				let inv = world.playersInv[host ? ":host" : username]
 				if(inv){//older stuff
 					if(typeof inv.inv === "string"){
-						if(inv.inv.inclues(";")) this.loadOldInv(inv.inv,p), inv.inv = null
-						inv.inv = atoarr(inv.inv)
+						if(inv.inv.includes(";")){
+							this.loadOldInv(inv.inv,p), inv.inv = null
+						}else{
+							inv.inv = atoarr(inv.inv)
+						}
 					}
 					if(typeof inv.survivStr === "string"){
-						if(inv.survivStr.inclues(";")) this.loadOldSurvivStr(inv.survivStr,p), inv.survivStr = null
-						inv.survivStr = atoarr(inv.survivStr)
+						if(inv.survivStr.includes(";")){
+							this.loadOldSurvivStr(inv.survivStr,p), inv.survivStr = null
+						}else{
+							inv.survivStr = atoarr(inv.survivStr)
+						}
 					}
 					if(inv.survivStr && inv.survivStr.length){
 						try{
@@ -32964,7 +33003,7 @@ window.parent.postMessage({ready:true}, "*")
 				world.setTags(data.x,data.y,data.z,data.data, true, data.dimension, data.lazy)
 				sendOthers(data)
 			}*/else if(data.type === "serverChangeBlock"){
-				world.serverChangeBlock(data.x,data.y,data.z,data.place,p,data.face,data.shift,data.blockMode)
+				world.serverChangeBlock(data.x,data.y,data.z,data.place,p,data.face,data.shift,data.blockMode,data.rotate,data.flip)
 			}else if(data.type === "entityPos"){
 				let ent = world.posEntity(new BitArrayReader(data.data, true), true)
 				return world[p.dimension].deleteEntity(ent.id)
@@ -33338,7 +33377,7 @@ window.parent.postMessage({ready:true}, "*")
 			}
 			if(item){
 				let d = p.direction
-				world[containerData.dimension].addItems(p.x, p.y, p.z, d.x/4, d.y/4, d.z/4, item.id, false, item.amount,item.durability,item.customName,p.id)
+				world[p.inventory.containerData.dimension].addItems(p.x, p.y, p.z, d.x/4, d.y/4, d.z/4, item.id, false, item.amount,item.durability,item.customName,p.id)
 			}
 		}
 		let tempCraftGrid = new Array(9)
@@ -33403,7 +33442,7 @@ window.parent.postMessage({ready:true}, "*")
 				let {currentContainer} = p.inventory
 				const bname = blockData[block].name
 				if(currentContainer === "furnace" && bname === "furnace" || currentContainer === "chest" && (bname === "chest" || bname === "barrel") || currentContainer === "dispenser" && (bname === "dispenser" || bname === "dropper") || currentContainer === "hopper" && bname === "hopper"){
-					if(!tags || !tags.contents){
+					if(!tags){
 						tags = blockData[block].setContents(containerData.x,containerData.y,containerData.z,world[containerData.dimension])
 					}
 				}else{
