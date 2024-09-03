@@ -1766,7 +1766,6 @@ const blockData = [
 			}
 			return false
 		},
-		alwaysCustomTexture:true,
 	},
 	/*{
 		name: "buffer",
@@ -5637,7 +5636,7 @@ const blockData = [
 		food: 2,
 		saturation: 1.2,
 		compostChance:0.5,
-		category:"nature"
+		category:"food"
 	},
 	
 	{
@@ -7020,7 +7019,7 @@ const blockData = [
 		food: 3,
 		saturation: 2,
 		eatResult:"tomatoSeeds",
-		category:"nature"
+		category:"food"
 	},
 	{
 		name:"tomatoPlant",
@@ -15619,7 +15618,7 @@ let shapes = {
 		},
 	},
 	wallSign:{
-		verts:[
+		terts:[
 			[objectify(-4,6,16.7,16,2,0,0),objectify(12,6,16.7,8,2,0,0)],
 			[objectify(-4,18,18.7,16,2,0,0),objectify(12,18,18.7,8,2,0,0)],
 			[objectify(20,18,18.7,16,12,0,0),objectify(4,18,18.7,8,12,0,0)],
@@ -32734,6 +32733,7 @@ window.parent.postMessage({ready:true}, "*")
 		p.z = reader.read(20, true)
 		let d = reader.read(3)
 		p.dimension = d === 1 ? "nether" : (d === 2 ? "end" : "")
+		p.world = this[p.dimension]
 		p.rx = reader.read(11, true) / 100
 		p.ry = reader.read(11, true) / 100
 		p.flying = reader.read(1)
@@ -32834,6 +32834,7 @@ window.parent.postMessage({ready:true}, "*")
 		p.inventory.slotMapPlace = new Map()
 		p.inventory.slotMapIdx = new Map()
 		p.inventory.prevSlots = []
+		p.world = this[""]//temporaryily
 		this.players.push(p)
 		let world = this
 		function sendOthers(msg){
@@ -32850,7 +32851,6 @@ window.parent.postMessage({ready:true}, "*")
 				p.cheats = world.cheats//will be overwritten if inv exists
 				p.gameMode = world.gameMode
 
-				p.world = world[""]//temporaryily
 				p.respawn()
 				let inv = world.playersInv[host ? ":host" : username]
 				if(inv){//older stuff
@@ -32988,7 +32988,6 @@ window.parent.postMessage({ready:true}, "*")
 				p.updateingLoadedI++
 				p.loadDistance = data.loadDistance
 				p.loadChunks = data.data
-				p.dimension = data.dimension
 				world.loadedUpdate = true
 			}else if(data.type === "mySkin" || data.type === "particles" || data.type === "achievment" || data.type === "harmEffect" || data.type === "playSound" || data.type === "title" || data.type === "joined"){
 				sendOthers(data)

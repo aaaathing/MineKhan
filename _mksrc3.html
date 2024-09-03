@@ -5518,7 +5518,7 @@ if time is 0, it will update every time
       if(!inventory.hotbar[i]){
         inventory.hotbar[i] = {id:id, amount:1, durability:durability, customName:name, animation:1.5}
         if(i === inventory.hotbarSlot){
-          inventory.showName = 1.5
+          inventory.showName = 3
         }
         return true
       }
@@ -5800,9 +5800,9 @@ if time is 0, it will update every time
 		if(typeof txt === "function") txt = txt()
 		if(full){
 			if(block.rarity){
-				if(block.rarity === "uncommon") ctx.fillStyle = colors.css.e, txt += "\nUncommon"
-				if(block.rarity === "rare") ctx.fillStyle = colors.css.b, txt += "\nRare"
-				if(block.rarity === "epic") ctx.fillStyle = colors.css.d, txt += "\nEpic"
+				if(block.rarity === "uncommon") txt += "\n§eUncommon"
+				if(block.rarity === "rare") txt += "\n§bRare"
+				if(block.rarity === "epic") txt += "\n§dEpic"
 			}
 			if(block.category) txt += "\n§9"+blockCategories[block.category]
 			if(block.type) txt += "\n§c"+blockCategories[block.type]
@@ -6604,7 +6604,7 @@ ROTATION = 0x1800 // Mask for the direction bits
           blockMode === STAIR ? FENCE : (
             blockMode === FENCE ? WALLPOST : CUBE
 					))))
-    inventory.showName = 1.5
+    inventory.showName = 3
     updateHUD = true
   }
 
@@ -8409,6 +8409,8 @@ Division: //
 		inventory.currentContainer = currentContainer
 		inventory.slots.length = id
 		inventory.slots.fill(null)
+		inventory.spreadStart = -1
+		if(inventory.spreaded.length) inventory.spreaded = []
 		send({type:"openContainer",data:currentContainer,x:containerData.x,y:containerData.y,z:containerData.z,dimension:containerData.dimension})
 	}
 	function updateHUDIcons(){
@@ -23804,7 +23806,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		el.addEventListener("click", e => {f(e); canvas.dispatchEvent(new e.constructor(e.type,e))})
 		el.addEventListener("mousedown", e => {f(e); canvas.dispatchEvent(new e.constructor(e.type,e))})
 		el.addEventListener("mouseup", e => {f(e); canvas.dispatchEvent(new e.constructor(e.type,e))})
-		el.addEventListener("mousemove", e => {f(e); canvas.dispatchEvent(new e.constructor(e.type,e))})
+		el.addEventListener("mousemove", e => {canvas.dispatchEvent(new e.constructor(e.type,e))})
 		el.addEventListener("touchstart", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; f(e); canvas.dispatchEvent(e)})
 		el.addEventListener("touchend", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; f(e); canvas.dispatchEvent(e)})
 		el.addEventListener("touchmove", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; f(e); canvas.dispatchEvent(e)})
@@ -26998,7 +27000,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			if((mouseX>x)&&(mouseY>y)&&(mouseX < x+inventory.size)&&(mouseY < y+inventory.size)){
 			  inventory.hotbarSlot = i
 				send({type:"hotbar",slot:inventory.hotbarSlot})
-        inventory.showName = 1.5
+        inventory.showName = 3
 			  updateHUD = true
         return true
 			}
@@ -27153,7 +27155,7 @@ p.camera.transformation.elements.set(matrix)//*/
           inventory.slots[inventory.slotIds.hotbar[inventory.hotbarSlot]] = {id:block, amount:1}
 					send({type:"containerChange",data:[inventory.slots[inventory.slotIds.hotbar[inventory.hotbarSlot]]],idxs:[inventory.slotIds.hotbar[inventory.hotbarSlot]]})
         }
-        inventory.showName = 1.5
+        inventory.showName = 3
         inventory.slots[inventory.slotIds.hotbar[inventory.hotbarSlot]].animation = 1.5
       }
       if(place) {
@@ -27277,7 +27279,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			if(Number(k)) {
 				inventory.hotbarSlot = Number(k) - 1
 				send({type:"hotbar",slot:inventory.hotbarSlot})
-        inventory.showName = 1.5
+        inventory.showName = 3
 				updateHUD = true
 			}
 			
@@ -27413,7 +27415,7 @@ p.camera.transformation.elements.set(matrix)//*/
         inventory.hotbarSlot = 8
       }
 			send({type:"hotbar",slot:inventory.hotbarSlot})
-      inventory.showName = 1.5
+      inventory.showName = 3
       updateHUD = true
     }
     /*if(screen === "inventory" || screen === "crafting" || screen === "furnace" || screen === "chest" || screen === "anvil" || screen === "dispenser" || screen === "hopper"){
