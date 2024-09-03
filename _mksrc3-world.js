@@ -3328,6 +3328,7 @@ const blockData = [
 		textures: ["furnaceTop","furnaceTop","furnaceSide","furnaceFront","furnaceSide","furnaceSide"],
 		rotate: true,
 		tagBits: null,
+		hasContents:function(tags){return tags.furnace},
 		setContents: function(x,y,z,world){
 			var data = {furnace:true, input:0, fuel:0, output:0, smeltStart:0, burnStart:0, canBurn:false, smelting:false, xp:0}
 			world.setTags(x, y, z, data,false)
@@ -6056,6 +6057,7 @@ const blockData = [
 		item:true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			item.amount--
+			let pd = p.direction
 			world.addEntity(new entities[entityIds.Egg](p.x+pd.x,p.y+pd.y,p.z+pd.z, pd.x*0.8, pd.y*0.8, pd.z*0.8, p.id))
 		},
 		useAnywhere:true,
@@ -6670,6 +6672,7 @@ const blockData = [
 		barrel:true,
 		category:"items",
 		tagBits: null,
+		hasContents:function(tags){return tags.contents},
 		setContents:function(x,y,z,world){
 			let data = {chest:true, contents:new Array(27).fill(0)}
 			world.setTags(x, y, z, data,false)
@@ -6926,6 +6929,7 @@ const blockData = [
 		transparent:true,
 		chest:true,
 		tagBits: null,
+		hasContents:function(tags){return tags.contents},
 		setContents:function(x,y,z,world){
 			let data = {chest:true, contents:new Array(27).fill(0)}
 			world.setTags(x, y, z, data,false)
@@ -10225,6 +10229,7 @@ const blockData = [
 		stoneSound:true,
 		category:"redstone",
 		tagBits: null,
+		hasContents:function(tags){return tags.contents},
 		setContents:function(x,y,z,world){
 			let data = {dispenser:true, contents:new Array(9).fill(0)}
 			world.setTags(x, y, z, data,false)
@@ -10313,6 +10318,7 @@ const blockData = [
 		hardness:3.5,
 		type:"rock2",
 		tagBits: null,
+		hasContents:function(tags){return tags.contents},
 		setContents:function(x,y,z,world){
 			let data = {dispenser:true, contents:new Array(9).fill(0)}
 			world.setTags(x, y, z, data,false)
@@ -10417,6 +10423,7 @@ const blockData = [
 		stoneSound:true,
 		category:"redstone",
 		tagBits: null,
+		hasContents:function(tags){return tags.contents},
 		setContents:function(x,y,z,world){
 			let data = {hopper:true, contents:new Array(5).fill(0)}
 			world.setTags(x, y, z, data,false)
@@ -10494,7 +10501,7 @@ const blockData = [
 		pullItem:function(x,y,z,myTags,world){
 			var block = world.getBlock(x,y+1,z)
 			var tags = world.getTags(x,y+1,z)
-			if(!tags) return
+			if(!blockData[block].hasContents(tags)) return
 			if(blockData[block].name === "furnace"){
 				var item = tags.output
 				if(item && item.id){
@@ -19997,6 +20004,7 @@ function copyToPlayer(p,world){
 }
 function pasteAtPlayer(p,world){
 	copiedBlocks = p.copiedBlocksCmd
+	if(!copiedBlocks) return
 	paste(round(p.x), ceil(p.y-p.height*0.5), round(p.z),world)
 	world.world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
@@ -20256,7 +20264,7 @@ function initDefaultCommands(world){
 		},"number")))),
 		CommandNode.l("kill").then(CommandNode.a("target",
 		(args,pos,scope) => {
-			if(world.world.settings.killCmdOff) return ["Kill command is disabled on this world.","error"]
+			if(world.settings.killCmdOff) return ["Kill command is disabled on this world.","error"]
 			args.target = args.target || "@s"
 			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(arr.length){
@@ -20271,7 +20279,7 @@ function initDefaultCommands(world){
 			}else return ["No such target: "+args.target,"error"]
 		},"target").then(CommandNode.a("message",
 		(args,pos,scope) => {
-			if(world.world.settings.killCmdOff) return ["Kill command is disabled on this world.","error"]
+			if(world.settings.killCmdOff) return ["Kill command is disabled on this world.","error"]
 			args.target = args.target || "@s"
 			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(arr.length){
@@ -25692,7 +25700,9 @@ class Chunk {
 				}
 			}
 		}else{
-			let {blocks,tops,biomes,minY,maxY,waterTops,caveBiomes,caveY} = await doWork({generate:true,trueX,trueZ,seed:this.world.world.worldSeed,fancyRivers:this.world.world.fancyRivers,caves:!this.caves})
+			let r = await doWork({generate:true,trueX,trueZ,seed:this.world.world.worldSeed,fancyRivers:this.world.world.fancyRivers,caves:!this.caves})
+			if(!r) return
+			let {blocks,tops,biomes,minY,maxY,waterTops,caveBiomes,caveY} = r
 			this.tops.set(tops)
 			this.solidTops.set(tops)
 			this.biomes = biomes
@@ -27749,7 +27759,7 @@ class Chunk {
 		worldGenArray.clear() //generate extras like vines
 
 		if(this.world.customChunkPopulate && !this.world.customChunkPopulate(this)){
-		}else if((world.world.worldType === "alpha" || world.world.worldType === "island") && type === ""){
+		}else if((world.world.worldType === "alpha" || world.world.worldType === "island" || (world.world.worldType === "superflat" && trees)) && type === ""){
 			const flowers = this.allFlowers
 			const clayReplaceable = [blockIds.dirt, blockIds.stone, blockIds.gravel]
 			const dirtReplaceable = [blockIds.stone,blockIds.gravel]
@@ -29558,8 +29568,8 @@ function needsSupportingBlocks(x,y,z, b,world){ // if block under is gone, dissa
 function putItemInContainer(x,y,z,id,durability,customName,lazy,world){
 	var tags = world.getTags(x,y,z)
 	if(typeof tags === "number") return false
-	if(!tags){
-		var block = world.getBlock(x,y,z)
+	var block = world.getBlock(x,y,z)
+	if(!blockData[block].hasContents || !blockData[block].hasContents(tags)){
 		if(blockData[block].setContents) tags = blockData[block].setContents(x,y,z,world)
 		else return false
 	}
@@ -31283,7 +31293,7 @@ class World{ // aka trueWorld
 		let now = performance.now()
 		p = bitArrayToPacket(p,this.constructor.entityPacketType)
 		const entType = entityOrder[p.entId]
-		let ent = this.world.entities[this.getEntity(p.id)]
+		let ent = this.entities[this.getEntity(p.id)]
 		if(ent){
 			if(entType === "TextDisplay" && ent.text !== p.text) ent.setText(p.text)
 			if(entType === "Item" && ent.amount !== p.amount) ent.amount = p.amount, ent.willUpdateShape = true
@@ -31348,7 +31358,7 @@ class World{ // aka trueWorld
 			}
 			if(!ent) return
 			ent.id = p.id
-			this.addEntity(ent, true)
+			this[p.dimension].addEntity(ent, true)
 			ent.previousX = p.x
 			ent.previousY = p.y
 			ent.previousZ = p.z
@@ -31494,7 +31504,7 @@ class World{ // aka trueWorld
 		}
 
 		if(i || i===0){
-			ent = this.world.entities[i]
+			ent = this.entities[i]
 			if(entType === "TextDisplay" && ent.text !== text) ent.setText(text)
 			if(entType === "Item" && ent.amount !== amount) ent.amount = amount, ent.willUpdateShape = true
 		}else{
@@ -33438,7 +33448,7 @@ window.parent.postMessage({ready:true}, "*")
 				let {currentContainer} = p.inventory
 				const bname = blockData[block].name
 				if(currentContainer === "furnace" && bname === "furnace" || currentContainer === "chest" && (bname === "chest" || bname === "barrel") || currentContainer === "dispenser" && (bname === "dispenser" || bname === "dropper") || currentContainer === "hopper" && bname === "hopper"){
-					if(!tags){
+					if(!blockData[block].hasContents(tags)){
 						tags = blockData[block].setContents(containerData.x,containerData.y,containerData.z,world[containerData.dimension])
 					}
 				}else{
@@ -37103,6 +37113,10 @@ function findLand(seed){
 parentAndStuff.onmessage = function(e) {
 	let msg = e.data
 	if(msg.generate){
+		if(!noises[msg.seed]) {
+			parentAndStuff.postMessage("")
+			return
+		}
 		generate(msg.trueX,msg.trueZ,msg.seed,msg.fancyRivers,msg.caves)
 		parentAndStuff.postMessage({
 			blocks:currentBlocks,

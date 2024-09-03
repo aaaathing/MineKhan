@@ -1247,7 +1247,7 @@ With touch screen:
 							history.replaceState(null, "", "/browserinfo")
 						}catch(e){console.error(e)}
 						document.querySelector("#icon").href = "https://upload.wikimedia.org/wikipedia/commons/d/d9/Icon-round-Question_mark.svg"
-						images.minekhan.src = "https://upload.wikimedia.org/wikipedia/commons/a/a3/Schoology_Logo.svg"
+						//images.minekhan.src = "https://upload.wikimedia.org/wikipedia/commons/a/a3/Schoology_Logo.svg"
 						document.documentElement.classList.add('hide')
 						let frame = document.querySelector("#hider iframe")
 						if(settings.hideurl){
@@ -1965,16 +1965,16 @@ With touch screen:
       errors.push(e)
 			let msg
 			if(e.stack){
-				msg = e.stack.replace(/\n/g,"<br>").replace(/ /g,"&nbsp;")
+				msg = e.stack
 			}else{
 				msg = e.message
-				if(e.lineno || e.colno) msg += "<br>Error occured at "
-				if(e.lineno) msg += "line "+e.lineno
+				if(e.lineno || e.colno) msg += "\nError occured at"
+				if(e.lineno) msg += " line "+e.lineno
 				if(e.colno) msg += " column "+e.colno
 			}
-			errorData.insertAdjacentHTML('beforeend',"<br><div style='border:1px solid red; padding:8px;'>"+msg+"</div>")
+			errorData.insertAdjacentHTML('beforeend',"<br><div style='border:1px solid red; padding:8px;'>"+msg.replace(/\n/g,"<br>").replace(/ /g,"&nbsp;")+"</div>")
       errorScreen.style.display = "block"
-			if(window.sendError && errors.length<5) sendError(e.stack)
+			if(window.sendError && errors.length<5) sendError(msg)
     }
     addEventListener("error", logError)
 		addEventListener("unhandledrejection", e => logError(e.reason))
@@ -20967,6 +20967,9 @@ r 11 y  n  n  n
     }
     return worlds
   }
+	function sendError(err){fetch("/server/know/minekhan/error",{method:"POST",body:err,headers:{Authorization:userSessionString}}).catch(console.error)}
+	win.sendError = sendError
+
   var multiplayer = null
   var multiplayerError = null
 	var websocket = null //WebSocket is not for external servers
@@ -21142,7 +21145,6 @@ r 11 y  n  n  n
 								addToBottomRightList("Recieved and added ICE canidate: "+JSON.stringify(data.data),"yellow")
 							} catch (e) {
 								logError('Error adding received ice candidate'+e.toString())
-								sendError(e.stack)
 								console.log(e)
 							}
 						}else if(data.type === "message"){
@@ -21203,6 +21205,8 @@ r 11 y  n  n  n
 				sendWS({type:"offer",id:p.id,offer})
 				addToBottomRightList("Sent offer: "+JSON.stringify(offer))
 
+				let connection
+				
 				peerConnection.addEventListener('icecandidate', e => {
 					if (e.candidate) {
 						sendWS({type:"iceCandidate", data: e.candidate})
@@ -21214,20 +21218,18 @@ r 11 y  n  n  n
 						peerConnection.cAnCeLcOnNectION = true
 					}else if(peerConnection.connectionState === "failed"){
 						logError("RTC connection failed")
-						connection.close()
+						if(connection) connection.close()
 					}
 				})
 				peerConnection.addEventListener("iceconnectionstatechange", e => {
 					if(peerConnection.iceconnectionState === "failed"){
 						logError("Ice connection failed")
-						sendError("ice connection fail")
 					}
 				})
 				peerConnection.addEventListener("icecandidateerror", e => {
 					if(e.errorCode === 701) addToBottomRightList("Ice candidate error, code: "+e.errorCode+", reason: "+e.errorText,"red")
 					else{
 						logError("Ice candidate error, code: "+e.errorCode+", reason: "+e.errorText)
-						sendError(e.errorCode+","+e.errorText)
 					}
 				})
 
@@ -21235,7 +21237,7 @@ r 11 y  n  n  n
 				let waitForAnswerPromise = new Promise(resolve => waitForAnswerResolve = resolve)
 				await Promise.all([waitForAnswerPromise,waitForDataChannelPromise,waitForUnorderDataChannelPromise])
 
-				let connection = new RTCClientContainer(channel,peerConnection,unorderChannel)
+				connection = new RTCClientContainer(channel,peerConnection,unorderChannel)
 				peerConnection.addEventListener("close", () => websocket.close())
 				return connection
 			}
@@ -23796,14 +23798,17 @@ p.camera.transformation.elements.set(matrix)//*/
 	}
 	function createScrollable(){
 		let el = document.createElement("div")
-		el.addEventListener("click", e => {if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(new e.constructor(e.type,e))})
-		el.addEventListener("mousedown", e => {if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(new e.constructor(e.type,e))})
-		el.addEventListener("mouseup", e => {if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(new e.constructor(e.type,e))})
-		el.addEventListener("mousemove", e => {if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(new e.constructor(e.type,e))})
-		el.addEventListener("touchstart", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(e)})
-		el.addEventListener("touchend", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(e)})
-		el.addEventListener("touchmove", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(e)})
-		el.addEventListener("touchcancel", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; if(e.target === tallEl){canvas.focus()} canvas.dispatchEvent(e)})
+		function f(e){
+			if(e.target === tallEl || e.target === el){canvas.focus()}
+		}
+		el.addEventListener("click", e => {f(e); canvas.dispatchEvent(new e.constructor(e.type,e))})
+		el.addEventListener("mousedown", e => {f(e); canvas.dispatchEvent(new e.constructor(e.type,e))})
+		el.addEventListener("mouseup", e => {f(e); canvas.dispatchEvent(new e.constructor(e.type,e))})
+		el.addEventListener("mousemove", e => {f(e); canvas.dispatchEvent(new e.constructor(e.type,e))})
+		el.addEventListener("touchstart", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; f(e); canvas.dispatchEvent(e)})
+		el.addEventListener("touchend", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; f(e); canvas.dispatchEvent(e)})
+		el.addEventListener("touchmove", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; f(e); canvas.dispatchEvent(e)})
+		el.addEventListener("touchcancel", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; f(e); canvas.dispatchEvent(e)})
 		el.style.position = "absolute"
 		el.style.zIndex = canvas.zIndex
 		el.style.overflow = "auto"
@@ -25500,7 +25505,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		gl.bindTexture(gl.TEXTURE_2D, panoramaTexture)
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, panoramaPixels)
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 		if(images.panorama.naturalWidth){
@@ -27425,6 +27430,7 @@ p.camera.transformation.elements.set(matrix)//*/
 	}
 	document.onwheel = e => {} // Shouldn't do anything, but it helps with a Khan Academy bug somewhat
 	window.onresize = async e => {
+		if(initEverything) return //if not initialized yet
 		width = window.innerWidth
 		height = window.innerHeight
 		resolution = settings.resolution === "max" ? devicePixelRatio : (settings.resolution === "low" ? 0.125 : 1)
@@ -27860,7 +27866,7 @@ p.camera.transformation.elements.set(matrix)//*/
 	let mainBGRot = 0, mainBGRotY = 0//-HALF_PI / 3;
 	function renderMainBG(){
 		let dnow = Date.now()
-		mainBGRot += 0.004//(mapClamped(mouseX/width,0.4,0.6)*2-1)*0.02
+		mainBGRot = now*0.00008//(mapClamped(mouseX/width,0.4,0.6)*2-1)*0.02
 		mainBGRotY = sin(mainBGRot*0.334323)*Math.PI4
 		
 		gl.clearColor(sky[0], sky[1], sky[2], 1.0)
@@ -29404,6 +29410,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		lastUpdateMusic = now
   }
   function tryPlayMusic(){
+		if(!currentMusic) return
     currentMusic.audio.play().catch(console.error)
 		menuMusicVolume = 0
     audioCtx.resume()
@@ -31487,11 +31494,6 @@ p.camera.transformation.elements.set(matrix)//*/
 	function renderLoop() {
 		if(stopTicking) return//for errors
 		let frameStart = now = performance.now()
-		if(initEverything){
-			initEverything().then(() => win.raf = requestAnimationFrame(renderLoop))
-			initEverything = null //Only run once
-			return
-		}
 
     if(allLoaded){
 			prevAnimationAmount = animationAmount
@@ -31531,10 +31533,10 @@ p.camera.transformation.elements.set(matrix)//*/
 			}
 			if(!performFast){
 				if((screen === "options") && beforeOptionsScreen === "main menu"){
-					if(tick) renderMainBG()
+					renderMainBG()
 				}
 				if(screen === "main menu"){
-					if(tick) renderMainBG()
+					renderMainBG()
 					hoverbox.classList.add("hidden")
 					drawScreens[screen]()
 					Button.draw()
@@ -31583,7 +31585,13 @@ p.camera.transformation.elements.set(matrix)//*/
 		analytics.worstFrameTime = max(performance.now() - frameStart, analytics.worstFrameTime)
 		win.raf = requestAnimationFrame(renderLoop)
 	}
-	return renderLoop
+	return function(){
+		if(initEverything){
+			initEverything().then(() => win.raf = requestAnimationFrame(renderLoop))
+			initEverything = null //Only run once
+			return
+		}else renderLoop()
+	}
 }
 
 /*let hide = false, timeLeftN
