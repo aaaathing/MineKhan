@@ -1965,9 +1965,9 @@ With touch screen:
       errors.push(e)
 			let msg
 			if(e.stack){
-				msg = e.stack
+				msg = e.stack+""
 			}else{
-				msg = e.message
+				msg = e.message+""
 				if(e.lineno || e.colno) msg += "\nError occured at"
 				if(e.lineno) msg += " line "+e.lineno
 				if(e.colno) msg += " column "+e.colno
@@ -23957,7 +23957,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				structures = false
 			}
 			return worldType === "void"
-		}, , () => structures ? 0 : 1).setScrollable(creationMenuScrollable)
+		}, "Structures may change in future versions.", () => structures ? 0 : 1).setScrollable(creationMenuScrollable)
 		Button.add(width / 2, height - 90*ss, 300*ss, 40*ss, "Create New World", "creation menu", r => {
       createNewWorld()
 		})

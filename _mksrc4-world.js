@@ -3327,7 +3327,7 @@ const blockData = [
 		textures: ["furnaceTop","furnaceTop","furnaceSide","furnaceFront","furnaceSide","furnaceSide"],
 		rotate: true,
 		tagBits: null,
-		hasContents:function(tags){return tags.furnace},
+		hasContents:function(tags){return tags&&tags.furnace},
 		setContents: function(x,y,z,world){
 			var data = {furnace:true, input:0, fuel:0, output:0, smeltStart:0, burnStart:0, canBurn:false, smelting:false, xp:0}
 			world.setTags(x, y, z, data,false)
@@ -6671,7 +6671,7 @@ const blockData = [
 		barrel:true,
 		category:"items",
 		tagBits: null,
-		hasContents:function(tags){return tags.contents},
+		hasContents:function(tags){return tags&&tags.contents},
 		setContents:function(x,y,z,world){
 			let data = {chest:true, contents:new Array(27).fill(0)}
 			world.setTags(x, y, z, data,false)
@@ -6928,7 +6928,7 @@ const blockData = [
 		transparent:true,
 		chest:true,
 		tagBits: null,
-		hasContents:function(tags){return tags.contents},
+		hasContents:function(tags){return tags&&tags.contents},
 		setContents:function(x,y,z,world){
 			let data = {chest:true, contents:new Array(27).fill(0)}
 			world.setTags(x, y, z, data,false)
@@ -10228,7 +10228,7 @@ const blockData = [
 		stoneSound:true,
 		category:"redstone",
 		tagBits: null,
-		hasContents:function(tags){return tags.contents},
+		hasContents:function(tags){return tags&&tags.contents},
 		setContents:function(x,y,z,world){
 			let data = {dispenser:true, contents:new Array(9).fill(0)}
 			world.setTags(x, y, z, data,false)
@@ -10317,7 +10317,7 @@ const blockData = [
 		hardness:3.5,
 		type:"rock2",
 		tagBits: null,
-		hasContents:function(tags){return tags.contents},
+		hasContents:function(tags){return tags&&tags.contents},
 		setContents:function(x,y,z,world){
 			let data = {dispenser:true, contents:new Array(9).fill(0)}
 			world.setTags(x, y, z, data,false)
@@ -10422,7 +10422,7 @@ const blockData = [
 		stoneSound:true,
 		category:"redstone",
 		tagBits: null,
-		hasContents:function(tags){return tags.contents},
+		hasContents:function(tags){return tags&&tags.contents},
 		setContents:function(x,y,z,world){
 			let data = {hopper:true, contents:new Array(5).fill(0)}
 			world.setTags(x, y, z, data,false)
@@ -29051,7 +29051,10 @@ class Chunk {
 						z+d >= this.z
 					)) continue
 					if(jigsaw.onGround){
-						y = world.getTop(x+jigsaw.centerPos[0],z+jigsaw.centerPos[2])-jigsaw.centerPos[1]
+						y = world.getTop(x+jigsaw.centerPos[0],z+jigsaw.centerPos[2])
+						if(blockData[world.getBlock(x+jigsaw.centerPos[0],y+1,z+jigsaw.centerPos[2])].liquid) y+=2
+						while(blockData[world.getBlock(x+jigsaw.centerPos[0],y,z+jigsaw.centerPos[2])].liquid) y++
+						y -= jigsaw.centerPos[1]
 					}
 					let {rotN, rotS, rotE, rotW} = jigsaw
 					for(let i=0;i<data.length;i+=4){
@@ -29066,6 +29069,7 @@ class Chunk {
 						)) continue
 						if(jigsaw.flatOnGround){
 							by = this.tops[(bz-this.z)*16+(bx-this.x)]
+							if(blockData[this.getBlock(bx-this.x,by+1,bz-this.z)].liquid) by+=2
 							while(blockData[this.getBlock(bx-this.x,by,bz-this.z)].liquid) by++
 						}
 						let block = data[i+3]
