@@ -54,3 +54,12 @@ if(document.title.toLowerCase().includes("falconcraft") || location.href.toLower
   //stop()
   //setTimeout(() => document.documentElement.innerHTML = "<h1 style='font:100px cursive;'>error</h1>", 10000)
 }
+if(location.href.toLowerCase().includes("rave")){
+	let a=document.querySelector("#endPoemVideo")
+	if(a){
+		a.classList.remove("hidden")
+		a.style.position="relative"
+		a.style.zIndex=1000
+		a.onclick=a.play
+	}
+}

@@ -12080,6 +12080,14 @@ const blockData = [
 		eatResult:"bowl",
 		category:"food"
 	},
+	{
+		name:"dirtPath",
+		_1PixLower:true,
+		textures: ["dirt","dirtPathTop","dirtPathSide","dirtPathSide","dirtPathSide","dirtPathSide"],
+		solid: true,
+		transparent: true,
+		cullFace: "same",
+	}
 ];
 const BLOCK_COUNT = blockData.length
 console.log(BLOCK_COUNT," blocks on server side")
@@ -13053,7 +13061,32 @@ function hasItem(p,id){
 	flatOnGround:boolean, optional
 }
 */
-let jigsaws = {
+let jigsaws = {}, jigsawPools = {}
+/*Format for structures
+{
+	type:string, can be simple or compound
+	start:array, Jigsaw pool or jigsaw to choose starting jigsaw, randomly chosen
+	chance:number, How common is it every structureSpacing blocks
+	getY:function, Return y level of starting jigsaw, not needed if all jigsaws are on ground
+	maxSize:number, Maximum distance for jigsaws to be from starting jigsaw, Also for determining how far to look for structures
+	If type is compound:
+		jigsawCount:number, Target amount of jigsaws to generate in structure, actual amount of jigsaws may be lower
+		maxTries:number, Maximum tries to generate a jigsaw, will stop generating if amount of jigsaw reaches jigsawCount
+}
+*/
+let structures = []
+/*Structure notes
+Jigsaws can only have a new jigsaw on the sides, not on top, bottom, or inside.
+If a block is undefined in pallete, that block will be ignored.
+If a jigsaw is onGround, it can not be more than 16 blocks from center to prevent chunk errors
+*/
+function addStructures(newJigsaws,newJigsawPools,newStructures){
+	Object.assign(jigsaws,newJigsaws)
+	Object.assign(jigsawPools,newJigsawPools)
+	structures.push(...newStructures)
+}
+addStructures(
+{
 	endPortal:{
 		data:[
 `sssssssss
@@ -13166,25 +13199,12 @@ sssssssss`,
 			t:(n,e,s,w)=>blockIds.stoneBricks|STAIR|w,
 		},
 		center:"!",
-	}
-}
-let jigsawPools = {
-	endPortal:["endPortal"]
-}
-/*Format for structures
-{
-	type:string, can be simple or compound
-	start:array, Jigsaw pool to choose starting jigsaw, randomly chosen
-	chance:number, How common is it every structureSpacing blocks
-	getY:function, Return y level of starting jigsaw, not needed if all jigsaws are on ground
-	maxSize:number, Maximum distance for jigsaws to be from starting jigsaw, Also for determining how far to look for structures
-	If type is compound:
-		jigsawCount:number, Target amount of jigsaws to generate in structure, actual amount of jigsaws may be lower
-		maxTries:number, Maximum tries to generate a jigsaw, will stop generating if amount of jigsaw reaches jigsawCount
-}
-*/
+	},
 
-let structures = [
+	
+},
+{},
+[
 	{
 		type:"simple",
 		start:"endPortal",
@@ -13195,16 +13215,251 @@ let structures = [
 		}
 	}
 ]
-/*Structure notes
-Jigsaws can only have a new jigsaw on the sides, not on top, bottom, or inside.
-If a block is undefined in pallete, that block will be ignored.
-If a jigsaw is onGround, it can not be more than 16 blocks from center to prevent chunk errors
-*/
+)
+
+// Village
+addStructures(
+{
+	    villageCenter1:{
+	        data:[
+`   1
+ ccccc
+ c   c
+1c ! c1
+ c   c
+ ccccc
+   1`,
+`
+
+  EeN
+  nls
+  SwW
+`,
+`
+
+
+   l`,
+`
+
+
+   l`,
+`
+
+  qqq
+  qlq
+  qqq`,
+`
+
+  qqq
+  qqq
+  qqq`
+            ],
+            pallete:{
+							c:"cobblestone",
+							l:"oakLog",
+							q:"oakLeaves",
+							n:(n,e,s,w) => blockIds.cobblestone|STAIR|n,
+	            e:(n,e,s,w) => blockIds.cobblestone|STAIR|e,
+	            s:(n,e,s,w) => blockIds.cobblestone|STAIR|s,
+	            w:(n,e,s,w) => blockIds.cobblestone|STAIR|w
+            },
+            newJigsaws:{
+	            "1":"villagePath"
+	        },
+	        center:"!",
+	        newJigsawTries:8,
+	        onGround:true
+	    },
+	    villageCenter2:{
+	        data:[
+`  1
+ dddd
+1d!.d
+ d..d1
+ dddd
+  1`,
+`cccccc
+cccccc
+cc  cc
+cc  cc
+cccccc
+cccccc`,
+`
+ cccc
+ c  c
+ c  c
+ cccc`,
+`
+ l  l
+
+
+ l  l`,
+`
+ l  l
+
+
+ l  l`,
+`
+ cccc
+ cccc
+ cccc
+ cccc`
+            ],
+            pallete:{"c":"cobblestone",".":"Water","!":"lightBlueWool",l:()=>blockIds.oakPlanks|FENCE},
+            newJigsaws:{
+	            "1":"villagePath"
+	        },
+	        center:"!",
+	        newJigsawTries:8,
+	        onGround:true
+	    },
+	    villagePath:{
+	        data:[
+`:bAb:
+:bab:
+:bab:
+:bab:
+:bab:
+:bab:
+:bab:
+:bab:
+:bab:
+:bab:
+:bab:
+:bab:
+:bab:
+:bab:
+:bab:
+2b1b2`//Multiple new jigsaw positions because if only placed in center, new path will overlap with current path
+	        ],
+	        pallete:{
+	            a:"dirtPath",
+	            b: (n,e,s,w,x,y,z) => hash(x/2,z/2) > 0.9 ? undefined : "dirtPath",
+	            A:"dirtPath","1":"dirtPath"
+	        },
+	        center:"A",
+	        newJigsaws:{
+	            "1":"villagePathShort",
+	            "2":"villagePath",
+	            ":":"villageBuilding"
+	        },
+	        flatOnGround:true,
+	        newJigsawTries:8
+	    },
+	    villagePathShort:{
+	        data:[
+`aAa
+aaa
+aaa
+aaa
+aaa
+aaa
+aaa
+aaa
+aaa
+111`
+            ],
+	        pallete:{a:"dirtPath",A:"dirtPath","1":"dirtPath"},
+	        center:"A",
+	        newJigsaws:{
+	            "1":"villagePath"
+	        },
+	        flatOnGround:true,
+	        newJigsawTries:4
+	    },
+	    villageHouse1:{
+	        data:[
+`ldddl
+ddddd
+ddddd
+ddddd
+ldddl`,
+`lllll
+ldddl
+ldddl
+ldddl
+lllll
+  !`,
+`lcccl
+cpppc
+cpppc
+cpppc
+lcccl
+  s`,
+`lcccl
+c---c
+c---c
+c---c
+lc-cl`,
+`lcgcl
+c---c
+g---g
+c---c
+lc-cl`,
+`lcccl
+c---c
+c---c
+c---c
+lcccl`,
+`ppppp
+ppppp
+ppppp
+ppppp
+ppppp`
+	        ],
+	        pallete:{
+	            l:"oakLog",c:"cobblestone",
+	            p:"oakPlanks","-":"air",
+	            g:"glass",
+	            d:"dirt",
+	            s:(n,e,s,w)=>blockIds.oakPlanks|STAIR|w
+	        },
+	        center:"!",
+	        onGround:true
+	    },
+	    villageFarm:{
+	        data:[
+`lllllll
+lffwffl
+lffwffl
+lffwffl
+lffwffl
+lffwffl
+lllllll
+
+   !`
+	        ],
+	        pallete:{l:"oakLog",f:"brownWool",w:"lightBlueWool"},
+	        center:"!",
+	        onGround:true
+	    },
+},
+{
+		villageCenter:["villageCenter1","villageCenter2"],
+		villagePath:["villagePath","villagePathShort","villagePath"],
+		villagePathShort:["villagePath","villagePathShort","villagePathShort"],
+		villageBuilding:["villageHouse1","villageFarm"]
+},
+[
+	{
+		type:"compound",
+		start:"villageCenter",
+		chance:0.05,
+		getY:(x,z,rnd)=>{
+				return 0
+		},
+		maxSize:64,
+		jigsawCount:40,
+		maxTries:100
+	}
+]
+)
+
 let structureCheckDist = 0
 const structureSpacing = 64
 for(let s of structures){
 		structureCheckDist = Math.max(structureCheckDist,s.maxSize)
-		s.start = jigsawPools[s.start]
+		s.start = jigsawPools[s.start] || [s.start]
 }
 structureCheckDist = Math.ceil(structureCheckDist/16)*16
 for(let jn in jigsaws){
@@ -13213,10 +13468,8 @@ for(let jn in jigsaws){
 	let se = Object.create(s)
 	let sw = Object.create(s)
 	ss.data = [], se.data = [], sw.data = []
-	if(s.type === "compound"){
-		s.nextJigsawPos = [], ss.nextJigsawPos = [], se.nextJigsawPos = [], sw.nextJigsawPos = []
-		s.newJigsaws = s.newJigsaws || {}
-	}
+	s.nextJigsawPos = [], ss.nextJigsawPos = [], se.nextJigsawPos = [], sw.nextJigsawPos = []
+	s.newJigsaws = s.newJigsaws || {}
 	let data = []
 	let w=0, h=s.data.length, d=0
 	for(let i=0;i<s.data.length;i++){
@@ -13244,13 +13497,13 @@ for(let jn in jigsaws){
 							se.centerPos = [k,i,j]
 							sw.centerPos = [d-1-k,i,w-1-j]
 					}
-					if(s.type === "compound" && s.newJigsaws[row[k]]){
+					if(s.newJigsaws[row[k]]){
 						let newJigsaws = s.newJigsaws[row[k]]
 						/*if(!Array.isArray(newJigsaws)){
 								tempJigsawArr[0] = newJigsaws
 								newJigsaws = tempJigsawArr
 						}*/
-						for(let nj of jigsawPools[newJigsaws]){
+						for(let nj of jigsawPools[newJigsaws]){ 
 								s.nextJigsawPos.push([j,i,k,nj])
 								ss.nextJigsawPos.push([w-1-j,i,d-1-k,nj])
 								se.nextJigsawPos.push([k,i,j,nj])
@@ -13266,7 +13519,7 @@ for(let jn in jigsaws){
 	se.w = d, se.h = h, se.d = w
 	sw.w = d, sw.h = h, sw.d = w
 	s.variants = [s,sw,ss,se]
-	if(s.type === "compound") s.newJigsawTries = s.nextJigsawPos.length ? (s.newJigsawTries === undefined ? 1 : s.newJigsawTries) : 0
+	s.newJigsawTries = s.nextJigsawPos.length ? (s.newJigsawTries === undefined ? 1 : s.newJigsawTries) : 0
 }
 
 function objectify(x, y, z, width, height, textureX, textureY, texXFlip,texYFlip,rotateTex,texW,texH,textureName) {
@@ -15618,7 +15871,7 @@ let shapes = {
 		},
 	},
 	wallSign:{
-		terts:[
+		verts:[
 			[objectify(-4,6,16.7,16,2,0,0),objectify(12,6,16.7,8,2,0,0)],
 			[objectify(-4,18,18.7,16,2,0,0),objectify(12,18,18.7,8,2,0,0)],
 			[objectify(20,18,18.7,16,12,0,0),objectify(4,18,18.7,8,12,0,0)],
@@ -18978,17 +19231,6 @@ function initShapes() {
 			crossBlock.biomeTintSouth = false
 			crossBlock.biomeTintEast = false
 			crossBlock.biomeTintWest = false
-			tallcrossBlock.shape = shapes._1PixLower
-			tallcrossBlock.textures = ["dirt","dirtPathTop","dirtPathSide","dirtPathSide","dirtPathSide","dirtPathSide"]
-			tallcrossBlock.solid = true
-			tallcrossBlock.transparent = true
-			tallcrossBlock.cullFace = "same"
-			tallcrossBlock.shadow = true
-			tallcrossBlock.biomeTintTop = false
-			tallcrossBlock.biomeTintNorth = false
-			tallcrossBlock.biomeTintSouth = false
-			tallcrossBlock.biomeTintEast = false
-			tallcrossBlock.biomeTintWest = false
 		}
 		if(baseBlock.name === "podzol"){
 			crossBlock.shape = shapes.cube
@@ -20978,7 +21220,7 @@ class Entity {
 						this.contacts.add(x, y, z, block)
 					}
 					if(blockData[block].activate){
-						blockData[block].activate(x,y,z,this.dimension,block,this,this.world)
+						blockData[block].activate(x,y,z,block,this,this.world)
 					}
 					if(!inBox(this,x,y,z,1,1,1)) continue
 					if(x === round(this.x) && z === round(this.z) && blockData[block].liquid){
@@ -21556,7 +21798,7 @@ class Player extends Entity{
 						}
 					}
 					if(blockData[block].activate){
-						blockData[block].activate(x,y,z,this.dimension,block,this,this.world)
+						blockData[block].activate(x,y,z,block,this,this.world)
 					}
 					if(!inBox(this,x,y,z,1,1,1)) continue
 					if(!this.spectator && blockData[block].serverontouch){
@@ -28782,7 +29024,7 @@ class Chunk {
 
 		//Structures
 		//dont use random after because generateStructureLayout calls randomSeed
-		if(trees && world.world.worldType === "alpha"){
+		if(this.world.world.structures){
 			let genStructs = []
 			for(let x = Math.floor((this.x-structureCheckDist)/structureSpacing)*structureSpacing; x <= Math.ceil((this.x+structureCheckDist)/structureSpacing)*structureSpacing; x+=structureSpacing){
 				for(let z = Math.floor((this.z-structureCheckDist)/structureSpacing)*structureSpacing; z <= Math.ceil((this.z+structureCheckDist)/structureSpacing)*structureSpacing; z+=structureSpacing){
@@ -28815,13 +29057,17 @@ class Chunk {
 					for(let i=0;i<data.length;i+=4){
 						const bx = data[i]+x
 						const bz = data[i+2]+z
-						const by = data[i+1] + (jigsaw.flatOnGround ? this.tops[(bz-this.z)*16+(bx-this.x)] : y)
+						let by = data[i+1] + y
 						if(!(
 							bx < this.x+16 &&
 							bx >= this.x &&
 							bz < this.z+16 &&
 							bz >= this.z
 						)) continue
+						if(jigsaw.flatOnGround){
+							by = this.tops[(bz-this.z)*16+(bx-this.x)]
+							while(blockData[this.getBlock(bx-this.x,by,bz-this.z)].liquid) by++
+						}
 						let block = data[i+3]
 							const prevBlock = this.getBlock(bx-this.x,by,bz-this.z)
 						if(typeof block === "function") block = block(rotN,rotE,rotS,rotW,bx,by,bz,prevBlock)
@@ -28934,9 +29180,9 @@ class Chunk {
 			addLoop:for(let i=0; i<structure.maxTries; i++){
 				if(!adds.length) break
 				let addIdx = Math.floor(
-					(random() > 0.5 ? 
+					(//random() > 0.5 ? 
 						(1-(1-random())**2)
-						: random()
+						//: random()
 					)*adds.length)
 				let addTo = adds[addIdx]
 				if(!addTo.data.newJigsawTries) continue
@@ -30602,7 +30848,7 @@ const worldGenArray = {
 class World{ // aka trueWorld
 	constructor(options = {}){
 		let {
-			trees = true, caves = true, fancyRivers = true, worldType = "alpha",
+			trees = true, caves = true, fancyRivers = true, worldType = "alpha", structures = true,
 			gameMode = "creative", cheats = true,
 			settings = defaultWorldSettings,
 			customChunkGenerate, customChunkPopulate
@@ -30623,6 +30869,7 @@ class World{ // aka trueWorld
 		this.caves = caves
 		this.fancyRivers = fancyRivers
 		this.worldType = worldType
+		this.structures = structures
 		this.gameMode = gameMode //game mode on join
 		this.cheats = cheats //game mode on join
 		this.spawnPoint = {
@@ -30797,7 +31044,7 @@ class World{ // aka trueWorld
 				}
 			}else if(holding && blockData[holding].shovel){
 				if(cblock === blockIds.grass || cblock === blockIds.dirt || cblock === blockIds.rootedDirt || cblock === blockIds.mycelium || cblock === blockIds.podzol){
-					this[dimension].setBlock(ox,oy,oz,blockIds.grass | TALLCROSS)
+					this[dimension].setBlock(ox,oy,oz,blockIds.dirtPath)
 					holdObj.durability --
 				}
 				if(blockData[cblock].campfire){
@@ -31880,6 +32127,7 @@ class World{ // aka trueWorld
 
 		bab.add(this.gameMode === "survival" ? 1 : (this.gameMode==="hardcore"?2:0),2).add(this.cheats?1:0,1)
 		bab.add(this.fancyRivers, 1)
+		bab.add(this.structures, 1)
 		return bab.array
 	}
 	loadSave(data, onlyMetdata = false) {
@@ -31930,6 +32178,8 @@ class World{ // aka trueWorld
 
 		this.worldType = worldTypeBits2 ? "large" : (worldTypeBits1 === 2 ? "island" : (worldTypeBits1 === 3 ? "void" : (worldTypeBits1 ? "superflat" : "alpha")))
 
+		this.structures = this.fancyRivers = false
+
 		if(onlyMetdata) return
 
 		if(!verMoreThan(this.version.replace(/(Alpha|Beta) /, ''),"1.1.1")){
@@ -31978,7 +32228,7 @@ class World{ // aka trueWorld
 			this.gameMode = survival === 1 ? "survival" : (survival === 2 ? "hardcore" : "creative")
 			this.cheats = reader.read(1)
 			if(reader.canRead) this.fancyRivers = reader.read(1)
-			else this.fancyRivers = false
+			if(reader.canRead) this.structures = reader.read(1)
 		}
 		this.findSpawnPoint()
 	}

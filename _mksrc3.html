@@ -6114,6 +6114,7 @@ if time is 0, it will update every time
 	let trees = true
 	let caves = true
 	let fancyRivers = false
+	let structures = false
   let cheats = true
   let dieMessage = ""
   let inWorld = false
@@ -23896,6 +23897,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		Button.add(165*ss, 30*ss, 300*ss, 40*ss, ["World Type: Alpha", "World Type: Large", "World Type: Superflat", "World Type: Island", "World Type: Void"], "creation menu", r => {
 			worldType = r === "World Type: Superflat" ? "superflat" : r === "World Type: Island" ? "island" : r === "World Type: Void" ? "void" : r === "World Type: Large" ? "large" : "alpha"
 			if(worldType !== "large") fancyRivers = false
+			if(worldType === "superflat") trees = caves = structures = false
 		}, null, () => worldType === "large" && "Warning: laggy and may change in future updates" || worldType === "void" && "To start building in void, use setblock command." || worldType === "island" && "A very big island with a volcano. Surrounded by infinite ocean.",
 		() => {
 			if(worldType === "island") return 3
@@ -23950,6 +23952,12 @@ p.camera.transformation.elements.set(matrix)//*/
 		}, "Rivers that flow down! May slow down world generation. Requires large world type.", () => fancyRivers ? 0 : 1).setScrollable(creationMenuScrollable)
 		Button.add(475*ss, 180*ss, 300*ss, 40*ss, "Seed Templates", "creation menu", () => changeScene("seed templates"), null, "Choose a specific seed to control how the world generates.").setScrollable(creationMenuScrollable)
 		creationMenuScrollable.setScrollSize(300*ss)
+		Button.add(475*ss, 230*ss, 300*ss, 40*ss, ["Structures: On", "Structures: Off"], "creation menu", r => structures = r === "Structures: On", function() {
+			if (worldType === "void") {
+				structures = false
+			}
+			return worldType === "void"
+		}, , () => structures ? 0 : 1).setScrollable(creationMenuScrollable)
 		Button.add(width / 2, height - 90*ss, 300*ss, 40*ss, "Create New World", "creation menu", r => {
       createNewWorld()
 		})
@@ -28775,10 +28783,6 @@ p.camera.transformation.elements.set(matrix)//*/
 			div.innerHTML += type+br
 			
 			window.marketplace.appendChild(div)
-      
-      worldType = "alpha"
-      trees = true
-      caves = true
 		}
     let tempWorld = new ServerWorld()
     marketplaceData.forEach((data,i) => {
@@ -29143,8 +29147,8 @@ p.camera.transformation.elements.set(matrix)//*/
 		const nosound = urlParams.has("nosound")
 		async function loadSounds(){
 			if(!nosound){
-				let f = await fetch("assets/sounds.txt")
-				if(f.ok){
+				let f = await fetch("assets/sounds.txt").catch(e => {console.log(e); return null })
+				if(f && f.ok){
 					let soundData = await loadEPK(await f.arrayBuffer())
 					loadDone("Loaded sounds","",f.status)
 					for(let s in soundData){
