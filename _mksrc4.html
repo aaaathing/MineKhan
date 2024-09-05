@@ -6727,10 +6727,12 @@ ROTATION = 0x1800 // Mask for the direction bits
       }
 		},
     netherLoading: {
-			onenter: startLoad
+			onenter: startLoad,
+			onexit: () => html.loading.onexit(...arguments)
 		},
     endLoading: {
-      onenter: startLoad
+      onenter: startLoad,
+			onexit: () => html.loading.onexit(...arguments)
     },
 		editworld: {
 			enter: [window.boxCenterTop],
@@ -7176,7 +7178,7 @@ ROTATION = 0x1800 // Mask for the direction bits
 				Messages.add("Error: can't ban.","error")
 			}
 		},
-		ban_reason: args => this.ban_username(args),
+		ban_reason: args => clientCmdFuncs.ban_username(args),
 		unban_username: args => {
 			if(win.unban){
 				unban(args.username)
@@ -7742,7 +7744,9 @@ Division: //
 					replaces = value.substring(replaceStart,replaceEnd)
 					this.highlightValuesBefore = value.substring(0,replaceStart)//for addhint()
 					this.highlightReplaces = replaces
+					try{
 					this.getCmdNexts(cmds[0],lastCmd,1)
+					}catch(e){e.message+="\nhilighting command "+value;throw e}
 				}
 				
 				if(hintObj.prevInput !== value){
@@ -14580,6 +14584,7 @@ r 11 y  n  n  n
 			let serverChunk = serverWorld[this.type].getChunk(this.x,this.z)
 			let importants = []
 			for(let s = 0; s < serverChunk.sections.length; s++){
+				if(!this.sections[s]) this.sections[s] = new Section(this.x, s*16+minHeight, this.z, this)
 				this.sections[s].skyLight.set((serverChunk.sections[s] || emptySection).skyLight)
 				this.sections[s].blockLight.set((serverChunk.sections[s] || emptySection).blockLight)
 			}
@@ -20739,7 +20744,7 @@ r 11 y  n  n  n
 		for (let i = x - 2; i <= x + 2; i++) {
 			for (let j = z - 2; j <= z + 2; j++) {
 				let chunk = world.getChunk(i*16,j*16,dimension)//world.loaded[(i + world.offsetX) * world.lwidth + j + world.offsetZ]
-				if (!chunk.loaded){
+				if (!chunk || !chunk.loaded){
 					done = false
 					continue
 				}
@@ -25173,6 +25178,10 @@ p.camera.transformation.elements.set(matrix)//*/
 	let initTextureProgress = 0
 	let setPixOffsetX
 	let lastResourcesHash
+	function setThemTextures(_textureMap,_textureCoords){
+		textureMap = _textureMap
+		textureCoords = _textureCoords
+	}
 	async function initTextures() {
 		initTextureProgress = 0
 		let scale = 1 / textureSize
@@ -25183,8 +25192,8 @@ p.camera.transformation.elements.set(matrix)//*/
     textureImageCanvas = new OffscreenCanvas(textureSize,textureH)
     win.textureImageCanvas = textureImageCanvas
     textureImageCtx = textureImageCanvas.getContext("2d")
-		textureMap = {}
-		textureCoords = []
+		let textureMap = {}
+		let textureCoords = []
 		lastResourcesHash = resourcesHash
 
 		setPixel = function(textureNum, x, y, r, g, b, a) {
@@ -25436,6 +25445,9 @@ p.camera.transformation.elements.set(matrix)//*/
 			}
 			textureCoords[textureMap.hitbox] = arr
 		}
+
+		setThemTextures(textureMap,textureCoords)
+		animated = Object.assign({},originalAnimated,customResources.animated) //don't change time of originals
     
     //Set imageData
     textureImageData.data.set(texturePixels)
@@ -27440,7 +27452,7 @@ p.camera.transformation.elements.set(matrix)//*/
 	}
 	document.onwheel = e => {} // Shouldn't do anything, but it helps with a Khan Academy bug somewhat
 	window.onresize = async e => {
-		if(initEverything) return //if not initialized yet
+		if(!everythingInited) return //if not initialized yet
 		width = window.innerWidth
 		height = window.innerHeight
 		resolution = settings.resolution === "max" ? devicePixelRatio : (settings.resolution === "low" ? 0.125 : 1)
@@ -29480,8 +29492,13 @@ p.camera.transformation.elements.set(matrix)//*/
   }*/
 	let recording = false, recorder, recordStream
 	async function startRecord(){
-		recordStream = await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:"browser",width:{max:400},height:{max:400}},preferCurrentTab:true})
-		recorder = new MediaRecorder(recordStream,{mimeType:"video/mp4"})
+		try{
+			recordStream = await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:"browser",width:{max:400},height:{max:400}},preferCurrentTab:true})
+			recorder = new MediaRecorder(recordStream,{mimeType:"video/mp4"})
+		}catch(e){
+			console.error(e)
+			return
+		}
 		recording = true
 		let chunks = []
 		recorder.onstop = async e => {
@@ -29610,7 +29627,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
 	}
 	const defaultResourcePacks = ["/minekhan/assets/resource_packs/block_craft.json","/minekhan/assets/resource_packs/classic.json","/minekhan/assets/resource_packs/mk.json"]
-	let customResources = {textures:{},texts:{},images:{},settings:{},sounds:{}}, resourcePacksChanged = false
+	let customResources = {textures:{},texts:{},images:{},settings:{},sounds:{},animated}, resourcePacksChanged = false
 	let resourcesHash = ""
 	async function initResources(addCb = emptyFunc,doneCb = emptyFunc, loadAllPacks = false, addPack = null){
 		let packs = []
@@ -29667,7 +29684,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		customResources.textures = {}
 		customResources.texts = {}
 		customResources.images = {}
-		let newAnimated = {}
+		customResources.animated = {}
 		customResources.settings = {}
 		let packOrder = []
 		if(language) packOrder.push(language)
@@ -29683,7 +29700,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			if(i.textures) Object.assign(customResources.textures, i.textures)
 			if(i.texts) Object.assign(customResources.texts, i.texts)
 			if(i.images) Object.assign(customResources.images, i.images)
-			if(i.animated) Object.assign(newAnimated, i.animated)
+			if(i.animated) Object.assign(customResources.animated, i.animated)
 			if(i.settings) Object.assign(customResources.settings, i.settings)
 		}
 		for(let button of doc.getElementsByClassName("canTranslate")) button.theTranslate()
@@ -29691,10 +29708,9 @@ p.camera.transformation.elements.set(matrix)//*/
 		for(let i in customResources.images){
 			promises.push(loadImage(i,customResources.images))
 		}
-		for(let i in newAnimated){
-			newAnimated[i].time *= tickTime
+		for(let i in customResources.animated){
+			customResources.animated[i].time *= tickTime
 		}
-		animated = Object.assign({},originalAnimated,newAnimated) //don't change time of originals
 		await Promise.all(promises)
 	}
 	async function uninstallResourcePack(url){
@@ -29729,7 +29745,7 @@ p.camera.transformation.elements.set(matrix)//*/
 					world.activeResourcePacks.push(pack.url)
 					//if(!world.resourcePacks.includes(pack.url)) world.resourcePacks.push(pack.url)
 					div.classList.add("selected")
-					window.resourcePacks.appendChild(div)//move to end
+					window.resourcePacks.prependChild(div)//move to end
 				}else{
 					world.activeResourcePacks.splice(idx,1)
 					div.classList.remove("selected")
@@ -29964,7 +29980,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
     host = true
 		let seed = isNaN(seedBox.value) ? seedBox.value.hashCode() : +seedBox.value
-		serverWorld = new ServerWorld({operators:[p.username],trees,caves,fancyRivers,worldType,gameMode:p.gameMode,cheats,settings:worldSettings})
+		serverWorld = new ServerWorld({operators:[p.username],trees,caves,fancyRivers,worldType,structures,gameMode:p.gameMode,cheats,settings:worldSettings})
 		serverWorld.setSeed(seedBox.value ? seed : (Math.random() * 2000000000 | 0))
 		win.serverWorld = serverWorld
     p.dimension = ""
@@ -30298,7 +30314,8 @@ p.camera.transformation.elements.set(matrix)//*/
     recipes.innerHTML = rhtml
 		helpSetup = true
   }
-	
+
+	let everythingInited = false
 	async function initEverything() {
 		maxStartLoad += 7 // fetch the account, and other stuff
 		loadDone("Initializing MineKhan.")
@@ -30440,6 +30457,7 @@ p.camera.transformation.elements.set(matrix)//*/
     if (window.parent.tickid) clearTimeout(window.parent.tickid)
 		tickLoop()
 
+		everythingInited = true
 		loader.classList.remove("hide")
 	}
   

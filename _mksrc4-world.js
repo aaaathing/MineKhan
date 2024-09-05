@@ -533,11 +533,20 @@ function adjustTints(o,r,g=r,b=r){
 	}
 	return ret
 }
- const grassColor = {/*r:145/255,g:189/255,b:89/255*/r:71/255,g:206/255,b:49/255}
+const grassColor = {/*r:145/255,g:189/255,b:89/255*/r:71/255,g:206/255,b:49/255}
 //var foliageColor = {/*r:119/255,g:171/255,b:47/255*/r:26/255,g:191/255,b:0}
 const leafColor = {r:72/255,g:181/255,b:24/255}
-const grassTint = expandTints({
-	default:0x8eb971,//used for water biomes
+const grassTint = {
+	a_snowyField:[128/255,180/255,151/255],
+	a_desert:[191/255,183/255,85/255],
+	a_field:[121/255,192/255,90/255],
+	a_jungle:[71/255,206/255,49/255],
+	a_giantJungle:[0,0.9,0],
+	a_bambooForest:[71/255,206/255,49/255],
+	a_oakForest:[121/255,192/255,90/255],
+
+...expandTints({
+	default:0x8eb971,
 	/*"plains,beach,sunflowerPlains":0x91bd59,
 	"frozenRiver,snowyPlains,iceSpikes,grove,frozenPeaks,jaggedPeaks,snowySlopes,snowyTaiga,frozenOcean,deepFrozenOcean":0x80b497,
 	snowyBeach:0x83b593,
@@ -564,6 +573,7 @@ const grassTint = expandTints({
 	"netherWastes,crimsonForest,warpedForest":0xbfb755,
 	"end,endIslands":0x8eb971
 })
+}
 /*const foliageTint = {
 	default:[foliageColor.r,foliageColor.g,foliageColor.b],
 	snowyPlains:[128/255,180/255,151/255],
@@ -571,7 +581,16 @@ const grassTint = expandTints({
 	plains:[121/255,192/255,90/255],
 	forest:[121/255,192/255,90/255],
 }*/
-const leafTint = expandTints({
+const leafTint = {
+	a_snowyField:[96/255,161/255,123/255],
+	a_desert:[174/255,164/255,42/255],
+	a_field:[89/255,174/255,48/255],
+	a_jungle:[48/255,187/255,11/255],
+	a_giantJungle:[0.1,0.8,0],
+	a_bambooForest:[48/255,187/255,11/255],
+	a_oakForest:[89/255,174/255,48/255],
+	
+...expandTints({
 	default:0x71a74d,//used for water biomes
 	/*"plains,beach,sunflowerPlains":0x77ab2f,
 	"frozenRiver,snowyPlains,iceSpikes,grove,frozenPeaks,jaggedPeaks,snowySlopes,snowyTaiga,frozenOcean,deepFrozenOcean":0x60a17b,
@@ -598,7 +617,17 @@ const leafTint = expandTints({
 	"netherWastes,crimsonForest,warpedForest":0xaea42a,
 	"end,endIslands":0x71a74d
 })
-const skyColor = expandTints({
+}
+const skyColor = {
+	a_snowyField:[127/255, 161/255, 1],
+	a_desert:[110/255, 177/255, 1],
+	a_field:[121/255, 166/255,1],
+	a_jungle:[119/255, 168/255,1],
+	a_giantJungle:[119/255, 168/255,1],
+	a_bambooForest:[119/255, 168/255,1],
+	a_oakForest:[121/255, 166/255,1],
+	
+...expandTints({
 	default:0x7ba4ff,
 	"plains,beach,sunflowerPlains,swamp,mangroveSwamp":0x78a7ff,
 	"frozenRiver,snowyPlains,iceSpikes,frozenOcean,deepFrozenOcean,snowyBeach":0x7fa1ff,
@@ -623,9 +652,19 @@ const skyColor = expandTints({
 	warpedForest:0x1a051a,
 	"end,endIslands":0xa080a0
 })
+}
 win.skyColor = skyColor
 const waterColor = [68/255,175/255,245/255]
-const waterTint = expandTints({
+const waterTint = {
+	a_snowyField:[20/255,85/255,155/255],
+	a_desert:[50/255,165/255,162/255],
+	a_field:[30/255,151/255,242/255],
+	a_jungle:[13/255,138/255,227/255],
+	a_giantJungle:[20/255,162/255,197/255],
+	a_bambooForest:[20/255,162/255,197/255],
+	a_oakForest:[30/255,151/255,242/255],
+	
+...expandTints({
 	"default,void,plains,grove,snowySlopes,frozenPeaks,stonePeaks,jaggedPeaks,sunflowerPlains,rockyPlains":0x44aff5,
 	warmOcean:0x02b0e5,
 	"lukewarmOcean,deepLukewarmOcean":0x0d96db,
@@ -667,6 +706,7 @@ const waterTint = expandTints({
 	"netherWastes,crimsonForest,warpedForest":0x905957,
 	"end,endIslands":0x62529e
 })
+}
 
 
 //each mob: [mob name, min, max]
@@ -681,6 +721,14 @@ const swampMobs = [...defaultMobs,["Frog",2,5]]
 const swampHostileMobs = [["Slime",4,4],["Witch",1,1]]
 let biomeData = { //[temperature, rainfall (snow exluded), passive mobs, hostile mobs]
 	void:[0.5,0.5],
+
+	a_snowyField:[2/20,0.5],
+	a_desert:[17/20,0],
+	a_field:[9/20,0.5,defaultMobs],
+	a_jungle:[10/20,0.5,defaultMobs],
+	a_giantJungle:[12/20,0.5,defaultMobs],
+	a_bambooForest:[10/20,0.5,defaultMobs],
+	a_oakForest:[9/20,0.5,defaultMobs],
 
 	ocean:[0.5,0.5],
 	deepOcean:[0.5,0.5],
@@ -770,19 +818,19 @@ function getNetherBiome(biome) {
 }
 function getBiome(biome){
 	if(biome > 0.6){
-		return "snowyPlains"
+		return "a_snowyField"
 	}else if(biome > 0.5){
-		return "desert"
+		return "a_desert"
 	}else if(biome > 0.4){
-		return "plains"
+		return "a_field"
 	}else if(biome > 0.37){
-		return "sparseJungle"
+		return "a_jungle"
 	}else if(biome > 0.35){
-		return "jungle"
+		return "a_giantJungle"
 	}else if(biome > 0.3){
-		return "bambooJungle"
+		return "a_bambooForest"
 	}else{
-		return "forest"
+		return "a_oakForest"
 	}
 }
 function getBiomeTemperature(biome,y){
@@ -17809,13 +17857,13 @@ function packetPartToBitArray(i,bab,v){
 			break
 		case "int":
 		case "uint":
-			bab.add(v,32)
+			bab.add(v||0,32)
 			break
 		case "byte":
-			bab.add(v,8)
+			bab.add(v||0,8)
 			break
 		case "double":
-			bab.addDouble(v)
+			bab.addDouble(v||0)
 			break
 		case "sparseArray":
 			bab.add(v.length,32)
@@ -19312,7 +19360,7 @@ function initShapes() {
 			stairBlock.shape = shapes.fenceGateOpen
 			doorBlock.shape = shapes.fenceGateWallOpen
 			doorBlock.transparent = true
-			baseBlock.onclick = (function(x,y,z){
+			baseBlock.onclick = (function(x,y,z,world){
 				var b = world.getBlock(x,y,z)
 				var set
 				var id = this.id
@@ -20527,7 +20575,7 @@ function initDefaultCommands(world){
 				for(let i of arr){
 					if(i.type === "Player"){
 						i.health = 0
-						i.damage(1,arg.message)
+						i.damage(1,args.message)
 					}else{
 						world[i.dimension].deleteEntity(i.id)
 					}
@@ -20571,7 +20619,7 @@ function initDefaultCommands(world){
 			CommandNode.a("fadeIn",null,"number").then(CommandNode.a("fadeOut",null,"number").then(CommandNode.a("stay",args => {world.sendAll({type:"title",data:args.text,sub:args.subtext,color:args.color,fadeIn:args.fadeIn,fadeOut:args.fadeOut,stay:args.stay})},"number")))
 		)))),
 		CommandNode.l("setBlock",null,"Set a block at specified position").then(CommandNode.a("x",null,"x").then(CommandNode.a("y",null,"y").then(CommandNode.a("z",null,"number").then(CommandNode.a("block",
-		args => {
+		(args,pos,scope) => {
 			let block = blockIds[args.block]
 			if(block === undefined) block = parseInt(args.block)
 			if(!blockData[block]) return ["No such block "+block,"error"]
@@ -20579,7 +20627,7 @@ function initDefaultCommands(world){
 		},"block"))))),
 		CommandNode.l("getBlock",null,"Gets a block at the specified position and sets a variable called block_name.").then(CommandNode.a("x",null,"x").then(CommandNode.a("y",null,"y").then(CommandNode.a("z",
 		(args,pos,scope) => {
-			scope.block_name = blockData[world[i.dimension].getBlock(args.x,args.y,args.z,pos.dimension)].name
+			scope.block_name = blockData[world[pos.dimension].getBlock(args.x,args.y,args.z,pos.dimension)].name
 		},"z")))),
 		CommandNode.l("getPos",null,"Gets position of specified target and sets target_x, target_y, target_z, target_dimension, target_name. Target can be @s, @p, or a username.").then(CommandNode.a("target",
 		(args,pos,scope) => {
@@ -20629,7 +20677,7 @@ function initDefaultCommands(world){
 		CommandNode.l("clearHistory","client","Clears chat history and input history.",null,true),
 		sp = CommandNode.l("spectatePlayer",null,"Spectate a player. If remote_control is set to true and you are the host or certain people, remote control will be enabled.").then(CommandNode.a("username",
 		(args,pos) =>{
-			let player = getPlayerByUsername(arg.username,world[pos.dimension])
+			let player = getPlayerByUsername(args.username,world[pos.dimension])
 			if(player){
 				pos.gameMode = "spectator"
 				pos.riding = null
@@ -20638,7 +20686,7 @@ function initDefaultCommands(world){
 			}else return ["Player doesn't exist: "+args.username,"error"]
 		}).then(CommandNode.a("remoteControl",
 		(args,pos) =>{
-			let player = getPlayerByUsername(arg.username,world[pos.dimension])
+			let player = getPlayerByUsername(args.username,world[pos.dimension])
 			if(player){
 				pos.gameMode = "spectator"
 				pos.riding = null
@@ -21712,6 +21760,7 @@ class Player extends Entity{
 		if(!inv) inv = this.world.world.playersInv[this.host ? ":host" : this.username] = {}
 		inv.survivStr = this.world.world.getSurvivStr(this).array
 		inv.inv = this.world.world.getInv(this).array
+		inv.version = this.world.world.version
 	}
 	addAchievment(name){
 		let id = achievmentIds[name]
@@ -25675,7 +25724,7 @@ class Chunk {
 				let biome = noiseProfile.noise((trueX + i) * biomeSmooth, (trueZ + k) * biomeSmooth);
 				var b = getBiome(biome)
 				this.biomes[k * 16 + i] = biomeIds[b]
-				if(b === "desert"){
+				if(b === "a_desert"){
 					this.tops[k * 16 + i] = gen;
 
 					this.setBlock(i, gen, k, blockIds.sand);
@@ -25698,7 +25747,7 @@ class Chunk {
 					}
 				}
 
-				if(b === "plains" || b === "forest"){
+				if(b === "a_field" || b === "a_oakForest"){
 					this.tops[k * 16 + i] = gen;
 
 					this.setBlock(i, gen, k, blockIds.grass);
@@ -25714,7 +25763,7 @@ class Chunk {
 						this.setBlock(i, gen - 3, k, blockIds.gravel);
 					}
 				}
-				if(b === "snowyPlains"){
+				if(b === "a_snowyField"){
 					this.tops[k * 16 + i] = gen;
 
 					if(gen >= 60){
@@ -25760,10 +25809,10 @@ class Chunk {
 					}
 				}
 				
-				if(b === "sparseJungle" || b === "jungle" || b === "bambooJungle"){
+				if(b === "a_jungle" || b === "a_giantJungle" || b === "a_bambooForest"){
 					this.tops[k * 16 + i] = gen;
 
-					if(b === "bambooJungle") this.setBlock(i, gen, k, blockIds.podzol)
+					if(b === "a_bambooForest") this.setBlock(i, gen, k, blockIds.podzol)
 					else this.setBlock(i, gen, k, blockIds.grass)
 					this.setBlock(i, gen - 1, k, blockIds.dirt);
 					this.setBlock(i, gen - 2, k, blockIds.dirt);
@@ -28017,31 +28066,31 @@ class Chunk {
 
 					//let nb = getNetherBiome(biome)
 					let b = biomes[this.biomes[k * 16 + i]]
-					if (trees && random() < 0.01 && type === "" && b === "plains" && this.getBlock(i, ground, k) === blockIds.grass) {
+					if (trees && random() < 0.01 && type === "" && (b === "a_field" || b === "plains") && this.getBlock(i, ground, k) === blockIds.grass) {
 						this.spawnSmallTree(i,ground,k,wx,wz)
 					}
 					
-					if(b === "snowyPlains" && trees && random() < 0.01 && type === "" && this.getBlock(i, ground, k)){
+					if((b === "snowyPlains" || b === "a_snowyField") && trees && random() < 0.01 && type === "" && this.getBlock(i, ground, k)){
 						this.spawnSnowSmallTree(i,ground,k,wx,wz)
 					}
 					
 					// Cactus
-					if (random() < 0.01 && this.getBlock(i, ground, k) && b === "desert" && ground > 60 && this.type === "") {
+					if (random() < 0.01 && this.getBlock(i, ground, k) && (b === "a_desert" || b === "desert") && ground > 60 && this.type === "") {
 						this.spawnCactus(i,ground,k)
 					}
-					if (random() < 0.006 && this.getBlock(i, ground, k) && b === "desert" && ground > 60 && this.type === "") {
+					if (random() < 0.006 && this.getBlock(i, ground, k) && (b === "a_desert" || b === "desert") && ground > 60 && this.type === "") {
 						this.setBlock(i,ground+1,k, blockIds.deadBush | CROSS);
 					}
 					
 					// Jungle trees
-					if(trees && random() < 0.01 && type === "" && (b === "sparseJungle" || b === "jungle") && this.getBlock(i, ground, k)){
+					if(trees && random() < 0.01 && type === "" && (b === "a_jungle" || b === "a_giantJungle") && this.getBlock(i, ground, k)){
 						this.spawnCocoaTree(i,ground,k,wx,wz)
 					}
 					//Giant jungle trees
-					if(trees && random() < 0.01 && type === "" && b === "jungle" && this.getBlock(i, ground, k)){
+					if(trees && random() < 0.01 && type === "" && (b === "a_giantJungle") && this.getBlock(i, ground, k)){
 						this.spawnJungleTree(i,ground,k,wx,wz)
 					}
-					if(trees && random() < 0.015 && type === "" && (b === "sparseJungle" || b === "jungle") && this.getBlock(i, ground, k)){
+					if(trees && random() < 0.015 && type === "" && (b === "a_jungle" || b === "a_giantJungle") && this.getBlock(i, ground, k)){
 						let w2 = 3 * 3
 						let d2 = 3 * 3
 						let h2 = 3 * 3
@@ -28078,7 +28127,7 @@ class Chunk {
 					}
 					
 					//bamboo
-					if(random() < 0.2 && this.getBlock(i, ground, k) && b === "bambooJungle" && ground > 60 && this.type === ""){
+					if(random() < 0.2 && this.getBlock(i, ground, k) && b === "a_bambooForest" && ground > 60 && this.type === ""){
 						this.spawnBamboo(i,ground,k,wx,wz)
 					}
 					
@@ -31372,9 +31421,11 @@ class World{ // aka trueWorld
 	}
 	entInteract(id,hit,cooldown,p){
 		let ent = getEntityOrPlayer(id,this[p.dimension])
+		if(!ent) return
 		let holdObj = p.inventory.hotbar[p.inventory.hotbarSlot]
 		let block = blockData[holdObj ? holdObj.id : 0]
 		if(hit){
+			if(!ent.damage) return
 			let atime = (typeof block.attackTime === "number") ? block.attackTime : 5
 			let attackDamage = (block && block.attackDamage) || 1
 			let damage, critical
@@ -31818,7 +31869,7 @@ class World{ // aka trueWorld
 			}
 			if(!ent) return
 			ent.id = id
-			this.addEntity(ent, true)
+			this[dimension].addEntity(ent, true)
 			ent.previousX = parseFloat(p[0])
 			ent.previousY = parseFloat(p[1])
 			ent.previousZ = parseFloat(p[2])
@@ -32135,6 +32186,8 @@ class World{ // aka trueWorld
 		return bab.array
 	}
 	loadSave(data, onlyMetdata = false) {
+		this.structures = this.fancyRivers = false
+		
 		if (typeof data === "string") {
 			if (data.includes("Alpha")) {
 				try {
@@ -32178,11 +32231,9 @@ class World{ // aka trueWorld
 			return this.loadCrossSaveCode(data, onlyMetdata)
 		}
 		let preBetaVersion = verMoreThan("1.1.0",this.version.replace(/(Alpha|Beta) /, ''))
-		let worldTypeBits2 = preBetaVersion ? 1 : reader.read(1)
+		let worldTypeBits2 = preBetaVersion ? 0 : reader.read(1)
 
 		this.worldType = worldTypeBits2 ? "large" : (worldTypeBits1 === 2 ? "island" : (worldTypeBits1 === 3 ? "void" : (worldTypeBits1 ? "superflat" : "alpha")))
-
-		this.structures = this.fancyRivers = false
 
 		if(onlyMetdata) return
 
@@ -32206,6 +32257,7 @@ class World{ // aka trueWorld
 
 		if(preBetaVersion){
 			let inv = this.playersInv[":host"] = this.playersInv[":host"] || {}
+			inv.version = "Alpha 1.0.5"
 			let survivLength = reader.read(8)
 			if(survivLength){
 				inv.survivStr = reader.readToArrayBits(survivLength)
@@ -32957,7 +33009,7 @@ window.parent.postMessage({ready:true}, "*")
 		bab.add(round(p.x), 20).add(round(p.y), 11).add(round(p.z), 20)
 		bab.add(p.dimension === "nether" ? 1 : (p.dimension === "end" ? 2 : 0),3)
 		bab.add(p.rx * 100, 11).add(p.ry * 100, 11)
-		bab.add(p.flying, 1).add(p.gameMode==="spectator", 1)
+		bab.add(!!p.flying, 1).add(p.gameMode==="spectator", 1)
 		//survival stuff like player health
 		bab.add(round(p.health),5)
 		bab.add(0,28)//unused
@@ -33108,6 +33160,7 @@ window.parent.postMessage({ready:true}, "*")
 				p.respawn()
 				let inv = world.playersInv[host ? ":host" : username]
 				if(inv){//older stuff
+					let preBetaVersion = inv.version && verMoreThan("1.1.0",inv.version.replace(/(Alpha|Beta) /, ''))
 					if(typeof inv.inv === "string"){
 						if(inv.inv.includes(";")){
 							this.loadOldInv(inv.inv,p), inv.inv = null
@@ -33124,7 +33177,7 @@ window.parent.postMessage({ready:true}, "*")
 					}
 					if(inv.survivStr && inv.survivStr.length){
 						try{
-							world.loadSurvivStr(new BitArrayReader(inv.survivStr),false,p)
+							world.loadSurvivStr(new BitArrayReader(inv.survivStr), preBetaVersion, p)
 						}catch(e){
 							console.error(e)
 							p.cheats = world.cheats
@@ -33262,7 +33315,9 @@ window.parent.postMessage({ready:true}, "*")
 				world.setTags(data.x,data.y,data.z,data.data, true, data.dimension, data.lazy)
 				sendOthers(data)
 			}*/else if(data.type === "serverChangeBlock"){
+				try{
 				world.serverChangeBlock(data.x,data.y,data.z,data.place,p,data.face,data.shift,data.blockMode,data.rotate,data.flip)
+				}catch(e){e.message+"\nblock: "+JSON.stringify(p.inventory.hotbar[p.inventory.hotbarSlot]);throw e}
 			}else if(data.type === "entityPos"){
 				let ent = world.posEntity(new BitArrayReader(data.data, true), true)
 				return world[p.dimension].deleteEntity(ent.id)
