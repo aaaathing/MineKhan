@@ -1471,7 +1471,7 @@ const blockData = [
 		hidden:true,
 		smoothLight:false,
 		damage:(x,y,z,world) => world.getPower(x,y,z)/15,
-		dieMessage: () => username+" died from radiation from redstone dust.",
+		dieMessage: p => p.username+" died from radiation from redstone dust.",
 		drop: "redstone",
 		carryRedstone:true,
 		tagBits:{
@@ -2526,7 +2526,7 @@ const blockData = [
 		lightLevel:15,
 		damage:4,
 		burnEnt:true,
-		dieMessage: () => username+" tried to swim in lava.",
+		dieMessage: p => p.username+" tried to swim in lava.",
 		shadow: false,
 		blastResistance:100,
 		hidden:true,
@@ -2713,7 +2713,7 @@ const blockData = [
 	{
 		name: "magma", Name:"Magma Block", lightLevel:15,hardness:0.5, type:"rock1",
 		damage:1,
-		dieMessage: () => username+" discovered the floor was lava.",
+		dieMessage: p => p.username+" discovered the floor was lava.",
 		burnTime:Infinity,
 		category:"nature",
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true
@@ -7918,7 +7918,7 @@ const blockData = [
 			}
 			world.setTimeout(t,tickTime*delay*2, x,y,z)
 		},
-		onclick:function(x,y,z){
+		onclick:function(x,y,z,world){
 			var me = blockData[blockIds.repeater]
 			var block = world.getBlock(x,y,z)
 			var d1 = me.id, d2 = me.id | SLAB, d3 = me.id | STAIR, d4 = me.id | DOOR //delay
@@ -17731,7 +17731,7 @@ let packetTypes = [
 	["loadSave", /*["data","bitArray"], ["stringChunks","number",8,1]*/ ["mod","string"],["id","basicString"],["name","string"],["activeResourcePacks","array",[null,"string"]],["x","double"],["y","double"],["z","double"],["version","basicString"],["time","double"],["weather","replacerNumber",2,["","rain","snow"]],packetGameMode,["cheats","boolean"],["hotbarSlot","byte"],["flying",'boolean'],["achievments","array",[null,"uint"]]],
 	//["loadSaveChunk", ["data","bitArray"],["idx","number",8,1]],
 	["resourcePacks",["activeResourcePacks","array",[null,"string"]]],
-	["serverCmds",["data","array",[null,"object",["type","basicString"],["name","basicString"],["id","uint"],["next","array",[null,"uint"]],[o=>o.redirect!==undefined,"includeIf",["redirect","uint"]],["info","string"],["argType","basicString"],["func","boolean"],["noCheats","boolean"]]]],
+	["serverCmds",["data","array",[null,"object",[["type","basicString"],["name","basicString"],["id","uint"],["next","array",[null,"uint"]],["redirect","uint"],["info","string"],["argType","basicString"],["func","boolean"],["noCheats","boolean"]]]]],
 	["saveProg",["data","basicString"]],
 	["canSendPos"],
 	["setTags",["x","int"],["y","int"],["z","int"],packetDimension,["data","json"],["lazy","boolean"]],
@@ -17789,7 +17789,7 @@ let packetTypes = [
 ]
 win.unorderedPackets = new Set(["chunkData"])
 let packetNames = []
-let packetIds = {}, defaultPacketData = [["FROM","string"],["USER","string"],["TO","string"]]
+let packetIds = {}, defaultPacketData = [["FROM","basicString"],["USER","string"],["TO","basicString"]]
 for(let i=0; i<packetTypes.length; i++){
 	let t = packetTypes[i]
 	if(!t) throw new Error("after "+packetNames[i-1])
@@ -17887,15 +17887,14 @@ function packetToBitArrayLoop(type,obj,bab){
 		packetPartToBitArray(i,bab,v)
 	}
 }
-function packetToBitArray(obj, type, returnBAB){
-	let bab
+function packetToBitArray(obj, type, returnBAB, bab){
 	if(type){
-		bab = new BitArrayBuilder()
+		if(!bab) bab = new BitArrayBuilder()
 	}else{
 		let id = packetIds[obj.type]
 		type = packetTypes[id]
 		if(!type) throw new Error("Unknown packet type: "+obj.type)
-		bab = new BitArrayBuilder()
+		if(!bab) bab = new BitArrayBuilder()
 		bab.add(id,8)
 	}
 	packetToBitArrayLoop(type,obj,bab)
@@ -21731,7 +21730,7 @@ class Player extends Entity{
 	setLevel(){
     if(this.level <= 15){
       this.nextLevel = 2*this.level+7
-    }else if(p.level <= 30){
+    }else if(this.level <= 30){
       this.nextLevel = 5*this.level-38
     }else{
       this.nextLevel = 9*this.level-158
@@ -22087,31 +22086,36 @@ class Player extends Entity{
 				this.world.poof(this.x,this.y-this.height*0.5+0.25,this.z, 8, this.dimension, this.width*0.5*2,0,this.depth*0.5*2, true)
 			}
 
-			if(this.liquid && this.inLiquid){
+			let blockHere = this.world.getBlock(round(this.x),round(this.y+this.height*0.5),round(this.z))
+			let inLiquid
+			if(blockHere && blockData[blockHere].inLiquid) inLiquid = blockData[blockHere].inLiquid
+			if(inLiquid){
 				if(this.oxygen > 0){
 					var time = floor(this.oxygen / 2) * 2 === this.oxygen ? 1000 : 125
 					if(now - this.lastLoseOxygen > time){
 						this.oxygen --
 						this.lastLoseOxygen = now
+						this.resendHealth = true
 					}
 				}else{
 					if(now-this.lastBlockHarm > 500){
 						this.lastBlockHarm = now
-						this.damage(1, this.username+" drowned in "+blockData[this.blockHere].Name+".",false, "drown")
+						this.damage(1, this.username+" drowned in "+blockData[blockHere].Name+".",false, "drown")
 					}
 				}
-			}/*suffoacting*/else if(this.blockHere && (blockData[this.blockHere].solid && !blockData[this.blockHere].transparent || blockData[this.blockHere].quicksand)){
+			}/*suffoacting*/else if(blockHere && (blockData[blockHere].solid && !blockData[blockHere].transparent || blockData[blockHere].quicksand)){
 				if(this.oxygen > 0){
 					var time = floor(this.oxygen / 2) * 2 === this.oxygen ? 250 : 125
 					if(now - this.lastLoseOxygen > time){
 						this.oxygen --
+						this.resendHealth = true
 						this.lastLoseOxygen = now
 					}
 				}else{
 					if(now-this.lastBlockHarm > 500){
 						this.lastBlockHarm = now
 						var msg = this.username+" was suffocated by "
-						var name = blockData[this.blockHere].Name
+						var name = blockData[blockHere].Name
 						if("aeiouAEIOU".includes(name[0])) msg += "an " //check for vowels
 						else msg += "a "
 						msg += name+"."
@@ -22121,6 +22125,7 @@ class Player extends Entity{
 			}else if(this.oxygen < 20 && now - this.lastGetOxygen > 300){
 				this.lastGetOxygen = now
 				this.oxygen = (floor(this.oxygen/2)*2) + 2
+				this.resendHealth = true
 			}
 			if(this.liquid) this.lastY = this.y
 		}else{
@@ -29933,26 +29938,26 @@ function pressurePlateHasPressure(x,y,z,world){
 }
 function hitSound(p){
 	var i = Math.ceil(Math.random()*3)
-	p.world.sendAll({type:"playSound", data:"damage.hit"+i, x:p.x,y:p.y,z:p.z})
+	p.world.playSound(p.x,p.y,p.z,"damage.hit"+i)
 }
 function drownHurtSound(p){
 	var i = Math.ceil(Math.random()*4)
-	p.world.sendAll({type:"playSound", data:"damage.drown"+i, x:p.x,y:p.y,z:p.z})
+	p.world.playSound(p.x,p.y,p.z,"damage.drown"+i)
 }
 function freezeHurtSound(p){
 	var i = Math.ceil(Math.random()*5)
-	p.world.sendAll({type:"playSound", data:"damage.freeze"+i, x:p.x,y:p.y,z:p.z})
+	p.world.playSound(p.x,p.y,p.z,"damage.freeze"+i)
 }
 function fireHurtSound(p){
 	var i = Math.ceil(Math.random()*3)
-	p.world.sendAll({type:"playSound", data:"damage.fire"+i, x:p.x,y:p.y,z:p.z})
+	p.world.playSound(p.x,p.y,p.z,"damage.fire"+i)
 }
 function berrybushHurtSound(p){
 	var i = Math.ceil(Math.random()*2)
-	p.world.sendAll({type:"playSound", data:"damage.berrybush"+i, x:p.x,y:p.y,z:p.z})
+	p.world.playSound(p.x,p.y,p.z,"damage.berrybush"+i)
 }
 function oofSound(p){
-	p.world.sendAll({type:"playSound", data:"damage.classic_hurt", x:p.x,y:p.y,z:p.z})
+	p.world.playSound(p.x,p.y,p.z,"damage.classic_hurt")
 }
 function getEntityOrPlayer(id,world){
 	for(let p of world.world.players){
@@ -32805,16 +32810,17 @@ class World{ // aka trueWorld
 		}
 		return bab.array
 	}
-	loadInv(reader,p){
+	loadInv(reader,p,preBetaVersion){
 		let {inventory} = p
 		inventory.hotbarSlot = reader.read(4)
 		for(let i=0;i<9;i++){
 			let id = reader.read(32), amount = reader.read(7)
 			inventory.hotbar[i] = amount && {id,amount}
 		}
-		for(let i=0;i<27;i++){
+		let invLen = preBetaVersion ? 13*9 : 27
+		for(let i=0;i<invLen;i++){
 			let id = reader.read(32), amount = reader.read(7)
-			inventory.main[i] = amount && {id,amount}
+			if(i<28) inventory.main[i] = amount && {id,amount}
 		}
 		let durability = reader.read(4), durabilityInv = reader.read(5)
 		for(let i=0;i<durability;i++){
@@ -33162,14 +33168,14 @@ window.parent.postMessage({ready:true}, "*")
 				if(inv){//older stuff
 					let preBetaVersion = inv.version && verMoreThan("1.1.0",inv.version.replace(/(Alpha|Beta) /, ''))
 					if(typeof inv.inv === "string"){
-						if(inv.inv.includes(";")){
+						if(inv.inv.includes(",")){
 							this.loadOldInv(inv.inv,p), inv.inv = null
 						}else{
 							inv.inv = atoarr(inv.inv)
 						}
 					}
 					if(typeof inv.survivStr === "string"){
-						if(inv.survivStr.includes(";")){
+						if(inv.survivStr.includes(",")){
 							this.loadOldSurvivStr(inv.survivStr,p), inv.survivStr = null
 						}else{
 							inv.survivStr = atoarr(inv.survivStr)
@@ -33192,7 +33198,7 @@ window.parent.postMessage({ready:true}, "*")
 						p.x = inv.x, p.y = inv.y, p.z = inv.z
 					}
 					if(inv.inv && inv.inv.length){
-						world.loadInv(new BitArrayReader(inv.inv),p)
+						world.loadInv(new BitArrayReader(inv.inv),p,preBetaVersion)
 					}
 				}
 				c.send({
@@ -33254,6 +33260,7 @@ window.parent.postMessage({ready:true}, "*")
 				pos.die = p.die
 				pos.crackPos = p.crackPos
 				pos.dimension = p.dimension
+				data.FROM = p.id
 				p.pos = data
 				for(let p2 of world.players){
 					if(p2 !== p && p2.pos) p2.posUpdated[id] = p.pos

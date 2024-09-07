@@ -922,7 +922,54 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
     gtag('config', 'G-VRNT3CCCGH', {page_title:document.title})
   </script>
 	<body>
-  <div id="errorScreen" style="display:none;"></div>
+  <div id="errorScreen" style="display:none;">
+		<h1>Error!</h1>
+		<div id='errorData'></div>
+		<br><br>
+		<div style='position:sticky;bottom:8;left:8'>
+		<button onclick='errorScreen.style.display="none"'>Hide</button>
+		<button onclick='let p=prompt("What caused this error to happen");sendError("error explained: "+p)'>Help fix this error by explaining how it happened</button>
+		</div>
+	</div>
+  <script>
+    let errorScreen = document.querySelector("#errorScreen")
+    // If there is an error, show error screen
+		let errorData = document.querySelector("#errorData")
+    const errors = []
+    function logError(e){
+      if(typeof e === "string") e = {message:e}
+			e.asdf_error_time = Date.now()
+      errors.push(e)
+			let msg
+			if(e.stack){
+				msg = e.stack+""
+			}else{
+				msg = e.message+""
+				if(e.lineno || e.colno) msg += "\nError occured at"
+				if(e.lineno) msg += " line "+e.lineno
+				if(e.colno) msg += " column "+e.colno
+			}
+			errorData.insertAdjacentHTML('beforeend',"<br><div style='border:1px solid red; padding:8px;'>"+msg.replace(/\n/g,"<br>").replace(/ /g,"&nbsp;")+"</div>")
+      errorScreen.style.display = "block"
+			if(window.sendError && errors.length<5) sendError(msg)
+    }
+    addEventListener("error", logError)
+		addEventListener("unhandledrejection", e => logError(e.reason))
+		/*if (window.parent.checkerrorinterval) clearInterval(window.parent.checkerrorinterval)
+		let lastCheckFrame, lastCheckTick
+		window.parent.checkerrorinterval = setInterval(() => {
+			let now = Date.now()
+			if(window.parent.raf === lastCheckFrame || window.parent.tickid === lastCheckTick){
+				let lastError = errors[errors.length-1]
+				if(lastError && now-lastError.asdf_error_time<2500){
+					logError("The following have stopped:"+(window.parent.tickid===lastCheckTick?" tick":"")+(window.parent.raf === lastCheckFrame?" animation frame":"")+". To fix this, reload.")
+				}
+			}
+			lastCheckFrame = window.parent.raf
+			lastCheckTick = window.parent.tickid
+		},2000)*/
+    if(self !== top) logError("You must open MineKhan in a new window to work.")
+  </script>
   <div id="loader" class="hide">
     <!--<div class="name"><img src="assets/images/minekhan.png"></div>-->
 		<div style="font:bold 64px thefont;">MINEKHAN</div>
@@ -1953,46 +2000,6 @@ With touch screen:
 			}
 		}.init()
 	</script>
-  <script>
-    let errorScreen = document.querySelector("#errorScreen")
-    // If there is an error, show error screen
-		errorScreen.innerHTML = "<h1>Error!</h1><div id='errorData'></div><br><br><button onclick='errorScreen.style.display=\"none\"' style='position:sticky;bottom:8;left:8;background:red;border:1px solid yellow;'>Hide</button>"
-		let errorData = document.querySelector("#errorData")
-    const errors = []
-    function logError(e){
-      if(typeof e === "string") e = {message:e}
-			e.asdf_error_time = Date.now()
-      errors.push(e)
-			let msg
-			if(e.stack){
-				msg = e.stack+""
-			}else{
-				msg = e.message+""
-				if(e.lineno || e.colno) msg += "\nError occured at"
-				if(e.lineno) msg += " line "+e.lineno
-				if(e.colno) msg += " column "+e.colno
-			}
-			errorData.insertAdjacentHTML('beforeend',"<br><div style='border:1px solid red; padding:8px;'>"+msg.replace(/\n/g,"<br>").replace(/ /g,"&nbsp;")+"</div>")
-      errorScreen.style.display = "block"
-			if(window.sendError && errors.length<5) sendError(msg)
-    }
-    addEventListener("error", logError)
-		addEventListener("unhandledrejection", e => logError(e.reason))
-		/*if (window.parent.checkerrorinterval) clearInterval(window.parent.checkerrorinterval)
-		let lastCheckFrame, lastCheckTick
-		window.parent.checkerrorinterval = setInterval(() => {
-			let now = Date.now()
-			if(window.parent.raf === lastCheckFrame || window.parent.tickid === lastCheckTick){
-				let lastError = errors[errors.length-1]
-				if(lastError && now-lastError.asdf_error_time<2500){
-					logError("The following have stopped:"+(window.parent.tickid===lastCheckTick?" tick":"")+(window.parent.raf === lastCheckFrame?" animation frame":"")+". To fix this, reload.")
-				}
-			}
-			lastCheckFrame = window.parent.raf
-			lastCheckTick = window.parent.tickid
-		},2000)*/
-    if(self !== top) logError("You must open MineKhan in a new window to work.")
-  </script>
 	<script type="application/javascript">
 "use strict";
 const urlParams = new URLSearchParams(location.search)
@@ -8354,6 +8361,7 @@ Division: //
     //spreadPlace: "", //inventory, crafting, etc
     spreadStart: -1,
     //spreading: false,
+		spreadItem:null,
     containerData: {
       x:0,y:0,z:0,dimension:"",
       data:null
@@ -8416,6 +8424,7 @@ Division: //
 		inventory.slots.fill(null)
 		inventory.spreadStart = -1
 		if(inventory.spreaded.length) inventory.spreaded = []
+		inventory.spreadItem = null
 		send({type:"openContainer",data:currentContainer,x:containerData.x,y:containerData.y,z:containerData.z,dimension:containerData.dimension})
 	}
 	function updateHUDIcons(){
@@ -12162,25 +12171,26 @@ return//*/
     updateHUD = true
   }*/
 	function newWorldBlock(repeat) {
+		try{
 		if(p.spectator) return
     let pos = hitBox.pos,x,y,z, face = hitBox.face
     if(pos) x = pos[0], y = pos[1], z = pos[2]
     let cblock = pos ? world.getBlock(x, y, z, p.dimension) : 0
     
-    var pholding = holding
-    if(holding && pos && blockData[holding].useAs){
-      var useAs = blockData[holding].useAs
+    let adjholding = holding
+    if(adjholding && pos && blockData[adjholding].useAs){
+      var useAs = blockData[adjholding].useAs
       if(typeof useAs === "function"){
         useAs = useAs(x,y,z,cblock,face)
         if(typeof useAs === "string" && blockIds[useAs]){
-          holding = blockIds[useAs]
-        }else holding = useAs
+          adjholding = blockIds[useAs]
+        }else adjholding = useAs
       }else{
-        holding = blockIds[useAs]
+        adjholding = blockIds[useAs]
       }
     }
 
-		let mode = holding < isCube ? blockMode : 0
+		let mode = adjholding < isCube ? blockMode : 0
 		let rotate = 0, flip = 0
 		let pi = Math.PI / 4
 		if (p.ry <= pi) {} // North; default
@@ -12194,8 +12204,8 @@ return//*/
 		if (hitBox.face !== "top" && (hitBox.face === "bottom" || (p.direction.y * hitBox.closest + p.y+p.cOffsetY) % 1 < 0.5)) {
 			flip = FLIP
 		}
-		let predictBlock = holding|mode
-		let shape = holding && blockData[predictBlock].shape
+		let predictBlock = adjholding|mode
+		let shape = adjholding && blockData[predictBlock].shape
 		if (shape && shape.rotate) predictBlock |= rotate
 		if (shape && shape.flip) predictBlock |= flip
     
@@ -12205,14 +12215,14 @@ return//*/
 				if(!onclick(x, y, z, p.dimension, world)){p.lastPlace = Date.now(); p.punchEffect = 10; return} //if it doesn't return true
 			}
 		}
-    var item = holding && blockData[holding].item
-    if(holding && blockData[holding].canPlace && !blockData[holding].canPlace(cblock)){
+    var item = adjholding && blockData[adjholding].item
+    if(adjholding && blockData[adjholding].canPlace && !blockData[adjholding].canPlace(cblock)){
       item = true
     }
 		if(item){
 			send({type:"serverChangeBlock",x:pos?pos[0]:p2.x,y:pos?pos[1]:p2.y,z:pos?pos[2]:p2.z,dimension:p.dimension,place:true,face:hitBox.face,shift:p.sneaking,blockMode:0,rotate,flip})
 			p.lastPlace = Date.now()
-			if(blockData[holding].onuse && pos) blockData[holding].onuse(x,y,z, cblock,p.dimension)
+			if(blockData[adjholding].onuse && pos) blockData[adjholding].onuse(x,y,z, cblock,p.dimension)
 			return
 		}
 		if(cblock && blockData[cblock].onclick){
@@ -12220,7 +12230,7 @@ return//*/
 			send({type:"serverChangeBlock",x,y,z,dimension:p.dimension,place:true,face:hitBox.face,shift:p.sneaking,blockMode:0,rotate,flip})
 			return
 		}
-		if(!hitBox.pos || !holding) {
+		if(!hitBox.pos || !adjholding) {
 			return
 		}
 		let nx = x, ny = y, nz = z
@@ -12246,7 +12256,7 @@ return//*/
 		}
     
     var hitboxBlock = world.getBlock(nx, ny, nz, p.dimension)
-    var blocking = blockData[holding].solid && inBox(nx, ny, nz, 1, 1, 1)
+    var blocking = blockData[adjholding].solid && inBox(nx, ny, nz, 1, 1, 1)
     var canPlace = (!hitboxBlock) || (blockData[hitboxBlock].noHitbox)
 		if (!blocking && canPlace) {
 			pos[0] = nx, pos[1] = ny, pos[2] = nz
@@ -12266,7 +12276,7 @@ return//*/
       //play sound
       blockSound(predictBlock, "place", x,y,z)
 		}
-    holding = pholding
+		}catch(e){e.message+="\nholding:"+holding+" adjholding"+adjholding;throw e}
 	}
   
   function entClick(){
@@ -21079,9 +21089,11 @@ r 11 y  n  n  n
 			this.ws = ws
 			ws.binaryType = "arraybuffer"
 			ws.addEventListener("message", msg => {
-				const arr = new Uint8Array(msg.data)
-				const packet = bitArrayToPacket(arr)
-				this.onmessage(packet)
+				if((msg.data instanceof ArrayBuffer)){
+					const arr = new Uint8Array(msg.data)
+					const packet = bitArrayToPacket(arr)
+					this.onmessage(packet)
+				}
 			})
 			ws.addEventListener("close", () => this.onclose())
 		}
@@ -21091,6 +21103,25 @@ r 11 y  n  n  n
 		close(){
 			this.ws.close()
 		}
+	}
+	class WebSocketServerContainer{
+		constructor(ws, otherId){
+			this.ws = ws
+			this.otherId = otherId
+			ws.binaryType = "arraybuffer"
+		}
+		doOnmessage(reader){
+			this.onmessage(bitArrayToPacket(reader))
+		}
+		doOnclose(){
+			this.onclose()
+		}
+		send(data){
+			let bab = new BitArrayBuilder()
+			bab.addBasicString(this.otherId,32)
+			this.ws.send(packetToBitArray(data,undefined,undefined,bab))
+		}
+		close(){}
 	}
 	
   let host = false
@@ -21201,11 +21232,11 @@ r 11 y  n  n  n
 				let waitForUnorderDataChannelPromise = new Promise(resolve => waitForUnorderDataChannelResolve = resolve)
 				let channel = peerConnection.createDataChannel("multiplayer")
 				channel.onopen = () => {waitForDataChannelResolve(); addToBottomRightList("Data channel opened: multiplayer","lime")}
-				channel.onerror = e => logError("RTC data channel error: "+e.error.errorDetail)
+				channel.onerror = e => logError("RTC data channel error: "+e.error.errorDetail+" sctpCauseCode:"+e.error.sctpCauseCode)
 				channel.binaryType = "arraybuffer"
 				let unorderChannel = peerConnection.createDataChannel("unorder",{ordered:false})
 				unorderChannel.onopen = () => {waitForUnorderDataChannelResolve(); addToBottomRightList("Data channel opened: unorder","lime")}
-				unorderChannel.onerror = e => logError("RTC data channel error: "+e.error.errorDetail)
+				unorderChannel.onerror = e => logError("RTC data channel error: "+e.error.errorDetail+" sctpCauseCode:"+e.error.sctpCauseCode)
 				unorderChannel.binaryType = "arraybuffer"
 
 				const offer = await peerConnection.createOffer()
@@ -21225,6 +21256,7 @@ r 11 y  n  n  n
 					if(peerConnection.connectionState === "closed"){
 						peerConnection.cAnCeLcOnNectION = true
 					}else if(peerConnection.connectionState === "failed"){
+						peerConnection.cAnCeLcOnNectION = true
 						logError("RTC connection failed")
 						if(connection) connection.close()
 					}
@@ -21264,6 +21296,7 @@ r 11 y  n  n  n
 			if(websocket) return
 			let websocketError = null
 			let peerConnections = {}
+			//let wsClients = {}
 			websocket = new WebSocket("wss://thingmaker.us.eu.org/mkhost?target="+serverWorld.id)
 			websocket.onopen = () => {
 				sendWS({type:"login",sid:userSid,spwd:userSpwd})
@@ -21282,6 +21315,12 @@ r 11 y  n  n  n
 				}
 			}
 			websocket.onmessage = async e => {
+				/*if(e.data instanceof ArrayBuffer){
+					let reader = new BitArrayReader(new Uint8Array(e.data))
+					let to = reader.readBasicString(32)
+					if(wsClients[to]) wsClients[to].doOnmessage(reader)
+					return
+				}*/
 				let data = JSON.parse(e.data)
 				if(data.type === "offer"){
 					serverWorld.sendAll({type:"message",data:"<span style='color:lightgreen;'>"+data.username+" is connecting. "+(serverWorld.players.length+1)+" players now.", fromServer:true})
@@ -21310,6 +21349,15 @@ r 11 y  n  n  n
 						}else throw new Error("Unexpected data channel: "+e.channel.label)
 					}
 
+					peerConnection.addEventListener("connectionstatechange", e => {
+						if(peerConnection.connectionState === "closed"){
+							peerConnection.cAnCeLcOnNectION = true
+						}else if(peerConnection.connectionState === "failed"){
+							peerConnection.cAnCeLcOnNectION = true
+							sendError("server webrtc fail ")
+						}
+					})
+
 					peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
 					const answer = await peerConnection.createAnswer();
 					await peerConnection.setLocalDescription(answer);
@@ -21317,6 +21365,7 @@ r 11 y  n  n  n
 
 					await Promise.all([waitForDataChannelPromise,waitForUnorderDataChannelPromise])
 
+					if(peerConnection.cAnCeLcOnNectION) return sendError("server webrtc canceled ")
 					serverWorld.serverAddPlayer(new RTCClientContainer(channel,peerConnection,unorderChannel),data.id,data.username,false,data.admin)
 				}else if(data.type === "iceCandidate"){
 					let from = peerConnections[data.FROM]
@@ -21334,6 +21383,10 @@ r 11 y  n  n  n
 						peerConnections[data.id].close()//Make sure its closed to prevent hacks
 						delete peerConnections[data.id]
 					}
+					/*if(wsClients[data.id]){
+						wsClients[data.id].close()
+						delete wsClients[data.id]
+					}*/
 				}else if(data.type === "updatePermissions"){
 					if(data.action === "addBan"){
 						banned[data.username] = data.message
@@ -21405,7 +21458,7 @@ r 11 y  n  n  n
 					invStuff.inv = world.getInv().array
 					invStuff.survivStr = world.getSurvivStr().array
 					shouldSendInvStuff = true
-				}
+				}e
 			}
 			multiplayer.pos = setInterval(multiplayer.sendInvStuff, 10000)*/
 			multiplayer.mmoveX = multiplayer.mmoveY = 0
@@ -25883,7 +25936,7 @@ p.camera.transformation.elements.set(matrix)//*/
       //Health bar
       let outline = healEffect < 40 && healEffect > 30 || healEffect < 20 && healEffect > 10 || 
 				loseHealthEffect < 60 && loseHealthEffect > 50 || loseHealthEffect < 40 && loseHealthEffect > 30 || loseHealthEffect < 20 && loseHealthEffect > 10
-			let heartNum = floor(loseHealthEffect > 0 ? p.lastDamageHealth : p.health)
+			let heartNum = floor(outline ? p.lastDamageHealth : p.health)
 			let actualHeartNum = floor(p.health)
       let wither = !!p.effects.wither
       let i
@@ -26445,6 +26498,7 @@ p.camera.transformation.elements.set(matrix)//*/
 						holding = null
 						inventory.spreadStart = slots[i+2]
 						//inventory.spreadPlace = "invSpace"
+						inventory.spreadItem = item
 					}
 					inventory.slots[inventory.slotIds.holding] = holding
 					inventory.slots[slots[i+2]] = item
@@ -26471,19 +26525,19 @@ p.camera.transformation.elements.set(matrix)//*/
   function moveInv(){
     let s = inventory.size
 		let s2 = s / 2
-		if(inventory.spreadStart <= -1) return
+		if(inventory.spreadStart === -1) return
 		let slots = inventory.slotPos
 		for(let i=0; i<slots.length; i+=3){
 			let item = inventory.slots[slots[i+2]]
 			let x = slots[i], y = slots[i+1]
 			let slotId = slots[i+2]
 			if(mouseX>x && mouseX<x+s && mouseY>y && mouseY<y+s){
-        if(!item && slotId !== inventory.spreadStart && inventory.spreaded.length < inventory.slots[inventory.spreadStart].amount){
+        if(!item && slotId !== inventory.spreadStart && inventory.spreaded.length < inventory.spreadItem.amount){
           if(inventory.spreaded.length){
-            inventory.slots[slotId] = inventory.slots[inventory.spreadStart]
+            inventory.slots[slotId] = inventory.spreadItem
             inventory.spreaded.push(slotId)
           }else{
-            inventory.slots[slotId] = inventory.slots[inventory.spreadStart]
+            inventory.slots[slotId] = inventory.spreadItem
             inventory.spreaded.push(inventory.spreadStart, slotId)
           }
         }
@@ -26497,17 +26551,17 @@ p.camera.transformation.elements.set(matrix)//*/
 		
 		if(inventory.spreaded.length){
 			//a/b with remainder
-			let a=inventory.slots[inventory.spreadStart].amount
+			let a=inventory.spreadItem.amount
 			let b=inventory.spreaded.length
 			let n=floor(a/b)
 			let r=a%b
 			//n = result   r = remainder
 			
-			let id = inventory.slots[inventory.spreadStart].id
+			let id = inventory.spreadItem.id
 			
 			let data = [], idxs = []
 			for(var i=0; i<inventory.spreaded.length; i++){
-				inventory.slots[inventory.spreaded[i]] = {id:id, amount:n, customName:inventory.slots[inventory.spreadStart].customName}
+				inventory.slots[inventory.spreaded[i]] = {id:id, amount:n, customName:inventory.spreadItem.customName}
 				data.push(inventory.slots[inventory.spreaded[i]])
 				idxs.push(inventory.spreaded[i])
 			}
@@ -26520,6 +26574,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			send({type:"containerChange",data,idxs})
 		}
 		inventory.spreadStart = -1
+		inventory.spreadItem = null
   }
 
   function drawCrafting() {
@@ -29745,7 +29800,7 @@ p.camera.transformation.elements.set(matrix)//*/
 					world.activeResourcePacks.push(pack.url)
 					//if(!world.resourcePacks.includes(pack.url)) world.resourcePacks.push(pack.url)
 					div.classList.add("selected")
-					window.resourcePacks.prependChild(div)//move to end
+					window.resourcePacks.prepend(div)//move to end
 				}else{
 					world.activeResourcePacks.splice(idx,1)
 					div.classList.remove("selected")
