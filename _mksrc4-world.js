@@ -10548,7 +10548,7 @@ const blockData = [
 		pullItem:function(x,y,z,myTags,world){
 			var block = world.getBlock(x,y+1,z)
 			var tags = world.getTags(x,y+1,z)
-			if(!blockData[block].hasContents(tags)) return
+			if(!blockData[block].hasContents || !blockData[block].hasContents(tags)) return
 			if(blockData[block].name === "furnace"){
 				var item = tags.output
 				if(item && item.id){
@@ -16610,6 +16610,14 @@ let shapes = {
 	
 	item: {
 		verts: generateItemShape(),
+		cull: {
+			top: 0,
+			bottom: 0,
+			north: 0,
+			south: 0,
+			east: 0,
+			west: 0
+		},
 	},
 	sun:{
 		verts:[
@@ -20457,7 +20465,7 @@ function initDefaultCommands(world){
 	tempWorldForCommand = world
 	let help, tp, gm, sp
 	new CommandNode("root").then(
-		help = CommandNode.l("help","client").then(CommandNode.a("help_with_name","client")),
+		help = CommandNode.l("help","client", null,null,true).then(CommandNode.a("help_with_name","client",null,null,true)),
 		CommandNode.r("?",help),
 		CommandNode.l("echo",null,"Outputs data.").then(CommandNode.a("data", (args,pos,scope) => [args.data+"",""], null,null,true)),
 		CommandNode.l("var",null, "Set a variable to a value. Value can be empty.").then(CommandNode.a("name").then(CommandNode.a("value",
@@ -20693,7 +20701,7 @@ function initDefaultCommands(world){
 			}else return ["Player doesn't exist: "+args.username,"error"]
 		},"boolean"))),
 		CommandNode.r("sp",sp),
-		CommandNode.l("reloadChunks","client","Reload chunks. May cause freezing.",true),
+		CommandNode.l("reloadChunks","client","Reload chunks. May cause freezing.",null,true),
 		CommandNode.l("ban",null,"Bans a player. They cannot rejoin the world. Reason is the reason why you banned them.").then(CommandNode.a("ban_username","client",null,null,true).then(CommandNode.a("ban_reason","client",null,null,true))),
 		CommandNode.l("unban").then(CommandNode.a("unban_username","client",null,null,true)),
 		CommandNode.l("whitelist",null,"Allow certain people to join. Must be enabled to work.").then(CommandNode.a("whitelist_action","client",null,null,true).then(CommandNode.a("whitelist_username","client",null,null,true))),
@@ -32236,7 +32244,7 @@ class World{ // aka trueWorld
 			return this.loadCrossSaveCode(data, onlyMetdata)
 		}
 		let preBetaVersion = verMoreThan("1.1.0",this.version.replace(/(Alpha|Beta) /, ''))
-		let worldTypeBits2 = preBetaVersion ? 0 : reader.read(1)
+		let worldTypeBits2 = preBetaVersion ? 0 : (verMoreThan(this.version.replace(/(Alpha|Beta) /, ''),"1.1.1") ? reader.read(1) : (1-reader.read(1)))
 
 		this.worldType = worldTypeBits2 ? "large" : (worldTypeBits1 === 2 ? "island" : (worldTypeBits1 === 3 ? "void" : (worldTypeBits1 ? "superflat" : "alpha")))
 

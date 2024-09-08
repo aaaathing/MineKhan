@@ -12171,7 +12171,6 @@ return//*/
     updateHUD = true
   }*/
 	function newWorldBlock(repeat) {
-		try{
 		if(p.spectator) return
     let pos = hitBox.pos,x,y,z, face = hitBox.face
     if(pos) x = pos[0], y = pos[1], z = pos[2]
@@ -12190,7 +12189,9 @@ return//*/
       }
     }
 
-		let mode = adjholding < isCube ? blockMode : 0
+		try{
+		
+		let mode = adjholding < isCube && !blockData[adjholding].item ? blockMode : 0
 		let rotate = 0, flip = 0
 		let pi = Math.PI / 4
 		if (p.ry <= pi) {} // North; default
@@ -27431,11 +27432,11 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
     
     if(screen === "play"){
-      if((k === controlMap.place.key || e.type === "touchend" || e.type === "touchcancel") && blockData[holding] && blockData[holding].onrelease){
+      /*if((k === controlMap.place.key || e.type === "touchend" || e.type === "touchcancel") && blockData[holding] && blockData[holding].onrelease){
         var pos = hitBox.pos, x = pos && pos[0], y = pos && pos[1], z = pos && pos[2]
         //if(p.survival && blockData[holding].minusOnUse){inventory.hotbar[inventory.hotbarSlot].amount --; updateHUD = true}
         //if(!blockData[holding].onrelease(x,y,z, p.dimension, inventory.hotbar[inventory.hotbarSlot])){p.lastPlace = Date.now(); return}
-      }
+      }*/
 
 			if (k === controlMap.zoom.key) {
 				p.camera.FOV(settings.fov, 300)
@@ -29652,8 +29653,10 @@ p.camera.transformation.elements.set(matrix)//*/
 		
 		window.languages.appendChild(div)
 		function loadLang(id){
-			fetch("assets/lang/"+id+".json").then(r => r.json()).then(r => {
+			let url = "assets/lang/"+id+".json"
+			fetch(url).then(r => r.json()).then(r => {
 				r.id = id
+				r.url = url
 				languages[id] = r
 				let div = doc.createElement("div")
 				div.className = "lang"+(language && language.id === r.id ? " selected" : "")
@@ -29726,8 +29729,8 @@ p.camera.transformation.elements.set(matrix)//*/
 				promises.push(doResourcePack(j,null))
 			}
 		}
-		let activePacks = world.activeResourcePacks//.map(u => res.findIndex(r => r.url === u))
-		let inactivePacks = res.map(r => r.url).filter(r => !world.activeResourcePacks.includes(r))
+		let activePacks = world ? world.activeResourcePacks : [] //.map(u => res.findIndex(r => r.url === u))
+		let inactivePacks = res.map(r => r.url).filter(r => !activePacks.includes(r))
 		for(let i of activePacks){
 			addCb({name:i,url:i})
 		}
@@ -29751,7 +29754,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
 		resourcesHash = ""
 		for(let i of packOrder){
-			resourcesHash += i.url.replace(",","\\,")+","+i.version.replace(",","\\,")+","
+			resourcesHash += i.url.replace(",","\\,")+","+(i.version||"").replace(",","\\,")+","
 			if(i.textures) Object.assign(customResources.textures, i.textures)
 			if(i.texts) Object.assign(customResources.texts, i.texts)
 			if(i.images) Object.assign(customResources.images, i.images)
@@ -30441,8 +30444,10 @@ p.camera.transformation.elements.set(matrix)//*/
 			onresize()
 			if(settings.language){
 				let id = settings.language
-				fetch("assets/lang/"+settings.language+".json").then(r => r.json()).then(r => {
+				let url = "assets/lang/"+settings.language+".json"
+				fetch(url).then(r => r.json()).then(r => {
 					r.id = id
+					r.url = url
 					language = r
 					initResources()
 					document.documentElement.lang = language ? language.id : "en-us"
