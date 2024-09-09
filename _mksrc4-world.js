@@ -21749,7 +21749,7 @@ class Player extends Entity{
       this.totalXP = (this.level * this.level) + 6 * this.level
     }else if(this.level <= 31){
       this.totalXP = 2.5 * (this.level * this.level) - 40.5 * this.level + 360
-    }else if(p.level > 31){
+    }else if(this.level > 31){
       this.totalXP = 4.5 * (this.level * this.level) - 162.5 * this.level + 2220
     }else this.totalXP = -1 //it didn't match any (that's probably impossible)
     if(this.totalXP !== -1){
@@ -32825,10 +32825,26 @@ class World{ // aka trueWorld
 			let id = reader.read(32), amount = reader.read(7)
 			inventory.hotbar[i] = amount && {id,amount}
 		}
-		let invLen = preBetaVersion ? 13*9 : 27
-		for(let i=0;i<invLen;i++){
-			let id = reader.read(32), amount = reader.read(7)
-			if(i<28) inventory.main[i] = amount && {id,amount}
+		let invLen
+		if(preBetaVersion){
+			invLen = 13*9
+			let bit = reader.bit
+			try{
+				for(let i=0;i<invLen;i++){
+					let id = reader.read(32), amount = reader.read(7)
+					inventory.main[i] = amount && {id,amount}
+				}
+			}catch{
+				invLen = undefined
+				reader.bit = bit
+			}
+		}
+		if(!invLen){
+			invLen = 27
+			for(let i=0;i<invLen;i++){
+				let id = reader.read(32), amount = reader.read(7)
+				inventory.main[i] = amount && {id,amount}
+			}
 		}
 		let durability = reader.read(4), durabilityInv = reader.read(5)
 		for(let i=0;i<durability;i++){
