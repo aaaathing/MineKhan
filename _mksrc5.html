@@ -7962,6 +7962,7 @@ Division: //
   //messagesHolder.onmousedown = e => canvas.onmousedown(e) //make buttons work
   messageInput.onkeydown = e => {
 		let hintObj = Messages.hints.get(messageInput)
+		if(!hintObj) return
     if(e.key === "Tab"){
       if(hintObj.hints.length) messageInput.value = hintObj.hints[hintObj.hintIdx]
       Messages.updateInput()
@@ -21233,11 +21234,11 @@ r 11 y  n  n  n
 				let waitForUnorderDataChannelPromise = new Promise(resolve => waitForUnorderDataChannelResolve = resolve)
 				let channel = peerConnection.createDataChannel("multiplayer")
 				channel.onopen = () => {waitForDataChannelResolve(); addToBottomRightList("Data channel opened: multiplayer","lime")}
-				channel.onerror = e => logError("RTC data channel error: "+e.error.errorDetail+" sctpCauseCode:"+e.error.sctpCauseCode)
+				channel.onerror = e => {if(e.error.sctpCauseCode !== 12) logError("RTC data channel error: "+e.error.errorDetail+" sctpCauseCode:"+e.error.sctpCauseCode)}
 				channel.binaryType = "arraybuffer"
 				let unorderChannel = peerConnection.createDataChannel("unorder",{ordered:false})
 				unorderChannel.onopen = () => {waitForUnorderDataChannelResolve(); addToBottomRightList("Data channel opened: unorder","lime")}
-				unorderChannel.onerror = e => logError("RTC data channel error: "+e.error.errorDetail+" sctpCauseCode:"+e.error.sctpCauseCode)
+				unorderChannel.onerror = e => {if(e.error.sctpCauseCode !== 12) logError("RTC data channel error: "+e.error.errorDetail+" sctpCauseCode:"+e.error.sctpCauseCode)}
 				unorderChannel.binaryType = "arraybuffer"
 
 				const offer = await peerConnection.createOffer()
@@ -21260,6 +21261,7 @@ r 11 y  n  n  n
 						peerConnection.cAnCeLcOnNectION = true
 						logError("RTC connection failed")
 						if(connection) connection.close()
+						peerConnection.close()
 					}
 				})
 				peerConnection.addEventListener("iceconnectionstatechange", e => {
@@ -21348,6 +21350,7 @@ r 11 y  n  n  n
 							unorderChannel = e.channel
 							unorderChannel.onopen = waitForUnorderDataChannelResolve
 						}else throw new Error("Unexpected data channel: "+e.channel.label)
+						e.channel.onerror = e => {if(e.error.sctpCauseCode !== 12) logError("server RTC data channel error: "+e.error.errorDetail+" sctpCauseCode:"+e.error.sctpCauseCode)}
 					}
 
 					peerConnection.addEventListener("connectionstatechange", e => {
@@ -21356,6 +21359,7 @@ r 11 y  n  n  n
 						}else if(peerConnection.connectionState === "failed"){
 							peerConnection.cAnCeLcOnNectION = true
 							sendError("server webrtc fail ")
+							peerConnection.close()
 						}
 					})
 
@@ -24233,7 +24237,8 @@ p.camera.transformation.elements.set(matrix)//*/
 		}, () => saveDirections.classList.contains("hidden") && -1)
 		Button.add(width/2, 10+20*ss, 300*ss, 40*ss, "Invite With Username", "pause", r => {
       let u = prompt("username")
-			send({type:"invite",data:u})
+			if(websocket) sendWS({type:"invite",data:u})
+			else alert("Can not invite")
 		}, () => (savebox.classList.contains("hidden") || !saveDirections.classList.contains("hidden")) && -1)
 
 		//loading buttons
@@ -25068,7 +25073,7 @@ p.camera.transformation.elements.set(matrix)//*/
 	for(let i in fontData){
 		if(fontData[i].startsWith("hex")){
 			let split = fontData[i].split(","), w = +split[1]
-			let rows = chunkArray(hex2bin(split[2]).replaceAll("1","#"),w)
+			let rows = chunkArray(hex2bin(split[2]).replace(/1/g,"#"),w)
 			fontData[i] = rows.join("\n")
 		}
 	}
@@ -29220,7 +29225,7 @@ p.camera.transformation.elements.set(matrix)//*/
 					let soundData = await loadEPK(await f.arrayBuffer())
 					loadDone("Loaded sounds","",f.status)
 					for(let s in soundData){
-						let newName = s.replace(".ogg","").replaceAll("/",".")
+						let newName = s.replace(".ogg","").replace(/\//g,".")
 						sounds[newName] = await audioCtx.decodeAudioData(soundData[s])
 						soundNames.push(newName)
 					}
