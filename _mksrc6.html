@@ -2003,6 +2003,90 @@ With touch screen:
 	<script type="application/javascript">
 "use strict";
 const urlParams = new URLSearchParams(location.search)
+
+/*
+const requireStuff = {
+	requireCache: new Map(), requirePkgCache: new Map(),
+	requireSwapPkgs: {
+		"node-fetch":fetch,
+		debug:console.log
+	}
+}
+function requireGetRelPath(what,base){
+	let newBase
+	if(what.startsWith("./")){
+		what = what.substring(2)
+		newBase = base.substring(0,base.lastIndexOf("/")) + (what ? "/"+what : "")
+	}else if(what.startsWith("../")){
+		what = what.substring(3)
+		base = base.substring(0,base.lastIndexOf("/"))
+		newBase = base.substring(0,base.lastIndexOf("/")) + (what ? "/"+what : "")
+	}
+	return newBase
+}
+function requireGetURL(what,base){
+	what = requireGetRelPath(what,base) || what
+	if(what.includes("/")){
+		newBase = what
+		//if(!newBase.substring(what.lastIndexOf("/")).includes(".")) newBase += ".js"
+	}else{
+		let pkg = requireStuff.requirePkgCache.get(what)
+		if(pkg){
+			let rel = pkg.main || pkg.files&&pkg.files[0]
+			if(rel){
+				newBase = requireGetRelPath(rel, what+"/") || what+"/"+rel
+				//if(!newBase.substring(what.lastIndexOf("/")).includes(".")) newBase += ".js"
+			}else newBase = what+"/index.js"
+		}else newBase = what+"/index.js"
+	}
+	return newBase
+}
+const _requireBase = ""
+function require(what){
+	if(requireStuff.requireSwapPkgs[what]) return requireStuff.requireSwapPkgs[what]
+	
+	let newBase = requireGetURL(what,_requireBase)
+	let res = requireStuff.requireCache.get(newBase)
+	return (new Function("_requireBase","requireStuff",`
+const module = {exports:{}}
+${require}
+${res}
+return module.exports
+	`))(newBase, requireStuff)
+}
+async function requireFetch(what, base = ""){
+	if(requireStuff.requireSwapPkgs[what]) return
+	
+	if(!what.startsWith(".") && ! what.includes("/") && !requireStuff.requirePkgCache.has(what)){
+		let r = await fetch("https://cdn.jsdelivr.net/npm/"+what+"/package.json")
+		let pkg = r.status === 404 ? null : (await r.json())
+		requireStuff.requirePkgCache.set(what,pkg)
+	}
+	let newBase = requireGetURL(what,base)
+	if(requireStuff.requireCache.has(newBase)) return
+	console.log("require fetch", newBase)
+	let req, res = (await (req = await fetch("https://cdn.jsdelivr.net/npm/"+newBase)).text())
+	if(!req.ok){
+		res = (await (req = await fetch("https://cdn.jsdelivr.net/npm/"+newBase+".js")).text())
+		if(req.ok) newBase += ".js"
+	}
+	if(!req.ok){
+		res = (await (req = await fetch("https://cdn.jsdelivr.net/npm/"+newBase+"/index.js")).text())
+		if(req.ok) newBase += "/index.js"
+	}
+	if(!req.ok){
+		debugger
+		res = ""
+	}
+	requireStuff.requireCache.set(newBase, res)
+	let regex = /\brequire\(['"](.*?)['"]\)/g
+	let match
+	while((match = regex.exec(res)) !== null){
+		await requireFetch(match[1], newBase)
+	}
+}
+//*/
+
 window.canvas = document.getElementById("overlay")
 window.ctx = canvas.getContext("2d")
 window.canvas2 = new OffscreenCanvas(window.innerWidth,window.innerHeight)
@@ -14043,6 +14127,45 @@ r 11 y  n  n  n
 	
 			this.lit = true
 		}
+		unfillLight(){
+			let max = this.sections.length * 16 - 1 + minHeight
+			let spread = [], blspread = []
+			for (let x = 0; x < 16; x++) {
+				for (let z = 0; z < 16; z++) {
+					for (let y = max; y >= minHeight; y--) {
+						let sl = this.getLight(x,y,z,2)
+						let bl = this.getLight(x,y,z,3)
+						if(sl){
+							this.setLight(x,y,z,0,2)
+							this.setLight(x,y,z,0,0)
+							;(spread[sl] || (spread[sl] = [])).push(x,y,z)
+						}
+						if(bl){
+							this.setLight(x,y,z,0,3)
+							this.setLight(x,y,z,0,1)
+							;(blspread[bl] || (blspread[bl] = [])).push(x,y,z)
+						}
+					}
+				}
+			}
+			for(let i = spread.length - 1; i > 0; i--){
+				let respread = []
+				for (let i = 0; i <= 15/*blockLight + 1*/; i++) respread[i] = []
+				if(spread[i]){
+					this.unSpreadLight(spread[i], i - 1, respread, 0)
+					this.reSpreadLight(respread, 0)
+				}
+			}
+			for(let i = blspread.length - 1; i > 0; i--){
+				let respread = []
+				for (let i = 0; i <= 15/*blockLight + 1*/; i++) respread[i] = []
+				if(blspread[i]){
+					this.unSpreadLight(blspread[i], i - 1, respread, 1)
+					this.reSpreadLight(respread, 1)
+				}
+			}
+			this.lit = false
+		}
 		trySpread(x, y, z, level, spread, blockLight, update = false) {
       if(y < minHeight) return
       
@@ -20768,6 +20891,12 @@ r 11 y  n  n  n
 		}
 		return done
 	}
+	function unfillReqs(x, z, dimension, dist, chunk){
+		if(dist >= 1 && chunk.lit){
+			chunk.lit = false
+			world.unlightingQueue.push(chunk)
+		}
+	}
 	function maxDist(x, z, x2, z2) {
 		let ax = abs(x2 - x)
 		let az = abs(z2 - z)
@@ -22025,6 +22154,7 @@ r 11 y  n  n  n
 			this.meshQueue = []
 			this.weatherMeshQueue = []
 			this.lightingQueue = []
+			this.unlightingQueue = []
 			this.alwaysRenderEntities = []
 			this.waitingEntities = [] //entities waiting to have their chunk loaded
       this.textEntities = [] //Text to draw
@@ -22776,6 +22906,11 @@ r 11 y  n  n  n
 					doneWork = true
 					debug("Weather Meshes")
 				}
+				if (!doneWork && this.unlightingQueue.length) {
+					let chunk = this.unlightingQueue[this.unlightingQueue.length-1]
+					chunk.unfillLight()
+					doneWork = true
+				}
 				// Spread light
 				if (!doneWork && this.lightingQueue.length) {
 					let chunk = this.lightingQueue[this.lightingQueue.length-1]
@@ -23202,6 +23337,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			this.lwidth = renderDistance * 2 + 1
 			this.chunkGenQueue.length = 0
 			this.lightingQueue.length = 0
+			this.unlightingQueue.length = 0
 			this.neededChunks.length = 0
 
       if (this.loaded.length > this.lwidth * this.lwidth) {
@@ -23219,9 +23355,11 @@ p.camera.transformation.elements.set(matrix)//*/
 					let chunk = pX >= 0 && pX < plwidth && pZ >= 0 && pZ < plwidth && this.prevLoaded[pX * plwidth + pZ]
 					if(!chunk) chunk = new Chunk(x * 16, z * 16, d, this)
 					this.loaded[X * this.lwidth + Z] = chunk
-					if (!chunk.buffer && maxDist(cx, cz, x, z) <= actualRenderDistance && !this.chunkGenQueue.includes(chunk)) {
-						this.chunkGenQueue.push(chunk)
-					}
+					if(maxDist(cx, cz, x, z) <= actualRenderDistance){
+						if (!chunk.buffer && !this.chunkGenQueue.includes(chunk)) {
+							this.chunkGenQueue.push(chunk)
+						}
+					}else unfillReqs(x, z, d, maxDist(cx, cz, x, z)-actualRenderDistance, chunk)
 					if(!chunk.loaded) this.neededChunks.push(chunk)
 					this.loaded[i++] = chunk
 				}
