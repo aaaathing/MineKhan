@@ -14674,6 +14674,15 @@ r 11 y  n  n  n
 				this.sections[s].blockLight.set((serverChunk.sections[s] || emptySection).blockLight)
 			}
 		}
+		requireSection(i){
+			if (!this.sections[i]) {
+				do {
+          let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
+					this.sections.push(section)
+				} while (!this.sections[i])
+			}
+			return this.sections[i]
+		}
 	}
 
   /*let entPlayerCollided
@@ -22043,11 +22052,26 @@ r 11 y  n  n  n
 		})
 		const mcData = window.mcProtocol.data.pc['1.8']
 		initMcData(mcData)
-		const {conv, parseMetadata, updateAttributes} = window.mcProtocol
+		const {conv, parseMetadata, updateAttributes, load_1_8, onesInShort} = window.mcProtocol
 		world = new World()
 		world.isMK = false
 		win.world = world
 		world.version = "1.8.8. eagler"
+		function mapChunk(cx,cz,groundUp,chunkData,bitMap){
+			let chunk = world.getOrNewChunk(cx*16,cz*16,p.dimension)
+			load_1_8(chunkData,bitMap, p.dimension ==="", groundUp, (index,blocks,blight,slight)=>{
+				let section = chunk.requireSection(index-(minHeight>>4))
+				let i=0
+				for(let y=0;y<16;y++) for(let z=0;z<16;z++) for(let x=0;x<16;x++){
+					section.setBlock(x,y,z,blocks[i])
+					section.setLight(x,y,z, (slight[i>>1]>>((1-(i&1)))*4), 0)
+					section.setLight(x,y,z, (blight[i>>1]>>((1-(i&1)))*4), 1)
+					i++
+				}
+			})
+			chunk.loaded = true
+			if(!world.meshQueue.includes(chunk)) world.meshQueue.push(chunk)
+		}
 		multiplayer.on("packet", (o, {name}) => {
 switch(name){
 	case "chat":{
@@ -22189,7 +22213,36 @@ switch(name){
 		break
 	}
 	case "map_chunk":{
-		
+		mapChunk(o.x,o.z,o.groundUp,o.chunkData,o.bitMap)
+		break
+	}
+	case "map_chunk_bulk":{
+		let offset = 0
+		for (let i = 0; i < packet.meta.length; ++i) {
+			let meta = packet.meta[i]
+      let size = (8192 + (packet.skyLightSent ? 2048 : 0)) *
+        onesInShort(meta.bitMap) + // block ids
+        2048 * onesInShort(meta.bitMap) + // (two bytes per block id)
+        256 // biomes
+			mapChunk(meta.x,meta.z,true, o.data.subarray(offset, offset + size), meta.bitMap)
+			offset += size
+		}
+		break
+	}
+	case "multi_block_change":{
+		for(let r of o.records){
+			world.setBlock(o.chunkX<<4 | (r.horizontalPos>>4), r.horizontalPos, o.chunkZ<<4 | (r.horizontalPos&15), o.blockId>>4, false,false,true,false, p.dimension)
+		}
+		break
+	}
+	case "block_change":{
+		world.setBlock(o.location.x,o.location.y,o.location.z, o.type>>4, false,false,true,false, p.dimension)
+		break
+	}
+	case "block_break_animation":{
+		let e = getEntityOrPlayer(o.entityId)
+		e.crackPos = [o.location.x,o.location.y,o.location.z]
+		e.crack = o.destroyStage
 		break
 	}
 }
