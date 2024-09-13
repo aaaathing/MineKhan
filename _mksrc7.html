@@ -5015,6 +5015,8 @@ arrays are texture that will be connected, useful for shapes used for different 
 	}
   window.textures = textures
   
+	window.emptyFunc = function(){}
+	
 /*
 Each item in animated is like: {time, arr(can be array if connected is true), interpolate, connected}
 if time is 0, it will update every time
@@ -5180,353 +5182,6 @@ if time is 0, it will update every time
     animated[a].time *= tickTime
   }
   window.animated = animated
-
-	const blockDataAdditional = {
-	  grass:{
-	    /*customTexture:function(x,y,z,dimension,block,side){
-	      if(block !== this.id || side === "bottom" || side === "top") return //Skip snow variant
-	      if(side === "north" && world.getBlock(x,y-1,z+1,dimension) !== this.id) return
-	      if(side === "south" && world.getBlock(x,y-1,z-1,dimension) !== this.id) return
-	      if(side === "east" && world.getBlock(x+1,y-1,z,dimension) !== this.id) return
-	      if(side === "west" && world.getBlock(x-1,y-1,z,dimension) !== this.id) return
-	      return "grassSideGrass"
-	    }*/
-	  },
-	  redstoneDust:{
-			clientTick:function(block,x,y,z,dimension,world){
-        if(!performFast && world.getPower(x,y,z,dimension)) world.addParticle(new entities[entityIds.RedstoneParticle](x,y-0.49,z,null,(block&FLIP)===FLIP),dimension)
-      },
-	    alwaysCustomTexture:true,
-	    customTexture:function(x,y,z,dimension,block,side,originalShapeVerts,tags){
-	      const up = getTagBits(tags,"up",this.id), down = getTagBits(tags,"down",this.id)
-	      if(originalShapeVerts.t) side = originalShapeVerts.t
-	      else return (side === "top" || side === "bottom") && up && down && false
-	      let tex
-	      if(side === "west") tex = tags && (getTagBits(tags,"westUp",this.id) || up)
-	      else if(side === "east") tex = tags && (getTagBits(tags,"eastUp",this.id) || up)
-	      else if(side === "south") tex = tags && (getTagBits(tags,"northUp",this.id) || up)
-	      else if(side === "north") tex = tags && (getTagBits(tags,"southUp",this.id) || up)
-	      return tex ? "redstoneDustLine" : false
-	    }
-	  },
-		torch:{
-			clientTick:function(block,x,y,z,dimension){
-				if(performFast) return
-        let wall = this.id | SLAB
-        let pix = 1/16
-        switch(block){
-          case wall | NORTH:
-            z += pix*5
-            y += pix*6
-            break
-          case wall | SOUTH:
-            z -= pix*5
-            y += pix*6
-            break
-          case wall | EAST:
-            x += pix*5
-            y += pix*6
-            break
-          case wall | WEST:
-            x -= pix*5
-            y += pix*6
-            break
-          default:
-            y += pix*2
-        }
-        world.addParticle(new entities[entityIds.FlameParticle](x,y,z),dimension)
-      },
-		},
-		soulTorch:{
-			 clientTick:function(block,x,y,z,dimension){
-				if(performFast) return
-        let wall = this.id | SLAB
-        let pix = 1/16
-        switch(block){
-          case wall | NORTH:
-            z += pix*5
-            y += pix*6
-            break
-          case wall | SOUTH:
-            z -= pix*5
-            y += pix*6
-            break
-          case wall | EAST:
-            x += pix*5
-            y += pix*6
-            break
-          case wall | WEST:
-            x -= pix*5
-            y += pix*6
-            break
-          default:
-            y += pix*2
-        }
-        world.addParticle(new entities[entityIds.FlameParticle](x,y,z,"soul"),dimension)
-      },
-		},
-	  sandstone:{
-	    customTexture:function(x,y,z,dimension,block,side){
-	      if(world.getBlock(x,y+1,z,dimension) === block) return "sandstoneBottom"
-	    },
-	  },
-	  redSandstone:{
-	    customTexture:function(x,y,z,dimension,block,side){
-	      if(world.getBlock(x,y+1,z,dimension) === block) return "redSandstoneBottom"
-	    }
-	  },
-	  dropper:{
-	    upTextures:fillTextureArray(["furnaceTop","dropperFrontVertical","furnaceTop"]),
-	    downTextures:fillTextureArray(["dropperFrontVertical","furnaceTop","furnaceTop"]),
-	    onclientclick:function(x,y,z,dimension){
-	      containerData.x = x
-	      containerData.y = y
-	      containerData.z = z
-	      containerData.dimension = dimension
-	      changeScene("dispenser")
-	      releasePointer()
-	    },
-	  },
-	  dispenser:{
-	    upTextures:fillTextureArray(["furnaceTop","dispenserFrontVertical","furnaceTop"]),
-	    downTextures:fillTextureArray(["dispenserFrontVertical","furnaceTop","furnaceTop"]),
-	    onclientclick:function(x,y,z,dimension){
-	      containerData.x = x
-	      containerData.y = y
-	      containerData.z = z
-	      containerData.dimension = dimension
-	      changeScene("dispenser")
-	      releasePointer()
-	    },
-	  },
-	  Water:{
-	    getY:function(x,y,z,dimension){
-	      var block = world.getBlock(x,y,z,dimension)
-	      return (min((this.getLevel(block) || (block ? 8 : 0))*2,14.5)/16)-0.5
-	    },
-	  },
-	  Lava:{
-	    getY:function(x,y,z,dimension){
-	      var block = world.getBlock(x,y,z,dimension)
-	      return (min((this.getLevel(block))*2,14.5)/16)-0.5
-	    },
-			clientTick:function(block,x,y,z,dimension,world){
-				let b = world.getBlock(x,y+1,z,dimension)
-				if(!b && !b.liquid && !performFast && rand() < 0.05){
-					world.addParticle(new entities[entityIds.LavaParticle](x,y+0.5,z),dimension)
-					playSound("liquid.lavapop",0,1,1,posSound(x,y+0.5,z))
-				}
-			},
-	  },
-	  oil:{
-	    getY:function(x,y,z,dimension){
-	      var block = world.getBlock(x,y,z,dimension)
-	      return (min((this.getLevel(block) || (block ? 8 : 0))*2,14.5)/16)-0.5
-	    }
-	  },
-	  beacon:{
-	    importantOnset:function(x,y,z,dimension,w){
-	      this.set(x,y,z,dimension,w)
-	    },
-			set: function(x,y,z,dimension,world){
-				let chunkEntities = world.getChunk(x,z,dimension).entities
-				for(var i in chunkEntities){
-					let ent = chunkEntities[i]
-					if(ent.type === "BeaconBeam" && ent.x === x && ent.actualY === y && ent.z === z && ent.dimension === dimension) return
-				}
-				world.addEntity(new entities[entityIds.BeaconBeam](x,y,z),false,dimension)
-			},
-	  },
-	  craftingTable:{
-	    onclientclick: () => {changeScene("crafting"); releasePointer()},
-	  },
-	  anvil:{
-	    onclientclick:function(x,y,z,dimension){
-	      changeScene("anvil")
-	      releasePointer()
-	    },
-	  },
-	  furnace:{
-	    onclientclick: (x,y,z,dimension) => {
-	      containerData.x = x
-	      containerData.y = y
-	      containerData.z = z
-	      containerData.dimension = dimension
-	      changeScene("furnace")
-	      releasePointer()
-	    },
-			clientTick:function(block,x,y,z,dimension,world){
-				if(performFast) return
-        let tags = world.getTags(x,y,z,dimension)
-        let pix = 1/16
-        let on = this.id | SLAB
-        y -= rand(4,8)*pix
-        switch(block){
-          case on | NORTH:
-            z -= 0.51
-            x += rand(-5,5)*pix
-            break
-          case on | SOUTH:
-            z += 0.51
-            x += rand(-5,5)*pix
-            break
-          case on | EAST:
-            x -= 0.51
-            z += rand(-5,5)*pix
-            break
-          case on | WEST:
-            x += 0.51
-            z += rand(-5,5)*pix
-            break
-          default:
-            return
-        }
-        world.addParticle(new entities[entityIds.FlameParticle](x,y,z),dimension)
-      }
-	  },
-	  barrel:{
-	    onclientclick:function(x,y,z,dimension){
-	      containerData.x = x
-	      containerData.y = y
-	      containerData.z = z
-	      containerData.dimension = dimension
-	      changeScene("chest")
-	      releasePointer()
-	    }
-	  },
-	  chest:{
-	    onclientclick:function(x,y,z,dimension){
-	      containerData.x = x
-	      containerData.y = y
-	      containerData.z = z
-	      containerData.dimension = dimension
-	      changeScene("chest")
-	      releasePointer()
-	    },
-	  },
-	  hopper:{
-	    onclientclick:function(x,y,z,dimension){
-	      containerData.x = x
-	      containerData.y = y
-	      containerData.z = z
-	      containerData.dimension = dimension
-	      changeScene("hopper")
-	      releasePointer()
-	    }
-	  },
-	  commandBlock:{
-	    onclientclick:function(x,y,z,dimension){
-	      containerData.x = x
-	      containerData.y = y
-	      containerData.z = z
-	      containerData.dimension = dimension
-	      changeScene("commandBlock")
-	      releasePointer()
-	    },
-	  },
-	  portal:{
-	    ontouch: function(){
-	      touchingPortal = true
-	      portalEffect += 2.5
-	    },
-	  },
-		redstoneTorch:{
-			clientTick:function(block,x,y,z,dimension,world){
-        if(performFast || !world.getPower(x,y,z,dimension)) return
-        let wall = this.id | SLAB
-        let pix = 1/16
-        switch(block){
-          case wall | NORTH:
-            z += pix*5
-            y += pix*6
-            break
-          case wall | SOUTH:
-            z -= pix*5
-            y += pix*6
-            break
-          case wall | EAST:
-            x += pix*5
-            y += pix*6
-            break
-          case wall | WEST:
-            x -= pix*5
-            y += pix*6
-            break
-          default:
-            y += pix*2
-        }
-        world.addParticle(new entities[entityIds.RedstoneParticle](x,y,z),dimension)
-      },
-		}
-	}
-
-	const {BLOCK_COUNT, blockData} = window
-  window.console.log(BLOCK_COUNT,"blocks")
-  var texNum=0;for(var t in textures) texNum ++
-  window.console.log(texNum,"textures")
-
-  window.emptyFunc = function(){}
-  var stoneDigSound = ["stone.dig1", "stone.dig2", "stone.dig3", "stone.dig4"],
-      stoneStepSound = ["stone.step1", "stone.step2","stone.step3","stone.step4","stone.step5","stone.step6"],
-      woodDigSound = ["wood.dig1", "wood.dig2", "wood.dig3", "wood.dig4"],
-      woodStepSound = ["wood.step1", "wood.step2","wood.step3","wood.step4","wood.step5","wood.step6"],
-      clothDigSound = ["cloth.dig1", "cloth.dig2", "cloth.dig3", "cloth.dig4"],
-      clothStepSound = ["cloth.step1", "cloth.step2","cloth.step3","cloth.step4"],
-      glassDigSound = ["glass.dig1", "glass.dig2", "glass.dig3"],
-      nyliumDigSound = ["nylium.dig1", "nylium.dig2", "nylium.dig3", "nylium.dig4", "nylium.dig5", "nylium.dig6"],
-      nyliumStepSound = ["nylium.step1", "nylium.step2","nylium.step3","nylium.step4","nylium.step5","nylium.step6"],
-      stemDigSound = ["stem.dig1", "stem.dig2", "stem.dig3", "stem.dig4", "stem.dig5", "stem.dig6"],
-      stemStepSound = ["stem.step1", "stem.step2","stem.step3","stem.step4","stem.step5","stem.step6"],
-      basaltDigSound = ["basalt.dig1", "basalt.dig2", "basalt.dig3", "basalt.dig4", "basalt.dig5"],
-      basaltStepSound = ["basalt.step1", "basalt.step2","basalt.step3","basalt.step4","basalt.step5","basalt.step6"],
-      rootDigSound = ["roots.dig1", "roots.dig2", "roots.dig3", "roots.dig4", "roots.dig5", "roots.dig6"],
-      rootStepSound = ["roots.step1", "roots.step2","roots.step3","roots.step4","roots.step5","roots.step6"],
-      amethystPlaceSound = ["amethyst.place1","amethyst.place2","amethyst.place3","amethyst.place4"],
-      amethystDigSound = ["amethyst.dig1","amethyst.dig2","amethyst.dig3","amethyst.dig4"],
-      amethystStepSound = (function(){var arr=[]; for(var i=0; i<14; i++){arr.push("amethyst.step"+(i+1))};return arr})(),
-      amethystClusterPlaceSound = ["amethyst_cluster.place1", "amethyst_cluster.place2", "amethyst_cluster.place3", "amethyst_cluster.place4"],
-      amethystClusterDigSound = ["amethyst_cluster.dig1", "amethyst_cluster.dig2", "amethyst_cluster.dig3", "amethyst_cluster.dig4"],
-      deepslatePlaceSound = ["deepslate.place1","deepslate.place2","deepslate.place3","deepslate.place4","deepslate.place5","deepslate.place6"],
-      deepslateStepSound = ["deepslate.step1","deepslate.step2","deepslate.step3","deepslate.step4","deepslate.step5","deepslate.step6"],
-      deepslateDigSound = ["deepslate.dig1","deepslate.dig2","deepslate.dig3","deepslate.dig4"],
-      deepslateBricksPlaceSound = [1,2,3,4,5,6].map(v => "deepslate_bricks.place"+v),
-      deepslateBricksStepSound = [1,2,3,4,5].map(v => "deepslate_bricks.step"+v),
-			grassDigSound = ["grass.dig1", "grass.dig2", "grass.dig3", "grass.dig4"],
-      grassStepSound = ["grass.step1", "grass.step2","grass.step3","grass.step4","grass.step5","grass.step6"],
-			coralDigSound = ["coral.dig1","coral.dig2","coral.dig3","coral.dig4"],
-			coralStepSound = ["coral.step1","coral.step2","coral.step3","coral.step4","coral.step5","coral.step6"],
-			wetgrassDigSound = ["wetgrass.dig1","wetgrass.dig2","wetgrass.dig3","wetgrass.dig4"],
-			wetgrassStepSound = ["wetgrass.step1","wetgrass.step2","wetgrass.step3","wetgrass.step4","wetgrass.step5","wetgrass.step6"]
-	const defaultTagBits = {
-		power:[15,5], //extra for power level 16 (power sources)
-		blockPowerNorth:[20,2],
-		blockPowerSouth:[22,2],
-		blockPowerEast:[24,2],
-		blockPowerWest:[26,2],
-		blockPowerTop:[28,2],
-		blockPowerBottom:[30,2],
-	} /*
-	tag bits have a index and a count
-	if tagBits is set to null
-	- it stores it as a properties of an object,
-	otherwise
-	- it stores it in specific bits in a number
-	*/
-	// Set defaults on blockData
-	for (let i = 1; i < BLOCK_COUNT; ++i) {
-		const data = blockData[i];
-
-		if(blockDataAdditional[data.name]){
-			Object.assign(data, blockDataAdditional[data.name])
-		}
-		
-    for(let t = 0; t<data.textures.length; t++){
-      if(!textures[data.textures[t]]){
-        window.console.log("Missing texture for "+data.textures[t])
-        data.textures[t] = "error"
-      }
-    }
-	}
   
   /*// survival inventory
   let invItems = [];
@@ -6167,30 +5822,6 @@ if time is 0, it will update every time
     doc.title = (Messages.unreadCount ? "("+Messages.unreadCount+") " : "")+(inWorld ? world.name+" | " : "")+"MineKhan-thingmaker "+version
   }
   
-	let {blockIds} = win
-  let inventoryBlocks = {all:[],search:[],items:[],hidden:[]}
-	let liquidIds = {}
-  for(let i=0; i<BLOCK_COUNT; i++){
-		let block = blockData[i]
-    if(!block.hidden){
-      inventoryBlocks.all.push(block.id)
-      if(block.category){
-        if(!inventoryBlocks[block.category]) inventoryBlocks[block.category] = []
-        inventoryBlocks[block.category].push(block.id)
-      }
-			if(block.item && block.category !== "items" && block.category !== "food" && block.category !== "tools"){
-				inventoryBlocks.items.push(block.id)
-			}
-    }
-		if(block.hidden){
-			inventoryBlocks.hidden.push(block.id)
-		}
-		if(block.inLiquid){
-			liquidIds[block.inLiquid] = block.id
-		}
-  }
-  win.inventoryBlocks = inventoryBlocks
-  
   win.eachFrame = null, win.eachTick = null
 	let lastBlur = 0
   
@@ -6649,18 +6280,6 @@ ROTATION = 0x1800 // Mask for the direction bits
     inventory.showName = 3
     updateHUD = true
   }
-
-	let blockInfoIds = {}
-	for(let i=1; i<blockInfo.length; i++){
-		for(let j of blockInfo[i].blocks){
-			if(j.startsWith("is:")){
-				let is = j.replace("is:","")
-				for(let k=0; k<BLOCK_COUNT; k++){
-					if(blockData[k][is]) blockInfoIds[k] = i
-				}
-			}else blockInfoIds[blockIds[j]] = i
-		}
-	}
 
 	let tex
 	let textureAtlas, textAtlas
@@ -7567,6 +7186,9 @@ Division: //
     submitInput(){
 			let toPlay = !messageInput.value
       if(toPlay) play()
+
+			if(!world.isMK) return send({type:"message", data:msg})
+			
       if(messageInput.value[0] === "/"){
         this.add("<span style='font-family:thefont;'>"+messageOverlay.innerHTML+"</span>")
         this.history.unshift(messageInput.value)
@@ -8655,16 +8277,403 @@ Division: //
     return true
   }
 
-	function initShapes() {
-		for(let s in shapes){
-			for(let v of shapes[s].varients){
-				if(!v) continue
-				let buffer = gl.createBuffer()
-				gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(v.verts.flat(Infinity)), gl.STATIC_DRAW)
-				v.buffer = buffer
+	function initBlockEntities(){
+		crack.entity = new crackEntity("crack1",0,0,0)
+    for(var i=0; i<crack.length; i++) crack.entity.cacheTexture(crack[i])
+    entityFire = new EntityFire()
+		for(let i=0; i<blockHereEntity.length; i++) blockHereEntity[i] = new BlockEntity(0,0,0,0)
+	}
+	let blockData, blockIds, BLOCK_COUNT, blockInfoIds, inventoryBlocks
+	let mkBlockData = window.blockData, mkBlockIds = window.blockIds, mkBlockCount, mkBlockInfoIds, mkInventoryBlocks
+	function initBlockData() {
+		if(mkBlockCount){
+			blockData = mkBlockData
+			blockIds = mkBlockIds
+			BLOCK_COUNT = mkBlockCount
+			blockInfoIds = mkBlockInfoIds
+			inventoryBlocks = mkInventoryBlocks
+			return
+		}
+const blockDataAdditional = {
+	grass:{
+		/*customTexture:function(x,y,z,dimension,block,side){
+			if(block !== this.id || side === "bottom" || side === "top") return //Skip snow variant
+			if(side === "north" && world.getBlock(x,y-1,z+1,dimension) !== this.id) return
+			if(side === "south" && world.getBlock(x,y-1,z-1,dimension) !== this.id) return
+			if(side === "east" && world.getBlock(x+1,y-1,z,dimension) !== this.id) return
+			if(side === "west" && world.getBlock(x-1,y-1,z,dimension) !== this.id) return
+			return "grassSideGrass"
+		}*/
+	},
+	redstoneDust:{
+		clientTick:function(block,x,y,z,dimension,world){
+			if(!performFast && world.getPower(x,y,z,dimension)) world.addParticle(new entities[entityIds.RedstoneParticle](x,y-0.49,z,null,(block&FLIP)===FLIP),dimension)
+		},
+		alwaysCustomTexture:true,
+		customTexture:function(x,y,z,dimension,block,side,originalShapeVerts,tags){
+			const up = getTagBits(tags,"up",this.id), down = getTagBits(tags,"down",this.id)
+			if(originalShapeVerts.t) side = originalShapeVerts.t
+			else return (side === "top" || side === "bottom") && up && down && false
+			let tex
+			if(side === "west") tex = tags && (getTagBits(tags,"westUp",this.id) || up)
+			else if(side === "east") tex = tags && (getTagBits(tags,"eastUp",this.id) || up)
+			else if(side === "south") tex = tags && (getTagBits(tags,"northUp",this.id) || up)
+			else if(side === "north") tex = tags && (getTagBits(tags,"southUp",this.id) || up)
+			return tex ? "redstoneDustLine" : false
+		}
+	},
+	torch:{
+		clientTick:function(block,x,y,z,dimension){
+			if(performFast) return
+			let wall = this.id | SLAB
+			let pix = 1/16
+			switch(block){
+				case wall | NORTH:
+					z += pix*5
+					y += pix*6
+					break
+				case wall | SOUTH:
+					z -= pix*5
+					y += pix*6
+					break
+				case wall | EAST:
+					x += pix*5
+					y += pix*6
+					break
+				case wall | WEST:
+					x -= pix*5
+					y += pix*6
+					break
+				default:
+					y += pix*2
+			}
+			world.addParticle(new entities[entityIds.FlameParticle](x,y,z),dimension)
+		},
+	},
+	soulTorch:{
+		 clientTick:function(block,x,y,z,dimension){
+			if(performFast) return
+			let wall = this.id | SLAB
+			let pix = 1/16
+			switch(block){
+				case wall | NORTH:
+					z += pix*5
+					y += pix*6
+					break
+				case wall | SOUTH:
+					z -= pix*5
+					y += pix*6
+					break
+				case wall | EAST:
+					x += pix*5
+					y += pix*6
+					break
+				case wall | WEST:
+					x -= pix*5
+					y += pix*6
+					break
+				default:
+					y += pix*2
+			}
+			world.addParticle(new entities[entityIds.FlameParticle](x,y,z,"soul"),dimension)
+		},
+	},
+	sandstone:{
+		customTexture:function(x,y,z,dimension,block,side){
+			if(world.getBlock(x,y+1,z,dimension) === block) return "sandstoneBottom"
+		},
+	},
+	redSandstone:{
+		customTexture:function(x,y,z,dimension,block,side){
+			if(world.getBlock(x,y+1,z,dimension) === block) return "redSandstoneBottom"
+		}
+	},
+	dropper:{
+		upTextures:fillTextureArray(["furnaceTop","dropperFrontVertical","furnaceTop"]),
+		downTextures:fillTextureArray(["dropperFrontVertical","furnaceTop","furnaceTop"]),
+		onclientclick:function(x,y,z,dimension){
+			containerData.x = x
+			containerData.y = y
+			containerData.z = z
+			containerData.dimension = dimension
+			changeScene("dispenser")
+			releasePointer()
+		},
+	},
+	dispenser:{
+		upTextures:fillTextureArray(["furnaceTop","dispenserFrontVertical","furnaceTop"]),
+		downTextures:fillTextureArray(["dispenserFrontVertical","furnaceTop","furnaceTop"]),
+		onclientclick:function(x,y,z,dimension){
+			containerData.x = x
+			containerData.y = y
+			containerData.z = z
+			containerData.dimension = dimension
+			changeScene("dispenser")
+			releasePointer()
+		},
+	},
+	Water:{
+		getY:function(x,y,z,dimension){
+			var block = world.getBlock(x,y,z,dimension)
+			return (min((this.getLevel(block) || (block ? 8 : 0))*2,14.5)/16)-0.5
+		},
+	},
+	Lava:{
+		getY:function(x,y,z,dimension){
+			var block = world.getBlock(x,y,z,dimension)
+			return (min((this.getLevel(block))*2,14.5)/16)-0.5
+		},
+		clientTick:function(block,x,y,z,dimension,world){
+			let b = world.getBlock(x,y+1,z,dimension)
+			if(!b && !b.liquid && !performFast && rand() < 0.05){
+				world.addParticle(new entities[entityIds.LavaParticle](x,y+0.5,z),dimension)
+				playSound("liquid.lavapop",0,1,1,posSound(x,y+0.5,z))
+			}
+		},
+	},
+	oil:{
+		getY:function(x,y,z,dimension){
+			var block = world.getBlock(x,y,z,dimension)
+			return (min((this.getLevel(block) || (block ? 8 : 0))*2,14.5)/16)-0.5
+		}
+	},
+	beacon:{
+		importantOnset:function(x,y,z,dimension,w){
+			this.set(x,y,z,dimension,w)
+		},
+		set: function(x,y,z,dimension,world){
+			let chunkEntities = world.getChunk(x,z,dimension).entities
+			for(var i in chunkEntities){
+				let ent = chunkEntities[i]
+				if(ent.type === "BeaconBeam" && ent.x === x && ent.actualY === y && ent.z === z && ent.dimension === dimension) return
+			}
+			world.addEntity(new entities[entityIds.BeaconBeam](x,y,z),false,dimension)
+		},
+	},
+	craftingTable:{
+		onclientclick: () => {changeScene("crafting"); releasePointer()},
+	},
+	anvil:{
+		onclientclick:function(x,y,z,dimension){
+			changeScene("anvil")
+			releasePointer()
+		},
+	},
+	furnace:{
+		onclientclick: (x,y,z,dimension) => {
+			containerData.x = x
+			containerData.y = y
+			containerData.z = z
+			containerData.dimension = dimension
+			changeScene("furnace")
+			releasePointer()
+		},
+		clientTick:function(block,x,y,z,dimension,world){
+			if(performFast) return
+			let tags = world.getTags(x,y,z,dimension)
+			let pix = 1/16
+			let on = this.id | SLAB
+			y -= rand(4,8)*pix
+			switch(block){
+				case on | NORTH:
+					z -= 0.51
+					x += rand(-5,5)*pix
+					break
+				case on | SOUTH:
+					z += 0.51
+					x += rand(-5,5)*pix
+					break
+				case on | EAST:
+					x -= 0.51
+					z += rand(-5,5)*pix
+					break
+				case on | WEST:
+					x += 0.51
+					z += rand(-5,5)*pix
+					break
+				default:
+					return
+			}
+			world.addParticle(new entities[entityIds.FlameParticle](x,y,z),dimension)
+		}
+	},
+	barrel:{
+		onclientclick:function(x,y,z,dimension){
+			containerData.x = x
+			containerData.y = y
+			containerData.z = z
+			containerData.dimension = dimension
+			changeScene("chest")
+			releasePointer()
+		}
+	},
+	chest:{
+		onclientclick:function(x,y,z,dimension){
+			containerData.x = x
+			containerData.y = y
+			containerData.z = z
+			containerData.dimension = dimension
+			changeScene("chest")
+			releasePointer()
+		},
+	},
+	hopper:{
+		onclientclick:function(x,y,z,dimension){
+			containerData.x = x
+			containerData.y = y
+			containerData.z = z
+			containerData.dimension = dimension
+			changeScene("hopper")
+			releasePointer()
+		}
+	},
+	commandBlock:{
+		onclientclick:function(x,y,z,dimension){
+			containerData.x = x
+			containerData.y = y
+			containerData.z = z
+			containerData.dimension = dimension
+			changeScene("commandBlock")
+			releasePointer()
+		},
+	},
+	portal:{
+		ontouch: function(){
+			touchingPortal = true
+			portalEffect += 2.5
+		},
+	},
+	redstoneTorch:{
+		clientTick:function(block,x,y,z,dimension,world){
+			if(performFast || !world.getPower(x,y,z,dimension)) return
+			let wall = this.id | SLAB
+			let pix = 1/16
+			switch(block){
+				case wall | NORTH:
+					z += pix*5
+					y += pix*6
+					break
+				case wall | SOUTH:
+					z -= pix*5
+					y += pix*6
+					break
+				case wall | EAST:
+					x += pix*5
+					y += pix*6
+					break
+				case wall | WEST:
+					x -= pix*5
+					y += pix*6
+					break
+				default:
+					y += pix*2
+			}
+			world.addParticle(new entities[entityIds.RedstoneParticle](x,y,z),dimension)
+		},
+	}
+}
+
+;({BLOCK_COUNT} = window)
+blockData = mkBlockData, blockIds = mkBlockIds
+window.console.log(BLOCK_COUNT,"blocks")
+var texNum=0;for(var t in textures) texNum ++
+window.console.log(texNum,"textures")
+
+var stoneDigSound = ["stone.dig1", "stone.dig2", "stone.dig3", "stone.dig4"],
+		stoneStepSound = ["stone.step1", "stone.step2","stone.step3","stone.step4","stone.step5","stone.step6"],
+		woodDigSound = ["wood.dig1", "wood.dig2", "wood.dig3", "wood.dig4"],
+		woodStepSound = ["wood.step1", "wood.step2","wood.step3","wood.step4","wood.step5","wood.step6"],
+		clothDigSound = ["cloth.dig1", "cloth.dig2", "cloth.dig3", "cloth.dig4"],
+		clothStepSound = ["cloth.step1", "cloth.step2","cloth.step3","cloth.step4"],
+		glassDigSound = ["glass.dig1", "glass.dig2", "glass.dig3"],
+		nyliumDigSound = ["nylium.dig1", "nylium.dig2", "nylium.dig3", "nylium.dig4", "nylium.dig5", "nylium.dig6"],
+		nyliumStepSound = ["nylium.step1", "nylium.step2","nylium.step3","nylium.step4","nylium.step5","nylium.step6"],
+		stemDigSound = ["stem.dig1", "stem.dig2", "stem.dig3", "stem.dig4", "stem.dig5", "stem.dig6"],
+		stemStepSound = ["stem.step1", "stem.step2","stem.step3","stem.step4","stem.step5","stem.step6"],
+		basaltDigSound = ["basalt.dig1", "basalt.dig2", "basalt.dig3", "basalt.dig4", "basalt.dig5"],
+		basaltStepSound = ["basalt.step1", "basalt.step2","basalt.step3","basalt.step4","basalt.step5","basalt.step6"],
+		rootDigSound = ["roots.dig1", "roots.dig2", "roots.dig3", "roots.dig4", "roots.dig5", "roots.dig6"],
+		rootStepSound = ["roots.step1", "roots.step2","roots.step3","roots.step4","roots.step5","roots.step6"],
+		amethystPlaceSound = ["amethyst.place1","amethyst.place2","amethyst.place3","amethyst.place4"],
+		amethystDigSound = ["amethyst.dig1","amethyst.dig2","amethyst.dig3","amethyst.dig4"],
+		amethystStepSound = (function(){var arr=[]; for(var i=0; i<14; i++){arr.push("amethyst.step"+(i+1))};return arr})(),
+		amethystClusterPlaceSound = ["amethyst_cluster.place1", "amethyst_cluster.place2", "amethyst_cluster.place3", "amethyst_cluster.place4"],
+		amethystClusterDigSound = ["amethyst_cluster.dig1", "amethyst_cluster.dig2", "amethyst_cluster.dig3", "amethyst_cluster.dig4"],
+		deepslatePlaceSound = ["deepslate.place1","deepslate.place2","deepslate.place3","deepslate.place4","deepslate.place5","deepslate.place6"],
+		deepslateStepSound = ["deepslate.step1","deepslate.step2","deepslate.step3","deepslate.step4","deepslate.step5","deepslate.step6"],
+		deepslateDigSound = ["deepslate.dig1","deepslate.dig2","deepslate.dig3","deepslate.dig4"],
+		deepslateBricksPlaceSound = [1,2,3,4,5,6].map(v => "deepslate_bricks.place"+v),
+		deepslateBricksStepSound = [1,2,3,4,5].map(v => "deepslate_bricks.step"+v),
+		grassDigSound = ["grass.dig1", "grass.dig2", "grass.dig3", "grass.dig4"],
+		grassStepSound = ["grass.step1", "grass.step2","grass.step3","grass.step4","grass.step5","grass.step6"],
+		coralDigSound = ["coral.dig1","coral.dig2","coral.dig3","coral.dig4"],
+		coralStepSound = ["coral.step1","coral.step2","coral.step3","coral.step4","coral.step5","coral.step6"],
+		wetgrassDigSound = ["wetgrass.dig1","wetgrass.dig2","wetgrass.dig3","wetgrass.dig4"],
+		wetgrassStepSound = ["wetgrass.step1","wetgrass.step2","wetgrass.step3","wetgrass.step4","wetgrass.step5","wetgrass.step6"]
+const defaultTagBits = {
+	power:[15,5], //extra for power level 16 (power sources)
+	blockPowerNorth:[20,2],
+	blockPowerSouth:[22,2],
+	blockPowerEast:[24,2],
+	blockPowerWest:[26,2],
+	blockPowerTop:[28,2],
+	blockPowerBottom:[30,2],
+} /*
+tag bits have a index and a count
+if tagBits is set to null
+- it stores it as a properties of an object,
+otherwise
+- it stores it in specific bits in a number
+*/
+// Set defaults on blockData
+		for (let i = 1; i < BLOCK_COUNT; ++i) {
+			const data = blockData[i];
+		
+			if(blockDataAdditional[data.name]){
+				Object.assign(data, blockDataAdditional[data.name])
+			}
+			
+			for(let t = 0; t<data.textures.length; t++){
+				if(!textures[data.textures[t]]){
+					window.console.log("Missing texture for "+data.textures[t])
+					data.textures[t] = "error"
+				}
 			}
 		}
+		
+		blockInfoIds = {}
+		for(let i=1; i<blockInfo.length; i++){
+			for(let j of blockInfo[i].blocks){
+				if(j.startsWith("is:")){
+					let is = j.replace("is:","")
+					for(let k=0; k<BLOCK_COUNT; k++){
+						if(blockData[k][is]) blockInfoIds[k] = i
+					}
+				}else blockInfoIds[blockIds[j]] = i
+			}
+		}
+		;({blockIds} = win)
+	  inventoryBlocks = {all:[],search:[],items:[],hidden:[]}
+		//liquidIds = {}
+	  for(let i=0; i<BLOCK_COUNT; i++){
+			let block = blockData[i]
+	    if(!block.hidden){
+	      inventoryBlocks.all.push(block.id)
+	      if(block.category){
+	        if(!inventoryBlocks[block.category]) inventoryBlocks[block.category] = []
+	        inventoryBlocks[block.category].push(block.id)
+	      }
+				if(block.item && block.category !== "items" && block.category !== "food" && block.category !== "tools"){
+					inventoryBlocks.items.push(block.id)
+				}
+	    }
+			if(block.hidden){
+				inventoryBlocks.hidden.push(block.id)
+			}
+			/*if(block.inLiquid){
+				liquidIds[block.inLiquid] = block.id
+			}*/
+	  }
 		
 		const liquidData = {
       getFace:function(x,y,z,dimension,block,face,verts,tex,texCoord,inside){
@@ -8862,6 +8871,12 @@ Division: //
 			}
 			
 		}
+
+		mkBlockData = blockData
+		mkBlockIds = blockIds
+		mkBlockCount = BLOCK_COUNT
+		mkBlockInfoIds = blockInfoIds
+		mkInventoryBlocks = inventoryBlocks
 	}
     
 	let indexOrder;
@@ -10527,8 +10542,8 @@ return//*/
   function runEntityRayTrace(){
     entHitbox.closest = settings.reach
     var dimension = p.dimension
-		world.getEntitiesNear(p.x+p.cOffsetX,p.y+p.cOffsetY,p.z+p.cOffsetZ,dimension, settings.renderDistance*16, nearEntityArray)
-    for(let ent of nearEntityArray){
+		//world.getEntitiesNear(p.x+p.cOffsetX,p.y+p.cOffsetY,p.z+p.cOffsetZ,dimension, settings.renderDistance*16, nearEntityArray)
+    for(let [id,ent] of world.entities){
       if(ent.dimension !== dimension || ent.noHitbox || ent.hidden) continue
       let c = entityRayTrace(ent.x,ent.y,ent.z,ent.width,ent.height,ent.depth, p.thirdPerson)
       if(c[0] < entHitbox.closest){
@@ -11035,10 +11050,6 @@ return//*/
 			let top = world.getSolidTop(round(p.x),round(p.z),p.dimension)
 			if(p.y > top) wet = true
 		}
-
-		p.previousX = p.x
-		p.previousY = p.y
-		p.previousZ = p.z
     let hasCollided = false
     
     p.blockHereSolid = p.blockHere && blockData[p.blockHere].solid ? true : false
@@ -11329,18 +11340,6 @@ return//*/
 			p.velocity.y = ent.vely || 0
 			p.velocity.z = ent.velz || 0
 		}
-		lookingAt()
-    let pd = p.direction
-    listener.positionX.value = p.x+p.cOffsetX
-    listener.positionY.value = p.y+p.cOffsetY
-    listener.positionZ.value = p.z+p.cOffsetZ
-    listener.forwardX.value = pd.x
-    listener.forwardY.value = pd.y
-    listener.forwardZ.value = pd.z
-    let up = getRotation(p.rx+Math.PI2,p.ry)
-    listener.upX.value = up.x
-    listener.upY.value = up.y
-    listener.upZ.value = up.z
 	}
 	let runGravity = function() {
     if(!p.spectator && liquid !== lastLiquid){
@@ -11887,7 +11886,7 @@ return//*/
 		}
     
     controls()
-    if(doPhysics) runGravity()
+    if(doPhysics && world.isMK) runGravity()
     if(!p.spectator && !p.die){
       for(let i in players){
         let P = players[i]
@@ -11979,7 +11978,27 @@ return//*/
     
     let pTouchingPortal = touchingPortal
     touchingPortal = false
-    if(doPhysics) resolveContactsAndUpdatePosition(now)
+    if(doPhysics){
+			p.previousX = p.x
+			p.previousY = p.y
+			p.previousZ = p.z
+			
+			if(world.isMK) resolveContactsAndUpdatePosition(now)
+			else world.playerPhysics()
+			
+			lookingAt()
+	    let pd = p.direction
+	    listener.positionX.value = p.x+p.cOffsetX
+	    listener.positionY.value = p.y+p.cOffsetY
+	    listener.positionZ.value = p.z+p.cOffsetZ
+	    listener.forwardX.value = pd.x
+	    listener.forwardY.value = pd.y
+	    listener.forwardZ.value = pd.z
+	    let up = getRotation(p.rx+Math.PI2,p.ry)
+	    listener.upX.value = up.x
+	    listener.upY.value = up.y
+	    listener.upZ.value = up.z
+		}
     updtPlayer()
 
 		p2.x = round(p.x)
@@ -13858,7 +13877,6 @@ r 11 y  n  n  n
 	}
 	let emptySection = new Section(0, 0, 0)
 	let fullSection = new Section(0, 0, 0)
-	fullSection.blocks.fill(blockIds.bedrock)
 	emptySection.skyLight.fill(255)
 
 	function getTagBits(t,n,block){
@@ -14697,6 +14715,11 @@ r 11 y  n  n  n
 			}
 			return this.sections[i]
 		}
+		unload(){
+			for(let i in this.entities){
+				this.world.deleteEntity(this.entities[i],true)
+			}
+		}
 	}
 
   /*let entPlayerCollided
@@ -14739,7 +14762,8 @@ r 11 y  n  n  n
   }*/
   function getEntityOrPlayer(id){
     if(id === p.id) return p
-    for(let i in players){
+		return players[id] || world.entities.get(id)
+    /*for(let i in players){
       if(players[i].id === id) return players[i]
     }
 		world.getEntitiesNear(p.x,p.y,p.z,p.dimension, settings.renderDistance*16, nearEntityArray)
@@ -14747,7 +14771,7 @@ r 11 y  n  n  n
       if(nearEntityArray[i].id === id){
         return nearEntityArray[i]
       }
-    }
+    }*/
   }
   
 	class Contacts {
@@ -17373,7 +17397,7 @@ r 11 y  n  n  n
       this.holding = 0 //shown in the hand, it is set to the blockid for the block the player is holding
       this.prevHolding = 0
       this.holdRot = Math.PI / -10
-      part = generateBlockVAO(this.holding)
+      if(blockData) part = generateBlockVAO(this.holding)
       this.addPart("holding",part.size,part.vao,0, 0, 0, 1,1,1, 0, 0)
       
       this.walkRot = 0
@@ -21601,6 +21625,9 @@ r 11 y  n  n  n
 					send({type:"mySkin", data:p.skinURL, cape:p.capeURL})
 				}else if(data.type === "loadSave"){
 					addToBottomRightList("Start loading world","lime")
+					initBlockData()
+					genIcons()
+					initBlockEntities()
 					world = new World()
 					win.world = world
 					world.version = version
@@ -22040,7 +22067,8 @@ r 11 y  n  n  n
 	async function joinEaglerServer(){
 		let url = prompt("Enter address without 'wss://'. example: play.example.com")
 		let username = prompt("Username")
-		if(!window.mcProtocol) await import("mcProtocol.js")
+		changeScene("multiplayer connecting")
+		if(!window.mcProtocol) await import("/minekhan/mcProtocol/bundle.js")
 		await window.mcProtocol.dataPrefetch("pc","1.8", addToBottomRightList)
 		clearBottomRightList()
 		multiplayer = window.mcProtocol.createClient({host:url,port:"443",username,version:"1.8"})
@@ -22053,45 +22081,156 @@ r 11 y  n  n  n
 			multiplayerError = multiplayerError || {data:reason}
 			changeScene("multiplayer lost")
 		})
-		const mcData = window.mcProtocol.data.pc['1.8']
-		initMcData(mcData)
-		const {conv, parseMetadata, updateAttributes, load_1_8, onesInShort} = window.mcProtocol
+		const mcData = window.mcProtocol.getMCData("1.8")
+		let internalIdToEntity = []
+		for(let e in mcData.entities){
+			internalIdToEntity[mcData.entities[e].internalId] = entityIds[mcData.entities[e].name]
+		}
+		const {conv, parseMetadata, updateAttributes, load_1_8, onesInShort, Physics, PlayerState, Vec3} = window.mcProtocol
+		let Block = window.mcProtocol.getBlock("1.8")
+
+		blockData, blockIds, BLOCK_COUNT, blockInfoIds, inventoryBlocks
+		blockData = [], blockIds = {}
+		for(let i in mcData.blocks){
+			let b = mcData.blocks[i]
+			let nb = Object.create(b)
+			nb.Name = b.displayName
+			nb.id = b.id<<4
+			nb.blastResistance = b.resistance
+			nb.lightLevel = b.emitLight
+			nb.textures = mkBlockIds[b.name] === undefined ? (new Array(6)).fill("error") : mkBlockData[mkBlockIds[b.name]].textures
+			nb.shadow = !b.transparent
+			nb.shade = !b.emitLight
+			nb.shape = shapes.cube//todo
+			//todo b.harvestTools
+			if(b.variations) for(let v of b.variations){
+				let nbv = Object.create(nb)
+				nbv.Name = v.displayName
+				blockData[nb.id | v.metadata&15] = nbv
+			}
+			blockData[nb.id] = nb
+			blockIds[b.name] = nb.id
+		}
+		BLOCK_COUNT = 0
+		blockInfoIds = {}
+		//todo inventoryBlocks, items
+		genIcons()
+		initBlockEntities()
+		
 		world = new World()
 		world.isMK = false
 		win.world = world
 		world.version = "1.8.8. eagler"
+		let proxyworld = {
+			getBlock(pos){
+				let id = world.getBlock(pos.x,pos.y,pos.z)
+				return new Block(id>>4, 0/*todo biome*/, id&15)
+			}
+		}
+		let physics = Physics(mcData, proxyworld)
+		let ps = new PlayerState({
+			version:"1.8",
+	    entity: {
+	      position: new Vec3(0, 0, 0),
+	      velocity: new Vec3(0, 0, 0),
+	      yaw: 0,
+	      pitch: 0,
+				effects:{},
+	    },
+			inventory:{slots:[]}//todo
+	  },{
+			get forward(){return controlMap.forward.pressed},
+			get back(){return controlMap.backward.pressed},
+			get left(){return controlMap.left.pressed},
+			get right(){return controlMap.right.pressed},
+			get jump(){return controlMap.jump.pressed},
+			get sprint(){return controlMap.sprint.pressed},
+			get sneak(){return controlMap.sneak.pressed}
+		})
+		world.playerPhysics = function(){
+			ps.pos.set(p.x,p.y,p.z)
+			ps.vel.set(p.velocity.x,p.velocity.y,p.velocity.z)
+			physics.simulatePlayer(ps, proxyworld)
+			p.x = ps.pos.x
+			p.y = ps.pos.y
+			p.z = ps.pos.z
+			p.velocity.set(ps.vel)
+		}
 		function mapChunk(cx,cz,groundUp,chunkData,bitMap){
 			let chunk = world.getOrNewChunk(cx*16,cz*16,p.dimension)
 			load_1_8(chunkData,bitMap, p.dimension ==="", groundUp, (index,blocks,blight,slight)=>{
 				let section = chunk.requireSection(index-(minHeight>>4))
 				let i=0
+				let aln
 				for(let y=0;y<16;y++) for(let z=0;z<16;z++) for(let x=0;x<16;x++){
 					section.setBlock(x,y,z,blocks[i])
 					section.setLight(x,y,z, (slight[i>>1]>>((1-(i&1)))*4), 0)
 					section.setLight(x,y,z, (blight[i>>1]>>((1-(i&1)))*4), 1)
 					i++
+					if(blocks[i-1])aln=true
 				}
+				if(aln)debugger
 			})
 			chunk.loaded = true
 			if(!world.meshQueue.includes(chunk)) world.meshQueue.push(chunk)
 		}
+		multiplayer.send = data => {
+			let type, o
+			switch(data.type){
+				case "message": type = "chat"; o = {message:data.message}; break
+				case "entInteract": type = "use_entity"; o = {target:+data.data, mouse:data.hit?1:0}; break
+				default: return
+			}
+			multiplayer.write(type, o)
+		}
+		let prevX,prevY,prevZ, prevRx,prevRy, prevOnGround
+		multiplayer.lastSendPos = 0
+		multiplayer.sendPos = () => {
+			let moved = prevX !== p.x || prevY !== p.y || prevZ !== p.z
+			let looked = prevRx !== p.rx || prevRy !== p.ry
+			if(moved) prevX = p.x, prevY = p.y, prevZ = p.z
+			if(looked) prevRx = p.rx, prevRy = p.ry
+			let now = Date.now()
+			if(moved&&looked){
+				multiplayer.lastSendPos = now
+				multiplayer.write("position_look", {x:p.x,y:p.y,z:p.z,yaw:conv.toNotchianYaw(p.ry),pitch:conv.toNotchianYaw(p.rx),onGround:ps.onGround})
+				prevOnGround = onGround
+			}else if(moved){
+				multiplayer.lastSendPos = now
+				multiplayer.write("position", {x:p.x,y:p.y,z:p.z,onGround:ps.onGround})
+				prevOnGround = onGround
+			}else if(looked){
+				multiplayer.lastSendPos = now
+				multiplayer.write("look", {yaw:conv.toNotchianYaw(p.ry),pitch:conv.toNotchianYaw(p.rx),onGround:ps.onGround})
+				prevOnGround = onGround
+			}else if(prevOnGround !== onGround){
+				multiplayer.write("flying", {onGround:ps.onGround})
+				prevOnGround = onGround
+			}
+		}
+		multiplayer.close = multiplayer.end
 		multiplayer.on("packet", (o, {name}) => {
 switch(name){
 	case "chat":{
-		let data = JSON.parse(o.message)
+		let data
+		try{
+			data = JSON.parse(o.message)
+		}catch{
+			data = o.message
+		}
 		Messages.add((data.color?"<span style='color:"+data.color+";'>":"")+data.text)
 		break
 	}
 	case "update_time":{
-		worldTime = (o.time/24000)*1000+250
+		worldTime = (Number(BigInt.asIntN(32,o.time))/24000)*1000+250
 		break
 	}
-	case "spawn_position":{
+	/*case "spawn_position":{
 		world.spawnPoint.x = o.location.x
 		world.spawnPoint.y = o.location.y
 		world.spawnPoint.z = o.location.z
 		break
-	}
+	}*/
 	case "update_health":{
 		p.health = o.health
 		p.food = o.food
@@ -22119,6 +22258,7 @@ switch(name){
 	}
 	case "bed":{
 		let other = getEntityOrPlayer(o.entityId+"")
+		if(!other) break
 		other.sleeping = true
 		other.x = o.location.x
 		other.y = o.location.y
@@ -22127,12 +22267,13 @@ switch(name){
 	}
 	case "animation":{
 		let other = getEntityOrPlayer(o.entityId+"")
+		if(!other) break
 		if(o.animation === 0) other.punchEffect = 10
 		else if(o.animation === 1) other.harmEffect = 30
 		break
 	}
 	case "named_entity_spawn":{
-		let p = players[o.entityId] = new Player()
+		let p = players[o.entityId+""] = new Player()
 		p.UUID = o.playerUUID
 		p.setPos(o.x,o.y,o.z,0,0,0)
 		p.setRot(o.pitch,o.yaw)
@@ -22164,20 +22305,23 @@ switch(name){
 		break
 	}
 	case "rel_entity_move":{
-		let e = getEntityOrPlayer(o.entityId)
+		let e = getEntityOrPlayer(o.entityId+"")
+		if(!e) break
 		e.x += o.dX/32
 		e.y += o.dY/32
 		e.z += o.dZ/32
 		break
 	}
 	case "entity_look":{
-		let e = getEntityOrPlayer(o.entityId)
+		let e = getEntityOrPlayer(o.entityId+"")
+		if(!e) break
 		e.yaw = conv.fromNotchianYawByte(o.yaw)
 		e.pitch = conv.fromNotchianPitchByte(o.pitch)
 		break
 	}
 	case "entity_move_look":{
-		let e = getEntityOrPlayer(o.entityId)
+		let e = getEntityOrPlayer(o.entityId+"")
+		if(!e) break
 		e.x += o.dX/32
 		e.y += o.dY/32
 		e.z += o.dZ/32
@@ -22186,7 +22330,8 @@ switch(name){
 		break
 	}
 	case "entity_teleport":{
-		let e = getEntityOrPlayer(o.entityId)
+		let e = getEntityOrPlayer(o.entityId+"")
+		if(!e) break
 		e.x = o.x/32
 		e.y = o.y/32
 		e.z = o.z/32
@@ -22195,18 +22340,22 @@ switch(name){
 		break
 	}
 	case "entity_teleport":{
-		let e = getEntityOrPlayer(o.entityId)
+		let e = getEntityOrPlayer(o.entityId+"")
+		if(!e) break
 		if(e.parts && e.parts.head) e.parts.head.yaw = conv.fromNotchianYawByte(o.headYaw)
 		break
 	}
 	case "entity_status":{break}//todo
 	case "attach_entit":{
-		let e = getEntityOrPlayer(o.entityId)
+		let e = getEntityOrPlayer(o.entityId+"")
+		if(!e) break
 		if(!o.leash) e.riding = o.vechileId === -1 ? null : o.vechileId+""
 		break
 	}
 	case "entity_metadata":{
-		parseMetadata(o.metadata, getEntityOrPlayer(o.entityId).metadata)
+		let e = getEntityOrPlayer(o.entityId+"")
+		if(!e) break
+		parseMetadata(o.metadata, e.metadata)
 		break
 	}
 	case "experience":{
@@ -22234,16 +22383,17 @@ switch(name){
 	}
 	case "multi_block_change":{
 		for(let r of o.records){
-			world.setBlock(o.chunkX<<4 | (r.horizontalPos>>4), r.horizontalPos, o.chunkZ<<4 | (r.horizontalPos&15), o.blockId>>4, false,false,true,false, p.dimension)
+			world.setBlock(o.chunkX<<4 | (r.horizontalPos>>4), r.horizontalPos, o.chunkZ<<4 | (r.horizontalPos&15), o.blockId, false,false,true,false, p.dimension)
 		}
 		break
 	}
 	case "block_change":{
-		world.setBlock(o.location.x,o.location.y,o.location.z, o.type>>4, false,false,true,false, p.dimension)
+		world.setBlock(o.location.x,o.location.y,o.location.z, o.type, false,false,true,false, p.dimension)
 		break
 	}
 	case "block_break_animation":{
-		let e = getEntityOrPlayer(o.entityId)
+		let e = getEntityOrPlayer(o.entityId+"")
+		if(!e) break
 		e.crackPos = [o.location.x,o.location.y,o.location.z]
 		e.crack = o.destroyStage
 		break
@@ -22348,8 +22498,8 @@ switch(name){
 	case "title":{
 		titleShowing = true
 		switch(o.action){
-			case 0: title = o.text; break
-			case 1: subtitle = o.text; break
+			case 0: let t = JSON.parse(o.text); title = t.text; titleColor = t.color||"white"; break
+			case 1: subtitle = JSON.parse(o.text).text; break
 			case 2: titleFadeIn = o.fadeIn*50; titleFadeOut = o.fadeOut*50; titleStay = o.stay*50; titleStart = Date.now(); break
 			case 3: titleShowing = false; break
 			case 4: titleShowing = false; title = ""; subtitle = ""; break
@@ -22369,13 +22519,6 @@ switch(name){
 		//logError(e)
 		stopTicking = true
 		throw e
-	}
-
-	function initMcData(mcData){
-		let internalIdToEntity = []
-		for(let e of mcData.entities){
-			internalIdToEntity[e.internalId] = entityIds[e.name]
-		}
 	}
   
 	let {biomeData, biomeIds} = win
@@ -22465,6 +22608,7 @@ switch(name){
 			this.sunDir = new PVector(0,0,0)
 			this.particles = []
 			this.isMK = true
+			this.entities = new Map()
 		}
 		getAdjacentSubchunks(x, y, z, type, dimension) {
       let minChunkX = x - 16 >> 4
@@ -22849,13 +22993,14 @@ switch(name){
 			return biomes[y < caveMaxY && y > caveMinY ? (chunk.caveBiomes[Z * 16 + X]) : (chunk.biomes[Z * 16 + X])]
     }
     getEntity(id){
-			for(let chunk of this.loaded){
+			/*for(let chunk of this.loaded){
 				for(let i in chunk.entities){
 					if(chunk.entities[i].id === id){
 						return chunk.entities[i]
 					}
 				}
-			}
+			}*/
+			return this.entities.get(id)
     }
 		entityPacketType = ServerWorld.entityPacketType
     getEntPos(ent,now){
@@ -22875,6 +23020,7 @@ switch(name){
 			if(chunk){
 				chunk.entities[ent.id] = ent
 			}
+			this.entities.set(ent.id,ent)
     }
     deleteEntity(id, remote){
       let ent = this.getEntity(id)
@@ -22892,6 +23038,7 @@ switch(name){
 				let i = this.alwaysRenderEntities.indexOf(ent)
 				this.alwaysRenderEntities.splice(i,1)
 			}
+			this.entities.delete(id)
     }
     posEntity(p, m, preBetaVersion/*preBetaVersion only used in loadsave*/, objFormat){
 			if (typeof p === "string") {
@@ -23669,7 +23816,10 @@ p.camera.transformation.elements.set(matrix)//*/
 					let nX = x + this.offsetX
 					let nZ = z + this.offsetZ
 					if(!(nX >= 0 && nX < this.lwidth && nZ >= 0 && nZ < this.lwidth)){
-						if(this.getChunk(x*16,z*16,d)) delete this.chunks[x][z]
+						if(this.getChunk(x*16,z*16,d)){
+							this.chunks[x][z].unload()
+							delete this.chunks[x][z]
+						}
 					}
 				}
 			}
@@ -26089,7 +26239,6 @@ p.camera.transformation.elements.set(matrix)//*/
     //TEXTURE9 is text texture
 		lastAnimations = null
 		initTextureProgress = 1
-		genIcons()
 
 		avgBrightnessCanvasTexture = gl.createTexture()
 		gl.activeTexture(gl.TEXTURE10)
@@ -26563,8 +26712,8 @@ p.camera.transformation.elements.set(matrix)//*/
 			let closest = Infinity
 			let cname = "No one"
 			let closestHostile = Infinity
-			world.getEntitiesNear(p.x,p.y,p.z,p.dimension, settings.renderDistance*16, nearEntityArray)
-      for (let ent of nearEntityArray) {
+			//world.getEntitiesNear(p.x,p.y,p.z,p.dimension, settings.renderDistance*16, nearEntityArray)
+      for (let [id,ent] of world.entities) {
         if(ent.mob && ent.dimension === p.dimension && !ent.hidden){
           let distance = sqrt((ent.x - p.x)*(ent.x - p.x) + (ent.y - p.y)*(ent.y - p.y) + (ent.z - p.z)*(ent.z - p.z))
           if (distance < closest) {
@@ -28304,7 +28453,15 @@ p.camera.transformation.elements.set(matrix)//*/
 
 		//Send the block textures to the GPU
 		await initTextures()
-    initShapes()
+		for(let s in shapes){
+			for(let v of shapes[s].varients){
+				if(!v) continue
+				let buffer = gl.createBuffer()
+				gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(v.verts.flat(Infinity)), gl.STATIC_DRAW)
+				v.buffer = buffer
+			}
+		}
 
     /*var data = []
     var rt = Math.PId/360
@@ -30871,10 +31028,6 @@ p.camera.transformation.elements.set(matrix)//*/
 		requiedFeatures.src = atob(featuresRequired)
 		doc.body.appendChild(requiedFeatures)
     
-    crack.entity = new crackEntity("crack1",0,0,0)
-    for(var i=0; i<crack.length; i++) crack.entity.cacheTexture(crack[i])
-    entityFire = new EntityFire()
-		for(let i=0; i<blockHereEntity.length; i++) blockHereEntity[i] = new BlockEntity(0,0,0,0)
 		initCachedShapes()
 
 		await initBackgrounds()
