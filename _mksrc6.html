@@ -5430,56 +5430,6 @@ if time is 0, it will update every time
 	      portalEffect += 2.5
 	    },
 	  },
-	  debugStick:{
-	    onuse: function(x,y,z, block,dimension){
-	      if(blockMode === CUBE) this.useGetTags(x,y,z, block, dimension)
-	      else if(blockMode === SLAB) this.useChangeBlockState(x,y,z, block, dimension)
-	      else if(blockMode === STAIR) this.useChangeBlockRotation(x,y,z, block, dimension)
-	    },
-	    useGetTags: (x,y,z, block, dimension) => {
-	      let tags = world.getTags(x,y,z,dimension)
-	      let str = "§dDEBUG<br>"
-	      if(block && blockData[block].tagBits){
-	        for(let i in blockData[block].tagBits){
-	          str += i+": "+getTagBits(tags,i,block)+"<br>"
-	        }
-	      }else str += JSON.stringify(tags)
-	      Messages.add(str)
-	    },
-	    useChangeBlockState: (x,y,z, block, dimension) => {
-	      if(!block) return
-	      let base = block&(isCube|ROTATION)
-	      let states = [
-	        CUBE,SLAB,STAIR,CROSS,TALLCROSS,DOOR,TORCH,LANTERN,LANTERNHANG,BEACON,
-	        CACTUS,PANE,PORTAL,WALLFLAT,TRAPDOOR,TRAPDOOROPEN,FENCE,WALLPOST,
-	        BUTTON,CHAIN,POT,POTCROSS,CORNERSTAIRIN,CORNERSTAIROUT,VERTICALSLAB
-	      ]
-	      let state = block&isState//remove id and rotation, leaving block state
-	      let idx = states.indexOf(state)
-	      do{
-	        idx++
-	        if(idx >= states.length) idx = 0
-	        state = states[idx]
-	      }while(!blockData[block|state])
-	      world.setBlock(x,y,z,base|state,false,true,false,true,dimension)
-	    },
-	    useChangeBlockRotation: (x,y,z, block, dimension) => {
-	      if(!block) return
-	      let base = block&(~ROTATION)&(~FLIP)
-	      let states = [
-	        NORTH,SOUTH,EAST,WEST,
-	        NORTH|FLIP,SOUTH|FLIP,EAST|FLIP,WEST|FLIP
-	      ]
-	      let state = block&(ROTATION|FLIP)
-	      let idx = states.indexOf(state)
-	      do{
-	        idx++
-	        if(idx >= states.length) idx = 0
-	        state = states[idx]
-	      }while(!blockData[block|state])
-	      world.setBlock(x,y,z,base|state,false,true,false,true,dimension)
-	    }
-	  },
 		redstoneTorch:{
 			clientTick:function(block,x,y,z,dimension,world){
         if(performFast || !world.getPower(x,y,z,dimension)) return
@@ -10704,7 +10654,7 @@ return//*/
 		p.cOffsetY = cameraEnt.swimming || cameraEnt.type !== "Player" ? 0 : cameraEnt.offsetY+cameraEnt.parts.head.y*p.scale*p.actualSize+hsize//p.height*0.5-pTopH*p.scale
     p.offsetDist = 1e9
     p.cOffsetFound = false
-    if(!p.thirdPerson && !performFast && cameraEnt.type === "Player"){
+    if(!p.thirdPerson && !performFast && cameraEnt.type === "Player" && !p.spectator){
       let diff = (now - p.lastUpdate) / tickTime
       if (diff > 1) diff = 1
       let rx = lerp(diff,p.prx,p.rx)
@@ -22075,11 +22025,188 @@ r 11 y  n  n  n
 			})
 		}
   }
+	async function joinEaglerServer(){
+		let url = prompt("Enter address without 'wss://'. example: play.example.com")
+		let username = prompt("Username")
+		if(!window.mcProtocol) await import("mcProtocol.js")
+		await window.mcProtocol.dataPrefetch("pc","1.8", addToBottomRightList)
+		clearBottomRightList()
+		multiplayer = window.mcProtocol.createClient({host:url,port:"443",username,version:"1.8"})
+		multiplayer.on("error", console.error)
+		multiplayer.on("playerJoin", e => {
+			play()
+		})
+		multiplayer.on("end", reason => {
+			multiplayer = null
+			multiplayerError = {data:reason}
+			changeScene("multiplayer lost")
+		})
+		const mcData = window.mcProtocol.data.pc['1.8']
+		initMcData(mcData)
+		const {conv, parseMetadata, updateAttributes} = window.mcProtocol
+		world = new World()
+		world.isMK = false
+		win.world = world
+		world.version = "1.8.8. eagler"
+		multiplayer.on("packet", (o, {name}) => {
+switch(name){
+	case "chat":{
+		let data = JSON.parse(o.message)
+		Messages.add((data.color?"<span style='color:"+data.color+";'>":"")+data.text)
+		break
+	}
+	case "update_time":{
+		worldTime = (o.time/24000)*1000+250
+		break
+	}
+	case "spawn_position":{
+		world.spawnPoint.x = o.location.x
+		world.spawnPoint.y = o.location.y
+		world.spawnPoint.z = o.location.z
+		break
+	}
+	case "update_health":{
+		p.health = o.health
+		p.food = o.food
+		p.foodSaturation = o.foodSaturation
+		break
+	}
+	case "respawn":{
+		p.dimension = o.dimension === -1 ? "nether" : o.dimension === 1 ? "end" : ""
+		world.loaded.length = 0
+		world.lastChunk = ","
+		p.gameMode = o.gamemode === 0 ? "survival" : o.gamemode === 1 ? "creative" : o.gamemode === 2 ? "survival" : "creative"
+		break
+	}
+	case "position":{
+		p.x = (o.flags&1) ? p.x+o.x/32 : o.x/32
+		p.y = (o.flags&2) ? p.x+o.y/32 : o.y/32
+		p.z = (o.flags&4) ? p.x+o.z/32 : o.z/32
+		p.ry = (o.flags&8) ? p.ry+o.yaw : o.yaw
+		p.rx = (o.flags&16) ? p.rx+o.pitch : o.pitch
+		break
+	}
+	case "held_item_slot":{
+		inventory.hotbarSlot = o.slot
+		break
+	}
+	case "bed":{
+		let other = getEntityOrPlayer(o.entityId+"")
+		other.sleeping = true
+		other.x = o.location.x
+		other.y = o.location.y
+		other.z = o.location.z
+		break
+	}
+	case "animation":{
+		let other = getEntityOrPlayer(o.entityId+"")
+		if(o.animation === 0) other.punchEffect = 10
+		else if(o.animation === 1) other.harmEffect = 30
+		break
+	}
+	case "named_entity_spawn":{
+		let p = players[o.entityId] = new Player()
+		p.UUID = o.playerUUID
+		p.setPos(o.x,o.y,o.z,0,0,0)
+		p.setRot(o.pitch,o.yaw)
+		p.holding = o.currentItem
+		p.metadata = parseMetadata(o.metadata)
+		break
+	}
+	case "spawn_entity":{
+		let type = internalIdToEntity[o.type]
+		if(type === undefined) type = entities[entityIds.BlockEntity]
+		world.posEntity({block:blockIds.redConcrete, ...o, id:o.entityId+"", entId:type, dimension:p.dimension, x:o.x/32, y:o.y/32, z:o.z/32},undefined,undefined,true)
+		break
+	}
+	case "spawn_entity_living":{
+		let type = internalIdToEntity[o.type]
+		if(type === undefined) type = entities[entityIds.BlockEntity]
+		world.posEntity({block:blockIds.redConcrete, ...o, id:o.entityId+"", entId:type, dimension:p.dimension, x:o.x/32, y:o.y/32, z:o.z/32},undefined,undefined,true)
+		break
+	}
+	case "spawn_entity_experience_orb":{
+		let type = entities[entityIds.ExperienceOrb]
+		world.posEntity({...o, id:o.entityId+"", entId:type, dimension:p.dimension, amount:o.count, x:o.x/32, y:o.y/32, z:o.z/32},undefined,undefined,true)
+		break
+	}
+	case "entity_destroy":{
+		for(let i of o.entityIds){
+			world.deleteEntity(i+"",true)
+		}
+		break
+	}
+	case "rel_entity_move":{
+		let e = getEntityOrPlayer(o.entityId)
+		e.x += o.dX/32
+		e.y += o.dY/32
+		e.z += o.dZ/32
+		break
+	}
+	case "entity_look":{
+		let e = getEntityOrPlayer(o.entityId)
+		e.yaw = conv.fromNotchianYawByte(o.yaw)
+		e.pitch = conv.fromNotchianPitchByte(o.pitch)
+		break
+	}
+	case "entity_move_look":{
+		let e = getEntityOrPlayer(o.entityId)
+		e.x += o.dX/32
+		e.y += o.dY/32
+		e.z += o.dZ/32
+		e.yaw = conv.fromNotchianYawByte(o.yaw)
+		e.pitch = conv.fromNotchianPitchByte(o.pitch)
+		break
+	}
+	case "entity_teleport":{
+		let e = getEntityOrPlayer(o.entityId)
+		e.x = o.x/32
+		e.y = o.y/32
+		e.z = o.z/32
+		e.yaw = conv.fromNotchianYawByte(o.yaw)
+		e.pitch = conv.fromNotchianPitchByte(o.pitch)
+		break
+	}
+	case "entity_teleport":{
+		let e = getEntityOrPlayer(o.entityId)
+		if(e.parts && e.parts.head) e.parts.head.yaw = conv.fromNotchianYawByte(o.headYaw)
+		break
+	}
+	case "entity_status":{break}//todo
+	case "attach_entit":{
+		let e = getEntityOrPlayer(o.entityId)
+		if(!o.leash) e.riding = o.vechileId === -1 ? null : o.vechileId+""
+		break
+	}
+	case "entity_metadata":{
+		parseMetadata(o.metadata, getEntityOrPlayer(o.entityId).metadata)
+		break
+	}
+	case "experience":{
+		p.XP = o.experienceBar
+		p.nextLevel = 1
+		p.level = o.level
+		break
+	}
+	case "map_chunk":{
+		
+		break
+	}
+}
+		})
+	}
 
 	function handleservererror(e){
 		//logError(e)
 		stopTicking = true
 		throw e
+	}
+
+	function initMcData(mcData){
+		let internalIdToEntity = []
+		for(let e of mcData.entities){
+			internalIdToEntity[e.internalId] = entityIds[e.name]
+		}
 	}
   
 	let {biomeData, biomeIds} = win
@@ -22143,6 +22270,7 @@ r 11 y  n  n  n
       this.version = version
 
 			//Initialize the world's arrays
+			this.chunks = {}
 			this.loaded = []
 			this.prevLoaded = []
 			this.sortedChunks = []
@@ -22167,6 +22295,7 @@ r 11 y  n  n  n
 			this.skylightDir = new PVector(0,0,0)
 			this.sunDir = new PVector(0,0,0)
 			this.particles = []
+			this.isMK = true
 		}
 		getAdjacentSubchunks(x, y, z, type, dimension) {
       let minChunkX = x - 16 >> 4
@@ -22222,11 +22351,18 @@ r 11 y  n  n  n
 				chunk.updateBlock(x & 15, y, z & 15, lazy, noOnupdate, sx,sy,sz)
 			}
 		}
-		getChunk(x, z, dimension) {
-      let lwidth = this.lwidth
-			let X = (x >> 4) + this.offsetX
-			let Z = (z >> 4) + this.offsetZ
-			return X >= 0 && X < lwidth && Z >= 0 && Z < lwidth && this.loaded[X * lwidth + Z] || null
+		getChunk(x, z) {
+			return this.chunks[x >> 4] && this.chunks[x >> 4][z >> 4]
+		}
+		getOrNewChunk(x,z,dimension){
+			const xm = x>>4, zm = z>>4
+			if (!this.chunks[xm]) {
+				this.chunks[xm] = []
+			}
+			if (!this.chunks[xm][zm]) {
+				return this.chunks[xm][zm] = new Chunk(xm<<4, zm<<4, dimension,this)
+			}
+			return this.chunks[xm][zm]
 		}
 		getBlock(x, y, z, dimension) {
       let lwidth = this.lwidth
@@ -22252,17 +22388,19 @@ r 11 y  n  n  n
 			let xm = x & 15
 			let zm = z & 15
       let prev = chunk.getBlock(xm,y,zm)
-			if (blockID) {
-				let data = blockData[blockID]
-				chunk.setBlock(xm, y, zm, blockID, !lazy)
-				if (!lazy && chunk.buffer && (!data.transparent || data.lightLevel || data.decreaseLight) && chunk.lit) {
-					this.updateLight(x, y, z, true, data.lightLevel, dimension)
-				}
-			} else {
-				let data = blockData[prev]
-				chunk.deleteBlock(xm, y, zm, !lazy)
-				if (!lazy && chunk.buffer && (!data.transparent || data.lightLevel || data.decreaseLight) && chunk.lit) {
-					this.updateLight(x, y, z, false, data.lightLevel, dimension)
+			if(this.isMK){
+				if (blockID) {
+					let data = blockData[blockID]
+					chunk.setBlock(xm, y, zm, blockID, !lazy)
+					if (!lazy && chunk.buffer && (!data.transparent || data.lightLevel || data.decreaseLight) && chunk.lit) {
+						this.updateLight(x, y, z, true, data.lightLevel, dimension)
+					}
+				} else {
+					let data = blockData[prev]
+					chunk.deleteBlock(xm, y, zm, !lazy)
+					if (!lazy && chunk.buffer && (!data.transparent || data.lightLevel || data.decreaseLight) && chunk.lit) {
+						this.updateLight(x, y, z, false, data.lightLevel, dimension)
+					}
 				}
 			}
       
@@ -22586,17 +22724,17 @@ r 11 y  n  n  n
 				this.alwaysRenderEntities.splice(i,1)
 			}
     }
-    posEntity(p, m, preBetaVersion/*preBetaVersion only used in loadsave*/){
+    posEntity(p, m, preBetaVersion/*preBetaVersion only used in loadsave*/, objFormat){
 			if (typeof p === "string") {
 				try {
 					p = BitArrayReader(atoarr(p),true)
 				}catch(e){
 					return
 				}
-			}else if(!(p instanceof BitArrayReader)) return
+			}else if(!objFormat && !(p instanceof BitArrayReader)) return
 			if(p.data[0] !== 0 || preBetaVersion) return this.posEntityOldBab(p, m, preBetaVersion)
 			let now = performance.now()
-			p = bitArrayToPacket(p,this.entityPacketType)
+			if(!objFormat) p = bitArrayToPacket(p,this.entityPacketType)
 			const entType = entityOrder[p.entId]
 			let ent = this.getEntity(p.id)
 			if(ent){
@@ -22832,7 +22970,7 @@ r 11 y  n  n  n
 				if(players[e].sleeping) sleepCount++
 				sleepTotal++
 			}
-			allSleeping = sleepCount === sleepTotal
+			allSleeping = this.isMK && sleepCount === sleepTotal
 
       if(worldSettings.dayNightCycle){
         if(screen === "sleep" && allSleeping){
@@ -22840,7 +22978,7 @@ r 11 y  n  n  n
         }else worldTime += 0.125
       }
       if(rand() > 0.2) flicker = rand() > 0.9
-			if(worldSettings.weatherCycle && host){
+			if(worldSettings.weatherCycle && this.isMK){
 				nextWeather -= (screen === "sleep" && allSleeping) ? 6.25 : 0.125
 				if(nextWeather <= 0) {
 					nextWeather = 0
@@ -22906,13 +23044,13 @@ r 11 y  n  n  n
 					doneWork = true
 					debug("Weather Meshes")
 				}
-				if (!doneWork && this.unlightingQueue.length) {
+				if (!doneWork && this.unlightingQueue.length && this.isMK) {
 					let chunk = this.unlightingQueue[this.unlightingQueue.length-1]
 					chunk.unfillLight()
 					doneWork = true
 				}
 				// Spread light
-				if (!doneWork && this.lightingQueue.length) {
+				if (!doneWork && this.lightingQueue.length && this.isMK) {
 					let chunk = this.lightingQueue[this.lightingQueue.length-1]
 					chunk.fillLight()
 					if(chunk.lit){
@@ -23328,10 +23466,6 @@ p.camera.transformation.elements.set(matrix)//*/
 			let pOffsetX = this.offsetX
 			let pOffsetZ = this.offsetZ
 			let plwidth = this.lwidth
-			let temp = this.prevLoaded
-			this.prevLoaded = this.loaded
-			this.loaded = temp
-
 			this.offsetX = -minChunkX
 			this.offsetZ = -minChunkZ
 			this.lwidth = renderDistance * 2 + 1
@@ -23350,10 +23484,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				for (let z = minChunkZ; z <= maxChunkZ; z++) {
 					let X = x + this.offsetX
 					let Z = z + this.offsetZ
-					let pX = x + pOffsetX
-					let pZ = z + pOffsetZ
-					let chunk = pX >= 0 && pX < plwidth && pZ >= 0 && pZ < plwidth && this.prevLoaded[pX * plwidth + pZ]
-					if(!chunk) chunk = new Chunk(x * 16, z * 16, d, this)
+					let chunk = this.getOrNewChunk(x*16,z*16,d)
 					this.loaded[X * this.lwidth + Z] = chunk
 					if(maxDist(cx, cz, x, z) <= actualRenderDistance){
 						if (!chunk.buffer && !this.chunkGenQueue.includes(chunk)) {
@@ -23362,6 +23493,15 @@ p.camera.transformation.elements.set(matrix)//*/
 					}else unfillReqs(x, z, d, maxDist(cx, cz, x, z)-actualRenderDistance, chunk)
 					if(!chunk.loaded) this.neededChunks.push(chunk)
 					this.loaded[i++] = chunk
+				}
+			}
+			for (let x = -pOffsetX; x <= -pOffsetX+plwidth; x++) {
+				for (let z = -pOffsetZ; z <= -pOffsetZ+plwidth; z++) {
+					let nX = x + this.offsetX
+					let nZ = z + this.offsetZ
+					if(!(nX >= 0 && nX < this.lwidth && nZ >= 0 && nZ < this.lwidth)){
+						if(this.getChunk(x*16,z*16,d)) delete this.chunks[x][z]
+					}
 				}
 			}
 
@@ -23387,7 +23527,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				}
       }
 
-			send({type:"loadChunks",data:this.neededChunkCoords,loadDistance:renderDistance,dimension:p.dimension})
+			if(this.isMK) send({type:"loadChunks",data:this.neededChunkCoords,loadDistance:renderDistance,dimension:p.dimension})
 		}
     getTop(x,z,dimension){
       let chunk = this.getChunk(x,z,dimension)
@@ -24226,6 +24366,7 @@ p.camera.transformation.elements.set(matrix)//*/
       window.open("https://"+servers[selectedWorld].url, "_blank")
     }, () => !(servers[selectedWorld] && servers[selectedWorld].url))*/
     Button.add(mid - 3 * x4, height - 40*ss, w4, 40*ss, "Reload", "multiplayer menu", initServersMenu)
+    Button.add(mid - 1 * x4, height - 40*ss, w4, 40*ss, "Join eaglercraft server (Experimental)", "multiplayer menu", joinEaglerServer)
 		Button.add(mid + 3 * x4, height - 40*ss, w4, 40*ss, "Back", "multiplayer menu", r => changeScene("main menu"))
 		
     //multiplayer connecting buttons

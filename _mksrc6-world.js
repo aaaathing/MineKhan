@@ -2535,7 +2535,7 @@ const blockData = [
 		drop:"air",
 		density:2,
 		inLiquid:2,
-		flowSound:"liquid.lava",
+		ambientSound:"liquid.lava",
 		getLevelDifference:function(level,dimension){return dimension === "nether" ? level-1 : level-2},
 		tick:function(x,y,z,world){
 			blockData[blockIds.fire].spread(x,y,z,world)
@@ -11385,7 +11385,63 @@ const blockData = [
 	{
 		name:"debugStick",
 		item:true,
-		hidden:true
+		hidden:true,
+		Name:function(){
+			let str
+			if(blockMode === CUBE) str = "Get Tags"
+			else if(blockMode === SLAB) str = "Change Block State"
+			else if(blockMode === STAIR) str = "Change Block Rotation"
+			else str = "No Function"
+			return "Debug Stick: "+str
+		},
+		serveronuse: function(x,y,z, block,world,face,item,p){
+			if(blockMode === CUBE) this.useGetTags(x,y,z, block, world)
+			else if(blockMode === SLAB) this.useChangeBlockState(x,y,z, block, world)
+			else if(blockMode === STAIR) this.useChangeBlockRotation(x,y,z, block, world)
+		},
+		useGetTags: (x,y,z, block, world) => {
+			let tags = world.getTags(x,y,z)
+			let str = "§dDEBUG<br>"
+			if(block && blockData[block].tagBits){
+				for(let i in blockData[block].tagBits){
+					str += i+": "+getTagBits(tags,i,block)+"<br>"
+				}
+			}else str += JSON.stringify(tags)
+			Messages.add(str)
+		},
+		useChangeBlockState: (x,y,z, block, world) => {
+			if(!block) return
+			let base = block&(isCube|ROTATION)
+			let states = [
+				CUBE,SLAB,STAIR,CROSS,TALLCROSS,DOOR,TORCH,LANTERN,LANTERNHANG,BEACON,
+				CACTUS,PANE,PORTAL,WALLFLAT,TRAPDOOR,TRAPDOOROPEN,FENCE,WALLPOST,
+				BUTTON,CHAIN,POT,POTCROSS,CORNERSTAIRIN,CORNERSTAIROUT,VERTICALSLAB
+			]
+			let state = block&isState//remove id and rotation, leaving block state
+			let idx = states.indexOf(state)
+			do{
+				idx++
+				if(idx >= states.length) idx = 0
+				state = states[idx]
+			}while(!blockData[block|state])
+			world.setBlock(x,y,z,base|state,false,true,false,true)
+		},
+		useChangeBlockRotation: (x,y,z, block, world) => {
+			if(!block) return
+			let base = block&(~ROTATION)&(~FLIP)
+			let states = [
+				NORTH,SOUTH,EAST,WEST,
+				NORTH|FLIP,SOUTH|FLIP,EAST|FLIP,WEST|FLIP
+			]
+			let state = block&(ROTATION|FLIP)
+			let idx = states.indexOf(state)
+			do{
+				idx++
+				if(idx >= states.length) idx = 0
+				state = states[idx]
+			}while(!blockData[block|state])
+			world.setBlock(x,y,z,base|state,false,true,false,true)
+		}
 	},
 	{
 		name: "oil",
