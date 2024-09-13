@@ -8377,6 +8377,20 @@ Division: //
   let viewBobIntensity = 0, prevViewBobIntensity = 0, prevViewBob = false, viewBobCount = 0, lastViewBobCount = 0
   let eatSoundTimer = 0
   let doEndPoem = false, didEndPoem = false
+	function showEndPoem(){
+		doEndPoem = true
+		changeScene("endPoem")
+		releasePointer()
+		endPoemVideo.classList.remove("hidden")
+		endPoemVideo.currentTime = 0
+		endPoemVideo.onended = () => {
+			doEndPoem = false
+			endPoemVideo.classList.add("hidden")
+			endPoemVideo.pause()
+		}
+		endPoemVideo.src = atob("aHR0cHM6Ly9pYTgwMTYwMi51cy5hcmNoaXZlLm9yZy8xMS9pdGVtcy9SaWNrX0FzdGxleV9OZXZlcl9Hb25uYV9HaXZlX1lvdV9VcC9SaWNrX0FzdGxleV9OZXZlcl9Hb25uYV9HaXZlX1lvdV9VcC5tcDQ=")
+		endPoemVideo.play()
+	}
 	let hostileMobNearbyTimer = 0
 	let inventory = {
 		//hotbar: [0,0,0,0,0,0,0,0,0],
@@ -21957,18 +21971,7 @@ r 11 y  n  n  n
 				}else if(data.type === "portalOut"){
 					portalFadeOutEffect = 100
 				}else if(data.type === "doEndPoem"){
-					doEndPoem = true
-					changeScene("endPoem")
-					releasePointer()
-					endPoemVideo.classList.remove("hidden")
-					endPoemVideo.currentTime = 0
-					endPoemVideo.onended = () => {
-						doEndPoem = false
-						endPoemVideo.classList.add("hidden")
-						endPoemVideo.pause()
-					}
-					endPoemVideo.src = atob("aHR0cHM6Ly9pYTgwMTYwMi51cy5hcmNoaXZlLm9yZy8xMS9pdGVtcy9SaWNrX0FzdGxleV9OZXZlcl9Hb25uYV9HaXZlX1lvdV9VcC9SaWNrX0FzdGxleV9OZXZlcl9Hb25uYV9HaXZlX1lvdV9VcC5tcDQ=")
-					endPoemVideo.play()
+					showEndPoem()
 				}else if(data.type === "safeEval") {
 					safeEval(data.data)
 				}else if(data.type === "error"){
@@ -22047,7 +22050,7 @@ r 11 y  n  n  n
 		})
 		multiplayer.on("end", reason => {
 			multiplayer = null
-			multiplayerError = {data:reason}
+			multiplayerError = multiplayerError || {data:reason}
 			changeScene("multiplayer lost")
 		})
 		const mcData = window.mcProtocol.data.pc['1.8']
@@ -22245,6 +22248,119 @@ switch(name){
 		e.crack = o.destroyStage
 		break
 	}
+	case "explosion":{
+		for(let pos of o.affectedBlockOffsets){
+			world.setBlock(o.x+pos.x,o.y+pos.y,o.z+pos.z,0, false,false,true,false, p.dimension)
+		}
+		break
+	}
+	case "world_event":{
+		switch(o.effectId){
+			case 1000: playSound("click",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1001: playSound("click",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1002: playSound("random.bow",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1003: playSound("wooden_door.open",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1004: playSound("random.fizz",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1005: Messages.add("play music disc "+o.data,0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1007: playSound("mob.ghast.charge",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1008: playSound("mob.ghast.fireball",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1009: playSound("mob.ghast.fireball",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1010: playSound("mob.zombie.wood",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1011: playSound("mob.zombie.metal",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1012: playSound("mob.zombie.woodbreak",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1013: playSound("mob.wither.spawn",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1014: playSound("mob.wither.shoot",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1015: playSound("mob.bat.takeoff",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1016: playSound("mob.zombie.infect",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1017: playSound("mob.zombie.unfect",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1018: playSound("mob.enderdragon.end",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1020: playSound("random.anvil_break",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1021: playSound("random.anvil_use",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 1022: playSound("random.anvil_land",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
+			case 2000:{
+				if(!performFast) for(let i=0; i<o.amount; i++){
+					world.addParticle(new entities[entityIds.SmokeParticle](o.location.x+rand()-0.5,o.location.y+rand()-0.5,o.location.z+rand()-0.5),p.dimension)
+				}
+				break
+			}
+			case 2001: blockParticles(o.data, o.location.x,o.location.y,o.location.z, 30, "breaking", world,p.dimension, null,true); break
+			case 2002: Messages.add("splash potion sound"); break
+			case 2003: Messages.add("eye of ender break sound");break
+			case 2005: glint(o.location.x,o.location.y,o.location.z, p.dimension,true); break
+		}
+		break
+	}
+	case "sound_effect":{
+		playSound(o.soundName,0,o.volume,o.pitch,posSound(o.x,o.y,o.z))
+		break
+	}
+	case "world_particles":{
+		switch(o.particleId){
+			//todo
+		}
+		break
+	}
+	case "game_state_change":{
+		switch(o.reason){
+			case 1: weather = "clear"; break
+			case 2: weather = "rain"; break
+			case 3:{
+				p.gameMode = o.gameMode === 0 ? "survival" : o.gameMode === 1 ? "creative" : o.gameMode === 2 ? "survival" : "spectator"
+				break
+			}
+			case 4: showEndPoem(); break
+		}
+		break
+	}
+	case "spawn_entity_weather":{
+		Messages.add("a thunder striked at "+o.x+","+o.y+","+o.z)
+		break
+	}
+	case "open_window":{
+		Messages.add("open_window")//todo
+		break
+	}
+	case "close_window":{
+		Messages.add("close_window")//todo
+		break
+	}
+	case "update_sign":{
+		//todo
+		break
+	}
+	case "tile_entity_data":{
+		//todo
+		break
+	}
+	case "open_sign_entity":{
+		editSign(o.location.x,o.location.y,o.location.z,p.dimension)
+		break
+	}
+	case "statistics": break
+	case "scoreboard_objective": break//todo
+	case "scoreboard_score": break//todo
+	case "scoreboard_display_objective":break
+	case "scoreboard_team":break
+	case "kick_disconnect":{
+		multiplayerError = {data:o.reason}
+		break
+	}
+	case "title":{
+		titleShowing = true
+		switch(o.action){
+			case 0: title = o.text; break
+			case 1: subtitle = o.text; break
+			case 2: titleFadeIn = o.fadeIn*50; titleFadeOut = o.fadeOut*50; titleStay = o.stay*50; titleStart = Date.now(); break
+			case 3: titleShowing = false; break
+			case 4: titleShowing = false; title = ""; subtitle = ""; break
+		}
+		break
+	}
+	case "resource_pack_send":{
+		Messages.add("cannot use resource pack (incompatible) "+o.url)
+		break
+	}
+	case "update_entity_nbt":break//todo
 }
 		})
 	}
