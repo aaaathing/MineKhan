@@ -1747,6 +1747,9 @@ With touch screen:
 			if(lightMethod == 1 || lightMethod == 2){
 				light = light*0.5+0.5;
 			}
+			if(lightMethod == -1){
+				light = 0.75+light*0.25;
+			}
 			lightTint = vec3(1.,1.,1.);
 			#ifndef GRAPHICS_MORE_REAL
 				vec3 blockLightColor = flicker ? vec3(1.2,1,0.4) : vec3(1.2,0.975,0.375);
@@ -6643,6 +6646,11 @@ ROTATION = 0x1800 // Mask for the direction bits
 			enter:[window.achievments],
 			exit:[window.achievments],
 			onenter:initAchievmentsMenu
+		},
+		dead:{
+			onenter:() => {
+				waitingRespawn = false
+			}
 		}
 	}
 	commandBlock.querySelector("button").onclick = () => play()
@@ -7187,9 +7195,8 @@ Division: //
 			let toPlay = !messageInput.value
       if(toPlay) play()
 
-			if(!world.isMK) return send({type:"message", data:msg})
-			
-      if(messageInput.value[0] === "/"){
+			if(!world.isMK) send({type:"message", data:messageInput.value})
+			else if(messageInput.value[0] === "/"){
         this.add("<span style='font-family:thefont;'>"+messageOverlay.innerHTML+"</span>")
         this.history.unshift(messageInput.value)
 				runCmd(messageInput.value)
@@ -7430,7 +7437,7 @@ Division: //
 		},
     updateInput(){
       let value = messageInput.value
-      if(value.startsWith("/")){
+      if(value.startsWith("/") && world.isMK){
 				let {str,overlay} = this.hilightCommand(messageInput,true)
         if(str !== messageHints.innerHTML){
           messageHints.innerHTML = str
@@ -7966,6 +7973,7 @@ Division: //
   let inLiquid = 0, prevInLiquid = 0 //camera is in liquid
   let waterFogColor = [1,1,1]
   let wet = false
+	let disableLighting = false
   let blockHere = 0
   let blockHereEntity = new Array(8)
   let tick = false, lastTick = 0, now = performance.now()
@@ -8877,6 +8885,8 @@ otherwise
 		mkBlockCount = BLOCK_COUNT
 		mkBlockInfoIds = blockInfoIds
 		mkInventoryBlocks = inventoryBlocks
+		win.blockData = blockData
+		win.blockIds = blockIds
 	}
     
 	let indexOrder;
@@ -11308,7 +11318,6 @@ return//*/
       ontouch(touchX, touchY, touchZ, p.dimension)
     }
 
-		p.lastUpdate = now
 		contacts.clear()
     if(p.spectator && p.spectating){
       let s = p.spectating
@@ -11682,27 +11691,28 @@ return//*/
 			let mag = sqrt(move.x*move.x+move.z*move.z)
 			if(mag > 1) move.x /= mag, move.z /= mag
 		}
-    
-    p.walking = (move.x || move.z) && true
-    if(p.walking) p.lastActive = now
-
-		//Update the velocity, rather than the position.
-		let co = cos(p.ry)
-		let si = sin(p.ry)
-    let speedFactor = blockData[p.standingOn].speedFactor
-		let friction = liquid ? (p.swimming ? 1 : 0.4) : (p.onGround ? 1 : 0.3)
-    if(speedFactor){
-      friction *= speedFactor
-    }
-    if(p.swimming && liquid){
-      let d = p.direction
-      p.velocity.x += (d.x * move.z) * friction
-      if(p.inLiquid || d.y < 0) p.velocity.y += (d.y * move.z) * friction - p.gravityStength
-      p.velocity.z += (d.z * move.z) * friction
-    }else{
-      p.velocity.x += (co * move.x - si * move.z) * friction
-      p.velocity.z += (si * move.x + co * move.z) * friction
-    }
+		
+		p.walking = (move.x || move.z) && true
+		if(p.walking) p.lastActive = now
+		if(world.isMK){
+			//Update the velocity, rather than the position.
+			let co = cos(p.ry)
+			let si = sin(p.ry)
+			let speedFactor = blockData[p.standingOn].speedFactor
+			let friction = liquid ? (p.swimming ? 1 : 0.4) : (p.onGround ? 1 : 0.3)
+			if(speedFactor){
+				friction *= speedFactor
+			}
+			if(p.swimming && liquid){
+				let d = p.direction
+				p.velocity.x += (d.x * move.z) * friction
+				if(p.inLiquid || d.y < 0) p.velocity.y += (d.y * move.z) * friction - p.gravityStength
+				p.velocity.z += (d.z * move.z) * friction
+			}else{
+				p.velocity.x += (co * move.x - si * move.z) * friction
+				p.velocity.z += (si * move.x + co * move.z) * friction
+			}
+		}
 
     if(p.spectator && p.spectating){
       let s = p.spectating
@@ -11982,6 +11992,7 @@ return//*/
 			p.previousX = p.x
 			p.previousY = p.y
 			p.previousZ = p.z
+			p.lastUpdate = now
 			
 			if(world.isMK) resolveContactsAndUpdatePosition(now)
 			else world.playerPhysics()
@@ -12182,6 +12193,12 @@ return//*/
     p.punchEffect = 10 //easy to understand
     
 		let pos = hitBox.pos
+
+		if(!world.isMK){
+			p.lastBreak = Date.now()
+			send({type:"break",x:pos[0],y:pos[1],z:pos[2],})
+			return
+		}
 		if(pos && pos[1] >= minHeight && pos[1] < maxHeight) {
 			let prevBlock = world.getBlock(pos[0],pos[1],pos[2],p.dimension)
 			world.setBlock(pos[0],pos[1],pos[2], 0, false,true,true,false,p.dimension)
@@ -12243,6 +12260,13 @@ return//*/
     let pos = hitBox.pos,x,y,z, face = hitBox.face
     if(pos) x = pos[0], y = pos[1], z = pos[2]
     let cblock = pos ? world.getBlock(x, y, z, p.dimension) : 0
+		
+		if(!world.isMK){
+			if(!hitBox.pos) return
+			p.lastPlace = Date.now()
+			send({type:"place",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2], cx: (p.direction.x*hitBox.closest-(hitBox.pos[0]-round(p.x))), cy: (p.direction.y*hitBox.closest-(hitBox.pos[1]-round(p.y))), cz: (p.direction.z*hitBox.closest-(hitBox.pos[2]-round(p.z))) })
+			return
+		}
     
     let adjholding = holding
     if(adjholding && pos && blockData[adjholding].useAs){
@@ -12443,7 +12467,7 @@ return//*/
       crack.prevPos = hitBox.pos
       crack.soundTimer = 0
       crack.breakStart = now
-			send({type:"startBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]})
+			if(breakingStart) send({type:"startBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]})
     }
     if(breaking){
       let usingTool = false
@@ -12489,6 +12513,7 @@ return//*/
 				crack.idx = -1
       }
     }else{
+			if(crack.idx !== -1 && !world.isMK && hitBox.pos) send({type:"stopBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]})
       crack.idx = -1
       crack.breakStart = now
       crack.soundTimer = 0
@@ -14016,6 +14041,11 @@ r 11 y  n  n  n
 			return this.sections[y >> 4].getLight(x, y & 15, z, blockLight)
 		}
 		fillLight() {
+			if(!this.world.isMK){
+				this.lit = true
+				return
+			}
+			
 			if(host){
 				let otherChunk = serverWorld[this.type].getChunk(this.x*16,this.z*16)
 				if(otherChunk && otherChunk.lit){
@@ -14110,6 +14140,11 @@ r 11 y  n  n  n
 			this.lit = true
 		}
 		unfillLight(){
+			if(!this.world.isMK){
+				this.lit = false
+				return
+			}
+			
 			let max = this.sections.length * 16 - 1 + minHeight
 			let spread = [], blspread = []
 			for (let x = 0; x < 16; x++) {
@@ -14638,6 +14673,7 @@ r 11 y  n  n  n
 		}
 		loadCopy(){
 			let serverChunk = serverWorld[this.type].getChunk(this.x,this.z)
+			if(!serverChunk) return
 			let importants = []
 			for(let s = 0; s < serverChunk.sections.length; s++){
 				this.sections[s] = new Section(this.x, s*16+minHeight, this.z, this)
@@ -14714,6 +14750,25 @@ r 11 y  n  n  n
 				} while (!this.sections[i])
 			}
 			return this.sections[i]
+		}
+		customLoadStart(){
+			this.tops = new Int16Array(256)
+			this.solidTops = new Int16Array(256)
+			this.biomes = new Uint8Array(256)
+			this.caveY = new Int16Array(512)
+			this.caveBiomes = new Uint8Array(256)
+		}
+		customLoadEnd(){
+			let maxY = this.sections.length*16 - minHeight + 15
+			for(let x=0; x<16; x++) for(let z=0; z<16; z++){
+				this.updateSolidTop(x,maxY,z,0)
+			}
+			if(this.doubleRender){
+				if (!this.world.doubleRenderChunks.includes(this)) {
+          this.world.doubleRenderChunks.push(this)
+        }
+			}
+			this.loaded = true
 		}
 		unload(){
 			for(let i in this.entities){
@@ -20873,14 +20928,15 @@ r 11 y  n  n  n
 		// Chunks must all be loaded first.
 		if(dimension !== p.dimension) return
 		let done = true
-		for (let i = x - 2; i <= x + 2; i++) {
-			for (let j = z - 2; j <= z + 2; j++) {
+		const loadArea = world.isMK ? 2 : 1
+		for (let i = x - loadArea; i <= x + loadArea; i++) {
+			for (let j = z - loadArea; j <= z + loadArea; j++) {
 				let chunk = world.getChunk(i*16,j*16,dimension)//world.loaded[(i + world.offsetX) * world.lwidth + j + world.offsetZ]
 				if (!chunk || !chunk.loaded){
 					done = false
 					continue
 				}
-				if (!chunk.lit && i >= x - 1 && i <= x + 1 && j >= z - 1 && j <= z + 1) {
+				if (world.isMK && !chunk.lit && i >= x - 1 && i <= x + 1 && j >= z - 1 && j <= z + 1) {
 					world.lightingQueue.push(chunk)
 					done = false
 				}
@@ -21677,7 +21733,6 @@ r 11 y  n  n  n
 					achievments = data.achievments
 					p.gameMode = data.gameMode//default game mode
 					cheats = data.cheats
-					waitingRespawn = false
 					/*if(data.inv){
 						if(data.inv.inv && data.inv.inv.length){
 							try{
@@ -21937,7 +21992,6 @@ r 11 y  n  n  n
 					containerData.anvilCost = data.cost
 				}else if(data.type === "respawn"){
     			p.die = false
-					waitingRespawn = false
 					goToLoadScreen()
 				}else if(data.type === "health"){
 					if(data.health > p.health){
@@ -22079,6 +22133,7 @@ r 11 y  n  n  n
 		multiplayer.on("end", reason => {
 			multiplayer = null
 			multiplayerError = multiplayerError || {data:reason}
+			updateTitle(false)
 			changeScene("multiplayer lost")
 		})
 		const mcData = window.mcProtocol.getMCData("1.8")
@@ -22114,6 +22169,8 @@ r 11 y  n  n  n
 		BLOCK_COUNT = 0
 		blockInfoIds = {}
 		//todo inventoryBlocks, items
+		win.blockData = blockData
+		win.blockIds = blockIds
 		genIcons()
 		initBlockEntities()
 		
@@ -22121,10 +22178,13 @@ r 11 y  n  n  n
 		world.isMK = false
 		win.world = world
 		world.version = "1.8.8. eagler"
+		updateTitle(true)
 		let proxyworld = {
 			getBlock(pos){
 				let id = world.getBlock(pos.x,pos.y,pos.z)
-				return new Block(id>>4, 0/*todo biome*/, id&15)
+				let b = new Block(id>>4, 0/*todo biome*/, id&15)
+				b.position = pos.floored()
+				return b
 			}
 		}
 		let physics = Physics(mcData, proxyworld)
@@ -22148,67 +22208,117 @@ r 11 y  n  n  n
 			get sneak(){return controlMap.sneak.pressed}
 		})
 		world.playerPhysics = function(){
-			ps.pos.set(p.x,p.y,p.z)
+			ps.pos.set(pPos.x,pPos.y,pPos.z)
 			ps.vel.set(p.velocity.x,p.velocity.y,p.velocity.z)
+			ps.yaw = pPos.yaw
+			ps.pitch = pPos.pitch
 			physics.simulatePlayer(ps, proxyworld)
-			p.x = ps.pos.x
-			p.y = ps.pos.y
-			p.z = ps.pos.z
+			pPos.x = ps.pos.x
+			pPos.y = ps.pos.y
+			pPos.z = ps.pos.z
 			p.velocity.set(ps.vel)
+		}
+		const pPos = {
+			get x(){return p.x+0.5},
+			get y(){return p.y+0.5-physics.playerHeight*0.5},
+			get z(){return p.z+0.5},
+			set x(n){p.x=n-0.5},
+			set y(n){p.y=n-0.5+physics.playerHeight*0.5},
+			set z(n){p.z=n-0.5},
+			get yaw(){return Math.PI-p.ry},
+			get pitch(){return Math.PI-p.rx},
+			set yaw(n){p.ry=Math.PI-n},
+			set pitch(n){p.rx=Math.PI-n},
 		}
 		function mapChunk(cx,cz,groundUp,chunkData,bitMap){
 			let chunk = world.getOrNewChunk(cx*16,cz*16,p.dimension)
-			load_1_8(chunkData,bitMap, p.dimension ==="", groundUp, (index,blocks,blight,slight)=>{
-				let section = chunk.requireSection(index-(minHeight>>4))
+			if(!chunk.loaded) chunk.customLoadStart()
+			let has
+			load_1_8(chunkData,bitMap, p.dimension ==="", groundUp, (yindex,blocks,blight,slight)=>{
+				let section = chunk.requireSection(yindex-(minHeight>>4))
 				let i=0
-				let aln
 				for(let y=0;y<16;y++) for(let z=0;z<16;z++) for(let x=0;x<16;x++){
-					section.setBlock(x,y,z,blocks[i])
+					section.setBlock(x,y,z, blockData[blocks[i]] ? blocks[i] : 0)
 					section.setLight(x,y,z, (slight[i>>1]>>((1-(i&1)))*4), 0)
 					section.setLight(x,y,z, (blight[i>>1]>>((1-(i&1)))*4), 1)
+					if(blocks[i])has=true
 					i++
-					if(blocks[i-1])aln=true
 				}
-				if(aln)debugger
 			})
-			chunk.loaded = true
-			if(!world.meshQueue.includes(chunk)) world.meshQueue.push(chunk)
+			if(has)console.log("has",cx*16,cz*16)
+			chunk.customLoadEnd()
+		}
+		function getFace(){
+			return hitBox.face === "bottom" ? 0 : hitBox.face === "top" ? 1 : hitBox.face === "south" ? 2 : hitBox.face === "north" ? 3 : hitBox.face === "west" ? 4 : 5
 		}
 		multiplayer.send = data => {
 			let type, o
 			switch(data.type){
-				case "message": type = "chat"; o = {message:data.message}; break
+				case "message": type = "chat"; o = {message:data.data}; break
 				case "entInteract": type = "use_entity"; o = {target:+data.data, mouse:data.hit?1:0}; break
+				case "startBreak": type = "block_dig"; o = {status:0, location:{x:data.x,y:data.y,z:data.z}, face:getFace()}; break
+				case "stopBreak": type = "block_dig"; o = {status:0, location:{x:data.x,y:data.y,z:data.z}, face:getFace()}; break
+				case "dropItem": type = "block_dig"; o = {status:4}; break
+				case "stopPlace": type = "block_dig"; o = {status:5}; break
+				case "break": type = "block_dig"; o = {status:2, location:{x:data.x,y:data.y,z:data.z}, face:getFace()}; break
+				case "place": type = "block_place"; o = {location:{x:data.x,y:data.y,z:data.z}, direction:getFace(), cursorX:data.cx*16, cursorY:data.cy*16, cursorZ:data.cz*16}; break
+				case "hotbar": type = "held_item_slot"; o = {slotId:data.slot}; break
+				case "respawn": type = "client_command"; o = {payload:0}; break
 				default: return
 			}
 			multiplayer.write(type, o)
 		}
-		let prevX,prevY,prevZ, prevRx,prevRy, prevOnGround
+		let prevX,prevY,prevZ, prevRx,prevRy, prevOnGround, prevSneak, prevSprint, prevSleep, prevFly, prevLang, prevRenderDist
 		multiplayer.lastSendPos = 0
 		multiplayer.sendPos = () => {
-			let moved = prevX !== p.x || prevY !== p.y || prevZ !== p.z
-			let looked = prevRx !== p.rx || prevRy !== p.ry
-			if(moved) prevX = p.x, prevY = p.y, prevZ = p.z
-			if(looked) prevRx = p.rx, prevRy = p.ry
+			if(!multiplayer.hasStartedLoad) return
+			let moved = prevX !== pPos.x || prevY !== pPos.y || prevZ !== pPos.z
+			let looked = prevRx !== pPos.pitch || prevRy !== pPos.yaw
+			if(moved) prevX = pPos.x, prevY = pPos.y, prevZ = pPos.z
+			if(looked) prevRx = pPos.pitch, prevRy = pPos.yaw
 			let now = Date.now()
 			if(moved&&looked){
 				multiplayer.lastSendPos = now
-				multiplayer.write("position_look", {x:p.x,y:p.y,z:p.z,yaw:conv.toNotchianYaw(p.ry),pitch:conv.toNotchianYaw(p.rx),onGround:ps.onGround})
-				prevOnGround = onGround
+				multiplayer.write("position_look", {x:pPos.x,y:pPos.y-physics.playerHeight*0.5,z:pPos.z,yaw:conv.toNotchianYaw(pPos.yaw),pitch:conv.toNotchianYaw(pPos.pitch),onGround:ps.onGround})
+				prevOnGround = ps.onGround
 			}else if(moved){
 				multiplayer.lastSendPos = now
-				multiplayer.write("position", {x:p.x,y:p.y,z:p.z,onGround:ps.onGround})
-				prevOnGround = onGround
+				multiplayer.write("position", {x:pPos.x,y:pPos.y-physics.playerHeight*0.5,z:pPos.z,onGround:ps.onGround})
+				prevOnGround = ps.onGround
 			}else if(looked){
 				multiplayer.lastSendPos = now
-				multiplayer.write("look", {yaw:conv.toNotchianYaw(p.ry),pitch:conv.toNotchianYaw(p.rx),onGround:ps.onGround})
-				prevOnGround = onGround
-			}else if(prevOnGround !== onGround){
+				multiplayer.write("look", {yaw:conv.toNotchianYaw(pPos.yaw),pitch:conv.toNotchianYaw(pPos.pitch),onGround:ps.onGround})
+				prevOnGround = ps.onGround
+			}else if(prevOnGround !== ps.onGround){
+				multiplayer.lastSendPos = now
 				multiplayer.write("flying", {onGround:ps.onGround})
-				prevOnGround = onGround
+				prevOnGround = ps.onGround
+			}
+			if(prevSneak !== p.sneaking){
+				prevSneak = p.sneaking
+				multiplayer.write("entity_action", {entityId:+p.id, actionId:p.sneaking?0:1})
+			}
+			if(prevSprint !== p.sprinting){
+				prevSprint = p.sprinting
+				multiplayer.write("entity_action", {entityId:+p.id, actionId:p.sprinting?3:4})
+			}
+			if(prevSleep !== p.sleeping){
+				prevSleep = p.sleeping
+				if(!p.sleeping) multiplayer.write("entity_action", {entityId:+p.id, actionId:2})
+			}
+			if(prevFly !== p.flying){
+				prevFly = p.flying
+				multiplayer.write("abilities", {flags:p.flying?2:0})
+			}
+			if(prevRenderDist !== settings.renderDistance || prevLang !== settings.language){
+				prevRenderDist = settings.renderDistance, prevLang = settings.language
+				multiplayer.write("settings", {locale:settings.language||"en-US",viewDistance:settings.renderDistance})
 			}
 		}
+		win.multiplayer = multiplayer
+		//todo close window click window,update sign
 		multiplayer.close = multiplayer.end
+		multiplayer.on("playerJoin", () => multiplayer.hasStartedLoad = true)
 		multiplayer.on("packet", (o, {name}) => {
 switch(name){
 	case "chat":{
@@ -22235,6 +22345,7 @@ switch(name){
 		p.health = o.health
 		p.food = o.food
 		p.foodSaturation = o.foodSaturation
+		if(p.health <= 0) die()
 		break
 	}
 	case "respawn":{
@@ -22242,14 +22353,16 @@ switch(name){
 		world.loaded.length = 0
 		world.lastChunk = ","
 		p.gameMode = o.gamemode === 0 ? "survival" : o.gamemode === 1 ? "creative" : o.gamemode === 2 ? "survival" : "creative"
+		p.die = false
+		play()
 		break
 	}
 	case "position":{
-		p.x = (o.flags&1) ? p.x+o.x/32 : o.x/32
-		p.y = (o.flags&2) ? p.x+o.y/32 : o.y/32
-		p.z = (o.flags&4) ? p.x+o.z/32 : o.z/32
-		p.ry = (o.flags&8) ? p.ry+o.yaw : o.yaw
-		p.rx = (o.flags&16) ? p.rx+o.pitch : o.pitch
+		pPos.x = (o.flags&1) ? pPos.x+o.x : o.x
+		pPos.y = (o.flags&2) ? pPos.y+o.y : o.y
+		pPos.z = (o.flags&4) ? pPos.z+o.z : o.z
+		pPos.yaw = (o.flags&8) ? pPos.yaw+o.yaw : o.yaw
+		pPos.pitch = (o.flags&16) ? pPos.pitch+o.pitch : o.pitch
 		break
 	}
 	case "held_item_slot":{
@@ -22370,9 +22483,9 @@ switch(name){
 	}
 	case "map_chunk_bulk":{
 		let offset = 0
-		for (let i = 0; i < packet.meta.length; ++i) {
-			let meta = packet.meta[i]
-      let size = (8192 + (packet.skyLightSent ? 2048 : 0)) *
+		for (let i = 0; i < o.meta.length; ++i) {
+			let meta = o.meta[i]
+      let size = (8192 + (o.skyLightSent ? 2048 : 0)) *
         onesInShort(meta.bitMap) + // block ids
         2048 * onesInShort(meta.bitMap) + // (two bytes per block id)
         256 // biomes
@@ -22433,7 +22546,7 @@ switch(name){
 				}
 				break
 			}
-			case 2001: blockParticles(o.data, o.location.x,o.location.y,o.location.z, 30, "breaking", world,p.dimension, null,true); break
+			case 2001: blockParticles(o.data<<4, o.location.x,o.location.y,o.location.z, 30, "breaking", world,p.dimension, null,true); break
 			case 2002: Messages.add("splash potion sound"); break
 			case 2003: Messages.add("eye of ender break sound");break
 			case 2005: glint(o.location.x,o.location.y,o.location.z, p.dimension,true); break
@@ -22508,6 +22621,7 @@ switch(name){
 	}
 	case "resource_pack_send":{
 		Messages.add("cannot use resource pack (incompatible) "+o.url)
+		multiplayer.write("resource_pack_receive", {hash:o.hash, result:2})
 		break
 	}
 	case "update_entity_nbt":break//todo
@@ -23048,7 +23162,7 @@ switch(name){
 					return
 				}
 			}else if(!objFormat && !(p instanceof BitArrayReader)) return
-			if(p.data[0] !== 0 || preBetaVersion) return this.posEntityOldBab(p, m, preBetaVersion)
+			if(!objFormat && p.data[0] !== 0 || preBetaVersion) return this.posEntityOldBab(p, m, preBetaVersion)
 			let now = performance.now()
 			if(!objFormat) p = bitArrayToPacket(p,this.entityPacketType)
 			const entType = entityOrder[p.entId]
@@ -23360,13 +23474,13 @@ switch(name){
 					doneWork = true
 					debug("Weather Meshes")
 				}
-				if (!doneWork && this.unlightingQueue.length && this.isMK) {
+				if (!doneWork && this.unlightingQueue.length) {
 					let chunk = this.unlightingQueue[this.unlightingQueue.length-1]
 					chunk.unfillLight()
 					doneWork = true
 				}
 				// Spread light
-				if (!doneWork && this.lightingQueue.length && this.isMK) {
+				if (!doneWork && this.lightingQueue.length) {
 					let chunk = this.lightingQueue[this.lightingQueue.length-1]
 					chunk.fillLight()
 					if(chunk.lit){
@@ -23485,7 +23599,7 @@ switch(name){
 				}
 				skyLight = max(skyLight, skybox.moonLight[skybox.getMoonPhase()]/15)
       }
-			let lightMethod = p.dimension === "nether" ? 1 : (p.dimension === "end" ? 2 : 0)//if you change this, change render or tick
+			let lightMethod = disableLighting ? -1 :  (p.dimension === "nether" ? 1 : (p.dimension === "end" ? 2 : 0))//if you change this, change render or tick
       p.renderX = lerp(diff,p.previousX,p.x)
       p.renderY = lerp(diff,p.previousY,p.y)
       p.renderZ = lerp(diff,p.previousZ,p.z)
@@ -23767,7 +23881,7 @@ p.camera.transformation.elements.set(matrix)//*/
     }
 		loadChunks() {
 			let actualRenderDistance = settings.renderDistance
-			let renderDistance = settings.renderDistance + 2
+			let renderDistance = settings.renderDistance + (this.isMK ? 2 : 0)
 			if(host) serverWorld.loadDistance = renderDistance
 			let cx = p.x >> 4
 			let cz = p.z >> 4
@@ -24685,7 +24799,6 @@ p.camera.transformation.elements.set(matrix)//*/
       window.open("https://"+servers[selectedWorld].url, "_blank")
     }, () => !(servers[selectedWorld] && servers[selectedWorld].url))*/
     Button.add(mid - 3 * x4, height - 40*ss, w4, 40*ss, "Reload", "multiplayer menu", initServersMenu)
-    Button.add(mid - 1 * x4, height - 40*ss, w4, 40*ss, "Join eaglercraft server (Experimental)", "multiplayer menu", joinEaglerServer)
 		Button.add(mid + 3 * x4, height - 40*ss, w4, 40*ss, "Back", "multiplayer menu", r => changeScene("main menu"))
 		
     //multiplayer connecting buttons
@@ -27719,8 +27832,10 @@ p.camera.transformation.elements.set(matrix)//*/
     if(entHitbox.ent){
       entClick()
     }else{
-      if(p.survival) crack.soundTimer = 5
-      else changeWorldBlock()
+      if(p.survival){
+				crack.soundTimer = 5
+				if(hitBox.pos) send({type:"startBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]})
+			}else changeWorldBlock()
       p.lastStartBreak = performance.now()
     }
 		if(!p.spectator && (entHitbox.ent || !hitBox.pos)){
@@ -27936,22 +28051,26 @@ p.camera.transformation.elements.set(matrix)//*/
       }
 
 			if (k === controlMap.dropItem.key && inventory.slots[inventory.slotIds.hotbar[inventory.hotbarSlot]]) {
-				/*let d = p.direction
-        let block = holding || inventory.hotbar[inventory.hotbarSlot].id
-        block = block < isCube && !blockData[block].item ? block | blockMode : block
-				world.addItems(p.x, p.y, p.z, p.dimension, d.x/4, d.y/4, d.z/4, block, false, 1,inventory.hotbar[inventory.hotbarSlot].durability,inventory.hotbar[inventory.hotbarSlot].customName,p.id)
-        if(p.survival){
-          inventory.hotbar[inventory.hotbarSlot].amount --
-          inventory.hotbar[inventory.hotbarSlot].animation = 1.5
-          updateHUD = true
-        }*/
-				let item = inventory.slots[inventory.slotIds.hotbar[inventory.hotbarSlot]]
-				item.amount--
-				if(!item.amount) item = inventory.slots[inventory.slotIds.hotbar[inventory.hotbarSlot]] = null
-				send({type:"containerChange",data:[item],idxs:[inventory.slotIds.hotbar[inventory.hotbarSlot]]})
-				if(item) item.animation = 1.5
-				updateHUD = true
-				p.punchEffect = 10
+				if(world.isMK){
+					/*let d = p.direction
+	        let block = holding || inventory.hotbar[inventory.hotbarSlot].id
+	        block = block < isCube && !blockData[block].item ? block | blockMode : block
+					world.addItems(p.x, p.y, p.z, p.dimension, d.x/4, d.y/4, d.z/4, block, false, 1,inventory.hotbar[inventory.hotbarSlot].durability,inventory.hotbar[inventory.hotbarSlot].customName,p.id)
+	        if(p.survival){
+	          inventory.hotbar[inventory.hotbarSlot].amount --
+	          inventory.hotbar[inventory.hotbarSlot].animation = 1.5
+	          updateHUD = true
+	        }*/
+					let item = inventory.slots[inventory.slotIds.hotbar[inventory.hotbarSlot]]
+					item.amount--
+					if(!item.amount) item = inventory.slots[inventory.slotIds.hotbar[inventory.hotbarSlot]] = null
+					send({type:"containerChange",data:[item],idxs:[inventory.slotIds.hotbar[inventory.hotbarSlot]]})
+					if(item) item.animation = 1.5
+					updateHUD = true
+					p.punchEffect = 10
+				}else{
+					send({type:"dropItem"})
+				}
 			}
 
 			if(Number(k)) {
@@ -27974,6 +28093,9 @@ p.camera.transformation.elements.set(matrix)//*/
 				if(showDebug === -1) showDebug = 1
 				else showDebug = (showDebug + 1) % 3
 				updateHUD = true
+			}
+			if(k === "f4"){
+				disableLighting = !disableLighting
 			}
 
 			if(p.spectateRemoteControl && controlKeys[k] && controlKeys[k].isGameControl) send({type:"controlName",event:"keydown",key:controlKeys[k].name},p.spectating.id)
@@ -28034,11 +28156,13 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
     
     if(screen === "play"){
-      /*if((k === controlMap.place.key || e.type === "touchend" || e.type === "touchcancel") && blockData[holding] && blockData[holding].onrelease){
-        var pos = hitBox.pos, x = pos && pos[0], y = pos && pos[1], z = pos && pos[2]
+      if((k === controlMap.place.key || e.type === "touchend" || e.type === "touchcancel") && blockData[holding] && blockData[holding].onrelease){
+        //var pos = hitBox.pos, x = pos && pos[0], y = pos && pos[1], z = pos && pos[2]
         //if(p.survival && blockData[holding].minusOnUse){inventory.hotbar[inventory.hotbarSlot].amount --; updateHUD = true}
         //if(!blockData[holding].onrelease(x,y,z, p.dimension, inventory.hotbar[inventory.hotbarSlot])){p.lastPlace = Date.now(); return}
-      }*/
+
+				if(!world.isMK) send({type:"stopPlace"})
+      }
 
 			if (k === controlMap.zoom.key) {
 				p.camera.FOV(settings.fov, 300)
