@@ -8578,6 +8578,16 @@ const blockDataAdditional = {
 			}
 			world.addParticle(new entities[entityIds.RedstoneParticle](x,y,z),dimension)
 		},
+	},
+	debugStick:{
+		Name:function(){
+			let str
+			if(blockMode === CUBE) str = "Get Tags"
+			else if(blockMode === SLAB) str = "Change Block State"
+			else if(blockMode === STAIR) str = "Change Block Rotation"
+			else str = "No Function"
+			return "Debug Stick: "+str
+		},
 	}
 }
 
@@ -25025,7 +25035,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			Slider.add(0,0, width / 3, 40*ss, "options", "Mouse Sensitivity", 30, 400, "mouseSense", val => settings.mouseSense = val),
 			Slider.add(0,0, width / 3, 40*ss, "options", "Reach distance", 5, 100, "reach", val => settings.reach = val),
 			//Button.add(width / 2, 500, width / 3, 40, ["Sound: On", "Sound: Off"], "options", r => soundOn = r === "Sound: On")
-			Slider.add(0,0, width / 3, 40*ss, "options", "Sound Volume", 0,1, "volume", val => settings.volume = val, true, val => {blockSound(blockIds.grass, "place",0,0,0,1)}, {"0%":"Off"}),
+			Slider.add(0,0, width / 3, 40*ss, "options", "Sound Volume", 0,1, "volume", val => settings.volume = val, true, val => {playSound("block.grass.dig1")}, {"0%":"Off"}),
 			Button.add(0,0, width / 3, 40*ss, "Change Controls", "options", r => changeScene("options controls")),
 			Button.add(0,0, width / 3, 40*ss, "Change skin", "options", r => {
 				if(userInfo){
@@ -31023,15 +31033,21 @@ p.camera.transformation.elements.set(matrix)//*/
       title.addEventListener("click", function() {
         var content = this.nextElementSibling
         this.classList.toggle("active")
-        if (content.style.maxHeight !== "0px"){
+        if (/*content.style.maxHeight !== "0px"*/!this.classList.contains("active")){
           content.style.maxHeight = "0px";
         } else {
+					this.dispatchEvent(new CustomEvent("opencollapsible", {bubbles:true}))
           content.style.maxHeight = content.scrollHeight + "px";
         }
       })
     }
     
     //Set recipes collapsible
+		let didRecipes = false
+		document.querySelector("#recipes").addEventListener("opencollapsible", function(){
+		if(didRecipes) return
+		if(blockData !== mkBlockData) return alert("recipes not available when not in world")
+		didRecipes = true
     use3d()
     FOV(90)
     gl.clearColor(0, 0, 0, 0)
@@ -31104,6 +31120,8 @@ p.camera.transformation.elements.set(matrix)//*/
       rhtml += "</div>"
     }
     recipes.innerHTML = rhtml
+		})
+		
 		helpSetup = true
   }
 
@@ -32347,10 +32365,10 @@ p.camera.transformation.elements.set(matrix)//*/
 			}
 			if(!performFast){
 				if((screen === "options") && beforeOptionsScreen === "main menu"){
-					renderMainBG()
+					if(tick)renderMainBG()
 				}
 				if(screen === "main menu"){
-					renderMainBG()
+					if(tick)renderMainBG()
 					hoverbox.classList.add("hidden")
 					drawScreens[screen]()
 					Button.draw()

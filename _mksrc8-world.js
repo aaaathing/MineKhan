@@ -11386,15 +11386,7 @@ const blockData = [
 		name:"debugStick",
 		item:true,
 		hidden:true,
-		Name:function(){
-			let str
-			if(blockMode === CUBE) str = "Get Tags"
-			else if(blockMode === SLAB) str = "Change Block State"
-			else if(blockMode === STAIR) str = "Change Block Rotation"
-			else str = "No Function"
-			return "Debug Stick: "+str
-		},
-		serveronuse: function(x,y,z, block,world,face,item,p){
+		serveronuse: function(x,y,z, block,world,face,item,p,blockMode){
 			if(blockMode === CUBE) this.useGetTags(x,y,z, block, world)
 			else if(blockMode === SLAB) this.useChangeBlockState(x,y,z, block, world)
 			else if(blockMode === STAIR) this.useChangeBlockRotation(x,y,z, block, world)
@@ -31208,7 +31200,7 @@ class World{ // aka trueWorld
 				return
 			}
 			if(blockDat.serveronuse && (blockDat.useAnywhere || cblock)){
-				let cont = blockDat.serveronuse(ox,oy,oz,cblock,this[dimension],face,holdObj,p)
+				let cont = blockDat.serveronuse(ox,oy,oz,cblock,this[dimension],face,holdObj,p, blockMode)
 				if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
 				if(!cont) return
 			}
