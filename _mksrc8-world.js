@@ -12399,6 +12399,9 @@ function initBlockData(){
 		
 		data.pistonPush = data.pistonPush !== undefined ? data.pistonPush : true
 		data.pistonPull = data.pistonPull !== undefined ? data.pistonPull : true
+
+		if(breakTypes[data.type]) data.harvestTools = breakTypes[data.type]
+		if(handBreakable.includes(data.type)) data.harvestTools = true
 	}
 
   blockData.forEach(block => {
@@ -12418,6 +12421,11 @@ function initBlockData(){
     }
 		if(generateBlockIds[block.name]) generateBlockIds[block.name] = block.id
   })
+	for(let b in breakTypes){
+		for(let i=0; i<breakTypes[b].length; i++){
+			breakTypes[b][i] = blockIds[breakTypes[b][i]]
+		}
+	}
 
 	//fill the crafts that have less than 9 items. Ex: "thing" => "thing,air,air..."
 	let arr, arr2 = new Array(9)
@@ -12525,7 +12533,7 @@ const breakTypes = {
 	rock4: ["diamondPickaxe","netheritePickaxe"],
 	ground: "shovel",
 	plant2: "hoe",
-	wool:"air"
+	//wool:"air"
 }
 win.breakTypes = breakTypes
 const handBreakable = [
@@ -12538,9 +12546,10 @@ for(var b in breakTypes){
 	var t = breakTypes[b]
 	if(t === "pickaxe"){
 		breakTypes[b] = allPickaxes
-	}
-	if(t === "shovel"){
+	}else if(t === "shovel"){
 		breakTypes[b] = allShovels
+	}else if(typeof t === "string"){
+		breakTypes[b] = []
 	}
 }
 const crafts = {
@@ -18356,7 +18365,8 @@ function initShapes() {
 			}
 		}
 	}
-
+}
+function initBlockDataShapes(){
 	function makeBlock(tex,shape,Block, base, Name){
 		Block.textures = tex
 		Block.shape = shape
@@ -31133,15 +31143,15 @@ class World{ // aka trueWorld
 		let breakTime
 		if(!place && p.survival){
       breakTime = blockData[prevBlock].hardness*1000
-      let breakType = blockData[prevBlock].type
-			if(handBreakable.includes(breakType) || breakTypes[breakType] && breakTypes[breakType].includes(blockData[holding].name)){
+      let harvestTools = blockData[prevBlock].harvestTools
+			if(harvestTools === true || harvestTools && harvestTools.includes(holding)){
 				breakTime *= 1.5
+	      if(holding && blockData[holding].mineSpeed/*(blockData[holding].pickaxe || (blockData[holding].shovel && breakType === "ground") || (blockData[holding].axe && breakType === "wood") || (blockData[holding].hoe && breakType === "plant2"))*/){
+	        breakTime /= blockData[holding].mineSpeed
+	      }
 			}else breakTime *= 5
       if(holding && blockData[holding].shears && blockData[block].shearBreakTime){
         breakTime = blockData[prevBlock].shearBreakTime
-      }
-      if(holding && (blockData[holding].pickaxe || (blockData[holding].shovel && breakType === "ground") || (blockData[holding].axe && breakType === "wood") || (blockData[holding].hoe && breakType === "plant2"))){
-        breakTime /= blockData[holding].mineSpeed
       }
       if(p.liquid) breakTime *= 5
 			if(!p.onGround) breakTime *= 5
@@ -31411,7 +31421,7 @@ class World{ // aka trueWorld
 			let theDrop = blockData[prevBlock].drop
 			let amount = blockData[prevBlock].dropAmount
 			let canDrop = handBreakable.includes(blockData[prevBlock].type)
-			if(holding && breakTypes[blockData[prevBlock].type] && breakTypes[blockData[prevBlock].type].includes(blockData[holding].name)) canDrop = true
+			if(holding && blockData[prevBlock].harvestTools && blockData[prevBlock].harvestTools.includes(holding)) canDrop = true
 			if(!blockData[prevBlock].type) canDrop = true
 			if(canDrop){
 				if(amount === undefined) amount = 1
@@ -34989,8 +34999,11 @@ class WorldDimension{
 }
 win.ServerWorld = World
 
-initBlockData()
 initShapes()
+initBlockData()
+win.initServerBlockData = function(){
+	initBlockDataShapes()
+}
 function initServerEverything(logInitialized){
 	sendAllWorkers({blockIds:generateBlockIds,biomeIds,blockStates:{CROSS,LAYER1,LAYER2,LAYER3,LAYER4,LAYER5,LAYER6,LAYER7,LAYER8,isCube}})
 }

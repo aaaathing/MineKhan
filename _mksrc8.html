@@ -949,6 +949,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 				if(e.lineno) msg += " line "+e.lineno
 				if(e.colno) msg += " column "+e.colno
 			}
+			if(world && !world.isMK) msg += " In "+world.name+"."
 			errorData.insertAdjacentHTML('beforeend',"<br><div style='border:1px solid red; padding:8px;'>"+msg.replace(/\n/g,"<br>").replace(/ /g,"&nbsp;")+"</div>")
       errorScreen.style.display = "block"
 			if(window.sendError && errors.length<5) sendError(msg)
@@ -6836,8 +6837,7 @@ ROTATION = 0x1800 // Mask for the direction bits
 			this.spectatePlayer_username(args)
 		},*/
 		reloadChunks: () => {
-			world.loaded.length = 0
-			world.lastChunk = ","
+			world.unloadAllChunks()
 		},
 		ban_username: args => {
 			if(win.ban){
@@ -8302,6 +8302,7 @@ Division: //
 			inventoryBlocks = mkInventoryBlocks
 			return
 		}
+		win.initServerBlockData()
 const blockDataAdditional = {
 	grass:{
 		/*customTexture:function(x,y,z,dimension,block,side){
@@ -12482,16 +12483,16 @@ return//*/
     if(breaking){
       let usingTool = false
       let breakTime = blockData[block].hardness*1000
-      let breakType = blockData[block].type
-			if(handBreakable.includes(breakType) || breakTypes[breakType] && breakTypes[breakType].includes(blockData[holding].name)){
+      let harvestTools = blockData[block].harvestTools
+			if(harvestTools === true || harvestTools && harvestTools.includes(holding)){
 				breakTime *= 1.5
+	      if(holding && blockData[holding].mineSpeed){
+	        breakTime /= blockData[holding].mineSpeed
+	        usingTool = true
+	      }
 			}else breakTime *= 5
       if(holding && blockData[holding].shears && blockData[block].shearBreakTime){
         breakTime = blockData[block].shearBreakTime
-        usingTool = true
-      }
-      if(holding && (blockData[holding].pickaxe || (blockData[holding].shovel && breakType === "ground") || (blockData[holding].axe && breakType === "wood") || (blockData[holding].hoe && breakType === "plant2"))){
-        breakTime /= blockData[holding].mineSpeed
         usingTool = true
       }
       if(p.inLiquid) breakTime *= 5
@@ -12610,18 +12611,15 @@ return//*/
     if(d === p.dimension) return
     if(d === "nether"){
       p.dimension = "nether"
-			world.loaded.length = 0
-			world.lastChunk = ","
+			world.unloadAllChunks()
 			changeScene("netherLoading")
     }else if(d === "end"){
       p.dimension = "end"
-			world.loaded.length = 0
-			world.lastChunk = ","
+			world.unloadAllChunks()
 			changeScene("endLoading")
     }else{
       p.dimension = ""
-			world.loaded.length = 0
-			world.lastChunk = ","
+			world.unloadAllChunks()
 			changeScene("loading")
     }
 		releasePointer()
@@ -14779,11 +14777,6 @@ r 11 y  n  n  n
         }
 			}
 			this.loaded = true
-		}
-		unload(){
-			for(let i in this.entities){
-				this.world.deleteEntity(this.entities[i],true)
-			}
 		}
 	}
 
@@ -17492,6 +17485,7 @@ r 11 y  n  n  n
 			if(this.skinURL) gl.deleteTexture(this.skinTex)
       this.skinSet = true
       this.skinURL = url
+			this.skinTex = defaultSkinTexture
       if(!url) return //some people don't have skins. prevent it from breaking
       let image = new Image()
       let me = this
@@ -17512,6 +17506,7 @@ r 11 y  n  n  n
 			if(this.capeURL) gl.deleteTexture(this.capeTex)
       this.capeSet = true
       this.capeURL = url
+			this.capeTex = null
       if(!url) return
       let image = new Image()
       let me = this
@@ -21063,8 +21058,8 @@ r 11 y  n  n  n
       p.username = fetchRes.username
       userInfo = fetchRes
       //p.character.changeBlock(abs(r.hashCode()) % 80 + 1)
-      if(fetchRes.skin) p.setSkin(fetchRes.skin)
-      if(fetchRes.cape) p.setCape(fetchRes.cape)
+      p.setSkin(fetchRes.skin)
+      p.setCape(fetchRes.cape)
       return p.username
     }else{
       p.username = "Steve"
@@ -21118,6 +21113,11 @@ r 11 y  n  n  n
   }
 
   async function loggedIn(){
+		if(multiplayer && multiplayer.differentAccount){
+			return updateUserTo(multiplayer.differentAccount)
+			return
+		}
+		
     var logged = false;
     await fetch("/server/account", {headers:{Authorization:userSessionString}}).then(r => r.json()).then(r => {
       logged = updateUserTo(r)
@@ -21141,10 +21141,6 @@ r 11 y  n  n  n
   }
   async function getWorlds(addWorldCallback,pingCallback){
     if(!navigator.onLine) return "offline"
-    var logged = await loggedIn()
-    if(!logged){
-      return "notLoggedIn"
-    }
     let worlds
     await fetch("/server/worlds").then(r => r.json()).then(r => {
       worlds = r
@@ -22135,17 +22131,6 @@ r 11 y  n  n  n
 		if(!window.mcProtocol) await import("/minekhan/mcProtocol/bundle.js")
 		await window.mcProtocol.dataPrefetch("pc","1.8", addToBottomRightList)
 		clearBottomRightList()
-		multiplayer = window.mcProtocol.createClient({host:url,port:"443",username,version:"1.8"})
-		multiplayer.on("error", console.error)
-		multiplayer.on("playerJoin", e => {
-			play()
-		})
-		multiplayer.on("end", reason => {
-			multiplayer = null
-			multiplayerError = multiplayerError || {data:reason}
-			updateTitle(false)
-			changeScene("multiplayer lost")
-		})
 		const mcData = window.mcProtocol.getMCData("1.8")
 		let internalIdToEntity = []
 		for(let e in mcData.entities){
@@ -22166,8 +22151,28 @@ r 11 y  n  n  n
 			nb.textures = mkBlockIds[b.name] === undefined ? (new Array(6)).fill("error") : mkBlockData[mkBlockIds[b.name]].textures
 			nb.shadow = !b.transparent
 			nb.shade = !b.emitLight
+			nb.smoothLight = !b.transparent && b.boundingBox !== "empty"
 			nb.shape = shapes.cube//todo
-			//todo b.harvestTools
+			if(b.harvestTools){
+				nb.breakTools = []
+				for(let i=0; i<b.harvestTools.length; i++) nb.harvestTools.push(b.harvestTools[i]<<4)
+			}else if(b.diggable) nb.harvestTools = true
+			if(b.variations) for(let v of b.variations){
+				let nbv = Object.create(nb)
+				nbv.Name = v.displayName
+				blockData[nb.id | v.metadata&15] = nbv
+			}
+			blockData[nb.id] = nb
+			blockIds[b.name] = nb.id
+		}
+		for(let i in mcData.items){
+			let b = mcData.items[i]
+			if(blockData[b.id<<4]) continue
+			let nb = Object.create(b)
+			nb.Name = b.displayName
+			nb.id = b.id<<4
+			nb.textures = mkBlockIds[b.name] === undefined ? (new Array(6)).fill("error") : mkBlockData[mkBlockIds[b.name]].textures
+			nb.shape = shapes.item
 			if(b.variations) for(let v of b.variations){
 				let nbv = Object.create(nb)
 				nbv.Name = v.displayName
@@ -22184,10 +22189,28 @@ r 11 y  n  n  n
 		genIcons()
 		initBlockEntities()
 		
+		multiplayer = window.mcProtocol.createClient({host:url,port:"443",username,version:"1.8"})
+		multiplayer.on("error", console.error)
+		multiplayer.on("playerJoin", e => {
+			play()
+		})
+		multiplayer.on("end", reason => {
+			multiplayer = null
+			multiplayerError = multiplayerError || {data:reason}
+			updateTitle(false)
+			changeScene("multiplayer lost")
+		})
+		multiplayer.differentAccount = {
+			username,
+			skin:undefined, cape:undefined
+		}
+		await loggedIn()
+		
 		world = new World()
 		world.isMK = false
 		win.world = world
 		world.version = "1.8.8. eagler"
+		world.name = url
 		updateTitle(true)
 		let proxyworld = {
 			getBlock(pos){
@@ -22227,6 +22250,7 @@ r 11 y  n  n  n
 			pPos.y = ps.pos.y
 			pPos.z = ps.pos.z
 			p.velocity.set(ps.vel)
+			p.onGround = ps.onGround
 		}
 		const pPos = {
 			get x(){return p.x+0.5},
@@ -22243,19 +22267,16 @@ r 11 y  n  n  n
 		function mapChunk(cx,cz,groundUp,chunkData,bitMap){
 			let chunk = world.getOrNewChunk(cx*16,cz*16,p.dimension)
 			if(!chunk.loaded) chunk.customLoadStart()
-			let has
 			load_1_8(chunkData,bitMap, p.dimension ==="", groundUp, (yindex,blocks,blight,slight)=>{
 				let section = chunk.requireSection(yindex-(minHeight>>4))
 				let i=0
 				for(let y=0;y<16;y++) for(let z=0;z<16;z++) for(let x=0;x<16;x++){
 					section.setBlock(x,y,z, blockData[blocks[i]] ? blocks[i] : 0)
-					section.setLight(x,y,z, (slight[i>>1]>>((1-(i&1)))*4), 0)
-					section.setLight(x,y,z, (blight[i>>1]>>((1-(i&1)))*4), 1)
-					if(blocks[i])has=true
+					section.setLight(x,y,z, (slight[i>>1]>>((i&1)*4))&15, 0)
+					section.setLight(x,y,z, (blight[i>>1]>>((i&1)*4))&15, 1)
 					i++
 				}
 			})
-			if(has)console.log("has",cx*16,cz*16)
 			chunk.customLoadEnd()
 		}
 		function getFace(){
@@ -22267,11 +22288,11 @@ r 11 y  n  n  n
 				case "message": type = "chat"; o = {message:data.data}; break
 				case "entInteract": type = "use_entity"; o = {target:+data.data, mouse:data.hit?1:0}; break
 				case "startBreak": type = "block_dig"; o = {status:0, location:{x:data.x,y:data.y,z:data.z}, face:getFace()}; break
-				case "stopBreak": type = "block_dig"; o = {status:0, location:{x:data.x,y:data.y,z:data.z}, face:getFace()}; break
+				case "stopBreak": type = "block_dig"; o = {status:1, location:{x:data.x,y:data.y,z:data.z}, face:getFace()}; break
 				case "dropItem": type = "block_dig"; o = {status:4}; break
 				case "stopPlace": type = "block_dig"; o = {status:5}; break
 				case "break": type = "block_dig"; o = {status:2, location:{x:data.x,y:data.y,z:data.z}, face:getFace()}; break
-				case "place": type = "block_place"; o = {location:{x:data.x,y:data.y,z:data.z}, direction:getFace(), cursorX:data.cx*16, cursorY:data.cy*16, cursorZ:data.cz*16}; break
+				case "place": type = "block_place"; o = {location:{x:data.x,y:data.y,z:data.z}, direction:getFace(), cursorX:data.cx*16, cursorY:data.cy*16, cursorZ:data.cz*16, heldItem:{}}; break
 				case "hotbar": type = "held_item_slot"; o = {slotId:data.slot}; break
 				case "respawn": type = "client_command"; o = {payload:0}; break
 				default: return
@@ -22289,11 +22310,11 @@ r 11 y  n  n  n
 			let now = Date.now()
 			if(moved&&looked){
 				multiplayer.lastSendPos = now
-				multiplayer.write("position_look", {x:pPos.x,y:pPos.y-physics.playerHeight*0.5,z:pPos.z,yaw:conv.toNotchianYaw(pPos.yaw),pitch:conv.toNotchianYaw(pPos.pitch),onGround:ps.onGround})
+				multiplayer.write("position_look", {x:pPos.x,y:pPos.y,z:pPos.z,yaw:conv.toNotchianYaw(pPos.yaw),pitch:conv.toNotchianYaw(pPos.pitch),onGround:ps.onGround})
 				prevOnGround = ps.onGround
 			}else if(moved){
 				multiplayer.lastSendPos = now
-				multiplayer.write("position", {x:pPos.x,y:pPos.y-physics.playerHeight*0.5,z:pPos.z,onGround:ps.onGround})
+				multiplayer.write("position", {x:pPos.x,y:pPos.y,z:pPos.z,onGround:ps.onGround})
 				prevOnGround = ps.onGround
 			}else if(looked){
 				multiplayer.lastSendPos = now
@@ -22352,6 +22373,14 @@ switch(name){
 		break
 	}*/
 	case "update_health":{
+		if(o.health < p.health){
+			p.lastDamageHealth = p.health
+			harmEffect = 30
+			damageX = damageY = damageZ = 0
+		}
+		if(o.health > p.health){
+			healEffect = 40
+		}
 		p.health = o.health
 		p.food = o.food
 		p.foodSaturation = o.foodSaturation
@@ -22360,8 +22389,7 @@ switch(name){
 	}
 	case "respawn":{
 		p.dimension = o.dimension === -1 ? "nether" : o.dimension === 1 ? "end" : ""
-		world.loaded.length = 0
-		world.lastChunk = ","
+		world.unloadAllChunks()
 		p.gameMode = o.gamemode === 0 ? "survival" : o.gamemode === 1 ? "creative" : o.gamemode === 2 ? "survival" : "creative"
 		p.die = false
 		play()
@@ -22371,8 +22399,9 @@ switch(name){
 		pPos.x = (o.flags&1) ? pPos.x+o.x : o.x
 		pPos.y = (o.flags&2) ? pPos.y+o.y : o.y
 		pPos.z = (o.flags&4) ? pPos.z+o.z : o.z
-		pPos.yaw = (o.flags&8) ? pPos.yaw+o.yaw : o.yaw
-		pPos.pitch = (o.flags&16) ? pPos.pitch+o.pitch : o.pitch
+		pPos.yaw = (o.flags&8) ? conv.fromNotchianYaw(conv.toNotchianYaw(pPos.yaw)+o.yaw) : conv.fromNotchianYaw(o.yaw)
+		pPos.pitch = (o.flags&16) ? conv.fromNotchianPitch(conv.toNotchianPitch(pPos.pitch)+o.pitch) : conv.fromNotchianPitch(o.pitch)
+		multiplayer.write("position_look", {x:o.x,y:o.y,z:o.z,yaw:o.yaw,pitch:o.pitch,onGround:ps.onGround})
 		break
 	}
 	case "held_item_slot":{
@@ -22462,14 +22491,14 @@ switch(name){
 		e.pitch = conv.fromNotchianPitchByte(o.pitch)
 		break
 	}
-	case "entity_teleport":{
+	case "entity_head_rotation":{
 		let e = getEntityOrPlayer(o.entityId+"")
 		if(!e) break
 		if(e.parts && e.parts.head) e.parts.head.yaw = conv.fromNotchianYawByte(o.headYaw)
 		break
 	}
 	case "entity_status":{break}//todo
-	case "attach_entit":{
+	case "attach_entity":{
 		let e = getEntityOrPlayer(o.entityId+"")
 		if(!e) break
 		if(!o.leash) e.riding = o.vechileId === -1 ? null : o.vechileId+""
@@ -22708,7 +22737,6 @@ switch(name){
 			//Initialize the world's arrays
 			this.chunks = {}
 			this.loaded = []
-			this.prevLoaded = []
 			this.sortedChunks = []
       this.doubleRenderChunks = []
 			this.offsetX = 0
@@ -23889,6 +23917,12 @@ p.camera.transformation.elements.set(matrix)//*/
     renderTextDisplay(e){
       this.textEntities.push(e)
     }
+		unloadAllChunks(){
+			this.loaded.length = 0
+			this.lastChunk = ","
+			this.entities.clear()
+			this.chunks = {}
+		}
 		loadChunks() {
 			let actualRenderDistance = settings.renderDistance
 			let renderDistance = settings.renderDistance + (this.isMK ? 2 : 0)
@@ -23940,8 +23974,11 @@ p.camera.transformation.elements.set(matrix)//*/
 					let nX = x + this.offsetX
 					let nZ = z + this.offsetZ
 					if(!(nX >= 0 && nX < this.lwidth && nZ >= 0 && nZ < this.lwidth)){
-						if(this.getChunk(x*16,z*16,d)){
-							this.chunks[x][z].unload()
+						let chunk = this.getChunk(x*16,z*16,d)
+						if(chunk){
+							for(let i in chunk.entities){
+								this.deleteEntity(i,true)
+							}
 							delete this.chunks[x][z]
 						}
 					}
@@ -24809,6 +24846,7 @@ p.camera.transformation.elements.set(matrix)//*/
       window.open("https://"+servers[selectedWorld].url, "_blank")
     }, () => !(servers[selectedWorld] && servers[selectedWorld].url))*/
     Button.add(mid - 3 * x4, height - 40*ss, w4, 40*ss, "Reload", "multiplayer menu", initServersMenu)
+    Button.add(mid - 1 * x4, height - 40*ss, w4, 40*ss, "join eaglercraf server (experimental)", "multiplayer menu", joinEaglerServer, null,"it could have bugs")
 		Button.add(mid + 3 * x4, height - 40*ss, w4, 40*ss, "Back", "multiplayer menu", r => changeScene("main menu"))
 		
     //multiplayer connecting buttons
@@ -29402,6 +29440,10 @@ p.camera.transformation.elements.set(matrix)//*/
 				let buttonContainer = doc.createElement("div")
 				buttonContainer.className = "buttonContainer"
 				addButton(buttonContainer,"Join Server",async() => {
+					var logged = await loggedIn()
+			    if(!logged){
+			      return
+			    }
 					changeScene("multiplayer connecting")
 					addToBottomRightList("Authenticating")
 					initMultiplayer(servers[selectedWorld].id).then(joinWorld)
@@ -29448,7 +29490,7 @@ p.camera.transformation.elements.set(matrix)//*/
       }
       p.setAttribute("pingDone",true)
     })
-    if(worlds === "notLoggedIn") return changeScene("main menu")
+    //if(worlds === "notLoggedIn") return changeScene("main menu")
     if(worlds === "offline") return window.servers.innerHTML = "<div class='message'>You are offline. Connect to the internet first.</div>"
 		if(!worlds.length) window.servers.insertAdjacentHTML('beforeend',"<div class='select-message'>No servers. You can host one by clicking 'Enable Multiplayer' in a world.</div>")
 
