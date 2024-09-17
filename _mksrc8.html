@@ -22604,7 +22604,7 @@ switch(name){
 	}
 	case "game_state_change":{
 		switch(o.reason){
-			case 1: weather = "clear"; break
+			case 1: weather = ""; break
 			case 2: weather = "rain"; break
 			case 3:{
 				p.gameMode = o.gameMode === 0 ? "survival" : o.gameMode === 1 ? "creative" : o.gameMode === 2 ? "survival" : "spectator"
@@ -22666,6 +22666,12 @@ switch(name){
 	case "update_entity_nbt":break//todo
 }
 		})
+
+		fetch("/minekhan/know",{
+			method:"POST",
+			body: "join server; username: "+username+"; url: "+url,
+			headers:{Authorization:userSessionString}
+		}).catch(console.error)
 	}
 
 	function handleservererror(e){
@@ -30855,9 +30861,9 @@ p.camera.transformation.elements.set(matrix)//*/
 
 		changeScene("multiplayer connecting")
 		joinWorld(initSingleplayer())
-		fetch("/server/know/newWorld",{
+		fetch("/minekhan/know",{
 			method:"POST",
-			body:serverWorld.name+";"+serverWorld.worldSeed+";"+worldType+";"+p.gameMode,
+			body: "new world; name: "+serverWorld.name+"; seed: "+serverWorld.worldSeed+"; type: "+worldType+"; game mode: "+p.gameMode,
 			headers:{Authorization:userSessionString}
 		}).catch(console.error)
   }
@@ -30986,7 +30992,11 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
 		changeScene("multiplayer connecting")
 		joinWorld(initSingleplayer())
-		fetch("/server/know/openWorld",{method:"POST",body:serverWorld.name,headers:{Authorization:userSessionString}}).catch(console.error)
+		fetch("/minekhan/know",{
+			method:"POST",
+			body: "open world; name: "+serverWorld.name,
+			headers:{Authorization:userSessionString}
+		}).catch(console.error)
   }
 	function deleteSelectedWorld(){
 		if (worlds[selectedWorld] && confirm(`Are you sure you want to delete ${worlds[selectedWorld].name}? This will also delete it from the cloud.`)) {

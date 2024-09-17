@@ -20652,7 +20652,7 @@ function initDefaultCommands(world){
 			CommandNode.l("add").then(CommandNode.a("amount", args => {world.time += parseFloat(args.time)},"number"))
 		),
 		CommandNode.l("weather",null,"Set weather. May take a few moments to start.").then(
-			CommandNode.l("clear", () => {world.weather = "clear"}),
+			CommandNode.l("clear", () => {world.weather = ""}),
 			CommandNode.l("rain", () => {world.weather = "rain"}),
 			CommandNode.l("snow", () => {world.weather = "snow"})
 		),
@@ -20994,7 +20994,7 @@ function searchCmdStack(commandNodes,parentNode,stack,stacki,args){
 	for(let n of parentNode.next){//find the best match in the next nodes
 		let node = commandNodes[n]
 		if(node.type === "literal" || node.type === "redirect"){
-			if(stack[stacki][0] !== "string" || stack[stacki][1].toLowerCase() !== node.name.toLowerCase()) continue
+			if(stack[stacki][0] !== "string" || (stack[stacki][1].toLowerCase()+"") !== node.name.toLowerCase()) continue
 		}else if(node.type === "argument"){
 			args[node.name] = stack[stacki]
 			if(typeof args[node.name] === "object") args[node.name].argType = node.argType
@@ -31420,8 +31420,7 @@ class World{ // aka trueWorld
 			let block = prevBlock
 			let theDrop = blockData[prevBlock].drop
 			let amount = blockData[prevBlock].dropAmount
-			let canDrop = handBreakable.includes(blockData[prevBlock].type)
-			if(holding && blockData[prevBlock].harvestTools && blockData[prevBlock].harvestTools.includes(holding)) canDrop = true
+			let canDrop = holding && blockData[prevBlock].harvestTools && (blockData[prevBlock].harvestTools === true || blockData[prevBlock].harvestTools.includes(holding))
 			if(!blockData[prevBlock].type) canDrop = true
 			if(canDrop){
 				if(amount === undefined) amount = 1
