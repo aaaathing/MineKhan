@@ -20706,7 +20706,7 @@ function initDefaultCommands(world){
 			scope.target_dimension = t.dimension
 			scope.target_name = t.username || t.name
 		},"target")),
-		CommandNode.l("wait",null,"Wait for certain amount of milliseconds.").then(CommandNode.a("time", args => {sleep(args.time)},"number",null,true)),
+		CommandNode.l("wait",null,"Wait for certain amount of milliseconds.").then(CommandNode.a("time", args => sleep(args.time),"number",null,true)),
 		CommandNode.l("seed", () => [world.worldSeed+"",""], null,null,true),
 		CommandNode.l("effect",null,"Start a effect on target. time is in seconds. level should be more than zero.").then(CommandNode.a("target",null,"target").then(CommandNode.a("name").then(CommandNode.a("time",null,"number").then(CommandNode.a("level",
 		(args,pos,scope) => {
@@ -31403,6 +31403,7 @@ class World{ // aka trueWorld
           blockMode = LAYER1
         }
       }
+			if(!blockData[holding|blockMode]) throw new Error("no block holding: "+holding+"blockMode: "+blockMode)
 			let shape = holding && blockData[holding|blockMode].shape
 			if (shape && shape.rotate){
 				if(rotate === SOUTH) blockMode |= SOUTH
@@ -34605,6 +34606,7 @@ class WorldDimension{
 	addItems(x,y,z,vx,vy,vz,block,autoSetVel,amount = 1,durability,customName,from){
 		if(!block) return
 		var data = blockData[block]
+		if(!data) throw new Error("no block: "+block)
 		while(amount){
 			var a = min(amount,data.stackSize)
 			amount -= a

@@ -12609,17 +12609,15 @@ return//*/
   function goToDimension(d){
     d = d || ""
     if(d === p.dimension) return
+		if(world) world.unloadAllChunks()
     if(d === "nether"){
       p.dimension = "nether"
-			world.unloadAllChunks()
 			changeScene("netherLoading")
     }else if(d === "end"){
       p.dimension = "end"
-			world.unloadAllChunks()
 			changeScene("endLoading")
     }else{
       p.dimension = ""
-			world.unloadAllChunks()
 			changeScene("loading")
     }
 		releasePointer()
@@ -22126,7 +22124,9 @@ r 11 y  n  n  n
   }
 	async function joinEaglerServer(){
 		let url = prompt("Enter address without 'wss://'. example: play.example.com")
+		if(!url) return
 		let username = prompt("Username")
+		if(!username) return
 		changeScene("multiplayer connecting")
 		if(!window.mcProtocol) await import("/minekhan/mcProtocol/bundle.js")
 		await window.mcProtocol.dataPrefetch("pc","1.8", addToBottomRightList)
@@ -22674,11 +22674,11 @@ switch(name){
 		}).catch(console.error)
 	}
 
-	function handleservererror(e){
+	/*function handleservererror(e){
 		//logError(e)
 		stopTicking = true
 		throw e
-	}
+	}*/
   
 	let {biomeData, biomeIds} = win
 	let biomes = Object.keys(biomeData)
