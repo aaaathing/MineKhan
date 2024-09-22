@@ -949,7 +949,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 				if(e.lineno) msg += " line "+e.lineno
 				if(e.colno) msg += " column "+e.colno
 			}
-			if(world && !world.isMK) msg += " In "+world.name+"."
+			if(world) msg += " In "+world.name+" multiplayer:"+Boolean(window.multiplayer)
 			errorData.insertAdjacentHTML('beforeend',"<br><div style='border:1px solid red; padding:8px;'>"+msg.replace(/\n/g,"<br>").replace(/ /g,"&nbsp;")+"</div>")
       errorScreen.style.display = "block"
 			if(window.sendError && errors.length<5) sendError(msg)
@@ -24700,11 +24700,7 @@ p.camera.transformation.elements.set(matrix)//*/
     })
     Button.add(width / 2 - 235*ss, height / 2 + 160*ss, 40*ss, 40*ss, "?", "main menu", r => changeScene("options help"), null, "Help")
     Button.add(width / 2 + 235*ss, height / 2 + 160*ss, 40*ss, 40*ss, "🌐", "main menu", r => changeScene("options languages"), null, "Languages")
-    Button.add(100*ss, 60, 200*ss, 20*ss, "Suggest things to add", "main menu", r => {
-			let a=prompt("What do you want to be added to MineKhan that can make it more fun?")
-			if(a)fetch("/server/suggest",{method:"POST",body:a})
-		})
-		
+    
 		doc.documentElement.style.setProperty("--vh", height+"px")
 		doc.documentElement.style.setProperty("--vw", width+"px")
 		placeElement(window.boxCenterTop, width/2, 50*ss, 400*ss, 50*ss)

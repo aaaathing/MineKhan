@@ -20347,22 +20347,26 @@ function fromPlayer(p,world){
 	world.world.sendPlayer({type:"clientCmd",data:"fromPlayer",args:{x:p.prevPosCmd[0],y:p.prevPosCmd[1],z:p.prevPosCmd[2]}},p.id)
 }
 function fillToPlayer(id,p,world){
+	if(!p.prevPosCmd) return
 	//fills at player feet
 	fillBlocks(p.prevPosCmd[0], p.prevPosCmd[1], p.prevPosCmd[2], round(p.x), ceil(p.y-p.height*0.5), round(p.z), id,world)
 	world.world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
 function copyToPlayer(p,world){
+	if(!p.prevPosCmd) return
 	copy(p.prevPosCmd[0], p.prevPosCmd[1], p.prevPosCmd[2], round(p.x), ceil(p.y-p.height*0.5), round(p.z),world);
 	p.copiedBlocksCmd = copiedBlocks
 	world.world.sendPlayer({type:"clientCmd",data:"copySelect",args:{w:copiedBlocks.length,h:copiedBlocks[0].length,d:copiedBlocks[0][0].length}},p.id)
 }
 function pasteAtPlayer(p,world){
+	if(!p.prevPosCmd) return
 	copiedBlocks = p.copiedBlocksCmd
 	if(!copiedBlocks) return
 	paste(round(p.x), ceil(p.y-p.height*0.5), round(p.z),world)
 	world.world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
 function replaceAtPlayer(replace,into,p,world){
+	if(!p.prevPosCmd) return
 	replaceBlocks(p.prevPosCmd[0], p.prevPosCmd[1], p.prevPosCmd[2], round(p.x), ceil(p.y-p.height*0.5), round(p.z), replace, into, world)
 	world.world.sendPlayer({type:"clientCmd",data:"cancelFrom",args:{}},p.id)
 }
@@ -22543,7 +22547,7 @@ entities[entities.length] = class Item extends Entity {
 			var inside = this.insideBlock && blockData[this.insideBlock].itemOnTop
 			var block = inside ? this.insideBlock : this.standingOn
 			var y = inside ? round(this.y) : ceil(this.y-this.height/2)-1
-			var amount = blockData[block].itemOnTop(round(this.x),y,round(this.z),this.dimension,this)
+			var amount = blockData[block].itemOnTop(round(this.x),y,round(this.z),this)
 			if(amount){
 				this.amount = amount
 				this.willUpdateShape = true
