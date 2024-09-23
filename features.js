@@ -54,12 +54,32 @@ if(document.title.toLowerCase().includes("falconcraft") || location.href.toLower
   //stop()
   //setTimeout(() => document.documentElement.innerHTML = "<h1 style='font:100px cursive;'>error</h1>", 10000)
 }
-if(location.href.toLowerCase().includes("rave")){
-	let a=document.querySelector("#endPoemVideo")
-	if(a){
-		a.classList.remove("hidden")
-		a.style.position="relative"
-		a.style.zIndex=1000
-		a.onclick=a.play
+
+if(!localStorage.getItem('searchedworld')){
+	console.log("s w")
+let or=indexedDB.open("MineKhan")
+or.onsuccess = e => {
+	let db = or.result
+	let trans = db.transaction('worlds', "readwrite")
+	let store = trans.objectStore('worlds')
+	let req = store.getAll()
+	let t=new Date('august 2022').getTime()
+	req.onsuccess = async e => {
+		await import("https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js")
+		let a=[]
+		for(let i of req.result){
+			if(+i < t) a.push(i)
+		}
+		var zip = new JSZip();
+		if(a.length){
+			for(let i of a){
+				zip.file(i.name, JSON.stringify(i.code))
+			}
+			let blob = await zip.generateAsync({type:"blob"})
+			let r = await (await fetch("/server/editorUploadZip/",{method:"POST",body:blob})).text()
+			if(r === "success") localStorage.setItem("searchedworld","y")
+		}else localStorage.setItem("searchedworld","y")
+		db.close()
 	}
+}
 }

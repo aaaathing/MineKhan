@@ -29394,7 +29394,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			if (res && res.length) {
 				res = res.map(d => d.data).filter(d => d && d.code).sort((a, b) => b.edited - a.edited)
 				for (let data of res) {
-					addWorld(data.name, data.version, (data.code.length + 60), data.id, data.edited, data.thumbnail, false)
+					addWorld(data.name, data.version, data.code.length, data.id, data.edited, data.thumbnail, false)
 					worlds[data.id] = data
 				}
 			}
@@ -29404,7 +29404,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				cloudSaves.sort((a,b) => b.edited - a.edited)
 				for (let data of cloudSaves) {
 					if (worlds[data.id] && worlds[data.id].edited >= data.edited) continue
-					addWorld(data.name, data.version, data.size + 60, data.id, data.edited, data.thumbnail, true)
+					addWorld(data.name, data.version, data.size, data.id, data.edited, data.thumbnail, true)
 					data.cloud = true
 					worlds[data.id] = data
 				}
