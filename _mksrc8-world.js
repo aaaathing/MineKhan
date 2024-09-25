@@ -20998,7 +20998,7 @@ function searchCmdStack(commandNodes,parentNode,stack,stacki,args){
 	for(let n of parentNode.next){//find the best match in the next nodes
 		let node = commandNodes[n]
 		if(node.type === "literal" || node.type === "redirect"){
-			if(stack[stacki][0] !== "string" || (stack[stacki][1].toLowerCase()+"") !== node.name.toLowerCase()) continue
+			if(stack[stacki][0] !== "string" || (stack[stacki][1]+"").toLowerCase() !== node.name.toLowerCase()) continue
 		}else if(node.type === "argument"){
 			args[node.name] = stack[stacki]
 			if(typeof args[node.name] === "object") args[node.name].argType = node.argType
