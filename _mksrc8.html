@@ -8175,7 +8175,8 @@ Division: //
 	function getPointer() {
     if(touchScreen) return
 		if (canvas.requestPointerLock) {
-			canvas.requestPointerLock().catch(console.error)
+			let p = canvas.requestPointerLock()
+			if(p) p.catch(console.error)
 		}
 	}
 	function releasePointer() {
@@ -22123,7 +22124,7 @@ r 11 y  n  n  n
 		}
   }
 	async function joinEaglerServer(){
-		let url = prompt("Enter address without 'wss://'. example: play.example.com")
+		let url = prompt("Enter address")
 		if(!url) return
 		let username = prompt("Username")
 		if(!username) return
@@ -22181,6 +22182,10 @@ r 11 y  n  n  n
 			blockData[nb.id] = nb
 			blockIds[b.name] = nb.id
 		}
+		for(let i in mcData){
+			let b = mcData.items[i]
+			blockData[b.id<<4].edible = true
+		}
 		BLOCK_COUNT = 0
 		blockInfoIds = {}
 		//todo inventoryBlocks, items
@@ -22189,7 +22194,7 @@ r 11 y  n  n  n
 		genIcons()
 		initBlockEntities()
 		
-		multiplayer = window.mcProtocol.createClient({host:url,port:"443",username,version:"1.8"})
+		multiplayer = window.mcProtocol.createClient({url,username,version:"1.8"})
 		multiplayer.on("error", console.error)
 		multiplayer.on("playerJoin", e => {
 			play()
