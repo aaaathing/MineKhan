@@ -937,7 +937,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		let errorData = document.querySelector("#errorData")
     const errors = []
     function logError(e){
-      if(typeof e === "string") e = {message:e}
+      if(typeof e !== "object") e = {message:e}
 			e.asdf_error_time = Date.now()
       errors.push(e)
 			let msg
@@ -7328,7 +7328,7 @@ Division: //
 				for(let n of parentNode.next){
 					let node = cmds[n]
 					if(node.type === "literal" || node.type === "redirect"){
-						if(stacki+(stack.stackEndNoSpace?1:0)>stack.length-1 || (stack[stacki][0] === "string" && node.name.toLowerCase() === stack[stacki][1].toLowerCase())){
+						if(stacki+(stack.stackEndNoSpace?1:0)>stack.length-1 || (stack[stacki][0] === "string" && node.name.toLowerCase() === (stack[stacki][1]+"").toLowerCase())){
 							this.getCmdNexts(node, stack,stacki+1, prefix+(thisCur?"<span style='color:white;'>":"")+node.name+(thisCur?"</span> ":" "))
 						}
 					}else if(node.type === "argument"){
@@ -11602,49 +11602,6 @@ return//*/
       p.dieRotate = (p.dieEffect**4)*Math.PI2
 		}//else p.dieEffect = p.dieRotate = 0
   }
-  
-  function pressurePlateHasPressure(x,y,z,dimension){
-   	{
-		let w2 = p.width/2, h2 = p.height/2, d2 = p.depth/2
-		if(x - 0.5 < p.x + w2 &&
-				x + 0.5 > p.x - w2 &&
-				y - 0.5 < p.y + h2 &&
-				y - 0.25 > p.y - h2 &&
-				z - 0.5 < p.z + d2 &&
-				z + 0.5 > p.z - d2) return true
-		}
-		world.getEntitiesNear(x,y,z,dimension, 2, nearEntityArray)
-    for(var ent of nearEntityArray){
-      let w2 = ent.width/2, h2 = ent.height/2, d2 = ent.depth/2
-      if(x - 0.5 < ent.x + w2 &&
-         x + 0.5 > ent.x - w2 &&
-         y - 0.5 < ent.y + h2 &&
-         y - 0.25 > ent.y - h2 &&
-         z - 0.5 < ent.z + d2 &&
-         z + 0.5 > ent.z - d2) return true
-    }
-    for(var i in players){
-      let ent = players[i]
-      let w2 = ent.width/2, h2 = ent.height/2, d2 = ent.depth/2
-      if(x - 0.5 < ent.x + w2 &&
-         x + 0.5 > ent.x - w2 &&
-         y - 0.5 < ent.y + h2 &&
-         y - 0.25 > ent.y - h2 &&
-         z - 0.5 < ent.z + d2 &&
-         z + 0.5 > ent.z - d2) return true
-    }
-    return false
-  }
-  win.pressurePlateHasPressure = pressurePlateHasPressure
-	let onBoxEnt = function(x, y, z, w, h, d, ent) {
-		let iy = y - h/2 - (ent.height*0.5 || ent.height/2)
-		let ih = h + (ent.height || ent.height)
-		let ix = x - w/2 - (ent.width*0.5 || ent.width/2)
-		let iw = w + (ent.width || ent.width)
-		let iz = z - d/2 - (ent.depth*0.5 || ent.width/2)
-		let id = d + (ent.depth || ent.width)
-		return ent.x > ix && ent.y > iy && ent.z > iz && ent.x < ix + iw && ent.y <= iy + ih && ent.z < iz + id
-	}
 
 	let controls = function() {
     p.prx = p.rx
@@ -20970,7 +20927,7 @@ r 11 y  n  n  n
 		}
 	}
 
-	const allowedVars = ["reportError", "structuredClone", "launchQueue", "loadString", "logError", "hcyl", "cyl", "sphereoid", "sphereoidAt", "ball", "lookAt", "scrollToEl", "canvas", "ctx", "canvas2", "ctx2", "savebox", "boxCenterTop", "uploadWorld", "messageInput", "editSignBox", "generateID", "semiTransTextures", "textures", "animated", "BLOCK_COUNT", "emptyFunc", "pistonFindStickyBlocksConnectedTo", "getPistonPushedBlocks", "getPistonPulledBlocks", "world", "setSeed", "getSeed", "getRotation", "PVector", "dist2", "dist3", "mag", "save", "genWorldImage", "saveToDB", "loadFromDB", "deleteFromDB", "blockData", "blockIds", "inventoryBlocks", "eachFrame", "crafts", "smelts", "smeltFuel", "settings", "worldSettings", "generator", "images", "drawImage", "changeBlockMode", "bigArray", "changeScene", "getScene", "hitBox", "entHitbox", "crack", "speak", "runCmd", "Messages", "showTitle", "sideMessage", "customMenu", "damage", "modelView", "setControl", "changeKey", "resetKey", "inventory", "updateGLSL", "shapes", "initModelView", "pressurePlateHasPressure", "explode", "goToDimension", "Item", "BlockEntity", "MovingBlock", "ExperienceOrb", "Player", "BlockParticle", "PoofParticle", "poof", "playerPoof", "FallingDustParticle", "RedstoneParticle", "ShockwaveParticle", "SmokeParticle", "NoteParticle", "glint", "TextDisplay", "timeoutPromise", "userInfo", "playersInv", "playerSkins", "playerCapes", "World", "invScroll", "pTouch", "initWebglPrograms", "marketplaceData", "sounds", "music", "soundNames", "playSound", "blockSound", "hitSound", "explodeSound", "posSound", "playMusic", "menuMusicVolume", "menuMusicIdx", "currentMusic", "allLoaded", "rdmSplash", "setSplash", "setSplashText", "gl", "glCache", "textureImageData", "textureImageCanvas", "textCanvas", "textCoords", "player", "p2", "islandGenerator", "renderMainBG", "audioCtx", "listener", "setHotbar", "clearInv", "cheats", "p", "p2", "respawn", "thirdPersonReach", "sky"];//delete anything from this that might allow dangerous activity
+	const allowedVars = ["reportError", "structuredClone", "launchQueue", "loadString", "logError", "hcyl", "cyl", "sphereoid", "sphereoidAt", "ball", "lookAt", "scrollToEl", "canvas", "ctx", "canvas2", "ctx2", "savebox", "boxCenterTop", "uploadWorld", "messageInput", "editSignBox", "generateID", "semiTransTextures", "textures", "animated", "BLOCK_COUNT", "emptyFunc", "pistonFindStickyBlocksConnectedTo", "getPistonPushedBlocks", "getPistonPulledBlocks", "world", "setSeed", "getSeed", "getRotation", "PVector", "dist2", "dist3", "mag", "save", "genWorldImage", "saveToDB", "loadFromDB", "deleteFromDB", "blockData", "blockIds", "inventoryBlocks", "eachFrame", "crafts", "smelts", "smeltFuel", "settings", "worldSettings", "generator", "images", "drawImage", "changeBlockMode", "bigArray", "changeScene", "getScene", "hitBox", "entHitbox", "crack", "speak", "runCmd", "Messages", "showTitle", "sideMessage", "customMenu", "damage", "modelView", "setControl", "changeKey", "resetKey", "inventory", "updateGLSL", "shapes", "initModelView", "explode", "goToDimension", "Item", "BlockEntity", "MovingBlock", "ExperienceOrb", "Player", "BlockParticle", "PoofParticle", "poof", "playerPoof", "FallingDustParticle", "RedstoneParticle", "ShockwaveParticle", "SmokeParticle", "NoteParticle", "glint", "TextDisplay", "timeoutPromise", "userInfo", "playersInv", "playerSkins", "playerCapes", "World", "invScroll", "pTouch", "initWebglPrograms", "marketplaceData", "sounds", "music", "soundNames", "playSound", "blockSound", "hitSound", "explodeSound", "posSound", "playMusic", "menuMusicVolume", "menuMusicIdx", "currentMusic", "allLoaded", "rdmSplash", "setSplash", "setSplashText", "gl", "glCache", "textureImageData", "textureImageCanvas", "textCanvas", "textCoords", "player", "p2", "islandGenerator", "renderMainBG", "audioCtx", "listener", "setHotbar", "clearInv", "cheats", "p", "p2", "respawn", "thirdPersonReach", "sky"];//delete anything from this that might allow dangerous activity
 	function isNumeric(value) {
 		return /^-?\d+$/.test(value);
 	}

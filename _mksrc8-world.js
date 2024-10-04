@@ -30006,6 +30006,16 @@ function pressurePlateHasPressure(x,y,z,world){
 	}
 	return false
 }
+let onBoxEnt = function(x, y, z, w, h, d, ent) {
+	let iy = y - h/2 - (ent.height*0.5 || ent.height/2)
+	let ih = h + (ent.height || ent.height)
+	let ix = x - w/2 - (ent.width*0.5 || ent.width/2)
+	let iw = w + (ent.width || ent.width)
+	let iz = z - d/2 - (ent.depth*0.5 || ent.width/2)
+	let id = d + (ent.depth || ent.width)
+	return ent.x > ix && ent.y > iy && ent.z > iz && ent.x < ix + iw && ent.y <= iy + ih && ent.z < iz + id
+}
+
 function hitSound(p){
 	var i = Math.ceil(Math.random()*3)
 	p.world.playSound(p.x,p.y,p.z,"damage.hit"+i)
