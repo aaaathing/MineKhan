@@ -6340,10 +6340,7 @@ ROTATION = 0x1800 // Mask for the direction bits
 					}).catch(console.error)
 				}
 				window.boxCenterTop.onmousedown = e => {
-					let elem = document.getElementsByClassName("selected")
-					if (elem && elem[0]) {
-						elem[0].classList.remove("selected")
-					}
+					worldsMenuDeselect()
 					selectedWorld = 0
 					Button.draw()
 				}
@@ -29277,6 +29274,14 @@ p.camera.transformation.elements.set(matrix)//*/
     p.hidden = false
     p.die = false
   }*/
+
+	const worldsMenuDeselect = () => {
+		let elem = window.worlds.getElementsByClassName("selected")
+		if (elem && elem[0]) {
+			elem[0].querySelector(".buttonContainer").remove()
+			elem[0].classList.remove("selected")
+		}
+	}
 	function initWorldsMenu() {
 		while (window.worlds.firstChild) {
 			window.worlds.removeChild(window.worlds.firstChild)
@@ -29285,20 +29290,12 @@ p.camera.transformation.elements.set(matrix)//*/
 		window.boxCenterTop.value = ""
 		addButton(window.worlds,"Create New World",() => changeScene("creation menu"),null,"centerBlock")
 
-		const deselect = () => {
-			let elem = window.worlds.getElementsByClassName("selected")
-			if (elem && elem[0]) {
-				elem[0].querySelector(".buttonContainer").remove()
-				elem[0].classList.remove("selected")
-			}
-		}
-
 		function addWorld(name, version, size, id, edited, thumbnail, cloud) {
 			let div = doc.getElementById(id) || doc.createElement("div")
 			div.className = "world"
 			div.onclick = e => {
 				if(e.dOnTSeLEct) return
-				deselect()
+				worldsMenuDeselect()
 				div.classList.add("selected")
 				selectedWorld = id
 
@@ -29376,6 +29373,14 @@ p.camera.transformation.elements.set(matrix)//*/
 			window.boxCenterTop.onkeyup = () => Button.draw()
 		})
 	}
+
+	const serversMenuDeselect = () => {
+		let elem = window.servers.getElementsByClassName("selected")
+		if (elem && elem[0]) {
+			elem[0].querySelector(".buttonContainer").remove()
+			elem[0].classList.remove("selected")
+		}
+	}
   var servers = {}
   async function initServersMenu() {
 		while (window.servers.firstChild) {
@@ -29383,21 +29388,13 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
 		selectedWorld = null
 
-		const deselect = () => {
-			let elem = window.servers.getElementsByClassName("selected")
-			if (elem && elem[0]) {
-				elem[0].querySelector(".buttonContainer").remove()
-				elem[0].classList.remove("selected")
-			}
-		}
-
 		function addWorld(server) {
       let {name,id,host,players,external,banned,whitelist,thumbnail,version} = server
       
 			let div = doc.createElement("div")
 			div.className = "world"
 			div.onclick = e => {
-				deselect()
+				serversMenuDeselect()
 				div.classList.add("selected")
 				selectedWorld = id
 
@@ -29511,6 +29508,12 @@ p.camera.transformation.elements.set(matrix)//*/
 			if(e.key.toLowerCase() === "enter") initMarketplace()
 		}
 	}
+	const marketplaceDeselect = () => {
+		let elem = window.marketplace.getElementsByClassName("selected")
+		if (elem && elem[0]) {
+			elem[0].classList.remove("selected")
+		}
+	}
   async function initMarketplace(){
     selectedWorld = null
     marketplace = {}, marketplaceData = []
@@ -29566,17 +29569,11 @@ p.camera.transformation.elements.set(matrix)//*/
 			})()
 		])
 		progEl.remove()
-    const deselect = () => {
-			let elem = window.marketplace.getElementsByClassName("selected")
-			if (elem && elem[0]) {
-				elem[0].classList.remove("selected")
-			}
-		}
     function addItem(name, version, size, id, by, edited, thumbnail, type) {
 			let div = doc.createElement("div")
 			div.className = "world"
 			div.onclick = e => {
-				deselect()
+				marketplaceDeselect()
 				div.classList.add("selected")
 				selectedWorld = id
 			}
@@ -30378,22 +30375,22 @@ p.camera.transformation.elements.set(matrix)//*/
   }
 
 	let languageNames = ["zh-Hans"], languages, selectedLanguage, language = null
+	const languagesDeselect = () => {
+		let elem = window.languages.getElementsByClassName("selected")
+		if (elem && elem[0]) {
+			elem[0].classList.remove("selected")
+		}
+	}
 	function initLanguages(){
 		languages = {}
 		selectedLanguage = null
 		while (window.languages.firstChild) {
 			window.languages.removeChild(window.languages.firstChild)
 		}
-		const deselect = () => {
-			let elem = window.languages.getElementsByClassName("selected")
-			if (elem && elem[0]) {
-				elem[0].classList.remove("selected")
-			}
-		}
 		let div = doc.createElement("div")
 		div.className = "lang"+(!language ? " selected" : "")
 		div.onclick = e => {
-			deselect()
+			languagesDeselect()
 			div.classList.add("selected")
 			selectedLanguage = "none"
 		}
@@ -30411,7 +30408,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				let div = doc.createElement("div")
 				div.className = "lang"+(language && language.id === r.id ? " selected" : "")
 				div.onclick = e => {
-					deselect()
+					languagesDeselect()
 					div.classList.add("selected")
 					selectedLanguage = id
 				}

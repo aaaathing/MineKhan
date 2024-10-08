@@ -17663,7 +17663,7 @@ class BitArrayReader {
 		let { data, bit } = this
 		this.bit += bits // Move pointer
 		if (bit > data.length * 8 && !this.allowPassLength) {
-			throw new Error("Cannot read more bits")
+			throw new RangeError("Cannot read more bits")
 		}
 
 		let unread = 8 - (bit & 7)
@@ -24301,7 +24301,7 @@ entities[entities.length] = class Wolf extends Mob{
 			//if(multiplayer) send({type:"entEvent",event:"wolfCollarColor",data:this.color,id:this.id})
 			//this.updateShape()
 			this.world.sendEntityPos(this)
-		}else if(holding.id === blockIds.bone){
+		}else if(holding && holding.id === blockIds.bone){
 			holding.amount--
 			this.feed(holding.id,p.id)
 		}else if(this.tame){
@@ -31387,7 +31387,7 @@ class World{ // aka trueWorld
         if(state === LAYER7) layer = 7
         if(state === LAYER8) layer = 8
         if(((b & isCube) === (holding & isCube)) && layer > 0 && layer < 8){
-					p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:this[dimension].getBlock(x,y,z), dimension}})
+					//p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:this[dimension].getBlock(x,y,z), dimension}})
           x = ox, y = oy, z = oz
           layer ++
           switch(layer){
@@ -31416,6 +31416,7 @@ class World{ // aka trueWorld
         }else{
           blockMode = LAYER1
         }
+				holding = holding&isCube
       }
 			if(!blockData[holding|blockMode]) throw new Error("no block holding: "+holding+"blockMode: "+blockMode)
 			let shape = holding && blockData[holding|blockMode].shape
@@ -32891,32 +32892,63 @@ class World{ // aka trueWorld
 		return bab.array
 	}
 	loadInv(reader,p,preBetaVersion){
+		if(preBetaVersion){
+			let bit = reader.bit
+			try{
+				this.loadInvPreBeta(reader,p)
+			}catch(e){
+				if(!(e instanceof RangeError)) throw e
+			}
+			reader.bit = bit
+		}
 		let {inventory} = p
 		inventory.hotbarSlot = reader.read(4)
 		for(let i=0;i<9;i++){
 			let id = reader.read(32), amount = reader.read(7)
 			inventory.hotbar[i] = amount && {id,amount}
 		}
-		let invLen
-		if(preBetaVersion){
-			invLen = 13*9
-			let bit = reader.bit
-			try{
-				for(let i=0;i<invLen;i++){
-					let id = reader.read(32), amount = reader.read(7)
-					inventory.main[i] = amount && {id,amount}
-				}
-			}catch{
-				invLen = undefined
-				reader.bit = bit
-			}
+		let invLen = 27
+		for(let i=0;i<invLen;i++){
+			let id = reader.read(32), amount = reader.read(7)
+			inventory.main[i] = amount && {id,amount}
 		}
-		if(!invLen){
-			invLen = 27
-			for(let i=0;i<invLen;i++){
-				let id = reader.read(32), amount = reader.read(7)
-				inventory.main[i] = amount && {id,amount}
-			}
+		let durability = reader.read(4), durabilityInv = reader.read(5)
+		for(let i=0;i<durability;i++){
+			let index = reader.read(4)
+			inventory.hotbar[index].durability = reader.read(16)
+		}
+		for(let i=0;i<durabilityInv;i++){
+			let index = reader.read(5)
+			inventory.main[index].durability = reader.read(16)
+		}
+		let customName = reader.read(4), customNameInv = reader.read(5)
+		for(let i=0;i<customName;i++){
+			let index = reader.read(4)
+			let name = reader.readString()
+			inventory.hotbar[index].customName = name
+		}
+		for(let i=0;i<customNameInv;i++){
+			let index = reader.read(5)
+			let name = reader.readString()
+			inventory.main[index].customName = name
+		}
+		let achievmentLen = reader.read(32)
+		p.achievments.length = 0
+		for(let i=0;i<achievmentLen;i++){
+			p.achievments.push(reader.read(32))
+		}
+	}
+	loadInvPreBeta(reader,p){
+		let {inventory} = p
+		inventory.hotbarSlot = reader.read(4)
+		for(let i=0;i<9;i++){
+			let id = reader.read(32), amount = reader.read(7)
+			inventory.hotbar[i] = amount && {id,amount}
+		}
+		let invLen = 13*9
+		for(let i=0;i<invLen;i++){
+			let id = reader.read(32), amount = reader.read(7)
+			inventory.main[i] = amount && {id,amount}
 		}
 		let durability = reader.read(4), durabilityInv = reader.read(5)
 		for(let i=0;i<durability;i++){

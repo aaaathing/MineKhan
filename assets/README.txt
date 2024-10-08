@@ -1,1 +1,1 @@
-The music in this directory and not the directories in this directory are by me (thingMaker). To open the js files, go to https://keithclark.github.io/ZzFXM/tracker/
+The music in this directory and not the directories in this directory are by me (thingMaker). There does not seem to be any music. To open the js files, go to https://keithclark.github.io/ZzFXM/tracker/
