@@ -21399,10 +21399,10 @@ r 11 y  n  n  n
 					if(peerConnection.connectionState === "closed"){
 						peerConnection.cAnCeLcOnNectION = true
 					}else if(peerConnection.connectionState === "failed"){
-						peerConnection.cAnCeLcOnNectION = true
-						logError("RTC connection failed")
 						if(connection) connection.close()
 						peerConnection.close()
+						peerConnection.cAnCeLcOnNectION = true
+						multiplayerError = multiplayerError || {data:"WebRTC connection failed. Try using different device or network."}
 					}
 				})
 				peerConnection.addEventListener("iceconnectionstatechange", e => {
@@ -21499,7 +21499,6 @@ r 11 y  n  n  n
 							peerConnection.cAnCeLcOnNectION = true
 						}else if(peerConnection.connectionState === "failed"){
 							peerConnection.cAnCeLcOnNectION = true
-							sendError("server webrtc fail ")
 							peerConnection.close()
 						}
 					})
@@ -21511,7 +21510,7 @@ r 11 y  n  n  n
 
 					await Promise.all([waitForDataChannelPromise,waitForUnorderDataChannelPromise])
 
-					if(peerConnection.cAnCeLcOnNectION) return sendError("server webrtc canceled ")
+					if(peerConnection.cAnCeLcOnNectION) return
 					serverWorld.serverAddPlayer(new RTCClientContainer(channel,peerConnection,unorderChannel),data.id,data.username,false,data.admin)
 				}else if(data.type === "iceCandidate"){
 					let from = peerConnections[data.FROM]
@@ -21585,7 +21584,7 @@ r 11 y  n  n  n
 			}
 		}
 		function joinWorld(connection){
-			if(connection.cAnCeLcOnNectION) return
+			if(connection.cAnCeLcOnNectION) return changeScene("multiplayer lost")
 			players = {}, playerSkins = {}, playerCapes = {} //empty
 			let canSendPos = true //if internet is slow, don't send positions too fast because it will slow down the connection
 			multiplayerError = null

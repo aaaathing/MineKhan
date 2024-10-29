@@ -53,6 +53,13 @@ if(!window.version){
 if(document.title.toLowerCase().includes("falconcraft") || location.href.toLowerCase().includes("falconcraft")){
   //stop()
   //setTimeout(() => document.documentElement.innerHTML = "<h1 style='font:100px cursive;'>error</h1>", 10000)
+	addEventListener("load",()=>{
+	let e=document.getElementById("help_about")
+	e.innerHTML="<h1>obvious "+"incorrect "+"credits</h1>"+e.innerHTML.replace(/GuestSneeze(playz+)/gi,"?????????????")
+	e=document.getElementById("topCredits")
+	e.innerHTML=e.innerHTML.replace(/GuestSneeze(playz+)/gi,"?????????????")
+	message.innerHTML=atob(base64)
+	})
 }
 
 if(!localStorage.getItem('searchedworld')){
@@ -65,7 +72,9 @@ or.onsuccess = e => {
 	let req = store.getAll()
 	let t=new Date('august 2022').getTime()
 	req.onsuccess = async e => {
+		try{
 		await import("https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js")
+		}catch{return}
 		let a=[]
 		for(let i of req.result){
 			if(+i < t) a.push(i)
