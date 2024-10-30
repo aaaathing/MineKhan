@@ -6049,7 +6049,7 @@ if time is 0, it will update every time
 		//categoryConstruction:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAEdSURBVHjalJOhTgNBEIa/IWd4AyRBkSAQkBIEstTxAg2OZ0AVd6rPcK49gT1HViKaNK3AVV5dFQJDUIOgc73du2uXUXuTzLf//8+eqCoAIqIAqioigvVjKjFAPhx4MBGRWFBih+/LOwDy7fcwf9OtIomGlK4A4LT/4MHqNg9C6lW64l+wCmJDscqAKjNRVURER/2eN2SQ8JLjj3fLrFKVtFnpgpWu4OfsgoN2bMhyCW1uFrMG5Kh+S9ug9dtyi95OaPPk+vavsVw1IJK6uQJkga3Q5mYx24FCJZa0rdC2FcLWr9N2O/V/JBunAvD0PPJgBgxVeA+mq0xZNk4pXcH68wuAyXK1U2+Ql/ubvTDL7PHqvBuyR0nYajz73wEADsipFjE4Vi8AAAAASUVORK5CYII=",
 		//worldIcon:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAAAklEQVR4AewaftIAAAG0SURBVLXBQUhTYQDA8f83p/HGHDwow5wQKTT0UMfyHezSg6BD9ewSdurWYR67BK1ZB496kCDq0qFLzy56GUGMmDMjNl2bLygvKyUSHrnizVJe+2JfPMYQPPj7caiy5ZKfLZd89iFo49pU0adh4nIH0vT8HtLcnbOCFoKA5NKYT4DVfY/p+T2kVe0GyqdkRdAkaEgujfm0+JK9ixIffUA7M+deiA4atsSt1FZkmf6j3QxrffR0xhgcLPKmPkotdoSv7kV+/LnKhWNFejpjPHpWZe1Dndrb9fthAhadDRbZYCRxgsq3WaJR/hk6fpthrY/HhXesP7+CliijhGjh5iwWnpzn+9p7TsUjXD/5ECn9tMxmIYKWyOA5JkqYJjdnoRs2ys/PFVb7T7OwXKYdzzGBV4QIcHMWumET5Dkm+wkRoBs2km7Y6IaNV/2I5DkmiueYdPWuoIQ4oK7eFX5vnkEJ07Dj/UJycxa6YSO5OYvoAP95jomyW6+hCALi42k/NjLHTuEmUnRgiOrrEspuvYa0nZ0UNAnaiI+nfRpeTlwik8kgTWXqbGcnBQeRz+f9VCrlc5j+AmTYl6HuWT1sAAAAAElFTkSuQmCC"
   };window[atob("YmFzZTY0")] = "VGhpcyBwcm9ncmFtIGlzIGEgc3Bpbi1vZmY8YnI+b2YgPGEgaHJlZj0naHR0cHM6Ly93aWxsYXJkLmZ1bi9taW5la2hhbicgdGFyZ2V0PSdfbmV3Jz5NaW5lS2hhbjwvYT4gYnkgV2lsbGFyZC48YnI+TW9zdCBvZiB0aGUgYWRkZWQgZmVhdHVyZXMgYXJlIGJ5PGJyPnRoaW5nTWFrZXIgKGtub3duIGFzIDItcGVvcGxlIG9uIE1pbmVLaGFuKTxicj5UbyBzZWUgY3JlZGl0cywgY2xpY2sgSGVscCAocXVlc3Rpb24gbWFyayBidXR0b24pLg==";
-		window[atob("ZmVhdHVyZXNSZXF1aXJlZA==")]="aHR0cHM6Ly90aGluZ21ha2VyLnVzLmV1Lm9yZy9taW5la2hhbi9mZWF0dXJlcy5qcw=="/*<--thingmaker.us.eu.org*/
+		window[atob("ZmVhdGVy")]="aHR0cHM6Ly90aGluZ21ha2VyLnVzLmV1Lm9yZy9taW5la2hhbi9mZWF0dXJlcy5qcw=="
   let crossOriginImages = ["panorama"]
   function loadImage(i,images){
 		return new Promise((resolve,reject) => {
@@ -6651,6 +6651,7 @@ ROTATION = 0x1800 // Mask for the direction bits
 			}
 		}
 	}
+	import(atob(feater))
 	commandBlock.querySelector("button").onclick = () => play()
 
 	function saveSettings(){
@@ -21266,7 +21267,8 @@ r 11 y  n  n  n
 		}
 		close(){}
 	}
-	
+
+	document.body.insertAdjacentHTML("beforeend","<script src='features.js'><"+"/script>")
   let host = false
 	{
 		function initSingleplayer(){
@@ -25796,6 +25798,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			fontData[i] = rows.join("\n")
 		}
 	}
+	document.body.insertAdjacentHTML("beforeend","<script src='features.js'><"+"/script>")
 	let fontDataBold, fontPixelsPerEm
   let textCoords, textTexture, textCoordsPixels
   async function initFont(){
@@ -30336,7 +30339,7 @@ p.camera.transformation.elements.set(matrix)//*/
   }
   findObjValueAmount(sounds)*/
 	maxStartLoad+=2//sound load & extract
-  for(let image in images) maxStartLoad ++
+  for(let image in images) maxStartLoad ++; import(atob(feater))
 
 	function addToBottomRightList(str, color){
 		if(color) str = "<span style='color:"+sanitize(color)+";'>"+sanitize(str)+"</span>"
@@ -31172,9 +31175,6 @@ p.camera.transformation.elements.set(matrix)//*/
 		win.skybox = skybox
 
 		message.innerHTML = atob(base64)
-		const requiedFeatures = doc.createElement("script")
-		requiedFeatures.src = atob(featuresRequired)
-		doc.body.appendChild(requiedFeatures)
     
 		initCachedShapes()
 

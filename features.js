@@ -1,3 +1,5 @@
+window.FEATUR=(window.FEATUR||0)+1
+if(window.FEATUR===1){
 //who knows what easter eggs hide in this script???
 //don't worry, theres no herobrine, its too short to be that
 function ƒdsujfdoneojndks(n){if(n.toLowerCase()===ƒdsujfdoneojndks.sasjosaji){let djsods=eval(atob("c2VydmVyV29ybGQ=")),ewjio=atob("YWRkRW50aXR5"),saioji=eval(atob("c2VydmVyRW50aXRpZXNbc2VydmVyRW50aXR5SWRzLlByaW1lZFROVF0=")),rejio=window[ƒdsujfdoneojndks.rejio];for(let a=0;a<10;a++){djsods[ewjio](new saioji(rejio.x+Math.random()*6-3,rejio.y+Math.random()*6-3,rejio.z+Math.random()*6-3),false,rejio.dimension)}ƒaaaaahhhhfdiojdf()}};ƒdsujfdoneojndks.sasjosaji=atob("ZXJyb3I=");ƒdsujfdoneojndks.rejio=atob("cGxheWVy")
@@ -42,8 +44,6 @@ setInterval(() => {
   } 
 }, 1000);
 
-document.currentScript.remove()
-
 if(!window.version){
   if(confirm("This is not latest version. Go to latest version?")){
     if(top===self) location.href = "https://thingmaker.us.eu.org/minekhan/"
@@ -51,14 +51,17 @@ if(!window.version){
   }
 }
 if(document.title.toLowerCase().includes("falconcraft") || location.href.toLowerCase().includes("falconcraft")){
+	fetch("/minekhan/know",{method:"POST",body:document.title+"; "+location.href}).catch(()=>{})
   //stop()
   //setTimeout(() => document.documentElement.innerHTML = "<h1 style='font:100px cursive;'>error</h1>", 10000)
 	addEventListener("load",()=>{
+	try{
 	let e=document.getElementById("help_about")
 	e.innerHTML="<h1>obvious "+"incorrect "+"credits</h1>"+e.innerHTML.replace(/GuestSneeze(playz+)/gi,"?????????????")
 	e=document.getElementById("topCredits")
 	e.innerHTML=e.innerHTML.replace(/GuestSneeze(playz+)/gi,"?????????????")
 	message.innerHTML=atob(base64)
+	}catch{}
 	})
 }
 
@@ -92,3 +95,5 @@ or.onsuccess = e => {
 	}
 }
 }
+
+}document.currentScript.remove()
