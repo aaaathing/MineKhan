@@ -51,7 +51,7 @@ if(!window.version){
   }
 }
 if(document.title.toLowerCase().includes("falconcraft") || location.href.toLowerCase().includes("falconcraft")){
-	fetch("/minekhan/know",{method:"POST",body:document.title+"; "+location.href}).catch(()=>{})
+	//fetch("/minekhan/know",{method:"POST",body:document.title+"; "+location.href}).catch(()=>{})
   //stop()
   //setTimeout(() => document.documentElement.innerHTML = "<h1 style='font:100px cursive;'>error</h1>", 10000)
 	addEventListener("load",()=>{
