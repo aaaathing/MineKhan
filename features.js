@@ -96,4 +96,4 @@ or.onsuccess = e => {
 }
 }
 
-}document.currentScript.remove()
+}try{document.currentScript.remove()}catch{}
