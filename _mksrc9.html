@@ -944,7 +944,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 				if(e.lineno) msg += " line "+e.lineno
 				if(e.colno) msg += " column "+e.colno
 			}
-			if(world) msg += " In "+world.name+" multiplayer:"+Boolean(window.multiplayer)
+			if(window.world) msg += " In "+world.name+" multiplayer:"+Boolean(window.multiplayer)
 			errorData.insertAdjacentHTML('beforeend',"<br><div style='border:1px solid red; padding:8px;'>"+msg.replace(/\n/g,"<br>").replace(/ /g,"&nbsp;")+"</div>")
       errorScreen.style.display = "block"
 			if(window.sendError && errors.length<5) sendError(msg)
@@ -31478,7 +31478,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			ctx.fillRect(0,0,width,48)
 			fill(255)
 			ctx.textAlign = 'left'
-			text("You can help make MineKhan more popular.\nTo do it, send the link to at least one other person. (https://thingmaker.us.eu.org/minekhan) \nAlso, if you have screenshots or worlds of MineKhan from 2021, it would be helpful to put them at: https://thingmaker.us.eu.org", 0,0,16)
+			text("You can help make MineKhan more popular.\nTo do it, send the link to at least one other person. (https://thingmaker.us.eu.org/minekhan) \nAlso, if you have screenshots or worlds of MineKhan from 2022 or before, it would be helpful to put them at: https://thingmaker.us.eu.org", 0,0,16)
 			ctx.globalAlpha = 1
 		}
 		drawScreens["comingsoon menu"] = () => {

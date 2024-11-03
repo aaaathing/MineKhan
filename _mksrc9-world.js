@@ -32895,7 +32895,7 @@ class World{ // aka trueWorld
 		if(preBetaVersion){
 			let bit = reader.bit
 			try{
-				this.loadInvPreBeta(reader,p)
+				return this.loadInvPreBeta(reader,p)
 			}catch(e){
 				if(!(e instanceof RangeError)) throw e
 			}

@@ -80,7 +80,7 @@ or.onsuccess = e => {
 		}catch{return}
 		let a=[]
 		for(let i of req.result){
-			if(+i < t) a.push(i)
+			if(+((i.id+"").substring(0,13)) < t) a.push(i)
 		}
 		var zip = new JSZip();
 		if(a.length){
