@@ -29596,7 +29596,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			}
 			let br = "<br>"
 			div.id = id
-      if(thumbnail) div.innerHTML += "<img class='thumbnail' src='"+thumbnail+"'>"
+      if(thumbnail) div.innerHTML += "<img class='thumbnail' src='"+thumbnail+"' loading='lazy'>"
 			div.innerHTML += "<strong>" + Messages.format(name) + "</strong>" + br
 			
 			if (edited){
