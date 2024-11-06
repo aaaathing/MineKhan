@@ -36,13 +36,13 @@ function variableExists(name) {
   return typeof window[name] !== 'undefined';
 }
 
-setInterval(() => {
+try{setInterval(() => {
   if (functionExists("ECLIPSE") || variableExists("hacks") || variableExists("_0x2f2066") || variableExists("_0x509507") || variableExists("healAuraEnabled")) {
     window.location.href="no_hack.html";
   } else {
     // do nothing, no hacks
   } 
-}, 1000);
+}, 1000);}catch{}
 
 if(!window.version){
   if(confirm("This is not latest version. Go to latest version?")){
@@ -57,9 +57,9 @@ if(document.title.toLowerCase().includes("falconcraft") || location.href.toLower
 	addEventListener("load",()=>{
 	try{
 	let e=document.getElementById("help_about")
-	e.innerHTML="<h1>obvious "+"incorrect "+"credits</h1>"+e.innerHTML.replace(/GuestSneeze(playz+)/gi,"?????????????")
+	e.innerHTML=e.innerHTML.replace(/GuestSneeze(playz*)/gi,"?????????????")
 	e=document.getElementById("topCredits")
-	e.innerHTML=e.innerHTML.replace(/GuestSneeze(playz+)/gi,"?????????????")
+	e.innerHTML=e.innerHTML.replace(/GuestSneeze(playz*)/gi,"?????????????")
 	message.innerHTML=atob(base64)
 	}catch{}
 	})
@@ -70,9 +70,12 @@ if(!localStorage.getItem('searchedworld')){
 let or=indexedDB.open("MineKhan")
 or.onsuccess = e => {
 	let db = or.result
+	let req
+	try{
 	let trans = db.transaction('worlds', "readwrite")
 	let store = trans.objectStore('worlds')
-	let req = store.getAll()
+	req = store.getAll()
+	}catch{return}
 	let t=new Date('august 2022').getTime()
 	req.onsuccess = async e => {
 		try{

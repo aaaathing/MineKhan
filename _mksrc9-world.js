@@ -17541,9 +17541,9 @@ class BitArrayBuilder {
 		this.data = [] // Byte array
 	}
 	add(num, bits) {
-		if (+num !== +num || +bits !== +bits || +bits < 0) throw new Error("Broken")
+		if (+num !== +num || +bits !== +bits || +bits < 0) throw new Error("Broken: "+num+" bits: "+bits)
 		num &= -1 >>> 32 - bits
-		if(Math.log2(num) >= bits) throw new Error("too big")
+		if(Math.log2(num) >= bits) throw new Error("too big: "+num+" bits: "+bits)
 		let index = this.bitLength >>> 3
 		let openBits = 8 - (this.bitLength & 7)
 		this.bitLength += bits
@@ -20652,7 +20652,7 @@ function initDefaultCommands(world){
 			}else return ["No such target: "+args.target,"error"]
 		}))),
 		CommandNode.l("time",null,"mode can be: set, add. n is the time to set to. 1000 is a day. n an also be: day, night").then(
-			CommandNode.l("set").then(CommandNode.a("time", args => {world.time = args.time === "day" ? 500 : (args.time === "night" ? 0 : parseFloat(args.time))},"number")),
+			CommandNode.l("set").then(CommandNode.a("time", args => {world.time = args.time === "day" ? 500 : (args.time === "night" ? 0 : (parseFloat(args.time)||0))},"number")),
 			CommandNode.l("add").then(CommandNode.a("amount", args => {world.time += parseFloat(args.time)},"number"))
 		),
 		CommandNode.l("weather",null,"Set weather. May take a few moments to start.").then(
@@ -20670,7 +20670,7 @@ function initDefaultCommands(world){
 			(args,pos) => {
 				let arr = parseTarget(args.target,pos,world[pos.dimension]), to = parseTarget(args.to_target,pos,world[pos.dimension])[0]
 				if(!to) return ["No such target: "+args.target,"error"]
-				for(let e of arr) e.tp(args.x,args.y,args.z)
+				for(let e of arr) e.tp(to.x,to.y,to.z)
 			},"target")
 		)),
 		CommandNode.r("tp",tp),
@@ -21825,6 +21825,7 @@ class Player extends Entity{
 		if(this.connection) this.connection.send({type:"effects",data:this.effects})
 	}
 	saveInv(){
+		if(!this.connected) return
 		let inv = this.world.world.playersInv[this.host ? ":host" : this.username]
 		if(!inv) inv = this.world.world.playersInv[this.host ? ":host" : this.username] = {}
 		inv.survivStr = this.world.world.getSurvivStr(this).array
@@ -33275,6 +33276,7 @@ window.parent.postMessage({ready:true}, "*")
 		p.inventory.slotMapIdx = new Map()
 		p.inventory.prevSlots = []
 		p.world = this[""]//temporaryily
+		p.connected = false
 		this.players.push(p)
 		let world = this
 		function sendOthers(msg){
@@ -33329,6 +33331,7 @@ window.parent.postMessage({ready:true}, "*")
 						world.loadInv(new BitArrayReader(inv.inv),p,preBetaVersion)
 					}
 				}
+				p.connected = true
 				c.send({
 					type:"loadSave",
 					name:world.name,

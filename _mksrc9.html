@@ -6421,7 +6421,9 @@ ROTATION = 0x1800 // Mask for the direction bits
     marketplace: {
       enter: [window.marketplace],
       exit: [window.marketplace],
-      onenter: initMarketplace
+      onenter: () => {
+				if(!screen.startsWith("marketplace ")) initMarketplace()
+			}
     },
     "marketplace info":{
       enter:[marketplaceInfo],
@@ -6665,7 +6667,7 @@ ROTATION = 0x1800 // Mask for the direction bits
 			}
 		}
 	}
-	import(atob(feater))
+	import(atob(feater)).catch(()=>{})
 	commandBlock.querySelector("button").onclick = () => play()
 
 	function saveSettings(){
@@ -24953,7 +24955,7 @@ p.camera.transformation.elements.set(matrix)//*/
 					serverWorld.sendAll({type:"saveProg",data:"end"})
 				})
 			}
-		}, nothing, () => `Save the world to your browser and account. Doesn't work in incognito.\n\nLast saved ${timeString(Date.now() - (host ? serverWorld.edited : 0))}.`)
+		}, () => !host, () => `Save the world to your browser and account. Doesn't work in incognito.\n\nLast saved ${timeString(Date.now() - (host ? serverWorld.edited : 0))}.`)
 		Button.add(width/2-110*ss, height / 2 + -25*ss, 200*ss, 40*ss, "Get Save Code", "pause", r => {
 			savebox.classList.remove("hidden")
 			saveDirections.classList.remove("hidden")
@@ -30017,7 +30019,9 @@ p.camera.transformation.elements.set(matrix)//*/
 					loadDone("Loaded sounds","",f.status)
 					for(let s in soundData){
 						let newName = s.replace(".ogg","").replace(/\//g,".")
-						sounds[newName] = await audioCtx.decodeAudioData(soundData[s])
+						try{
+							sounds[newName] = await audioCtx.decodeAudioData(soundData[s])
+						}catch(e){console.error(e)}
 						soundNames.push(newName)
 					}
 					loadDone("Extracted sounds","",f.status)
@@ -30386,7 +30390,7 @@ p.camera.transformation.elements.set(matrix)//*/
   }
   findObjValueAmount(sounds)*/
 	maxStartLoad+=2//sound load & extract
-  for(let image in images) maxStartLoad ++; import(atob(feater))
+  for(let image in images) maxStartLoad ++; import(atob(feater)).catch(()=>{})
 
 	function addToBottomRightList(str, color){
 		if(color) str = "<span style='color:"+sanitize(color)+";'>"+sanitize(str)+"</span>"
