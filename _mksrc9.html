@@ -6128,9 +6128,9 @@ if time is 0, it will update every time
 	let progressBarSize
 	function drawProgressBar(x,y,amount){
 		amount = round(amount*32) || 0
-		let stuff = "["+"#".repeat(amount)+"-".repeat(32-amount)+"]"
+		let stuff = "["+"#".repeat(abs(amount))+"-".repeat(abs(32-amount))+"]"
 		if(!progressBarSize){
-		ctx.font = "16px monospace"
+			ctx.font = "16px monospace"
 			progressBarSize = ctx.measureText("-".repeat(34)).width
 		}
 		let size = (width*0.4/progressBarSize*16)
@@ -21937,11 +21937,11 @@ r 11 y  n  n  n
 						Messages.write(data.data, data.username)
 					}
 				}else if(data.type === "playSound"){
-					let volume = data.volume || 1, panner
+					let volume = isFinite(data.volume) ? data.volume : null, panner
 					if(data.hasPos){
 						panner = posSound(data.x,data.y,data.z)
 					}
-					playSound(data.data, 0, volume, data.pitch, panner)
+					playSound(data.data, 0, volume, isFinite(data.pitch) ? data.pitch : null, panner)
 				}else if(data.type === "title"){
 					showTitle(data.data,data.sub,data.color,data.fadeIn,data.fadeOut,data.stay)
 				}else if(data.type === "tp"){
@@ -24856,7 +24856,7 @@ p.camera.transformation.elements.set(matrix)//*/
       window.open("https://"+servers[selectedWorld].url, "_blank")
     }, () => !(servers[selectedWorld] && servers[selectedWorld].url))*/
     Button.add(mid - 3 * x4, height - 40*ss, w4, 40*ss, "Reload", "multiplayer menu", initServersMenu)
-    Button.add(mid - 1 * x4, height - 40*ss, w4, 40*ss, "join eaglercraf server (experimental)", "multiplayer menu", joinEaglerServer, null,"it could have bugs")
+    Button.add(mid - 1 * x4, height - 40*ss, w4, 40*ss, "join eaglercraf server (experimental)", "multiplayer menu", joinEaglerServer, null,"it has bugs and no inventory")
 		Button.add(mid + 3 * x4, height - 40*ss, w4, 40*ss, "Back", "multiplayer menu", r => changeScene("main menu"))
 		
     //multiplayer connecting buttons

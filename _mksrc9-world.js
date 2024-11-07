@@ -6028,8 +6028,16 @@ const blockData = [
 		burnTime: 30,
 		compostChance:0.3,
 		grassSound: true,
+		category:"nature",
 		
-		category:"nature"
+		tint:leafTint,
+		biomeTintTop:true,
+		biomeTintBottom:true,
+		biomeTintEast:true,
+		biomeTintWest:true,
+		biomeTintNorth:true,
+		biomeTintSouth:true,
+		invTint:[leafColor.r,leafColor.g,leafColor.b],
 	},
 	{
 		name: "jungleLeaves",
@@ -17576,7 +17584,7 @@ class BitArrayBuilder {
 	append(bab) {
 		// If our bits are already aligned, just add them directly
 		if ((this.bitLength & 7) === 0) {
-			this.data.push(...bab.data)
+			for(let i=0; i<bab.data.length; i++) this.data.push(bab.data[i])
 			this.bitLength += bab.bitLength
 			return
 		}
@@ -17594,7 +17602,7 @@ class BitArrayBuilder {
 	}
 	appendArray(arr){//same as above, but for Uint8Array
 		if ((this.bitLength & 7) === 0) {
-			this.data.push(...arr)
+			for(let i=0; i<arr.length; i++) this.data.push(arr[i])
 			this.bitLength += arr.length*8
 			return
 		}
