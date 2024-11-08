@@ -17574,7 +17574,7 @@ class BitArrayBuilder {
 	addString(str,lenBits = 8){
 		if(!str.length) return this.add(0,lenBits)
 		let arr = textEncoder.encode(str), len = arr.length
-		if(len > (1<<lenBits)-1) throw new Error("string too long")
+		if(lenBits !== 32 && len > (1<<lenBits)-1) throw new Error("string too long")
 		this.add(len,lenBits)
 		this.appendArray(arr.subarray(0,len))
 	}

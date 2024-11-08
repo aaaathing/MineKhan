@@ -21413,11 +21413,11 @@ r 11 y  n  n  n
 	
 					let channel = peerConnection.createDataChannel("multiplayer")
 					channel.onopen = () => {waitForDataChannelResolve(); addToBottomRightList("Data channel opened: multiplayer","lime")}
-					channel.onerror = e => {if(e.error.sctpCauseCode !== 12) logError("RTC data channel error: "+e.error.errorDetail+" sctpCauseCode:"+e.error.sctpCauseCode)}
+					channel.onerror = e => {if(e.error.sctpCauseCode !== 12) logError("RTC data channel error: "+e.error.errorDetail+" "+e.error.message+" sctpCauseCode:"+e.error.sctpCauseCode)}
 					channel.binaryType = "arraybuffer"
 					let unorderChannel = peerConnection.createDataChannel("unorder",{ordered:false})
 					unorderChannel.onopen = () => {waitForUnorderDataChannelResolve(); addToBottomRightList("Data channel opened: unorder","lime")}
-					unorderChannel.onerror = e => {if(e.error.sctpCauseCode !== 12) logError("RTC data channel error: "+e.error.errorDetail+" sctpCauseCode:"+e.error.sctpCauseCode)}
+					unorderChannel.onerror = e => {if(e.error.sctpCauseCode !== 12) logError("RTC data channel error: "+e.error.errorDetail+" "+e.error.message+" sctpCauseCode:"+e.error.sctpCauseCode)}
 					unorderChannel.binaryType = "arraybuffer"
 	
 					const offer = await peerConnection.createOffer()
@@ -21536,7 +21536,7 @@ r 11 y  n  n  n
 							unorderChannel = e.channel
 							unorderChannel.onopen = waitForUnorderDataChannelResolve
 						}else throw new Error("Unexpected data channel: "+e.channel.label)
-						e.channel.onerror = e => {if(e.error.sctpCauseCode !== 12) logError("server RTC data channel error: "+e.error.errorDetail+" sctpCauseCode:"+e.error.sctpCauseCode)}
+						e.channel.onerror = e => {if(e.error.sctpCauseCode !== 12) logError("server RTC data channel error: "+e.error.errorDetail+" "+e.error.message+" sctpCauseCode:"+e.error.sctpCauseCode)}
 					}
 
 					peerConnection.addEventListener("connectionstatechange", e => {
@@ -21941,7 +21941,9 @@ r 11 y  n  n  n
 					if(data.hasPos){
 						panner = posSound(data.x,data.y,data.z)
 					}
+					try{
 					playSound(data.data, 0, volume, isFinite(data.pitch) ? data.pitch : null, panner)
+					}catch(e){e.message+="name: "+data.data+", volume:"+data.volume+", pitch:"+data.pitch; throw e}
 				}else if(data.type === "title"){
 					showTitle(data.data,data.sub,data.color,data.fadeIn,data.fadeOut,data.stay)
 				}else if(data.type === "tp"){
@@ -22197,8 +22199,10 @@ r 11 y  n  n  n
 		win.blockIds = blockIds
 		genIcons()
 		initBlockEntities()
-		
+
+		try{
 		multiplayer = window.mcProtocol.createClient({url,username,version:"1.8"})
+		}catch(e){alert(e); return}
 		multiplayer.on("error", console.error)
 		multiplayer.on("playerJoin", e => {
 			play()
