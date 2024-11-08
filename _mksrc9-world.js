@@ -17551,7 +17551,7 @@ class BitArrayBuilder {
 	add(num, bits) {
 		if (+num !== +num || +bits !== +bits || +bits < 0) throw new Error("Broken: "+num+" bits: "+bits)
 		num &= -1 >>> 32 - bits
-		if(Math.log2(num) >= bits) throw new Error("too big: "+num+" bits: "+bits)
+		//if(Math.log2(num) >= bits) throw new Error("too big: "+num+" bits: "+bits)
 		let index = this.bitLength >>> 3
 		let openBits = 8 - (this.bitLength & 7)
 		this.bitLength += bits
@@ -17574,6 +17574,7 @@ class BitArrayBuilder {
 	addString(str,lenBits = 8){
 		if(!str.length) return this.add(0,lenBits)
 		let arr = textEncoder.encode(str), len = arr.length
+		if(len > (1<<lenBits)-1) throw new Error("string too long")
 		this.add(len,lenBits)
 		this.appendArray(arr.subarray(0,len))
 	}

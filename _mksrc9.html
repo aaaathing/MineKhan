@@ -6394,7 +6394,7 @@ ROTATION = 0x1800 // Mask for the direction bits
         if(websocket){
           sendWS({type:"joined"})
         }else send({type:"joined"})
-        Messages.add("<span style='color:lime;'>Press t or 💬 to open chat. "+(cheats ? "Type /? for help with commands." : "")+"</span>")
+        if(world.isMK) Messages.add("<span style='color:lime;'>Press t or 💬 to open chat. "+(cheats ? "Type /? for help with commands." : "")+"</span>")
 				/*if(host && !window.multiplayerMessageShown){
 					Messages.add("You should enable multiplayer which is in pause menu because multiplayer is rarely used and should be used more. "+(userInfo?"":"If it requires login, you should do that because it is needed for multiplayer.")+" Using multiplayer is also more fun.")
 					window.multiplayerMessageShown = true
@@ -6863,7 +6863,7 @@ ROTATION = 0x1800 // Mask for the direction bits
 		ban_reason: args => clientCmdFuncs.ban_username(args),
 		unban_username: args => {
 			if(win.unban){
-				unban(args.username)
+				unban(args.unban_username)
 			}else{
 				Messages.add("Error: can't unban.","error")
 			}
@@ -12296,14 +12296,14 @@ return//*/
       item = true
     }
 		if(item){
-			send({type:"serverChangeBlock",x:pos?pos[0]:p2.x,y:pos?pos[1]:p2.y,z:pos?pos[2]:p2.z,dimension:p.dimension,place:true,face:hitBox.face,shift:p.sneaking,blockMode:0,rotate,flip})
+			send({type:"serverChangeBlock",x:pos?pos[0]:p2.x,y:pos?pos[1]:p2.y,z:pos?pos[2]:p2.z,dimension:p.dimension,place:true,face:hitBox.face,shift:p.sneaking,blockMode,rotate,flip})
 			p.lastPlace = Date.now()
 			if(blockData[adjholding].onuse && pos) blockData[adjholding].onuse(x,y,z, cblock,p.dimension)
 			return
 		}
 		if(cblock && blockData[cblock].onclick){
 			p.lastPlace = Date.now()
-			send({type:"serverChangeBlock",x,y,z,dimension:p.dimension,place:true,face:hitBox.face,shift:p.sneaking,blockMode:0,rotate,flip})
+			send({type:"serverChangeBlock",x,y,z,dimension:p.dimension,place:true,face:hitBox.face,shift:p.sneaking,blockMode,rotate,flip})
 			return
 		}
 		if(!hitBox.pos || !adjholding) {
@@ -12581,16 +12581,16 @@ return//*/
   function goToDimension(d){
     d = d || ""
     if(d === p.dimension) return
-		if(world) world.unloadAllChunks()
+		if(inWorld) world.unloadAllChunks()
     if(d === "nether"){
       p.dimension = "nether"
-			changeScene("netherLoading")
+			if(inWorld) changeScene("netherLoading")
     }else if(d === "end"){
       p.dimension = "end"
-			changeScene("endLoading")
+			if(inWorld) changeScene("endLoading")
     }else{
       p.dimension = ""
-			changeScene("loading")
+			if(inWorld) changeScene("loading")
     }
 		releasePointer()
   }
@@ -22126,6 +22126,7 @@ r 11 y  n  n  n
 			})
 		}
   }
+	let fasterVel = 1
 	async function joinEaglerServer(){
 		let url = prompt("Enter address")
 		if(!url) return
@@ -22251,6 +22252,11 @@ r 11 y  n  n  n
 		world.playerPhysics = function(){
 			ps.pos.set(pPos.x,pPos.y,pPos.z)
 			ps.vel.set(p.velocity.x,p.velocity.y,p.velocity.z)
+			if(fasterVel !== 1){
+				let m = mag(ps.vel.x,ps.vel.y,ps.vel.z)
+				let t=fasterVel*0.1/m
+				if(m<t && isFinite(t))ps.vel.x*=t,ps.vel.y*=t,ps.vel.z*=t
+			}
 			ps.yaw = pPos.yaw
 			ps.pitch = pPos.pitch
 			physics.simulatePlayer(ps, proxyworld)
@@ -22272,6 +22278,7 @@ r 11 y  n  n  n
 			set yaw(n){p.ry=Math.PI-n},
 			set pitch(n){p.rx=Math.PI-n},
 		}
+		Messages.add("Useful keys: <br>+ Faster speed <br>- Normal speed <br>F4 See in the dark")
 		function mapChunk(cx,cz,groundUp,chunkData,bitMap){
 			let chunk = world.getOrNewChunk(cx*16,cz*16,p.dimension)
 			if(!chunk.loaded) chunk.customLoadStart()
@@ -22881,11 +22888,11 @@ switch(name){
 						this.updateLight(x, y, z, false, data.lightLevel, dimension)
 					}
 				}
-			}
       
-      if(blockID && blockData[blockID].importantOnset){
-        blockData[blockID].importantOnset(x,y,z, dimension,this)
-      }
+	      if(blockID && blockData[blockID].importantOnset){
+	        blockData[blockID].importantOnset(x,y,z, dimension,this)
+	      }
+			}else if(!blockData[blockID]) return
 			if (lazy) {
 				return
 			}
@@ -28157,6 +28164,8 @@ p.camera.transformation.elements.set(matrix)//*/
 			if(k === "f4"){
 				disableLighting = !disableLighting
 			}
+			if(k === "+") fasterVel *= 2
+			if(k === "-") fasterVel = 1
 
 			if(p.spectateRemoteControl && controlKeys[k] && controlKeys[k].isGameControl) send({type:"controlName",event:"keydown",key:controlKeys[k].name},p.spectating.id)
 		} else if (screen === "pause") {
