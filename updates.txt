@@ -420,6 +420,7 @@ Categories including: build, tools, redstone
 
 -- 1659510000000 | August 3, 2022
 Make items entities stackable
+Also added drip and splash particles
 
 -- 1659596400000 | August 4, 2022
 Make tags save to save code
@@ -437,6 +438,50 @@ Hopper
 
 -- 1663311600000 | September 16, 2022
 Comparator
+
+-- 1664175600000 | September 26, 2022
+Added blue redstone dust
+Does not connect with normal redstone dust
+
+-- 1664953200000 | October 5, 2022
+Start adding cow?
+
+-- 1665298800000 | October 9, 2022
+Added pig, pork
+Also finished cow
+
+-- 1665385200000 | October 10, 2022
+Added sheep
+It can be sheared
+
+-- 1667026800000 | October 29, 2022
+Added creeper
+It can explode when near
+
+-- 1667113200000 | October 30, 2022
+Added rotten flesh, gunpowder
+
+-- 1667631600000 | November 5, 2022
+Added chicken
+
+-- 1667980800000 | November 9, 2022
+Added zombie
+
+-- 1668153600000 | November 11, 2022
+Added skeleton, bone, mob spawner
+
+-- 1668326400000 | November 13, 2022
+Added spider, cave spider, daylight detector
+
+-- 1670400000000 | December 7, 2022
+Added weather
+Rain and snow
+
+-- 1673164800000 | January 8, 2023
+Command blocks flash with red when there is error
+
+-- 1673683200000 | January 14, 2023
+Added wolf
 
 -- 1677709915346 | March 1, 2023
 Website broken
@@ -475,6 +520,12 @@ Signs are now double sided. You can edit the other side by going to the other si
 -- 1681576919542 | April 15, 2023
 Campfires
 Campfires now set you on fire and can be set on fire by burning entities.
+
+-- 1682146800000 | April 22, 2023
+Added oil, oil bucket, debug stick.
+
+-- 1683097200000 | May 3, 2023
+Added silver block
 
 -- 1683244218292 | May 4, 2023
 Liquids seen on inside
