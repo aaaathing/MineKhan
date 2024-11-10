@@ -76,7 +76,7 @@ or.onsuccess = e => {
 	let store = trans.objectStore('worlds')
 	req = store.getAll()
 	}catch{return}
-	let t=new Date('august 2022').getTime()
+	let t=new Date('march 2023').getTime()
 	req.onsuccess = async e => {
 		try{
 		await import("https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js")

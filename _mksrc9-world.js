@@ -11378,7 +11378,7 @@ const blockData = [
 	{
 		name: "spawnEnderDragon",
 		item: true,
-		serveronuse: (x,y,z, block,world,face,item,p) => {
+		/*serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.EnderDragon](pos[0],pos[1],pos[2])
 			world.addEntity(ent)
@@ -11386,7 +11386,7 @@ const blockData = [
 		},
 		spawnMob: function(x,y,z,world){
 			world.addEntity(new entities[entityIds.EnderDragon](x,y,z),false)
-		},
+		},*/
 		category:"items",
 		hidden:true
 	},
@@ -11424,7 +11424,7 @@ const blockData = [
 				if(idx >= states.length) idx = 0
 				state = states[idx]
 			}while(!blockData[block|state])
-			world.setBlock(x,y,z,base|state,false,true,false,true)
+			if(blockData[block|state]) world.setBlock(x,y,z,base|state,false,true,false,true)
 		},
 		useChangeBlockRotation: (x,y,z, block, world) => {
 			if(!block) return
@@ -11440,7 +11440,7 @@ const blockData = [
 				if(idx >= states.length) idx = 0
 				state = states[idx]
 			}while(!blockData[block|state])
-			world.setBlock(x,y,z,base|state,false,true,false,true)
+			if(blockData[block|state]) world.setBlock(x,y,z,base|state,false,true,false,true)
 		}
 	},
 	{

@@ -5700,8 +5700,7 @@ if time is 0, it will update every time
 			}
 
 			request.onerror = function(e) {
-				console.error(e)
-				reject(e)
+				reject(request.error)
 			}
 		})
 	}
@@ -21211,9 +21210,6 @@ r 11 y  n  n  n
 				const packet = bitArrayToPacket(arr)
 				this.onmessage(packet)
 			})
-			connection.addEventListener('close', () => {
-				this.onclose(), this.onclose = emptyFunc
-			})
 			channel.addEventListener("close", () => {
 				this.connection.close()
 				this.onclose(), this.onclose = emptyFunc
@@ -21225,7 +21221,8 @@ r 11 y  n  n  n
 			channel.send(packetToBitArray(data))
 		}
 		close(){
-			this.connection.close() //will trigger close event
+			this.connection.close()
+			this.onclose(), this.onclose = emptyFunc
 		}
 	}
 	class MessagePortContainer{
@@ -21254,43 +21251,37 @@ r 11 y  n  n  n
 					this.onmessage(packet)
 				}
 			})
-			ws.addEventListener("close", () => this.onclose())
+			ws.addEventListener("close", () => {
+				this.onclose(), this.onclose = emptyFunc
+			})
 		}
 		send(data){
 			this.ws.send(packetToBitArray(data))
 		}
 		close(){
 			this.ws.close()
+			this.onclose(), this.onclose = emptyFunc
 		}
 	}
 	class WebSocketServerContainer{
 		constructor(ws, otherId){
 			this.ws = ws
 			this.otherId = otherId
-			this.didOnclose = false
 			ws.addEventListener("close", () => {
-				if(!this.didOnclose){
-					this.didOnclose = true
-					this.doOnclose()
-				}
+				this.onclose(), this.onclose = emptyFunc
 			})
 		}
 		doOnmessage(reader){
 			this.onmessage(bitArrayToPacket(reader))
 		}
 		doOnclose(){
-			this.onclose()
+			this.onclose(), this.onclose = emptyFunc
 		}
 		send(data){
 			this.ws.send(JSON.stringify({type:"nextWsConnection",data:this.otherId}))
 			this.ws.send(packetToBitArray(data))
 		}
-		close(){
-			if(!this.didOnclose){
-				this.didOnclose = true
-				this.doOnclose()
-			}
-		}
+		close(){}
 	}
 
 	document.body.insertAdjacentHTML("beforeend","<script src='features.js'><"+"/script>")
@@ -21438,9 +21429,12 @@ r 11 y  n  n  n
 							if(connection) connection.close()
 							peerConnection.close()
 							peerConnection.cAnCeLcOnNectION = true
-							useWsInstead = true
-							//multiplayerError = multiplayerError || {data:"WebRTC connection failed. Try using different device or network."}
-							switchToWs()
+							if(!connection){
+								useWsInstead = true
+								switchToWs()
+							}else{
+								multiplayerError = multiplayerError || {data:"WebRTC connection failed."}
+							}
 						}
 					})
 					peerConnection.addEventListener("iceconnectionstatechange", e => {
@@ -21459,7 +21453,6 @@ r 11 y  n  n  n
 
 					if(useWsInstead) return
 					connection = new RTCClientContainer(channel,peerConnection,unorderChannel)
-					peerConnection.addEventListener("close", () => websocket.close())
 					resolve()
 				})()
 				function switchToWs(){
@@ -21475,7 +21468,7 @@ r 11 y  n  n  n
 		function disableMultiplayer(){
 			for(let p of serverWorld.players.slice()){
 				//if(c instanceof RTCClientContainer){
-				p.connection.close()
+				if(!p.host) p.connection.close()
 			}
 			websocket.doNtREcOnnecT = true
 			websocket.close()
@@ -21559,6 +21552,7 @@ r 11 y  n  n  n
 					serverWorld.serverAddPlayer(new RTCClientContainer(channel,peerConnection,unorderChannel),data.id,data.username,false,data.admin)
 				}else if(data.type === "iceCandidate"){
 					let from = peerConnections[data.FROM]
+					if(!from) return
 					try {
 						await from.addIceCandidate(data.data)
 					} catch (e) {
@@ -24971,7 +24965,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			savebox.classList.remove("hidden")
 			saveDirections.classList.remove("hidden")
 			savebox.value = serverWorld.getSaveString()
-		})
+		}, () => !host)
     Button.add(width/2-110*ss, height / 2 + 25*ss, 200*ss, 40*ss, ["Enable Multiplayer","Disable Multiplayer"], "pause", async r => {
 			if(websocket){
 				disableMultiplayer()
@@ -26498,6 +26492,7 @@ p.camera.transformation.elements.set(matrix)//*/
 
 	function drawIcon(x, y, id, obj, noAmount, addScale) {
 		id = id < isCube && !blockData[id].item ? (id | blockMode) : id
+		if(!blockData[id]) throw new Error("no block modified-id:"+id+" blockMode"+blockMode)
 		let X = x / (3 * height) - 0.1666 * width / height
 		let Y = y / (3 * height) - 0.1666
     let scale = 0.16 / height * inventory.size
@@ -28637,7 +28632,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				const extensionName = availableExtensions[i].replace(/[A-Z]+_/g, "")
 				if(neededExtensions.includes(extensionName)) glExtensions[extensionName] = gl.getExtension(availableExtensions[i])
 			}
-			canv.addEventListener("webglcontextlost", e => logError("WebGL context lost<br>"+e.statusMessage))
+			canv.addEventListener("webglcontextlost", e => logError("WebGL context lost. Reload. "+e.statusMessage))
 		} else {
 			gl = win.gl
 		}
@@ -28777,7 +28772,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		gl.enableVertexAttribArray(glCache.aShadow)
 		gl.enableVertexAttribArray(glCache.aSkylight)
 		gl.enableVertexAttribArray(glCache.aBlocklight)/*/
-		gl.useProgram(program3D)
+		use3d()
 		FOV(90)
 		initModelView(null, 0, 0, 0, mainBGRotY, mainBGRot, 1,1)
 		gl.disableVertexAttribArray(glCache.aShadow)
@@ -28793,8 +28788,8 @@ p.camera.transformation.elements.set(matrix)//*/
 		vertexAttribPointer("aVertex", program3D, "aVertex", 3, panoramaVertBuffer)
 		vertexAttribPointer("aTexture", program3D, "aTexture", 2, panoramaTexBuffer)
 		gl.disable(gl.CULL_FACE)
-		gl.drawElements(gl.TRIANGLES, panoramaSize*6, gl.UNSIGNED_INT, 0)
-		gl.uniform1i(glCache.uTrans, 1)
+		/*gl.drawElements(gl.TRIANGLES, panoramaSize*6, gl.UNSIGNED_INT, 0)
+		gl.uniform1i(glCache.uTrans, 1)*/
 		gl.drawElements(gl.TRIANGLES, panoramaSize*6, gl.UNSIGNED_INT, 0)
 		gl.uniform1i(glCache.uTrans, 0)
 		gl.enable(gl.CULL_FACE)
