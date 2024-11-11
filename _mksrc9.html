@@ -7901,7 +7901,7 @@ Division: //
   setControl("break", "leftMouse", "Attack / Destroy",true)
   setControl("place", "rightMouse", "Use item / Place block",true)
   setControl("pick", "middleMouse", "Pick block",true)
-  setControl("toggleView", "o", "Toggle third person mode")
+  setControl("toggleView", "o", "Toggle view")
   setControl("sit", "u", "Toggle sitting",true)
   function resetControls(){
     for(var i in controlMap){
@@ -21210,6 +21210,12 @@ r 11 y  n  n  n
 				const packet = bitArrayToPacket(arr)
 				this.onmessage(packet)
 			})
+			connection.addEventListener("connectionstatechange", e => {
+				console.log(connection.connectionState)
+				if(connection.connectionState === "closed" || connection.connectionState === "failed"){
+					this.onclose(), this.onclose = emptyFunc
+				}
+			})
 			channel.addEventListener("close", () => {
 				this.connection.close()
 				this.onclose(), this.onclose = emptyFunc
@@ -24637,7 +24643,8 @@ p.camera.transformation.elements.set(matrix)//*/
 			span.innerHTML = i
 			span.className = "icon"
 			lastAddedButton.appendChild(span)
-		}
+		},
+		disable(){lastAddedButton.disabled = true}
 	}
 	function createScrollable(){
 		let el = document.createElement("div")
@@ -24865,7 +24872,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		Button.add(mid + 3 * x4, height - 40*ss, w4, 40*ss, "Back", "multiplayer menu", r => changeScene("main menu"))
 		
     //multiplayer connecting buttons
-    Button.add(mid, height / 2 + 40, w2, 40, "Cancel", "multiplayer connecting", r => {if(!host){changeScene("multiplayer disconnecting")};multiplayer && multiplayer.close()})
+    Button.add(mid, height / 2 + 40, w2, 40, "Cancel", "multiplayer connecting", r => {multiplayer && multiplayer.close()})
     
     //multiplayer lost buttons
     Button.add(mid, height / 2 + 40, w2, 40, "Back", "multiplayer lost", r => changeScene("multiplayer menu"))
@@ -24992,7 +24999,6 @@ p.camera.transformation.elements.set(matrix)//*/
 			}*/
 			multiplayer.close()
 			if(!host){
-				changeScene("multiplayer disconnecting")
 				if(websocket) websocket.close()
 			}else{
 				changeScene("main menu")
@@ -26492,7 +26498,7 @@ p.camera.transformation.elements.set(matrix)//*/
 
 	function drawIcon(x, y, id, obj, noAmount, addScale) {
 		id = id < isCube && !blockData[id].item ? (id | blockMode) : id
-		if(!blockData[id]) throw new Error("no block modified-id:"+id+" blockMode"+blockMode)
+		if(!blockData[id]) throw new Error("no block modified-id:"+id+" blockMode:"+blockMode)
 		let X = x / (3 * height) - 0.1666 * width / height
 		let Y = y / (3 * height) - 0.1666
     let scale = 0.16 / height * inventory.size
@@ -26574,6 +26580,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		  let y = height - inventory.size
 			let item = inventory.slots[inventory.slotIds.hotbar[i]]
 			if(item) {
+				if(!blockData[item.id])throw new Error("no block "+item.id+" from hotbar()")
 				drawIcon(x, y, item.id, item, !p.survival)
 			}
 		}
@@ -27121,13 +27128,16 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
     
 		if (inventory.slots[inventory.slotIds.holding]) {
-			drawIcon(mouseX, mouseY, inventory.slots[inventory.slotIds.holding].id, inventory.slots[inventory.slotIds.holding], !p.survival)
+			let item = inventory.slots[inventory.slotIds.holding]
+			if(!blockData[item.id])throw new Error("no block "+item.id+" from inventory.holding")
+			drawIcon(mouseX, mouseY, item.id, item, !p.survival)
 		}
 		if(inventory.category !== 0){
       for (let i = Math.floor(invScroll / s)*perRow; i < (Math.floor(invScroll / s)+rows)*perRow && i < inventoryBlocks[inventory.category].length; i++) {
         x = i % perRow * s + 50
         y = (i / perRow | 0) * s + 50
         y -= invScroll
+				if(!blockData[inventoryBlocks[inventory.category][i]])throw new Error("no block "+inventoryBlocks[inventory.category][i]+" from inventoryBlocks, category:"+inventory.category+" i:"+i)
         drawIcon(x, y, inventoryBlocks[inventory.category][i])
       }
     }
@@ -27204,7 +27214,10 @@ p.camera.transformation.elements.set(matrix)//*/
 				ctx.fillRect(x,y,s,s)
 				noAmount = true
 			}
-			if(item) drawIcon(x+s2, y+s2, item.id, item, noAmount)
+			if(item){
+				if(!blockData[item.id])throw new Error("no block "+item.id+" from spread")
+				drawIcon(x+s2, y+s2, item.id, item, noAmount)
+			}
 			if(mouseX>x && mouseX<x+s && mouseY>y && mouseY<y+s){
 				ctx.lineWidth = 2
 				ctx.strokeStyle = "white"
@@ -29459,15 +29472,17 @@ p.camera.transformation.elements.set(matrix)//*/
 
 				let buttonContainer = doc.createElement("div")
 				buttonContainer.className = "buttonContainer"
-				addButton(buttonContainer,"Join Server",async() => {
-					changeScene("multiplayer connecting")
-					addToBottomRightList("Authenticating")
-					var logged = await loggedIn()
-			    if(!logged){
-			      return changeScene("multiplayer menu")
-			    }
-					initMultiplayer(servers[selectedWorld].id).then(joinWorld)
-				})
+				if(!servers[selectedWorld].version || servers[selectedWorld].version === window.version){
+					addButton(buttonContainer,"Join Server",async() => {
+						changeScene("multiplayer connecting")
+						addToBottomRightList("Authenticating")
+						var logged = await loggedIn()
+				    if(!logged){
+				      return changeScene("multiplayer menu")
+				    }
+						initMultiplayer(servers[selectedWorld].id).then(joinWorld)
+					})
+				}else addButton(buttonContainer,"Join Server", emptyFunc, "Different version").disable()
 				if(servers[selectedWorld].url){
 					addButton(buttonContainer,"More Information", () => window.open("https://"+servers[selectedWorld].url, "_blank"),"Open website for this server.","right")
 				}
@@ -31695,6 +31710,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				textSize(80*x)
 				text("You discovered",width/2,20)
 				text("blockName."+discoverBlock,width/2,height-100)
+				if(!blockData[discoverBlock])throw new Error("no block "+discoverBlock+" from discover")
 				drawIcon(width/2, height/2, discoverBlock, null, null, x*10)
 				ctx.globalAlpha = 1
 				updateHUD = true
