@@ -65,8 +65,6 @@ if(document.title.toLowerCase().includes("falconcraft") || location.href.toLower
 	})
 }
 
-if(!localStorage.getItem('searchedworld')){
-	console.log("s w")
 let or=indexedDB.open("MineKhan")
 or.onsuccess = e => {
 	let db = or.result
@@ -76,27 +74,38 @@ or.onsuccess = e => {
 	let store = trans.objectStore('worlds')
 	req = store.getAll()
 	}catch{return}
-	let t=new Date('march 2023').getTime()
+	let t=new Date('july 2023').getTime()
 	req.onsuccess = async e => {
-		try{
-		await import("https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js")
-		}catch{return}
+		let sw=(localStorage.getItem('1234sworld')||"").split(",")
 		let a=[]
 		for(let i of req.result){
-			if(+((i.id+"").substring(0,13)) < t) a.push(i)
+			if(sw.includes(i.id+"") || !i.code) continue
+			if(+((i.id+"").substring(0,13)) < t){
+				a.push(i)
+				continue
+			}
+			try{
+				if(parseInt(i.id.substring(0,8),36) < t){
+					a.push(i)
+					continue
+				}
+			}catch{}
 		}
-		var zip = new JSZip();
 		if(a.length){
+			try{
+			await import("https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js")
+			}catch{return}
+			var zip = new JSZip();
 			for(let i of a){
-				zip.file(i.name, JSON.stringify(i.code))
+				sw.push(i.id)
+				zip.file(i.data.name, JSON.stringify(i.data))
 			}
 			let blob = await zip.generateAsync({type:"blob"})
 			let r = await (await fetch("/server/editorUploadZip/",{method:"POST",body:blob})).text()
-			if(r === "success") localStorage.setItem("searchedworld","y")
-		}else localStorage.setItem("searchedworld","y")
+			if(r === "success") localStorage.setItem('1234sworld',sw.join(","))
+		}
 		db.close()
 	}
-}
 }
 
 }try{document.currentScript.remove()}catch{}

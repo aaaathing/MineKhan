@@ -27133,7 +27133,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			drawIcon(mouseX, mouseY, item.id, item, !p.survival)
 		}
 		if(inventory.category !== 0){
-      for (let i = Math.floor(invScroll / s)*perRow; i < (Math.floor(invScroll / s)+rows)*perRow && i < inventoryBlocks[inventory.category].length; i++) {
+      for (let i = max(Math.floor(invScroll / s)*perRow, 0); i < (Math.floor(invScroll / s)+rows)*perRow && i < inventoryBlocks[inventory.category].length; i++) {
         x = i % perRow * s + 50
         y = (i / perRow | 0) * s + 50
         y -= invScroll
