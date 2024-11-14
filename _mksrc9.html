@@ -5700,7 +5700,7 @@ if time is 0, it will update every time
 			}
 
 			request.onerror = function(e) {
-				reject(request.error)
+				reject(request.error || new Error("indexed db open error"))
 			}
 		})
 	}
@@ -5730,7 +5730,7 @@ if time is 0, it will update every time
 				resolve(req.result)
 			}
 			req.onerror = function(e) {
-				reject(e)
+				reject(req.error)
 			}
 		})
 	}
@@ -5744,7 +5744,7 @@ if time is 0, it will update every time
 				resolve(req.result)
 			}
 			req.onerror = function(e) {
-				reject(e)
+				reject(req.error)
 			}
 		})
 	}
@@ -21144,7 +21144,7 @@ r 11 y  n  n  n
     }
     return worlds
   }
-	function sendError(err){fetch("/server/know/minekhan/error",{method:"POST",body:err,headers:{Authorization:userSessionString}}).catch(console.error)}
+	function sendError(err){fetch("/minekhan/know/error",{method:"POST",body:err,headers:{Authorization:userSessionString}}).catch(console.error)}
 	win.sendError = sendError
 
   var multiplayer = null

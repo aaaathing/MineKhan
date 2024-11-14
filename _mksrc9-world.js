@@ -25542,7 +25542,7 @@ class Chunk {
 		if(!this.cleanSections[s]) return 0
 		y = y & 15
 		let c = this.sections[s]
-		return this.cleanSections[s][x * c.size * c.size + y * c.size + z]
+		return this.cleanSections[s][x * 256 + y * 16 + z]
 	}
 	getTags(x, y, z){
 		y -= minHeight
@@ -34247,6 +34247,7 @@ class WorldDimension{
 			return false
 		}
 		if(y < minHeight) return false
+		if(!blockData[blockID]) throw new Error("no block "+blockID)
 		let chunk = this.chunks[x >> 4] && this.chunks[x >> 4][z >> 4]
 		
 		let xm = x & 15
