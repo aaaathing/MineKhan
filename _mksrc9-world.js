@@ -11424,7 +11424,7 @@ const blockData = [
 				if(idx >= states.length) idx = 0
 				state = states[idx]
 			}while(!blockData[block|state])
-			if(blockData[block|state]) world.setBlock(x,y,z,base|state,false,true,false,true)
+			if(blockData[base|state]) world.setBlock(x,y,z,base|state,false,true,false,true)
 		},
 		useChangeBlockRotation: (x,y,z, block, world) => {
 			if(!block) return
@@ -11440,7 +11440,7 @@ const blockData = [
 				if(idx >= states.length) idx = 0
 				state = states[idx]
 			}while(!blockData[block|state])
-			if(blockData[block|state]) world.setBlock(x,y,z,base|state,false,true,false,true)
+			if(blockData[base|state]) world.setBlock(x,y,z,base|state,false,true,false,true)
 		}
 	},
 	{

@@ -54,6 +54,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
         src:url('Monocraft.ttf');
       }
     </style>-->
+		<link rel="manifest" href="manifest.json">
 		<link rel="icon" type="image/x-icon" href="favicon.ico" id="icon">
 	</head>
 	<style>
@@ -30890,6 +30891,8 @@ p.camera.transformation.elements.set(matrix)//*/
 		lastAutosave = performance.now()
 		saving = false
 
+		banned = {}, whitelist = null
+
 		changeScene("multiplayer connecting")
 		joinWorld(initSingleplayer())
 		fetch("/minekhan/know",{
@@ -31005,7 +31008,7 @@ p.camera.transformation.elements.set(matrix)//*/
         return
       }
     }
-		banned = dataBanned, whitelist = dataWhitelist
+		banned = dataBanned || {}, whitelist = dataWhitelist || null
 		if(activeResourcePacks){
 			//serverWorld.resourcePacks = worldResourcePacks
 			serverWorld.activeResourcePacks = activeResourcePacks
