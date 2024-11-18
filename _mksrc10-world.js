@@ -14333,8 +14333,8 @@ let shapes = {
 			east: 3,
 			west: 3
 		},
-		size: 6,
-		rotate: true
+		rotate: true,
+		flip: true
 	},
 	wallFlat: {
 		verts: [
@@ -18749,43 +18749,11 @@ function initBlockDataShapes(){
 		doorSound(x,y,z,this.name === "ironDoor"?"iron_door":"wooden_door",!o,world)
 	}
 	let trapdoorToggle = function(x,y,z,world){
-		let block = world.getBlock(x,y,z)
-		let target
-		switch(block){
-			case this.id | TRAPDOOR | NORTH:
-				target = this.id | TRAPDOOROPEN | NORTH
-				break
-			case this.id | TRAPDOOR | SOUTH:
-				target = this.id | TRAPDOOROPEN | SOUTH
-				break
-			case this.id | TRAPDOOR | EAST:
-				target = this.id | TRAPDOOROPEN | EAST
-				break
-			case this.id | TRAPDOOR | WEST:
-				target = this.id | TRAPDOOROPEN | WEST
-				break
-		}
-		world.setBlock(x,y,z,target)
+		world.setBlock(x,y,z, world.getBlock(x,y,z) & (~isState) | TRAPDOOROPEN)
 		doorSound(x,y,z,this.name === "ironTrapdoor"?"iron_trapdoor":"wooden_trapdoor",true,world)
 	}
 	let trapdoorOpenToggle = function(x,y,z,world){
-		let block = world.getBlock(x,y,z)
-		let target
-		switch(block){
-			case this.id | TRAPDOOROPEN | NORTH:
-				target = this.id | TRAPDOOR | NORTH
-				break
-			case this.id | TRAPDOOROPEN | SOUTH:
-				target = this.id | TRAPDOOR | SOUTH
-				break
-			case this.id | TRAPDOOROPEN | EAST:
-				target = this.id | TRAPDOOR | EAST
-				break
-			case this.id | TRAPDOOROPEN | WEST:
-				target = this.id | TRAPDOOR | WEST
-				break
-		}
-		world.setBlock(x,y,z,target)
+		world.setBlock(x,y,z, world.getBlock(x,y,z) & (~isState) | TRAPDOOR)
 		doorSound(x,y,z,this.name === "ironTrapdoor"?"iron_trapdoor":"wooden_trapdoor",false,world)
 	}
 	function clickBed(x,y,z,world,p){
@@ -24455,6 +24423,21 @@ entities[entities.length] = class Enderman extends Mob{
 			}
 		}
 	}
+}
+
+entities[entities.length] = class TextDisplay extends Entity{
+	static name2 = "TextDisplay"
+	constructor(x,y,z,text,size,color,background,glow) {
+		size = size || 1/2
+		super(x, y, z, 0, 0, 0, 0, 0, size, size, size, null,null, 0, 0)
+		this.gravityStength = 0
+		this.setText(text)
+		this.color = color || [1,1,1]
+		this.background = background || [0,0,0,0]
+		this.glow = glow || false
+		this.size = size
+	}
+	setText(t){this.text = t}
 }
 
 let entityOrder = ['Item','BlockEntity', 'PrimedTNT', 'PrimedSuperTNT', 'PrimedUltraTNT', 'PrimedUnTNT', 'MovingBlock', 'EnderPearl', 'Snowball', 'Egg', 'SlingshotShot', 'Arrow', 'Sign', 'ItemFrame', 'ExperienceOrb', 'Cow', 'Pig', 'Creeper', 'Sheep', 'Chicken', 'Zombie', 'Skeleton', 'Spider', 'EnderDragon', 'BlockParticle', 'PoofParticle', 'FallingDustParticle', 'RedstoneParticle', 'ShockwaveParticle', 'SmokeParticle', 'NoteParticle', 'GlintParticle', 'FlameParticle', 'LavaParticle', 'DripParticle', 'SplashParticle', 'Spark', 'TextDisplay','Wolf','HeartParticle',"Blaze","SmallFireball","BlockDisplay","BeaconBeam","Enderman","Minecart"]
@@ -31748,8 +31731,10 @@ class World{ // aka trueWorld
 					break
 				case "TextDisplay":
 					ent = new ent(p.x,p.y,p.z,p.text,p.size,p.color,p.background,p.glow)
+					break
 				case "Minecart":
 					ent = new ent(p.x,p.y,p.z)
+					break
 				default:
 					break
 			}
@@ -31958,8 +31943,10 @@ class World{ // aka trueWorld
 					break
 				case "TextDisplay":
 					ent = new ent(x,y,z,text,size,color,background,glow)
+					break
 				case "Minecart":
 					ent = new ent(x,y,z)
+					break
 				default:
 					break
 			}
@@ -33464,7 +33451,7 @@ window.parent.postMessage({ready:true}, "*")
 			}*/else if(data.type === "serverChangeBlock"){
 				try{
 				world.serverChangeBlock(data.x,data.y,data.z,data.place,p,data.face,data.shift,data.blockMode,data.rotate,data.flip)
-				}catch(e){e.message+"\nblock: "+JSON.stringify(p.inventory.hotbar[p.inventory.hotbarSlot]);throw e}
+				}catch(e){e.message+="\nholding: "+JSON.stringify(p.inventory.hotbar[p.inventory.hotbarSlot]);throw e}
 			}else if(data.type === "entityPos"){
 				let ent = world.posEntity(new BitArrayReader(data.data, true), true)
 				return world[p.dimension].deleteEntity(ent.id)

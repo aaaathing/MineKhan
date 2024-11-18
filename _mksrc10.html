@@ -54,7 +54,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
         src:url('Monocraft.ttf');
       }
     </style>-->
-		<link rel="manifest" href="manifest.json">
+		<link rel="manifest" href="./manifest.json">
 		<link rel="icon" type="image/x-icon" href="favicon.ico" id="icon">
 	</head>
 	<style>
@@ -924,7 +924,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		<br><br>
 		<div style='position:sticky;bottom:8;left:8'>
 		<button onclick='errorScreen.style.display="none"'>Hide</button>
-		<button onclick='let p=prompt("What caused this error to happen");sendError("error explained: "+p)'>Help fix this error by explaining how it happened</button>
+		<button onclick='let p=prompt("What caused this error to happen? what did you do?");sendError("error explained: "+p)'>Help fix this error by explaining how it happened</button>
 		</div>
 	</div>
   <script>
@@ -21334,6 +21334,7 @@ r 11 y  n  n  n
 				return new WebSocketClientContainer(ws)
 			}else{
 				target = "wss://thingmaker.us.eu.org/mkjoin?target="+target
+				let cAnCeLcOnNectION = false
 				async function connectWs(){
 					websocket = new WebSocket(target)
 					websocket.binaryType = "arraybuffer"
@@ -21384,7 +21385,7 @@ r 11 y  n  n  n
 						if(connection) connection.close()
 						else{
 							peerConnection.close()
-							peerConnection.cAnCeLcOnNectION = true
+							cAnCeLcOnNectION = true
 							multiplayerError = multiplayerError || {data:"WebSocket closed before RTCPeerConnection connected."}
 						}
 						websocket = null
@@ -21431,11 +21432,11 @@ r 11 y  n  n  n
 					})
 					peerConnection.addEventListener("connectionstatechange", e => {
 						if(peerConnection.connectionState === "closed"){
-							peerConnection.cAnCeLcOnNectION = true
+							cAnCeLcOnNectION = true
 						}else if(peerConnection.connectionState === "failed"){
 							if(connection) connection.close()
 							peerConnection.close()
-							peerConnection.cAnCeLcOnNectION = true
+							cAnCeLcOnNectION = true
 							if(!connection){
 								useWsInstead = true
 								switchToWs()
@@ -21459,6 +21460,11 @@ r 11 y  n  n  n
 					await Promise.all([waitForAnswerPromise,waitForDataChannelPromise,waitForUnorderDataChannelPromise])
 
 					if(useWsInstead) return
+					if(cAnCeLcOnNectION){
+						connection = {cAnCeLcOnNectION:true}
+						resolve()
+						return
+					}
 					connection = new RTCClientContainer(channel,peerConnection,unorderChannel)
 					resolve()
 				})()
@@ -21539,11 +21545,12 @@ r 11 y  n  n  n
 						e.channel.onerror = e => {if(e.error.sctpCauseCode !== 12) logError("server RTC data channel error: "+e.error.errorDetail+" "+e.error.message+" sctpCauseCode:"+e.error.sctpCauseCode)}
 					}
 
+					let cAnCeLcOnNectION = false
 					peerConnection.addEventListener("connectionstatechange", e => {
 						if(peerConnection.connectionState === "closed"){
-							peerConnection.cAnCeLcOnNectION = true
+							cAnCeLcOnNectION = true
 						}else if(peerConnection.connectionState === "failed"){
-							peerConnection.cAnCeLcOnNectION = true
+							cAnCeLcOnNectION = true
 							peerConnection.close()
 						}
 					})
@@ -21555,7 +21562,7 @@ r 11 y  n  n  n
 
 					await Promise.all([waitForDataChannelPromise,waitForUnorderDataChannelPromise])
 
-					if(peerConnection.cAnCeLcOnNectION) return
+					if(cAnCeLcOnNectION) return
 					serverWorld.serverAddPlayer(new RTCClientContainer(channel,peerConnection,unorderChannel),data.id,data.username,false,data.admin)
 				}else if(data.type === "iceCandidate"){
 					let from = peerConnections[data.FROM]
@@ -23288,8 +23295,10 @@ switch(name){
 						break
 					case "TextDisplay":
 						ent = new ent(p.x,p.y,p.z,p.text,p.size,p.color,p.background,p.glow)
+						break
 					case "Minecart":
 						ent = new ent(p.x,p.y,p.z)
+						break
 					default:
 						break
 				}
