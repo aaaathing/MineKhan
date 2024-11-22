@@ -1133,25 +1133,6 @@ nosound
 Example: /minekhan?nosound
 </pre>
 			</div>
-			<div>
-				<h1>How to get old worlds</h1>
-<pre>
-This only works if you used to play at minekhan.thingmaker.repl.co or play.minekhan.repl.co
-This also requires access to devtools.
-
-Go to minekhan.thingmaker.repl.co
-Turn off internet connection to prevent redirect.
-If it still redirects, try hard reload.
-Open devtools by:
-	right clicking and clicking inspect
-	or pressing ctrl+shift+i or similar
-Paste this in and optionaly check for bad things:
-<textarea>
-let or=indexedDB.open("MineKhan");or.onsuccess = e => { let db = or.result;let trans = db.transaction('worlds', "readonly");let store = trans.objectStore('worlds'); let req = store.getAll(); req.onsuccess=()=>{ for(let i of req.result){ var link = document.createElement("a"); link.download = i.data.name+'.minekhan'; link.href = Object.createObjectURL(new Blob([JSON.stringify(i.data)])); link.click(); Object.revokeObjectURL(link.href); } }}
-</textarea>
-The files should have been downloaded afterwards.
-</pre>
-			</div>
       <div id="help_controls">
         <h1>Controls</h1>
         <b>These controls are used only when playing in a world.</b> You can change them by going to options and clicking change controls<br>
