@@ -21091,14 +21091,14 @@ r 11 y  n  n  n
     }
   }
   async function getWorlds(addWorldCallback,pingCallback){
-    if(!navigator.onLine) return "offline"
+    if(!navigator.onLine) return "You are offline. Connect to the internet first."
     let worlds
     await fetch("/server/worlds").then(r => r.json()).then(r => {
       worlds = r
       for(var w of worlds){
         if(addWorldCallback) addWorldCallback(w)
       }
-    })
+    }, console.error)
     await fetch("/server/servers").then(r => r.json()).then(r => {
       for(var v of r){
         let obj = {
@@ -22125,7 +22125,14 @@ r 11 y  n  n  n
 		if(!username) return
 		changeScene("multiplayer connecting")
 		if(!window.mcProtocol) await import("/minekhan/mcProtocol/bundle.js")
-		await window.mcProtocol.dataPrefetch("pc","1.8", addToBottomRightList)
+		try{
+		await window.mcProtocol.dataPrefetch("pc","1.8", (l,t) => addToBottomRightList(round(l/t*100)+"%"))
+		}catch(e){
+			multiplayerError = {data:"while loading resources, "+e.message}
+			changeScene("multiplayer lost")
+			clearBottomRightList()
+			return
+		}
 		clearBottomRightList()
 		const mcData = window.mcProtocol.getMCData("1.8")
 		let internalIdToEntity = []
@@ -29517,7 +29524,7 @@ p.camera.transformation.elements.set(matrix)//*/
       p.setAttribute("pingDone",true)
     })
     //if(worlds === "notLoggedIn") return changeScene("main menu")
-    if(worlds === "offline") return window.servers.innerHTML = "<div class='message'>You are offline. Connect to the internet first.</div>"
+    if(typeof worlds === "string") return window.servers.innerHTML = "<div class='message'>"+worlds+"</div>"
 		if(!worlds.length) window.servers.insertAdjacentHTML('beforeend',"<div class='select-message'>No servers. You can host one by clicking 'Enable Multiplayer' in a world.</div>")
 
     for(var el of window.servers.querySelectorAll(".world")){
