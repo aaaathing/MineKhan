@@ -2135,7 +2135,6 @@ window.updates = document.querySelector("#updates")
 window.packetViewerJSON = document.querySelector("#packetViewerJSON")
 window.packetViewerContainer = document.querySelector("#packetViewerContainer")
 window.achievments = document.querySelector("#achievments")
-ctx.imageSmoothingEnabled = false
 window.loadProg = document.getElementById("loadProgress")
 window.loader = document.getElementById("loader")
 window.loadBar = document.querySelector("#loadBar div")
@@ -8137,11 +8136,13 @@ Division: //
 		return diff>4 && diff<12
 	}
   function editSign(x,y,z,dimension){
+		let tags = world.getTags(x,y,z,dimension)
+		if(!tags) return
     containerData.x = x
     containerData.y = y
     containerData.z = z
     containerData.dimension = dimension
-		containerData.side = getSignSide(world.getTags(x,y,z,dimension))
+		containerData.side = getSignSide(tags)
     editSignBox.focus()
     changeScene("edit sign")
     releasePointer()
@@ -11686,8 +11687,8 @@ return//*/
           p.ry = -s.ry
           break
         default:
-          p.rx = -s.rx
-          p.ry = -s.ry
+          p.rx = -s.yaw
+          p.ry = -s.pitch
       }
     }else if(p.riding){
 			let ent = p.ridingEnt
@@ -21092,10 +21093,10 @@ r 11 y  n  n  n
   }
   async function getWorlds(addWorldCallback,pingCallback){
     if(!navigator.onLine) return "You are offline. Connect to the internet first."
-    let worlds
+    let worlds = []
     await fetch("/server/worlds").then(r => r.json()).then(r => {
-      worlds = r
-      for(var w of worlds){
+      for(var w of r){
+				worlds.push(w)
         if(addWorldCallback) addWorldCallback(w)
       }
     }, console.error)
@@ -22190,7 +22191,7 @@ r 11 y  n  n  n
 		}
 		BLOCK_COUNT = 0
 		blockInfoIds = {}
-		//todo inventoryBlocks, items
+		inventoryBlocks = {search:[]}//todo inventoryBlocks, items
 		win.blockData = blockData
 		win.blockIds = blockIds
 		genIcons()
@@ -28323,7 +28324,6 @@ p.camera.transformation.elements.set(matrix)//*/
 		canvas.width = resWidth
 		ctx.resetTransform()
 		ctx.scale(resolution,resolution)
-    ctx.imageSmoothingEnabled = false
     canvas2.width = resWidth
     canvas2.height = resHeight
 		gl.canvas.width = resWidth
@@ -32408,6 +32408,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		if(stopTicking) return//for errors
 		let frameStart = now = performance.now()
 
+		if(ctx.imageSmoothingEnabled) ctx.imageSmoothingEnabled = false
     if(allLoaded){
 			prevAnimationAmount = animationAmount
 			if(changeSceneAnimation !== null){

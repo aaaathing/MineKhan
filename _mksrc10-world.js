@@ -12424,6 +12424,7 @@ function initBlockData(){
         block.burnChance = obj.burnChance
         block.burnTime = obj.burnTime
 				block.log = obj.log
+				block.harvestTools = obj.harvestTools
 				obj.swId = block.id
       }
     }
@@ -12529,18 +12530,18 @@ function initBlockData(){
 }
 
 const breakTypes = {
-	plant: "axe",
-	wood: "axe",
-	metal1: "pickaxe",
+	//plant: "axe",
+	//wood: "axe",
+	metal1: ["woodenPickaxe","stonePickaxe","ironPickaxe","diamondPickaxe","netheritePickaxe","goldenPickaxe"],
 	metal2: ["stonePickaxe","ironPickaxe","diamondPickaxe","netheritePickaxe"],
 	metal3: ["ironPickaxe","diamondPickaxe","netheritePickaxe"],
 	metal4: ["diamondPickaxe","netheritePickaxe"],
-	rock1: "pickaxe",
+	rock1: ["woodenPickaxe","stonePickaxe","ironPickaxe","diamondPickaxe","netheritePickaxe","goldenPickaxe"],
 	rock2: ["stonePickaxe","ironPickaxe","diamondPickaxe","netheritePickaxe"],
 	rock3: ["ironPickaxe","diamondPickaxe","netheritePickaxe"],
 	rock4: ["diamondPickaxe","netheritePickaxe"],
-	ground: "shovel",
-	plant2: "hoe",
+	ground: ["woodenShovel","stoneShovel","ironShovel","diamondShovel","netheriteShovel","goldenShovel"],
+	//plant2: "hoe",
 	//wool:"air"
 }
 win.breakTypes = breakTypes
@@ -12548,18 +12549,6 @@ const handBreakable = [
 	"plant","wood","plant2","ground","wool"
 ]
 win.handBreakable = handBreakable
-var allPickaxes = ["woodenPickaxe","stonePickaxe","ironPickaxe","diamondPickaxe","netheritePickaxe","goldenPickaxe"]
-var allShovels = ["woodenShovel","stoneShovel","ironShovel","diamondShovel","netheriteShovel","goldenShovel"]
-for(var b in breakTypes){
-	var t = breakTypes[b]
-	if(t === "pickaxe"){
-		breakTypes[b] = allPickaxes
-	}else if(t === "shovel"){
-		breakTypes[b] = allShovels
-	}else if(typeof t === "string"){
-		breakTypes[b] = []
-	}
-}
 const crafts = {
 	"oakLog": {name:"oakPlanks", amount:4, shapeless: true},
 	"acaciaLog": {name:"acaciaPlanks", amount:4, shapeless: true},
@@ -20640,6 +20629,7 @@ function initDefaultCommands(world){
 		tp = CommandNode.l("teleport",null,"Teleport certain player/self to location/entity/player").then(CommandNode.a("target",null,"target").then(
 			CommandNode.a("x",null,"x").then(CommandNode.a("y",null,"y").then(CommandNode.a("z",
 			(args,pos) => {
+				if(!+x || !+y || !+z) return ["x y z must be number","error"]
 				let arr = parseTarget(args.target,pos,world[pos.dimension])
 				for(let e of arr) e.tp(args.x,args.y,args.z)
 			}, "z"))),
