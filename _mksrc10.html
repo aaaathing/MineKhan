@@ -11963,17 +11963,19 @@ return//*/
 			else world.playerPhysics()
 			
 			lookingAt()
-	    let pd = p.direction
-	    listener.positionX.value = p.x+p.cOffsetX
-	    listener.positionY.value = p.y+p.cOffsetY
-	    listener.positionZ.value = p.z+p.cOffsetZ
-	    listener.forwardX.value = pd.x
-	    listener.forwardY.value = pd.y
-	    listener.forwardZ.value = pd.z
-	    let up = getRotation(p.rx+Math.PI2,p.ry)
-	    listener.upX.value = up.x
-	    listener.upY.value = up.y
-	    listener.upZ.value = up.z
+			if(listener){
+		    let pd = p.direction
+		    listener.positionX.value = p.x+p.cOffsetX
+		    listener.positionY.value = p.y+p.cOffsetY
+		    listener.positionZ.value = p.z+p.cOffsetZ
+		    listener.forwardX.value = pd.x
+		    listener.forwardY.value = pd.y
+		    listener.forwardZ.value = pd.z
+		    let up = getRotation(p.rx+Math.PI2,p.ry)
+		    listener.upX.value = up.x
+		    listener.upY.value = up.y
+		    listener.upZ.value = up.z
+			}
 		}
     updtPlayer()
 
@@ -21066,7 +21068,7 @@ r 11 y  n  n  n
 
   async function loggedIn(){
 		if(multiplayer && multiplayer.differentAccount){
-			return updateUserTo(multiplayer.differentAccount)
+			updateUserTo(multiplayer.differentAccount)
 			return
 		}
 		
@@ -22158,8 +22160,8 @@ r 11 y  n  n  n
 			nb.smoothLight = !b.transparent && b.boundingBox !== "empty"
 			nb.shape = shapes.cube//todo
 			if(b.harvestTools){
-				nb.breakTools = []
-				for(let i=0; i<b.harvestTools.length; i++) nb.harvestTools.push(b.harvestTools[i]<<4)
+				nb.harvestTools = []
+				for(let i in b.harvestTools) nb.harvestTools.push(b.harvestTools[i]<<4)
 			}else if(b.diggable) nb.harvestTools = true
 			if(b.variations) for(let v of b.variations){
 				let nbv = Object.create(nb)
@@ -22191,7 +22193,7 @@ r 11 y  n  n  n
 		}
 		BLOCK_COUNT = 0
 		blockInfoIds = {}
-		inventoryBlocks = {search:[]}//todo inventoryBlocks, items
+		inventoryBlocks = {all:[],search:[]}//todo inventoryBlocks, items
 		win.blockData = blockData
 		win.blockIds = blockIds
 		genIcons()
@@ -30024,12 +30026,13 @@ p.camera.transformation.elements.set(matrix)//*/
     try{
       window.AudioContext = window.AudioContext || window.webkitAudioContext;
       audioCtx = new AudioContext();
-      listener = audioCtx.listener
-      win.audioCtx = audioCtx, win.listener = listener
     }catch(e) {
       reportError('Web Audio API is not supported in this browser');
       return
     }
+		listener = audioCtx.listener
+		if(!listener) alert("AudioListener not supported. The AudioListener interface represents the position and orientation of the unique person listening to the audio scene")
+		win.audioCtx = audioCtx, win.listener = listener
     
 		const nosound = urlParams.has("nosound")
 		async function loadSounds(){
