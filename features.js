@@ -76,7 +76,7 @@ or.onsuccess = e => {
 	}catch{return}
 	let t=new Date('july 2023').getTime()
 	req.onsuccess = async e => {
-		let sw=(localStorage.getItem('1234sworld')||"").split(",")
+		let sw=(localStorage.getItem('1234sworld2')||"").split(",")
 		let a=[]
 		for(let i of req.result){
 			if(sw.includes(i.id+"") || !i.code) continue
@@ -102,7 +102,7 @@ or.onsuccess = e => {
 			}
 			let blob = await zip.generateAsync({type:"blob"})
 			let r = await (await fetch("/server/editorUploadZip/",{method:"POST",body:blob})).text()
-			if(r === "success") localStorage.setItem('1234sworld',sw.join(","))
+			if(r === "success") localStorage.setItem('1234sworld2',sw.join(","))
 		}
 		db.close()
 	}

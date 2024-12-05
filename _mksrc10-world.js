@@ -20505,6 +20505,7 @@ function initDefaultCommands(world){
 		CommandNode.l("fillToPlayer",null,"Fills from starting position to current position").then(CommandNode.a("block_name",
 		(args,pos,scope) => {
 			let id = blockIds[args.block_name]
+			if(id === undefined) return ["no block called "+args.block_name, "error"]
 			if(!args.block_name) id = 0
 			fillToPlayer(id,pos,world[pos.dimension])
 		},"block",false)),
@@ -20513,8 +20514,10 @@ function initDefaultCommands(world){
 		CommandNode.l("replaceToPlayer",null,"Replace certain blocks from starting position to current position with a certain block").then(CommandNode.a("replace_what",null,"block").then(CommandNode.a("with_what",
 		(args,pos,scope) => {
 			let replace = blockIds[args.replace_what]
+			if(replace === undefined) return ["no block called "+args.replace_what, "error"]
 			if(!args.replace_what) replace = 0
 			let into = blockIds[args.with_what]
+			if(into === undefined) return ["no block called "+args.with_what, "error"]
 			if(!args.with_what) into = 0
 			replaceAtPlayer(replace,into,pos,world[pos.dimension])
 		},"block",false))),
@@ -20523,6 +20526,7 @@ function initDefaultCommands(world){
 			CommandNode.l("sphere").then(CommandNode.a("width",null,"number").then(CommandNode.a("height",null,"number").then(CommandNode.a("depth",null,"number").then(CommandNode.a("block_name",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
+				if(id === undefined) return ["no block called "+args.block_name, "error"]
 				if(!args.block_name) id = 0
 				return ball(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, world[pos.dimension])
 			},"block").then(CommandNode.a("x",null,"number").then(CommandNode.a("y",null,"number").then(CommandNode.a("z",
@@ -20534,33 +20538,39 @@ function initDefaultCommands(world){
 			CommandNode.l("hollowSphere").then(CommandNode.a("width",null,"number").then(CommandNode.a("height",null,"number").then(CommandNode.a("depth",null,"number").then(CommandNode.a("block_name",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
+				if(id === undefined) return ["no block called "+args.block_name, "error"]
 				if(!args.block_name) id = 0
 				return sphereoid(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, world[pos.dimension])
 			},"block").then(CommandNode.a("x",null,"number").then(CommandNode.a("y",null,"number").then(CommandNode.a("z",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
+				if(id === undefined) return ["no block called "+args.block_name, "error"]
 				if(!args.block_name) id = 0
 				return sphereoid(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, world[pos.dimension])
 			},"number")))))))),
 			CommandNode.l("cylinder").then(CommandNode.a("width",null,"number").then(CommandNode.a("height",null,"number").then(CommandNode.a("depth",null,"number").then(CommandNode.a("block_name",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
+				if(id === undefined) return ["no block called "+args.block_name, "error"]
 				if(!args.block_name) id = 0
 				return cyl(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, world[pos.dimension])
 			},"block").then(CommandNode.a("x",null,"number").then(CommandNode.a("y",null,"number").then(CommandNode.a("z",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
+				if(id === undefined) return ["no block called "+args.block_name, "error"]
 				if(!args.block_name) id = 0
 				return cyl(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, world[pos.dimension])
 			},"number")))))))),
 			CommandNode.l("hollowCylinder").then(CommandNode.a("width",null,"number").then(CommandNode.a("height",null,"number").then(CommandNode.a("depth",null,"number").then(CommandNode.a("block_name",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
+				if(id === undefined) return ["no block called "+args.block_name, "error"]
 				if(!args.block_name) id = 0
 				return hcyl(args.width || 0, args.height || 0, args.depth || 0, id, pos.x,pos.y,pos.z, world[pos.dimension])
 			},"block").then(CommandNode.a("x",null,"number").then(CommandNode.a("y",null,"number").then(CommandNode.a("z",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
+				if(id === undefined) return ["no block called "+args.block_name, "error"]
 				if(!args.block_name) id = 0
 				return hcyl(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, world[pos.dimension])
 			},"number"))))))))
@@ -20569,6 +20579,7 @@ function initDefaultCommands(world){
 		CommandNode.l("give",null,"Gives the target the the specified amount of specified blocks").then(CommandNode.a("target",null,"target").then(CommandNode.a("block_name",
 		(args,pos,scope) => {
 			let id = blockIds[args.block_name]
+			if(id === undefined) return ["no block called "+args.block_name, "error"]
 			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(arr.length){
 				for(let i of arr){
@@ -20578,6 +20589,7 @@ function initDefaultCommands(world){
 		},"block").then(CommandNode.a("amount",
 		(args,pos,scope) => {
 			let id = blockIds[args.block_name]
+			if(id === undefined) return ["no block called "+args.block_name, "error"]
 			let amount = args.amount || 1
 			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(arr.length){
