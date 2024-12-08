@@ -29213,7 +29213,7 @@ p.camera.transformation.elements.set(matrix)//*/
 	}
 	function initPlayer() {
 		p = new Player(true)
-		p.gameMode = "creative"
+		p.gameMode = Math.random() > 0.5 ? "creative" : "survival"
     p.defaultSpeed = 0.11
 		p.speed = p.defaultSpeed
 		p.velocity = new PVector(0, 0, 0)
