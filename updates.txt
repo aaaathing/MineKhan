@@ -483,6 +483,12 @@ Command blocks flash with red when there is error
 -- 1673683200000 | January 14, 2023
 Added wolf
 
+-- 1676188800000 | February 12, 2023
+Added fence gate and door and trapdoor sounds, and possibly something about opening them.
+
+-- 1676793600000 | February 19, 2023
+Added blaze
+
 -- 1677709915346 | March 1, 2023
 Website broken
 The MineKhan website is broken. We will be fixing it. This may take up to a month.
@@ -538,6 +544,9 @@ Added a bunch of old updates
 New breaking sound
 When breaking blocks, there is now a sound effect.
 
+-- 1685170800000 | May 27, 2023
+Added endermen.
+
 -- 1686779463025 | June 14, 2023
 End portals can now be activated with end portal frames
 
@@ -560,6 +569,11 @@ The texture atlas can now contain different size textures. Before, it could only
 -- 1701652669772 | December 3, 2023
 Rivers
 Small rivers have been made more common. It is done by making it go up when it flows into a place that makes it stuck.
+
+-- 1704268800000 | January 3, 2024
+Font
+Font is now generated when loading.
+Started on Dec 31 2023
 
 -- 1709409156719 | March 2, 2024
 v1.1.1
