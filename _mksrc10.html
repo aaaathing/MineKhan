@@ -13892,6 +13892,7 @@ r 11 y  n  n  n
 			this.caveBiomes = tempColumnArr
 			this.optimized = false
 			this.lit = false
+			this.wasLit = false
 			this.lazy = false
 			this.loaded = false
       this.type = type || ""
@@ -14009,31 +14010,35 @@ r 11 y  n  n  n
 			}
 			
 			if(host){
-				let otherChunk = serverWorld[this.type].getChunk(this.x*16,this.z*16)
+				let otherChunk = serverWorld[this.type].getChunk(this.x,this.z)
 				if(otherChunk && otherChunk.lit){
 					this.loadCopyLight()
-					let n = this.world.getChunk(this.x*16+16,this.z*16,this.type)
+					let n = this.world.getChunk(this.x+16,this.z,this.type)
 					if(n && n.loaded) n.loadCopyLight()
-					n = this.world.getChunk(this.x*16-16,this.z*16,this.type)
+					n = this.world.getChunk(this.x-16,this.z,this.type)
 					if(n && n.loaded) n.loadCopyLight()
-					n = this.world.getChunk(this.x*16,this.z*16+16,this.type)
+					n = this.world.getChunk(this.x,this.z+16,this.type)
 					if(n && n.loaded) n.loadCopyLight()
-					n = this.world.getChunk(this.x*16,this.z*16-16,this.type)
+					n = this.world.getChunk(this.x,this.z-16,this.type)
 					if(n && n.loaded) n.loadCopyLight()
-					n = this.world.getChunk(this.x*16+16,this.z*16+16,this.type)
+					n = this.world.getChunk(this.x+16,this.z+16,this.type)
 					if(n && n.loaded) n.loadCopyLight()
-					n = this.world.getChunk(this.x*16-16,this.z*16+16,this.type)
+					n = this.world.getChunk(this.x-16,this.z+16,this.type)
 					if(n && n.loaded) n.loadCopyLight()
-					n = this.world.getChunk(this.x*16+16,this.z*16-16,this.type)
+					n = this.world.getChunk(this.x+16,this.z-16,this.type)
 					if(n && n.loaded) n.loadCopyLight()
-					n = this.world.getChunk(this.x*16-16,this.z*16-16,this.type)
+					n = this.world.getChunk(this.x-16,this.z-16,this.type)
 					if(n && n.loaded) n.loadCopyLight()
 					this.lit = true
+					this.wasLit = true
 				}
+				return
 			}
 			
 			let max = this.sections.length * 16 - 1 + minHeight
 			let blockSpread = []
+
+			if(this.wasLit) this.unfillLight()
 	
 			// Set virtical columns of light to level 15
 			for (let x = 0; x < 16; x++) {
@@ -14100,6 +14105,7 @@ r 11 y  n  n  n
 			}
 	
 			this.lit = true
+			this.wasLit = true
 		}
 		unfillLight(){
 			if(!this.world.isMK){
@@ -14144,6 +14150,7 @@ r 11 y  n  n  n
 				}
 			}
 			this.lit = false
+			this.wasLit = false
 		}
 		trySpread(x, y, z, level, spread, blockLight, update = false) {
       if(y < minHeight) return
@@ -14316,14 +14323,14 @@ r 11 y  n  n  n
 			let start = performance.now()
 			let barray = bigArray
 			let index = 0
+			if (!this.buffer) {
+				this.buffer = gl.createBuffer() // this should exist after sync call to genMesg
+			}
 			for (let i = 0; i < this.sections.length; i++) {
 				index = await this.sections[i].genMesh(barray, index)
 			}
 			let arrayDone = performance.now()
 
-			if (!this.buffer) {
-				this.buffer = gl.createBuffer()
-			}
 			let data = barray.slice(0, index)
 
 			let maxY = minHeight
@@ -20896,7 +20903,7 @@ r 11 y  n  n  n
 					continue
 				}
 				if (world.isMK && !chunk.lit && i >= x - 1 && i <= x + 1 && j >= z - 1 && j <= z + 1) {
-					world.lightingQueue.push(chunk)
+					if(!world.lightingQueue.includes(chunk)) world.lightingQueue.push(chunk)
 					done = false
 				}
 			}
@@ -20906,7 +20913,7 @@ r 11 y  n  n  n
 	function unfillReqs(x, z, dimension, dist, chunk){
 		if(dist >= 1 && chunk.lit){
 			chunk.lit = false
-			world.unlightingQueue.push(chunk)
+			//world.unlightingQueue.push(chunk)
 		}
 	}
 	function maxDist(x, z, x2, z2) {
@@ -21650,6 +21657,7 @@ r 11 y  n  n  n
 			multiplayer.pos = setInterval(multiplayer.sendInvStuff, 10000)*/
 			multiplayer.mmoveX = multiplayer.mmoveY = 0
 			multiplayer.lastSendPos = 0
+			multiplayer.toSendLoadChunks = null
 			multiplayer.sendPos = (force,type) => {
 				let now = Date.now()
 				if((!canSendPos || now-multiplayer.lastSendPos < 100) && !force || !multiplayer.hasStartedLoad) return //if p3 hasn't been set, don't send
@@ -21665,6 +21673,10 @@ r 11 y  n  n  n
 				canSendPos = false
 				send(obj)
 				multiplayer.lastSendPos = now
+				if(multiplayer.toSendLoadChunks){
+					send({type:"loadChunks",data:multiplayer.toSendLoadChunks.data,loadDistance:multiplayer.toSendLoadChunks.loadDistance,dimension:p.dimension})
+					multiplayer.toSendLoadChunks = null
+				}
 				if(p.spectateRemoteControl && (multiplayer.mmoveX || multiplayer.mmoveY)){
 					send({type:"remoteControl",event:"rotate",x:multiplayer.mmoveX,y:multiplayer.mmoveY},p.spectating.id)
 					multiplayer.mmoveX = multiplayer.mmoveY = 0
@@ -22770,7 +22782,7 @@ switch(name){
 			this.meshQueue = []
 			this.weatherMeshQueue = []
 			this.lightingQueue = []
-			this.unlightingQueue = []
+			//this.unlightingQueue = []
 			this.alwaysRenderEntities = []
 			this.waitingEntities = [] //entities waiting to have their chunk loaded
       this.textEntities = [] //Text to draw
@@ -23538,35 +23550,44 @@ switch(name){
 					doneWork = true
 					debug("Weather Meshes")
 				}
-				if (!doneWork && this.unlightingQueue.length) {
+				/*if (!doneWork && this.unlightingQueue.length) {
 					let chunk = this.unlightingQueue[this.unlightingQueue.length-1]
 					chunk.unfillLight()
-					doneWork = true
-				}
+					if(!chunk.lit){
+						this.unlightingQueue.pop()
+						doneWork = true
+					}
+				}*/
 				// Spread light
 				if (!doneWork && this.lightingQueue.length) {
-					let chunk = this.lightingQueue[this.lightingQueue.length-1]
-					chunk.fillLight()
-					if(chunk.lit){
-						this.lightingQueue.pop()
-						doneWork = true
+					for(let i=0; i<this.lightingQueue.length && !doneWork; i++){
+						let chunk = this.lightingQueue[i]
+						chunk.fillLight()
+						if(chunk.lit){
+							this.lightingQueue.splice(i,1)
+							i--
+							doneWork = true
+						}
 					}
 				}
 
 				if (this.chunkGenQueue.length && !doneWork) {
-					let chunk = this.chunkGenQueue[0]
-					if (!fillReqs(chunk.x >> 4, chunk.z >> 4, chunk.type)) {
-			 		} else if (!chunk.optimized) {
-						await chunk.optimize()
-						debug("Optimize")
-						doneWork = true
-					} else if (!chunk.buffer) {
-						chunk.genMesh()
-						debug("Initial mesh")
-						doneWork = true
-					} else {
-						this.chunkGenQueue.shift()
-						doneWork = true
+					for(let i=0; i<this.chunkGenQueue.length && !doneWork; i++){
+						let chunk = this.chunkGenQueue[i]
+						if (!fillReqs(chunk.x >> 4, chunk.z >> 4, chunk.type)) {
+				 		} else if (!chunk.optimized) {
+							await chunk.optimize()
+							debug("Optimize")
+							doneWork = true
+						} else if (!chunk.buffer) {
+							chunk.genMesh()
+							debug("Initial mesh")
+							doneWork = true
+						} else {
+							this.chunkGenQueue.splice(i,1)
+							i--
+							doneWork = true
+						}
 					}
 				}
 				if (doneWork) await window.yieldThread()
@@ -23971,7 +23992,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			this.lwidth = renderDistance * 2 + 1
 			this.chunkGenQueue.length = 0
 			this.lightingQueue.length = 0
-			this.unlightingQueue.length = 0
+			//this.unlightingQueue.length = 0
 			this.neededChunks.length = 0
 
       if (this.loaded.length > this.lwidth * this.lwidth) {
@@ -24033,7 +24054,9 @@ p.camera.transformation.elements.set(matrix)//*/
 				}
       }
 
-			if(this.isMK) send({type:"loadChunks",data:this.neededChunkCoords,loadDistance:renderDistance,dimension:p.dimension})
+			if(this.isMK){
+				multiplayer.toSendLoadChunks = {data:this.neededChunkCoords,loadDistance:renderDistance}
+			}
 		}
     getTop(x,z,dimension){
       let chunk = this.getChunk(x,z,dimension)
