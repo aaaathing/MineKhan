@@ -1,68 +1,76 @@
 import idata from "./data.js"
 export const data = idata
 
-export function loadNamespace(data){
-	let blockData = [], shapes = {}
+export function loadNamespace(allData, namespace){
+	let data = allData[namespace]
+	let blockData = [], shapes = {}, textures = {}
 	for(let name in data.blockstates){
 		let bstates = data.blockstates[name]
 		if(!bstates.minekhanId) throw new Error("missing id")
-		let possibleStates = {}
+		let blockstateValues = {}
 		if(bstates.variants){ // find name and values of states
 			for(let v in bstates.variants){
 				let a = v.split(",")
 				for(let i=0; i<a.length; i++){
 					let [statename,statevalue] = a[i].split("=")
-					if(!possibleStates[statename]){
-						possibleStates[statename] = []
+					if(!blockstateValues[statename]){
+						blockstateValues[statename] = []
 					}
-					if(!possibleStates[statename].includes(statevalue)) possibleStates[statename].push(statevalue)
+					if(!blockstateValues[statename].includes(statevalue)) blockstateValues[statename].push(statevalue)
 				}
 			}
 		}
-		let tagBits = {}, tagBitsI = 0 // use tags for states
-		for(let statename in possibleStates){
-			tagBits[statename] = [tagBitsI, possibleStates[statename].length]
-			tagBitsI += Math.ceil(Math.log2(possibleStates[statename].length))
+		let blockstatePos = {}, blockstatePosI = 16 // where the block states are
+		for(let statename in blockstateValues){
+			blockstatePos[statename] = blockstatePosI
+			blockstatePosI += Math.ceil(Math.log2(blockstateValues[statename].length))
 		}
-		let blockstatesShapes = []
+		let baseBlock = {
+			name,
+			blockstateValues,
+			blockstatePos,
+			//blockStatesShapesMask: (1<<tagBitsI)-1
+		}
+		blockData[bstates.minekhanId] = baseBlock
 		if(bstates.variants){
 			for(let v in bstates.variants){
-				let id = 0
+				let id = bstates.minekhanId
 				let a = v.split(",")
 				for(let i=0; i<a.length; i++){
 					let [statename,statevalue] = a[i].split("=")
-					id |= possibleStates[statename].indexOf(statevalue) << tagBits[statename][0]
+					id |= blockstateValues[statename].indexOf(statevalue) << blockstatePos[statename]
 				}
-				blockstatesShapes[id] = getShapeFromVariant(bstates.variants[v])
+				let block = Object.create(baseBlock)
+				block.shape = getShapeFromVariant(bstates.variants[v])
+				blockData[id] = block
 			}
 		}
-		blockData[bstates.minekhanId] = {
-			name,
-			blockstates:possibleStates,
-			blockstatesShapes,
-			blockStatesShapesMask: (1<<tagBitsI)-1,
-			tagBits
-		}
 	}
-	return {blockData, shapes}
+	return {blockData, shapes, textures}
 
+	function getTexture(name, textureSelectors){
+		if(name.startsWith("#")){
+			return textureSelectors[name.substring(1)]
+		}else if(!textures[name]){
+			textures[name] = getFromData(name, "textures/")
+		}
+		return name
+	}
 	function addFace(dataFace, shape, side, pos, normal, textureSelectors){
 		pos = pos.map(c => c / 16 - 0.5)
 		const [tx,ty,tX,tY] = dataFace.uv
 		let tex = [tX,ty, tx,ty, tx,tY, tX,tY]
-		let t = dataFace.texture
-		tex.texture = t.startsWith("#") ? textureSelectors[t.substring(1)] : t
+		tex.texture = getTexture(dataFace.texture, textureSelectors)
 		shape.verts[side].push(pos)
 		shape.texVerts.push(tex)
 		shape.normal[side].push(normal)
 	}
 	function makeShape(dataModelName,shape, textureSelectors={}){
 		/** a model (models/ folder) */
-		let dataModel = getDeep(data.models, dataModelName.split(":").pop())
+		let dataModel = getFromData(dataModelName, "models/")
 		if(dataModel.textures){
 			for(let i in dataModel.textures){
-				let t = dataModel.textures[i]
-				textureSelectors[i] = t.startsWith("#") ? textureSelectors[t.substring(1)] : t
+				textureSelectors[i] = getTexture(dataModel.textures[i], textureSelectors)
 			}
 		}
 		if(dataModel.parent){
@@ -89,10 +97,14 @@ export function loadNamespace(data){
 		return shapes[v.model]
 		//todo: rotation (v.x and v.y)
 	}
-}
 
-function getDeep(obj,str){
-	let arr = str.split("/")
-	for(let i=0; i<arr.length; i++) obj = obj[arr[i]]
-	return obj
+	function getFromData(ostr, prefix=""){
+		let [namespace, str] = ostr.split(":")
+		str = prefix + str
+		let obj = allData[namespace]
+		let arr = str.split("/")
+		for(let i=0; i<arr.length; i++) obj = obj[arr[i]]
+		if(!obj) throw new Error(ostr+" not found in "+prefix)
+		return obj
+	}
 }
