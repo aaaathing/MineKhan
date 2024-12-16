@@ -1,12 +1,15 @@
 import idata from "./data.js"
 export const data = idata
 
-export function loadNamespace(allData, namespace){
+export function loadNamespace(allData, namespace, {
+	blockData,
+	shapes, textures, blockIds,
+	compareArr
+}){
 	let data = allData[namespace]
-	let blockData = [], shapes = {}, textures = {}
 	for(let name in data.blockstates){
 		let bstates = data.blockstates[name]
-		if(!bstates.minekhanId) throw new Error("missing id")
+		const blockId = blockIds[name]
 		let blockstateValues = {}
 		if(bstates.variants){ // find name and values of states
 			for(let v in bstates.variants){
@@ -25,16 +28,13 @@ export function loadNamespace(allData, namespace){
 			blockstatePos[statename] = blockstatePosI
 			blockstatePosI += Math.ceil(Math.log2(blockstateValues[statename].length))
 		}
-		let baseBlock = {
-			name,
-			blockstateValues,
-			blockstatePos,
-			//blockStatesShapesMask: (1<<tagBitsI)-1
-		}
-		blockData[bstates.minekhanId] = baseBlock
+		let baseBlock = blockData[blockId]
+		baseBlock.blockstateValues = blockstateValues
+		baseBlock.blockstatePos = blockstatePos
+		blockData[blockId] = baseBlock
 		if(bstates.variants){
 			for(let v in bstates.variants){
-				let id = bstates.minekhanId
+				let id = blockId
 				let a = v.split(",")
 				for(let i=0; i<a.length; i++){
 					let [statename,statevalue] = a[i].split("=")
@@ -46,7 +46,7 @@ export function loadNamespace(allData, namespace){
 			}
 		}
 	}
-	return {blockData, shapes, textures}
+	//return {blockData, shapes, textures, blockIds}
 
 	function getTexture(name, textureSelectors){
 		if(name.startsWith("#")){
@@ -56,16 +56,23 @@ export function loadNamespace(allData, namespace){
 		}
 		return name
 	}
-	function addFace(dataFace, shape, side, pos, normal, textureSelectors){
+	function addFace(dataFace, shape, side, pos, normal, textureSelectors, texWidth=16, texHeight=16){
 		pos = pos.map(c => c / 16 - 0.5)
+		let minmax = compareArr(pos, [])
+		pos.max = minmax.splice(3, 3)
+		pos.min = minmax
 		const [tx,ty,tX,tY] = dataFace.uv
 		let tex = [tX,ty, tx,ty, tx,tY, tX,tY]
+		for(let i=0; i<tex.length; i+=2){
+			tex[i] /= texWidth
+			tex[i+1] /= texHeight
+		}
 		tex.texture = getTexture(dataFace.texture, textureSelectors)
 		shape.verts[side].push(pos)
-		shape.texVerts.push(tex)
+		shape.texVerts[side].push(tex)
 		shape.normal[side].push(normal)
 	}
-	function makeShape(dataModelName,shape, textureSelectors={}){
+	function makeShape(dataModelName,shape, textureSelectors){
 		/** a model (models/ folder) */
 		let dataModel = getFromData(dataModelName, "models/")
 		if(dataModel.textures){
@@ -81,17 +88,17 @@ export function loadNamespace(allData, namespace){
 			const [x,y,z] = dataModel.elements[i].from
 			const [X,Y,Z] = dataModel.elements[i].to
 			addFace(faces.down, shape, 0, [x,y,z, X,y,z, X,y,Z, x,y,Z], [0,1,0], textureSelectors)
-			addFace(faces.up, shape, 1, [x,y,z, X,y,Z, X,y,z, x,y,z], [0,-1,0], textureSelectors)
-			addFace(faces.north, shape, 2, [X,Y,z, x,Y,z, x,y,z, X,y,z], [0,0,-1], textureSelectors)
+			addFace(faces.up, shape, 1, [x,Y,Z, X,Y,Z, X,Y,z, x,Y,z], [0,-1,0], textureSelectors)
+			addFace(faces.north, shape, 2, [X,Y,Z, x,Y,Z, x,y,Z, X,y,Z], [0,0,-1], textureSelectors)
 			addFace(faces.south, shape, 3, [x,Y,z, X,Y,z, X,y,z, x,y,z], [0,0,1], textureSelectors)
-			addFace(faces.east, shape, 4, [x,Y,z, x,Y,Z, x,y,Z, x,y,z], [-1,0,0], textureSelectors)
+			addFace(faces.east, shape, 4, [X,Y,z, X,Y,Z, X,y,Z, X,y,z], [-1,0,0], textureSelectors)
 			addFace(faces.west, shape, 5, [x,Y,Z, x,Y,z, x,y,z, x,y,Z], [1,0,0], textureSelectors)
 		}
 	}
 	function getShapeFromVariant(v){
 		if(!shapes[v.model]){
-			let shape = {verts:[[],[],[],[],[],[]], cull:{/*todo*/}, texVerts:[], normal:[[],[],[],[],[],[]]}
-			makeShape(v.model,shape)
+			let shape = {verts:[[],[],[],[],[],[]], cull:{/*todo*/}, texVerts:[[],[],[],[],[],[]], normal:[[],[],[],[],[],[]], textureSelectors:{}}
+			makeShape(v.model,shape, shape.textureSelectors)
 			shapes[v.model] = shape
 		}
 		return shapes[v.model]
