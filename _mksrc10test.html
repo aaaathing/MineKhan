@@ -26139,6 +26139,7 @@ p.camera.transformation.elements.set(matrix)//*/
         num <<= 8
         num += base256DecodeMap.get(char)
       }
+			if(isNaN(num))debugger
       return num
     }
     getPixels = function(str, r = 255, g = 255, b = 255, includeSize = false) {

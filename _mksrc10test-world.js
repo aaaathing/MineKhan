@@ -877,7 +877,7 @@ const blockData = [
 		hidden: true
 	},
 	{
-		name: "grass",
+		name: "grass_block",
 		Name: "Grass Block",
 		textures: [ "dirt", "grassTop", "grassSide" ],
 		hardness: 0.6,
@@ -12175,12 +12175,6 @@ const blockData = [
 		transparent: true,
 		cullFace: "same",
 	},
-	
-	{
-		name: "acacia_slab",
-		Name: "test",
-		//transparent: true,
-	}
 ];
 const BLOCK_COUNT = blockData.length
 console.log(BLOCK_COUNT," blocks on server side")

@@ -9,7 +9,10 @@ export function loadNamespace(allData, namespace, {
 	let data = allData[namespace]
 	for(let name in data.blockstates){
 		let bstates = data.blockstates[name]
+		if(!bstates) throw new Error("missing "+name)
 		const blockId = blockIds[name]
+		if(blockId === undefined) continue
+		
 		let blockstateValues = {}
 		if(bstates.variants){ // find name and values of states
 			for(let v in bstates.variants){
@@ -41,7 +44,14 @@ export function loadNamespace(allData, namespace, {
 					id |= blockstateValues[statename].indexOf(statevalue) << blockstatePos[statename]
 				}
 				let block = Object.create(baseBlock)
-				block.shape = getShapeFromVariant(bstates.variants[v])
+				let variant = bstates.variants[v]
+				if(Array.isArray(variant)){
+					block.shapeArray = []
+					for(let i=0; i<variant.length; i++) block.shapeArray.push(getShapeFromVariant(variant[i]))
+					block.shape = block.shapeArray[0]
+				}else{
+					block.shape = getShapeFromVariant(variant)
+				}
 				blockData[id] = block
 			}
 		}
@@ -61,7 +71,7 @@ export function loadNamespace(allData, namespace, {
 		let minmax = compareArr(pos, [])
 		pos.max = minmax.splice(3, 3)
 		pos.min = minmax
-		const [tx,ty,tX,tY] = dataFace.uv
+		const [tx,ty,tX,tY] = dataFace.uv || [0,0,texWidth,texHeight]
 		let tex = [tX,ty, tx,ty, tx,tY, tX,tY]
 		for(let i=0; i<tex.length; i+=2){
 			tex[i] /= texWidth
@@ -87,12 +97,12 @@ export function loadNamespace(allData, namespace, {
 			const faces = dataModel.elements[i].faces
 			const [x,y,z] = dataModel.elements[i].from
 			const [X,Y,Z] = dataModel.elements[i].to
-			addFace(faces.down, shape, 0, [x,y,z, X,y,z, X,y,Z, x,y,Z], [0,1,0], textureSelectors)
-			addFace(faces.up, shape, 1, [x,Y,Z, X,Y,Z, X,Y,z, x,Y,z], [0,-1,0], textureSelectors)
-			addFace(faces.north, shape, 2, [X,Y,Z, x,Y,Z, x,y,Z, X,y,Z], [0,0,-1], textureSelectors)
-			addFace(faces.south, shape, 3, [x,Y,z, X,Y,z, X,y,z, x,y,z], [0,0,1], textureSelectors)
-			addFace(faces.east, shape, 4, [X,Y,z, X,Y,Z, X,y,Z, X,y,z], [-1,0,0], textureSelectors)
-			addFace(faces.west, shape, 5, [x,Y,Z, x,Y,z, x,y,z, x,y,Z], [1,0,0], textureSelectors)
+			if(faces.down) addFace(faces.down, shape, 0, [x,y,z, X,y,z, X,y,Z, x,y,Z], [0,1,0], textureSelectors)
+			if(faces.up) addFace(faces.up, shape, 1, [x,Y,Z, X,Y,Z, X,Y,z, x,Y,z], [0,-1,0], textureSelectors)
+			if(faces.north) addFace(faces.north, shape, 2, [X,Y,Z, x,Y,Z, x,y,Z, X,y,Z], [0,0,-1], textureSelectors)
+			if(faces.south) addFace(faces.south, shape, 3, [x,Y,z, X,Y,z, X,y,z, x,y,z], [0,0,1], textureSelectors)
+			if(faces.east) addFace(faces.east, shape, 4, [X,Y,z, X,Y,Z, X,y,Z, X,y,z], [-1,0,0], textureSelectors)
+			if(faces.west) addFace(faces.west, shape, 5, [x,Y,Z, x,Y,z, x,y,z, x,y,Z], [1,0,0], textureSelectors)
 		}
 	}
 	function getShapeFromVariant(v){
@@ -106,9 +116,13 @@ export function loadNamespace(allData, namespace, {
 	}
 
 	function getFromData(ostr, prefix=""){
-		let [namespace, str] = ostr.split(":")
+		let [tnamespace, str] = ostr.split(":")
+		if(!str){
+			str = tnamespace
+			tnamespace = namespace
+		}
 		str = prefix + str
-		let obj = allData[namespace]
+		let obj = allData[tnamespace]
 		let arr = str.split("/")
 		for(let i=0; i<arr.length; i++) obj = obj[arr[i]]
 		if(!obj) throw new Error(ostr+" not found in "+prefix)
