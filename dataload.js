@@ -1,8 +1,8 @@
 import idata from "./data.js"
 export const data = idata
 
-//todo: flat icons for blocks, shape array
-export function loadNamespace(allData, namespace, {
+//todo: flat icons for blocks, shape array, animatd texture
+function loadNamespaceAssets(allData, namespace, {
 	blockData, BLOCK_COUNT,
 	shapes, textures, blockIds,
 	compareArr
@@ -130,4 +130,19 @@ export function loadNamespace(allData, namespace, {
 		if(!obj) throw new Error(ostr+" not found in "+prefix)
 		return obj
 	}
+}
+
+function loadNamespaceAssetsBe(allData, namespace, {
+	blockData, BLOCK_COUNT,
+	shapes, textures, blockIds,
+	compareArr
+}){
+	let data = allData[namespace]
+	data.textures.entity
+	data.entity
+}
+
+export function loadNamespace(allData, namespace, options){
+	loadNamespaceAssets(allData.assets,namespace,options)
+	loadNamespaceAssetsBe(allData.assetsBe,namespace,options)
 }
