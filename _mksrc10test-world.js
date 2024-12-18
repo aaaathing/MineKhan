@@ -877,7 +877,8 @@ const blockData = [
 		hidden: true
 	},
 	{
-		name: "grass_block",
+		name:"grass",
+		nameMcd: "grass_block",
 		Name: "Grass Block",
 		textures: [ "dirt", "grassTop", "grassSide" ],
 		hardness: 0.6,
@@ -975,23 +976,24 @@ const blockData = [
 		glassSound: true
 	},
 	{ name: "cobblestone", Name:"Cobblestone", hardness:2, blastResistance:6, type:"rock1",category:"build", stoneSound:true, craftSlabs:true, craftStairs:true},
-	{ name: "mossyCobble", Name:"Mossy Cobblestone", hardness:2, blastResistance:6, type:"rock1",category:"build", stoneSound:true, craftSlabs:true, craftStairs:true},
-	{ name: "stoneBricks", Name:"Stone Bricks", hardness:1.5, type:"rock1",category:"build", stoneSound:true, craftSlabs:true, craftStairs:true},
-	{ name: "mossyStoneBricks", Name:"Mossy Stone Bricks", hardness:1.5, type:"rock1",category:"build", stoneSound:true, craftSlabs:true, craftStairs:true},
+	{ name: "mossyCobble", nameMcd:"mossy_cobblestone", Name:"Mossy Cobblestone", hardness:2, blastResistance:6, type:"rock1",category:"build", stoneSound:true, craftSlabs:true, craftStairs:true},
+	{ name: "stoneBricks", nameMcd:"stone_bricks", Name:"Stone Bricks", hardness:1.5, type:"rock1",category:"build", stoneSound:true, craftSlabs:true, craftStairs:true},
+	{ name: "mossyStoneBricks", nameMcd:"mossy_stone_bricks", Name:"Mossy Stone Bricks", hardness:1.5, type:"rock1",category:"build", stoneSound:true, craftSlabs:true, craftStairs:true},
 	{ name: "bricks", Name:"Bricks", hardness:2, type:"rock1",category:"build", stoneSound:true, craftSlabs:true, craftStairs:true},
-	{ name: "coalOre", Name:"Coal Ore", hardness:3, type:"rock1",category:"nature", drop:"coal", stoneSound:true, experience:0.1},
-	{ name: "ironOre", Name:"Iron Ore", hardness:3, type:"rock2",category:"nature", drop:"rawIron", stoneSound:true, dropAmount:[1,3]},
-	{ name: "goldOre", Name:"Gold Ore", hardness:3, type:"rock3",category:"nature", drop:"rawGold", stoneSound:true, dropAmount:[1,3]},
-	{ name: "diamondOre", Name:"Diamond Ore", hardness:3, type:"rock3",category:"nature", drop:"diamond", stoneSound:true, experience:1, dropAmount:[1,3]},
-	{ name: "redstoneOre", Name:"Redstone Ore", hardness:3, type:"rock3",category:"nature", stoneSound:true, drop:"redstone", dropAmount:[6,9], experience:0.3},
-	{ name: "lapisOre", Name:"Lapis Lazuli Ore", hardness:3, type:"rock2",category:"nature", drop:"lapisLazuli", stoneSound:true, experience:0.5, dropAmount:[1,3]},
-	{ name: "emeraldOre", Name:"Emerald Ore", hardness:3, type:"rock3",category:"nature", drop:"emerald", stoneSound:true, experience:1.5, dropAmount:[1,3]},
-	{ name: "coalBlock", Name:"Block of Coal", hardness:5, type:"rock1",category:"build", stoneSound:true, burnChance:0.4, burnTime:50},
-	{ name: "ironBlock", Name:"Block of Iron", hardness:5, type:"metal2",category:"build", stoneSound:true},
-	{ name: "goldBlock", Name:"Block of Gold", hardness:3, type:"metal3",category:"build", stoneSound:true},
-	{ name: "diamondBlock", Name:"Block of Diamond", hardness:3, type:"metal3",category:"build", stoneSound:true},
+	{ name: "coalOre", nameMcd:"coal_ore", Name:"Coal Ore", hardness:3, type:"rock1",category:"nature", drop:"coal", stoneSound:true, experience:0.1},
+	{ name: "ironOre", nameMcd:"iron_ore", Name:"Iron Ore", hardness:3, type:"rock2",category:"nature", drop:"rawIron", stoneSound:true, dropAmount:[1,3]},
+	{ name: "goldOre", nameMcd:"gold_ore", Name:"Gold Ore", hardness:3, type:"rock3",category:"nature", drop:"rawGold", stoneSound:true, dropAmount:[1,3]},
+	{ name: "diamondOre", nameMcd:"diamond_ore", Name:"Diamond Ore", hardness:3, type:"rock3",category:"nature", drop:"diamond", stoneSound:true, experience:1, dropAmount:[1,3]},
+	{ name: "redstoneOre", nameMcd:"redstone_ore", Name:"Redstone Ore", hardness:3, type:"rock3",category:"nature", stoneSound:true, drop:"redstone", dropAmount:[6,9], experience:0.3},
+	{ name: "lapisOre", nameMcd:"lapis_ore", Name:"Lapis Lazuli Ore", hardness:3, type:"rock2",category:"nature", drop:"lapisLazuli", stoneSound:true, experience:0.5, dropAmount:[1,3]},
+	{ name: "emeraldOre", nameMcd:"emerald_ore", Name:"Emerald Ore", hardness:3, type:"rock3",category:"nature", drop:"emerald", stoneSound:true, experience:1.5, dropAmount:[1,3]},
+	{ name: "coalBlock", nameMcd:"coal_block", Name:"Block of Coal", hardness:5, type:"rock1",category:"build", stoneSound:true, burnChance:0.4, burnTime:50},
+	{ name: "ironBlock", nameMcd:"iron_block", Name:"Block of Iron", hardness:5, type:"metal2",category:"build", stoneSound:true},
+	{ name: "goldBlock", nameMcd:"gold_block", Name:"Block of Gold", hardness:3, type:"metal3",category:"build", stoneSound:true},
+	{ name: "diamondBlock", nameMcd:"diamond_block", Name:"Block of Diamond", hardness:3, type:"metal3",category:"build", stoneSound:true},
 	{
-		name: "redstoneBlock", Name:"Block of Redstone", hardness:5, type:"metal1",category:"redstone", stoneSound:true,
+		name: "redstoneBlock",
+		nameMcd:"redstone_block", Name:"Block of Redstone", hardness:5, type:"metal1",category:"redstone", stoneSound:true,
 		onset:function(x,y,z,world){
 			world.setPower(x,y,z,16,false)
 			world.spreadPower(x,y,z, 16)
@@ -1003,11 +1005,12 @@ const blockData = [
 		damage:1,
 		dieMessage: p => p.username+" died from radiation from block of redstone."
 	},
-	{ name: "lapisBlock", Name:"Block of Lapis Lazuli", hardness:3, type:"metal2",category:"build", stoneSound:true},
-	{ name: "emeraldBlock", Name:"Block of Emerald", hardness:5, type:"metal3",category:"build", stoneSound:true},
-	{ name: "oakPlanks", Name:"Oak Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
+	{ name: "lapisBlock", nameMcd:"lapis_block", Name:"Block of Lapis Lazuli", hardness:3, type:"metal2",category:"build", stoneSound:true},
+	{ name: "emeraldBlock", nameMcd:"emerald_block", Name:"Block of Emerald", hardness:5, type:"metal3",category:"build", stoneSound:true},
+	{ name: "oakPlanks", nameMcd:"oak_planks", Name:"Oak Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
 	{
 		name: "oakLog",
+		nameMcd:"oak_log",
 		Name:"Oak Log",
 		textures: [ "logTop", "logSide" ],
 		hardness:2,
@@ -1018,9 +1021,10 @@ const blockData = [
 		burnTime:50,
 		log:true
 	},
-	{ name: "acaciaPlanks", Name:"Acacia Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
+	{ name: "acaciaPlanks", nameMcd:"acacia_planks", Name:"Acacia Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
 	{
 		name: "acaciaLog",
+		nameMcd:"acacia_log",
 		Name:"Acacia Log",
 		textures: [ "acaciaLogTop", "acaciaLogSide" ],
 		hardness:2,
@@ -1031,9 +1035,10 @@ const blockData = [
 		burnTime:50,
 		log:true
 	},
-	{ name: "birchPlanks", Name:"Birch Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
+	{ name: "birchPlanks", nameMcd:"birch_planks", Name:"Birch Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
 	{
 		name: "birchLog",
+		nameMcd:"birch_log",
 		Name:"Birch Log",
 		textures: [ "birchLogTop", "birchLogSide" ],
 		hardness:2,
@@ -1044,9 +1049,10 @@ const blockData = [
 		burnTime:50,
 		log:true
 	},
-	{ name: "darkOakPlanks", Name:"Dark Oak Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
+	{ name: "darkOakPlanks", nameMcd:"dark_oak_planks", Name:"Dark Oak Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
 	{
 		name: "darkOakLog",
+		nameMcd:"dark_oak_log",
 		Name:"Dark Oak Log",
 		textures: [ "darkOakLogTop", "darkOakLogSide" ],
 		hardness:2,
@@ -1057,9 +1063,10 @@ const blockData = [
 		burnTime:50,
 		log:true
 	},
-	{ name: "junglePlanks", Name:"Jungle Planks", type:"wood",category:"build", hardness:2,woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
+	{ name: "junglePlanks", nameMcd:"jungle_planks", Name:"Jungle Planks", type:"wood",category:"build", hardness:2,woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
 	{
 		name: "jungleLog",
+		nameMcd:"jungle_log",
 		Name:"Jungle Log",
 		textures: [ "jungleLogTop", "jungleLogSide" ],
 		hardness:2,
@@ -1070,9 +1077,10 @@ const blockData = [
 		burnTime:50,
 		log:true
 	},
-	{ name: "sprucePlanks", Name:"Spruce Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
+	{ name: "sprucePlanks", nameMcd:"spruce_planks", Name:"Spruce Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
 	{
 		name: "spruceLog",
+		nameMcd:"spruce_log",
 		Name:"Spruce Log",
 		textures: [ "spruceLogTop", "spruceLogSide" ],
 		hardness:2,
@@ -1083,38 +1091,38 @@ const blockData = [
 		burnTime:50,
 		log:true
 	},
-	{ name: "whiteWool", Name:"White Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "orangeWool", Name:"Orange Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "magentaWool", Name:"Magenta Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "lightBlueWool", Name:"Light Blue Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "yellowWool", Name:"Yellow Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "limeWool", Name:"Lime Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "pinkWool", Name:"Pink Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "grayWool", Name:"Gray Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "lightGrayWool", Name:"Light Gray Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "cyanWool", Name:"Cyan Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "purpleWool", Name:"Purple Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "blueWool", Name:"Blue Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "brownWool", Name:"Brown Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "greenWool", Name:"Green Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "redWool", Name:"Red Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "blackWool", Name:"Black Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
-	{ name: "whiteConcrete", Name:"White Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "orangeConcrete", Name:"Orange Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "magentaConcrete", Name:"Magenta Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "lightBlueConcrete", Name:"Light Blue Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "yellowConcrete", Name:"Yellow Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "limeConcrete", Name:"Lime Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "pinkConcrete", Name:"Pink Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "grayConcrete", Name:"Gray Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "lightGrayConcrete", Name:"Light Gray Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "cyanConcrete", Name:"Cyan Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "purpleConcrete", Name:"Purple Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "blueConcrete", Name:"Blue Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "brownConcrete", Name:"Brown Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "greenConcrete", Name:"Green Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "redConcrete", Name:"Red Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
-	{ name: "blackConcrete", Name:"Black Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "whiteWool", nameMcd:"white_wool", Name:"White Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "orangeWool", nameMcd:"orange_wool", Name:"Orange Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "magentaWool", nameMcd:"magenta_wool", Name:"Magenta Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "lightBlueWool", nameMcd:"light_blue_wool", Name:"Light Blue Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "yellowWool", nameMcd:"yellow_wool", Name:"Yellow Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "limeWool", nameMcd:"lime_wool", Name:"Lime Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "pinkWool", nameMcd:"pink_wool", Name:"Pink Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "grayWool", nameMcd:"gray_wool", Name:"Gray Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "lightGrayWool", nameMcd:"light_gray_wool", Name:"Light Gray Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "cyanWool", nameMcd:"cyan_wool", Name:"Cyan Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "purpleWool", nameMcd:"purple_wool", Name:"Purple Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "blueWool", nameMcd:"blue_wool", Name:"Blue Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "brownWool", nameMcd:"brown_wool", Name:"Brown Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "greenWool", nameMcd:"green_wool", Name:"Green Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "redWool", nameMcd:"red_wool", Name:"Red Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "blackWool", nameMcd:"black_wool", Name:"Black Wool",hardness:0.8, clothSound:true, shearBreakTime:0.2, type:"wool",category:"build", burnChance: 0.2, burnTime: 30},
+	{ name: "whiteConcrete", nameMcd:"white_concrete", Name:"White Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "orangeConcrete", nameMcd:"orange_concrete", Name:"Orange Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "magentaConcrete", nameMcd:"magenta_concrete", Name:"Magenta Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "lightBlueConcrete", nameMcd:"light_blue_concrete", Name:"Light Blue Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "yellowConcrete", nameMcd:"yellow_concrete", Name:"Yellow Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "limeConcrete", nameMcd:"lime_concrete", Name:"Lime Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "pinkConcrete", nameMcd:"pink_concrete", Name:"Pink Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "grayConcrete", nameMcd:"gray_concrete", Name:"Gray Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "lightGrayConcrete", nameMcd:"light_gray_concrete", Name:"Light Gray Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "cyanConcrete", nameMcd:"cyan_concrete", Name:"Cyan Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "purpleConcrete", nameMcd:"purple_concrete", Name:"Purple Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "blueConcrete", nameMcd:"blue_concrete", Name:"Blue Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "brownConcrete", nameMcd:"brown_concrete", Name:"Brown Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "greenConcrete", nameMcd:"green_concrete", Name:"Green Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "redConcrete", nameMcd:"red_concrete", Name:"Red Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
+	{ name: "blackConcrete", nameMcd:"black_concrete", Name:"Black Concrete",hardness:1.8, type:"rock1",category:"build", stoneSound:true},
 	{
 		name: "bookshelf",
 		Name:"Bookshelf",
@@ -1135,7 +1143,7 @@ const blockData = [
 		stepSound: ["netherrack.step1", "netherrack.step2","netherrack.step3","netherrack.step4","netherrack.step5","netherrack.step6"],
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true
 	},
-	{ name: "soulSand",
+	{ name: "soulSand", nameMcd:"soul_sand",
 		Name:"Soul Sand",
 		category:"nature",
 		speedFactor: 0.5,
@@ -1155,20 +1163,21 @@ const blockData = [
 		shadow:false,
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true
 	},
-	{ name: "netherBricks",
+	{ name: "netherBricks", nameMcd:"nether_bricks",
 		Name:"Nether Bricks",
 		category:"build",
 		craftSlabs:true, craftStairs:true,
 		digSound: ["nether_bricks.dig1", "nether_bricks.dig2", "nether_bricks.dig3", "nether_bricks.dig4", "nether_bricks.dig5", "nether_bricks.dig6"],
 		stepSound: ["nether_bricks.step1", "nether_bricks.step2","nether_bricks.step3","nether_bricks.step4","nether_bricks.step5","nether_bricks.step6"]},
-	{ name: "redNetherBricks",
+	{ name: "redNetherBricks", nameMcd:"red_nether_bricks",
 		Name:"Red Nether Bricks",
 		category:"build",
 		craftSlabs:true, craftStairs:true,
 		digSound: ["nether_bricks.dig1", "nether_bricks.dig2", "nether_bricks.dig3", "nether_bricks.dig4", "nether_bricks.dig5", "nether_bricks.dig6"],
 		stepSound: ["nether_bricks.step1", "nether_bricks.step2","nether_bricks.step3","nether_bricks.step4","nether_bricks.step5","nether_bricks.step6"]},
 	{
-		name: "netherQuartzOre", 
+		name: "netherQuartzOre",
+		nameMcd:"nether_quartz_ore", 
 		Name:"Nether Quartz Ore",
 		category:"nature",
 		digSound: ["nether_ore.dig1", "nether_ore.dig2", "nether_ore.dig3", "nether_ore.dig4"],
@@ -1181,6 +1190,7 @@ const blockData = [
 	},
 	{
 		name: "quartzBlock",
+		nameMcd:"quartz_block",
 		Name:"Block of Quartz",
 		category:"build",
 		textures: ["quartzBlockBottom", "quartzBlockTop", "quartzBlockSide"],
@@ -1191,6 +1201,7 @@ const blockData = [
 	},
 	{
 		name: "quartzPillar",
+		nameMcd:"quartz_pillar",
 		Name:"Pillar",
 		category:"build",
 		textures: ["quartzPillarTop", "quartzPillar"],
@@ -1200,6 +1211,7 @@ const blockData = [
 	},
 	{
 		name: "chiseledQuartzBlock",
+		nameMcd:"chiseled_quartz_block",
 		Name:"Chiseled Quartz Block",
 		category:"build",
 		textures: ["chiseledQuartzBlockTop", "chiseledQuartzBlock"],
@@ -1207,14 +1219,14 @@ const blockData = [
 		hardness:1.5,
 		blastResistance:6
 	},
-	{ name: "chiseledStoneBricks", Name:"Chiseled Stone Bricks",category:"build", hardness:1.5, blastResistance:6, stoneSound:true},
-	{ name: "smoothStone", Name:"Smooth Stone",category:"build", hardness:1.5, blastResistance:6, stoneSound:true, randomRotate:"flip",randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true},
+	{ name: "chiseledStoneBricks", nameMcd:"chiseled_stone_bricks", Name:"Chiseled Stone Bricks",category:"build", hardness:1.5, blastResistance:6, stoneSound:true},
+	{ name: "smoothStone", nameMcd:"smooth_stone", Name:"Smooth Stone",category:"build", hardness:1.5, blastResistance:6, stoneSound:true, randomRotate:"flip",randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true},
 	{ name: "andesite", Name:"Andesite", stoneSound:true,category:"nature", hardness:1.5, blastResistance:6, randomRotate:"flip",randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true},
-	{ name: "polishedAndesite", Name:"Polished Andesite",category:"build", hardness:1.5, blastResistance:6, stoneSound:true, craftSlabs:true, craftStairs:true},
+	{ name: "polishedAndesite", nameMcd:"polished_andesite", Name:"Polished Andesite",category:"build", hardness:1.5, blastResistance:6, stoneSound:true, craftSlabs:true, craftStairs:true},
 	{ name: "diorite", Name:"Diorite", stoneSound:true,category:"nature", hardness:1.5, blastResistance:6, randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true},
-	{ name: "polishedDiorite", Name:"Polished Diorite",category:"build", hardness:1.5, blastResistance:6, stoneSound:true, craftSlabs:true, craftStairs:true},
+	{ name: "polishedDiorite", nameMcd:"polished_diorite", Name:"Polished Diorite",category:"build", hardness:1.5, blastResistance:6, stoneSound:true, craftSlabs:true, craftStairs:true},
 	{ name: "granite", Name:"Granite", stoneSound:true,category:"nature", hardness:1.5, blastResistance:6, randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true},
-	{ name: "polishedGranite", Name:"Polished Granite",category:"build", hardness:1.5, blastResistance:6, stoneSound:true, craftSlabs:true, craftStairs:true},
+	{ name: "polishedGranite", nameMcd:"polished_granite", Name:"Polished Granite",category:"build", hardness:1.5, blastResistance:6, stoneSound:true, craftSlabs:true, craftStairs:true},
 	{ // I swear, if y'all don't stop asking about TNT every 5 minutes!
 		name: "tnt",
 		Name:"TNT",
@@ -1446,7 +1458,7 @@ const blockData = [
 		category:"redstone",
 	},
 	{
-		name:"redstoneDust",
+		name:"redstoneDust",//todo n
 		textures:"redstoneDustDot",
 		shadow:false,
 		transparent:true,
@@ -1941,6 +1953,7 @@ const blockData = [
 	},
 	
 	{ name: "lilyOftheValley",
+	 	nameMcd:"lily_of_the_valley",
 		Name:"Lily of The Valley",
 		solid: false,
 		transparent: true,
@@ -1976,7 +1989,7 @@ const blockData = [
 		category:"nature",
 		randomOffset:true
 	},
-	{ name: "blueOrchid",
+	{ name: "blueOrchid", nameMcd:"blue_orchid",
 		Name:"Blue Orchid",
 		solid: false,
 		transparent: true,
@@ -1988,7 +2001,7 @@ const blockData = [
 		potCross:true,
 		randomOffset:true
 	},
-	{ name: "pinkTulip",
+	{ name: "pinkTulip", nameMcd:"pink_tulip",
 		Name:"Pink Tulip",
 			solid: false,
 			transparent: true,
@@ -2000,7 +2013,7 @@ const blockData = [
 		category:"nature",
 		randomOffset:true
 	},
-	{ name: "orangeTulip",
+	{ name: "orangeTulip", nameMcd:"orange_tulip",
 		Name:"Orange Tulip",
 			solid: false,
 			transparent: true,
@@ -2012,7 +2025,7 @@ const blockData = [
 		category:"nature",
 		randomOffset:true
 	},
-	{ name: "redTulip",
+	{ name: "redTulip", nameMcd:"red_tulip",
 		Name:"Red Tulip",
 			solid: false,
 			transparent: true,
@@ -2024,7 +2037,7 @@ const blockData = [
 		category:"nature",
 		randomOffset:true
 	},
-	{ name: "whiteTulip",
+	{ name: "whiteTulip", nameMcd:"white_tulip",
 		Name:"White Tulip",
 			solid: false,
 			transparent: true,
@@ -2036,7 +2049,7 @@ const blockData = [
 		category:"nature",
 		randomOffset:true
 	},
-	{ name: "azureBluet",
+	{ name: "azureBluet", nameMcd:"azure_bluet",
 		Name:"Azure Bluet",
 			solid: false,
 			transparent: true,
@@ -2049,12 +2062,13 @@ const blockData = [
 		randomOffset:true
 	},
 	{ name: "cornFlower",
+		nameMcd:"cornflower",
 		Name:"Cornflower",
-			solid: false,
-			transparent: true,
-			shadow: false,
+		solid: false,
+		transparent: true,
+		shadow: false,
 		potCross: true,
-			crossShape: true,
+		crossShape: true,
 		compostChance:0.65,
 		liquidBreakable:"drop",
 		category:"nature",
@@ -2084,7 +2098,7 @@ const blockData = [
 		category:"nature",
 		randomOffset:true
 	},
-	{ name: "oxeyeDaisy",
+	{ name: "oxeyeDaisy", nameMcd:"oxeye_daisy",
 		Name:"Oxeye Daisy",
 			solid: false,
 			transparent: true,
@@ -2107,7 +2121,7 @@ const blockData = [
 		category:"nature",
 		randomOffset:true
 	},
-	{ name: "roseBush",
+	{ name: "roseBush", nameMcd:"rose_bush",
 		Name:"Rose Bush",
 			solid: false,
 			transparent: true,
@@ -2129,7 +2143,7 @@ const blockData = [
 		category:"nature",
 		randomOffset:true
 	},
-	{ name: "witherRose",
+	{ name: "witherRose", nameMcd:"wither_rose",
 		Name:"Wither Rose",
 		solid: false,
 		transparent: true,
@@ -2144,6 +2158,7 @@ const blockData = [
 	},
 	{
 		name: "TallGrass",
+		nameMcd:"short_grass",
 		Name:"Grass",
 		solid: false,
 		transparent: true,
@@ -2169,6 +2184,7 @@ const blockData = [
 	
 	{ 
 		name: "oakDoor",
+		nameMcd:"oak_door",
 		Name:"Oak Door",
 		transparent: true,
 		shadow: false,
@@ -2181,6 +2197,7 @@ const blockData = [
 	},
 	{
 		name: "spruceDoor",
+		nameMcd:"spruce_door",
 		Name:"Spruce Door",
 		transparent: true,
 		shadow: false,
@@ -2193,6 +2210,7 @@ const blockData = [
 	},
 	{
 		name: "ironDoor",
+		nameMcd:"iron_door",
 		Name:"Iron Door",
 		transparent: true,
 		shadow: false,
@@ -2205,6 +2223,7 @@ const blockData = [
 	},
 	{
 		name: "darkOakDoor",
+		nameMcd:"dark_oak_door",
 		Name:"Dark Oak Door",
 		transparent: true,
 		shadow: false,
@@ -2217,6 +2236,7 @@ const blockData = [
 	},
 	{
 		name: "birchDoor",
+		nameMcd:"birch_door",
 		Name:"Birch Door",
 		transparent: true,
 		shadow: false,
@@ -2229,6 +2249,7 @@ const blockData = [
 	},
 	{
 		name: "jungleDoor",
+		nameMcd:"jungle_door",
 		Name:"Jungle Door",
 		transparent: true,
 		shadow: false,
@@ -2241,6 +2262,7 @@ const blockData = [
 	},
 	{
 		name: "acaciaDoor",
+		nameMcd:"acacia_door",
 		Name:"Acacia Door",
 		transparent: true,
 		shadow: false,
@@ -2253,6 +2275,7 @@ const blockData = [
 	},
 	{
 		name: "warpedDoor",
+		nameMcd:"warped_door",
 		Name:"Warped Door",
 		transparent: true,
 		shadow: false,
@@ -2265,6 +2288,7 @@ const blockData = [
 	},
 	{
 		name: "crimsonDoor",
+		nameMcd:"crimson_door",
 		Name:"Crimson Door",
 		transparent: true,
 		shadow: false,
@@ -2289,6 +2313,7 @@ const blockData = [
 	},
 	{
 		name: "soulTorch",
+		nameMcd:"soul_torch",
 		Name:"Soul Torch",
 		transparent: true,
 		shadow: false,
@@ -2313,6 +2338,7 @@ const blockData = [
 	},
 	{
 		name: "soulLantern",
+		nameMcd:"soul_lantern",
 		Name:"Soul Lantern",
 		transparent: true,
 		shadow: false,
@@ -2382,6 +2408,7 @@ const blockData = [
 	
 	{
 		name: "glassPane",
+		nameMcd:"glass_pane",
 		Name:"Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -2458,6 +2485,7 @@ const blockData = [
 	
 	{
 		name: "Water",
+		nameMcd:"water",
 		textures:["Water","waterFlow"],
 		transparent: true,
 		liquid: true,
@@ -2502,6 +2530,7 @@ const blockData = [
 	},
 	{
 		name: "Lava",
+		nameMcd:"lava",
 		textures:["Lava","lavaFlow"],
 		transparent: true,
 		liquid: true,
@@ -2560,6 +2589,7 @@ const blockData = [
 	
 	{
 		name: "craftingTable",
+		nameMcd:"crafting_table",
 		Name:"Crafting Table",
 		textures: ["oakPlanks","craftingTableTop","craftingTableFront","craftingTableSide"],
 		onclientclick: () => {changeScene("crafting"); releasePointer()},
@@ -2571,6 +2601,7 @@ const blockData = [
 	
 	{
 		name: "crimsonNylium",
+		nameMcd:"crimson_nylium",
 		Name:"Crimson Nylium",
 		textures: ["netherrack", "crimsonNyliumTop", "crimsonNyliumSide"],
 		nyliumSound: true,
@@ -2581,6 +2612,7 @@ const blockData = [
 	},
 	{
 		name: "warpedNylium",
+		nameMcd:"warped_nylium",
 		Name:"Warped Nylium",
 		textures: ["netherrack", "warpedNyliumTop", "warpedNyliumSide"],
 		nyliumSound: true,
@@ -2591,6 +2623,7 @@ const blockData = [
 	},
 	{
 		name: "crimsonStem",
+		nameMcd:"crimson_stem",
 		Name:"Crimson Stem",
 		textures: ["crimsonStemTop", "crimsonStemSide"],
 		stemSound: true,
@@ -2601,6 +2634,7 @@ const blockData = [
 	},
 	{
 		name: "warpedStem",
+		nameMcd:"warped_stem",
 		Name:"Warped Stem",
 		textures: ["warpedStemTop", "warpedStemSide"],
 		stemSound: true,
@@ -2609,13 +2643,13 @@ const blockData = [
 		type:"wood",
 		category:"nature"
 	},
-	{ name: "netherWartBlock",
+	{ name: "netherWartBlock", nameMcd:"nether_wart_block",
 		Name:"Nether Wart Block",hardness:1,compostChance:0.85,category:"nature",
 		digSound: ["netherwart.dig1", "netherwart.dig2", "netherwart.dig3", "netherwart.dig4", "netherwart.dig5", "netherwart.dig6"],
 		stepSound: ["netherwart.step1", "netherwart.step2","netherwart.step3","netherwart.step4","netherwart.step5"],
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true
 	},
-	{ name: "warpedWartBlock",
+	{ name: "warpedWartBlock", nameMcd:"warped_wart_block",
 		Name:"Warped Wart Block",hardness:1,compostChance:0.85,category:"nature",
 		digSound: ["netherwart.dig1", "netherwart.dig2", "netherwart.dig3", "netherwart.dig4", "netherwart.dig5", "netherwart.dig6"],
 		stepSound: ["netherwart.step1", "netherwart.step2","netherwart.step3","netherwart.step4","netherwart.step5"],
@@ -2626,6 +2660,7 @@ const blockData = [
 		stepSound: ["shroomlight.step1", "shroomlight.step2","shroomlight.step3","shroomlight.step4","shroomlight.step5","shroomlight.step6"]},
 	{ 
 		name: "warpedFungus",
+		nameMcd:"warped_fungus",
 		Name:"Warped Fungus",
 		solid: false,
 		shadow: false,
@@ -2651,11 +2686,12 @@ const blockData = [
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,
 		craftSlabs:true, craftStairs:true,
 	},
-	{ name: "gildedBlackstone", Name:"Gilded Blackstone", category:"nature",stoneSound: true, randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true},
-	{ name: "polishedBlackstoneBricks", Name:"Polished Blackstone Bricks", category:"build",stoneSound: true, craftSlabs:true, craftStairs:true},
-	{ name: "chiseledPolishedBlackstone", Name:"Chiseled Polished Blackstone", category:"build",stoneSound: true},
+	{ name: "gildedBlackstone", nameMcd:"gilded_blackstone", Name:"Gilded Blackstone", category:"nature",stoneSound: true, randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true},
+	{ name: "polishedBlackstoneBricks", nameMcd:"polished_blackstone_bricks", Name:"Polished Blackstone Bricks", category:"build",stoneSound: true, craftSlabs:true, craftStairs:true},
+	{ name: "chiseledPolishedBlackstone", nameMcd:"chiseled_polished_blackstone", Name:"Chiseled Polished Blackstone", category:"build",stoneSound: true},
 	{
 		name: "netheriteBlock",
+		nameMcd:"netherite_block",
 		Name:"Netherite Block",
 		type:"rock4",
 		category:"build",
@@ -2674,6 +2710,7 @@ const blockData = [
 	},
 	{
 		name: "polishedBasalt",
+		nameMcd:"polished_basalt",
 		Name: "Polished Basalt",
 		category:"build",
 		textures: [ "polishedBasaltTop", "polishedBasaltSide" ],
@@ -2683,9 +2720,10 @@ const blockData = [
 	{ name: "chain", Name:"Chain", category:"build",transparent:true, shadow:false, chain:true, iconTexture:"chainIcon",
 		digSound: ["chain.dig1", "chain.dig2", "chain.dig3", "chain.dig4"],
 		stepSound: ["chain.step1", "chain.step2","chain.step3","chain.step4","chain.step5","chain.step6"]},
-	{ name: "warpedPlanks", Name:"Warped Planks", hardness:2, type:"wood",category:"build", woodSound:true, craftSlabs:true, craftStairs:true},
+	{ name: "warpedPlanks", nameMcd:"warped_planks", Name:"Warped Planks", hardness:2, type:"wood",category:"build", woodSound:true, craftSlabs:true, craftStairs:true},
 	{ 
 		name: "warpedTrapdoor",
+		nameMcd:"warped_trapdoor",
 		Name: "Warped Trapdoor",
 		transparent: true,
 		shadow: false,
@@ -2703,6 +2741,7 @@ const blockData = [
 	},
 	{
 		name: "crimsonFungus",
+		nameMcd:"crimson_fungus",
 		Name: "Crimson Fungus",
 		solid: false,
 		shadow: false,
@@ -2721,6 +2760,7 @@ const blockData = [
 	},
 	{ 
 		name: "warpedRoots",
+		nameMcd:"warped_roots",
 		Name: "Warped Roots",
 		transparent: true,
 		solid: false,
@@ -2735,6 +2775,7 @@ const blockData = [
 	},
 	{ 
 		name: "crimsonRoots",
+		nameMcd:"crimson_roots",
 		Name: "Crimson Roots",
 		transparent: true,
 		solid: false,
@@ -2749,6 +2790,7 @@ const blockData = [
 	},
 	{ 
 		name: "twistingVines",
+		nameMcd:"twisting_vines",
 		transparent: true,
 		solid: false,
 		shadow: false,
@@ -2767,6 +2809,7 @@ const blockData = [
 	},
 	{
 		name: "twistingVinesPlant",
+		nameMcd:"twisting_vines_plant",
 		Name: "Twisting Vines",
 		transparent: true,
 		solid: false,
@@ -2785,6 +2828,7 @@ const blockData = [
 	},
 	{
 		name: "weepingVines",
+		nameMcd:"weeping_vines",
 		transparent: true,
 		solid: false,
 		shadow: false,
@@ -2802,6 +2846,7 @@ const blockData = [
 	},
 	{
 		name: "weepingVinesPlant",
+		nameMcd:"weeping_vines_plant",
 		Name:"Weeping Vines",
 		transparent: true,
 		solid: false,
@@ -2819,6 +2864,7 @@ const blockData = [
 	},
 	{ 
 		name: "netherSprouts",
+		nameMcd:"nether_sprouts",
 		Name: "Nether Sprouts",
 		solid: false,
 		shadow: false,
@@ -2831,10 +2877,11 @@ const blockData = [
 		randomOffset:true,
 	},
 	
-	{ name: "stoneButton", Name:"Stone Button", textures:"stone", category:"redstone",button:true, transparent: true, shadow:false, stone:true },
+	{ name: "stoneButton", nameMcd:"stone_button", Name:"Stone Button", textures:"stone", category:"redstone",button:true, transparent: true, shadow:false, stone:true },
 	
 	{ 
-		name: "RespawnAnchorOff",
+		name: "RespawnAnchor",
+		nameMcd:"respawn_anchor",
 		category:"items",
 		textures: ["respawnAnchorBottom", "respawnAnchorTopOff", "respawnAnchorSide0"],
 		//onupdate: (x,y,z) => {if(world.type !== "nether"){explode(x,y,z,2)}}
@@ -2862,6 +2909,7 @@ const blockData = [
 	
 	{
 		name:"redBed",
+		nameMcd:"red_bed",
 		Name:"Red Bed",
 		textures: "redBed",
 		iconTexture: "redBedIcon",
@@ -2874,6 +2922,7 @@ const blockData = [
 	
 	{
 		name: "flintAndSteel",
+		nameMcd:"flint_and_steel",
 		Name:"Flint & Steel",
 		textures: "flintAndSteel",
 		item: true,
@@ -2928,6 +2977,7 @@ const blockData = [
 	},
 	{
 		name: "oakSapling",
+		nameMcd:"oak_sapling",
 		Name:"Oak Sapling",
 		crossShape: true,
 		potCross: true,
@@ -2946,6 +2996,7 @@ const blockData = [
 	
 	{ 
 		name: "crimsonTrapdoor",
+		nameMcd:"crimson_trapdoor",
 		Name:"Crimson Trapdoor",
 		transparent: true,
 		trapdoor: true,
@@ -2954,6 +3005,7 @@ const blockData = [
 	},
 	{ 
 		name: "oakTrapdoor",
+		nameMcd:"oak_trapdoor",
 		Name:"Oak Trapdoor",
 		transparent: true,
 		trapdoor: true,
@@ -2962,6 +3014,7 @@ const blockData = [
 	},
 	{ 
 		name: "spruceTrapdoor",
+		nameMcd:"spruce_trapdoor",
 		Name:"Spruce Trapdoor",
 		transparent: true,
 		trapdoor: true,
@@ -2970,6 +3023,7 @@ const blockData = [
 	},
 	{ 
 		name: "darkOakTrapdoor",
+		nameMcd:"dark_oak_trapdoor",
 		Name:"Dark Oak Trapdoor",
 		transparent: true,
 		trapdoor: true,
@@ -2978,6 +3032,7 @@ const blockData = [
 	},
 	{ 
 		name: "birchTrapdoor",
+		nameMcd:"birch_trapdoor",
 		Name:"Birck Trapdoor",
 		transparent: true,
 		trapdoor: true,
@@ -2986,6 +3041,7 @@ const blockData = [
 	},
 	{ 
 		name: "jungleTrapdoor",
+		nameMcd:"jungle_trapdoor",
 		Name:"Jungle Trapdoor",
 		transparent: true,
 		trapdoor: true,
@@ -2994,6 +3050,7 @@ const blockData = [
 	},
 	{ 
 		name: "acaciaTrapdoor",
+		nameMcd:"acacia_trapdoor",
 		Name:"Acaica Trapdoor",
 		transparent: true,
 		trapdoor: true,
@@ -3002,6 +3059,7 @@ const blockData = [
 	},
 	{ 
 		name: "ironTrapdoor",
+		nameMcd:"iron_trapdoor",
 		Name:"Iron Trapdoor",
 		transparent: true,
 		trapdoor: true,
@@ -3011,6 +3069,7 @@ const blockData = [
 	
 	{ 
 		name: "cryingObsidian",
+		nameMcd:"crying_obsidian",
 		Name:"Obsidian: 😢",
 		shadow: false,
 		lightLevel: 10,
@@ -3024,7 +3083,7 @@ const blockData = [
 		category:"nature",
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true
 	},
-	{ name: "netherGoldOre",
+	{ name: "netherGoldOre", nameMcd:"nether_gold_ore",
 		Name:"Nether Gold Ore",
 		digSound: ["nether_ore.dig1", "nether_ore.dig2", "nether_ore.dig3", "nether_ore.dig4"],
 		stepSound: ["nether_ore.step1", "nether_ore.step2","nether_ore.step3","nether_ore.step4","nether_ore.step5"],
@@ -3036,6 +3095,7 @@ const blockData = [
 	},
 	{
 		name: "flowerPot",
+		nameMcd:"flower_pot",
 		Name:"Flower Pot",
 		transparent: true,
 		shadow: false,
@@ -3047,6 +3107,7 @@ const blockData = [
 	},
 	{
 		name: "acaciaSapling",
+		nameMcd:"acacia_sapling",
 		Name:"Acacia Sapling",
 		transparent: true,
 		shadow: false,
@@ -3064,6 +3125,7 @@ const blockData = [
 	},
 	{
 		name: "birchSapling",
+		nameMcd:"birch_sapling",
 		Name:"Birch Sapling",
 		transparent: true,
 		shadow: false,
@@ -3081,6 +3143,7 @@ const blockData = [
 	},
 	{
 		name: "darkOakSapling",
+		nameMcd:"dark_oak_sapling",
 		Name:"Dark Oak Sapling",
 		transparent: true,
 		shadow: false,
@@ -3093,6 +3156,7 @@ const blockData = [
 	},
 	{
 		name: "jungleSapling",
+		nameMcd:"jungle_sapling",
 		Name:"Jungle Sapling",
 		transparent: true,
 		shadow: false,
@@ -3110,6 +3174,7 @@ const blockData = [
 	},
 	{
 		name: "spruceSapling",
+		nameMcd:"spruce_sapling",
 		Name:"Spruce Sapling",
 		transparent: true,
 		shadow: false,
@@ -3156,35 +3221,35 @@ const blockData = [
 		drop:"crimsonRoots",
 		liquidBreakable:"drop"
 	},
-	{ name: "whiteCarpet", Name: "White Carpet", textures: "whiteWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "orangeCarpet", Name: "Orange Carpet", textures: "orangeWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "magentaCarpet", Name: "Magenta Carpet", textures: "magentaWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "lightBlueCarpet", Name: "Light Blue Carpet", textures: "lightBlueWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "yellowCarpet", Name: "Yellow Carpet", textures: "yellowWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "limeCarpet", Name: "Lime Carpet", textures: "limeWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "pinkCarpet", Name: "Pink Carpet", textures: "pinkWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "grayCarpet", Name: "Gray Carpet", textures: "grayWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "lightGrayCarpet", Name: "Light Gray Carpet", textures: "lightGrayWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "cyanCarpet", Name: "Cyan Carpet", textures: "cyanWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "purpleCarpet", Name: "Purple Carpet", textures: "purpleWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "blueCarpet", Name: "Blue Carpet", textures: "blueWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "brownCarpet", Name: "Brown Carpet", textures: "brownWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "greenCarpet", Name: "Green Carpet", textures: "greenWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "redCarpet", Name: "Red Carpet", textures: "redWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
-	{ name: "blackCarpet", Name: "Black Carpet", textures: "blackWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "whiteCarpet", nameMcd:"white_carpet", Name: "White Carpet", textures: "whiteWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "orangeCarpet", nameMcd:"orange_carpet", Name: "Orange Carpet", textures: "orangeWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "magentaCarpet", nameMcd:"magenta_carpet", Name: "Magenta Carpet", textures: "magentaWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "lightBlueCarpet", nameMcd:"light_blue_carpet", Name: "Light Blue Carpet", textures: "lightBlueWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "yellowCarpet", nameMcd:"yellow_carpet", Name: "Yellow Carpet", textures: "yellowWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "limeCarpet", nameMcd:"lime_carpet", Name: "Lime Carpet", textures: "limeWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "pinkCarpet", nameMcd:"pink_carpet", Name: "Pink Carpet", textures: "pinkWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "grayCarpet", nameMcd:"gray_carpet", Name: "Gray Carpet", textures: "grayWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "lightGrayCarpet", nameMcd:"light_gray_carpet", Name: "Light Gray Carpet", textures: "lightGrayWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "cyanCarpet", nameMcd:"cyan_carpet", Name: "Cyan Carpet", textures: "cyanWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "purpleCarpet", nameMcd:"purple_carpet", Name: "Purple Carpet", textures: "purpleWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "blueCarpet", nameMcd:"blue_carpet", Name: "Blue Carpet", textures: "blueWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "brownCarpet", nameMcd:"brown_carpet", Name: "Brown Carpet", textures: "brownWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "greenCarpet", nameMcd:"green_carpet", Name: "Green Carpet", textures: "greenWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "redCarpet", nameMcd:"red_carpet", Name: "Red Carpet", textures: "redWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
+	{ name: "blackCarpet", nameMcd:"black_carpet", Name: "Black Carpet", textures: "blackWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
 	
-	{ name: "polishedBlackstone", Name: "Polished Blackstone", category:"build",stoneSound:true, craftSlabs:true, craftStairs:true},
-	{ name: "chiseledNetherBricks",
+	{ name: "polishedBlackstone", nameMcd:"polished_blackstone", Name: "Polished Blackstone", category:"build",stoneSound:true, craftSlabs:true, craftStairs:true},
+	{ name: "chiseledNetherBricks", nameMcd:"chiseled_nether_bricks",
 		Name: "Chiseled Nether Bricks",
 		category:"build",
 		digSound: ["nether_bricks.dig1", "nether_bricks.dig2", "nether_bricks.dig3", "nether_bricks.dig4", "nether_bricks.dig5", "nether_bricks.dig6"],
 		stepSound: ["nether_bricks.step1", "nether_bricks.step2","nether_bricks.step3","nether_bricks.step4","nether_bricks.step5","nether_bricks.step6"]},
-	{ name: "crackedNetherBricks",
+	{ name: "crackedNetherBricks", nameMcd:"cracked_nether_bricks",
 		Name:"Cracked Nether Bricks",
 		category:"build",
 		digSound: ["nether_bricks.dig1", "nether_bricks.dig2", "nether_bricks.dig3", "nether_bricks.dig4", "nether_bricks.dig5", "nether_bricks.dig6"],
 		stepSound: ["nether_bricks.step1", "nether_bricks.step2","nether_bricks.step3","nether_bricks.step4","nether_bricks.step5","nether_bricks.step6"]},
-	{ name: "smoothBasalt", Name: "Smooth Basalt", basaltSound: true},
+	{ name: "smoothBasalt", nameMcd:"smooth_basalt", Name: "Smooth Basalt", basaltSound: true},
 	
 	{
 		name: "oakLogSW",
@@ -3236,9 +3301,10 @@ const blockData = [
 		textures: ["polishedBasaltSide","polishedBasaltSide","polishedBasaltTop","polishedBasaltSide"],
 		SW: true, basaltSound: true, hidden:true
 	},
-	{ name:"crimsonPlanks", Name: "Crimson Planks", woodSound:true, hardness:2, type:"wood",category:"build", craftSlabs:true, craftStairs:true },
+	{ name:"crimsonPlanks", nameMcd:"crimson_planks", Name: "Crimson Planks", woodSound:true, hardness:2, type:"wood",category:"build", craftSlabs:true, craftStairs:true },
 	{
 		name:"deadBush",
+		nameMcd:"dead_bush",
 		Name:"Dead Bush",
 		solid: false,
 		transparent: true,
@@ -3255,19 +3321,20 @@ const blockData = [
 	},
 	{ name:"stick", Name:"Stick", category:"items",item:true },
 	{ name:"coal", Name:"Coal", category:"items",item:true },
-	{ name:"ironIngot", Name:"Iron Ingot", category:"items",item:true },
-	{ name:"copperIngot", Name:"Copper Ingot", category:"items",item:true },
-	{ name:"goldIngot", Name:"Gold Ingot", category:"items",item:true },
+	{ name:"ironIngot", nameMcd:"iron_ingot", Name:"Iron Ingot", category:"items",item:true },
+	{ name:"copperIngot", nameMcd:"copper_ingot", Name:"Copper Ingot", category:"items",item:true },
+	{ name:"goldIngot", nameMcd:"gold_ingot", Name:"Gold Ingot", category:"items",item:true },
 	{ name:"diamond", Name:"Diamond", category:"items",item:true },
-	{ name:"lapisLazuli", Name:"Lapis Lazuli", category:"items",item:true },
+	{ name:"lapisLazuli", nameMcd:"lapis_lazuli", Name:"Lapis Lazuli", category:"items",item:true },
 	{ name:"emerald", Name:"Emerald", category:"items",item:true },
-	{ name:"copperOre", Name:"Copper Ore", hardness:3, drop:"rawCopper", dropAmount:[2,5], type:"rock2",category:"nature", stoneSound:true },
-	{ name:"rawIron", Name:"Raw Iron", category:"items",item:true },
-	{ name:"rawCopper", Name:"Raw Copper", category:"items",item:true },
-	{ name:"rawGold", Name:"Raw Gold", category:"items",item:true },
+	{ name:"copperOre", nameMcd:"copper_ore", Name:"Copper Ore", hardness:3, drop:"rawCopper", dropAmount:[2,5], type:"rock2",category:"nature", stoneSound:true },
+	{ name:"rawIron", nameMcd:"raw_iron", Name:"Raw Iron", category:"items",item:true },
+	{ name:"rawCopper", nameMcd:"raw_copper", Name:"Raw Copper", category:"items",item:true },
+	{ name:"rawGold", nameMcd:"raw_gold", Name:"Raw Gold", category:"items",item:true },
 	
 	{
 		name: "netherWart",
+		nameMcd:"nether_wart",
 		Name:"Nether Wart",
 		transparent: true,
 		shadow: false,
@@ -3331,6 +3398,7 @@ const blockData = [
 	
 	{
 		name: "slimeBlock",
+		nameMcd:"slime_block",
 		Name:"Slime Block",
 		transparent: true,
 		shadow: false,
@@ -3343,14 +3411,15 @@ const blockData = [
 	},
 	{ 
 		name:"soulSoil",
+		nameMcd:"soul_soil",
 		Name:"Soul Soil",
 		speedFactor: 0.5,
 		canHaveSoulFire: true,
 		category:"nature",
 	},
-	{ name:"blueIce", Name:"Blue Ice", category:"nature",slide:0.9, glassSound: true, temperature:3},
+	{ name:"blueIce", nameMcd:"blue_ice", Name:"Blue Ice", category:"nature",slide:0.9, glassSound: true, temperature:3},
 	{ name:"ice", Name:"Ice", category:"nature",transparent:true, shadow:false, slide:0.9, glassSound: true, temperature:3},
-	{ name:"packedIce", Name:"Packed Ice", category:"nature",slide:0.9, glassSound: true, temperature:3},
+	{ name:"packedIce", nameMcd:"packed_ice", Name:"Packed Ice", category:"nature",slide:0.9, glassSound: true, temperature:3},
 	{ name:"calcite", Name:"Calcite", category:"nature" },
 	{
 		name:"furnace",
@@ -3458,6 +3527,7 @@ const blockData = [
 	},
 	{
 		name:"blastFurnace",
+		nameMcd:"blast_furnace",
 		Name:"Blast Furnace",
 		textures: ["blastFurnaceTop","blastFurnaceTop","blastFurnaceSide","blastFurnaceFront","blastFurnaceSide","blastFurnaceSide"],
 		rotate: true,
@@ -3472,6 +3542,7 @@ const blockData = [
 	},
 	{
 		name:"noteBlock",
+		nameMcd:"note_block",
 		Name:"Note Block",
 		tagBits:{
 			on:[0,1],
@@ -3569,22 +3640,23 @@ const blockData = [
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,
 		craftSlabs:true, craftStairs:true
 	},
-	{ name:"chiseledSandstone",
+	{ name:"chiseledSandstone", nameMcd:"chiseled_sandstone",
 		Name:"Chiseled Sandstone",
 		textures: ["sandstoneBottom", "sandstoneTop","chiseledSandstone"],
 		category:"build",
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true
 	},
-	{ name:"cutSandstone",
+	{ name:"cutSandstone", nameMcd:"cut_sandstone",
 		Name:"Cut Sandstone",
 		textures: ["sandstoneBottom", "sandstoneTop","cutSandstone"],
 		category:"build",
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,
 		craftSlabs:true, craftStairs:true
 	},
-	{ name:"smoothSandstone", Name:"Smooth Sandstone", textures:"sandstoneTop", category:"nature",randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true },
+	{ name:"smoothSandstone", nameMcd:"smooth_sandstone", Name:"Smooth Sandstone", textures:"sandstoneTop", category:"nature",randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true },
 	{
 		name: "DoubleTallGrass",
+		nameMcd:"tall_grass",
 		Name:"Tall Grass",
 		solid: false,
 		transparent: true,
@@ -3627,6 +3699,7 @@ const blockData = [
 	
 	{
 		name:"woodenPickaxe",
+		nameMcd:"wooden_pickaxe",
 		Name:"Wooden Pickaxe",
 		item: true,
 		pickaxe: true,
@@ -3637,6 +3710,7 @@ const blockData = [
 	},
 	{
 		name:"stonePickaxe",
+		nameMcd:"stone_pickaxe",
 		Name:"Stone Pickaxe",
 		item: true,
 		pickaxe: true,
@@ -3648,6 +3722,7 @@ const blockData = [
 	},
 	{
 		name:"ironPickaxe",
+		nameMcd:"iron_pickaxe",
 		Name:"Iron Pickaxe",
 		item: true,
 		pickaxe: true,
@@ -3659,6 +3734,7 @@ const blockData = [
 	},
 	{
 		name:"goldenPickaxe",
+		nameMcd:"golden_pickaxe",
 		Name:"Golden Pickaxe",
 		item: true,
 		pickaxe: true,
@@ -3670,6 +3746,7 @@ const blockData = [
 	},
 	{
 		name:"diamondPickaxe",
+		nameMcd:"diamond_pickaxe",
 		Name:"Diamond Pickaxe",
 		item: true,
 		pickaxe: true,
@@ -3682,6 +3759,7 @@ const blockData = [
 	{ name:"flint", Name:"Flint", item:true, category:"items" },
 	{
 		name:"mossBlock",
+		nameMcd:"moss_block",
 		Name: "Moss Block",
 		hardness:0.1,
 		type: "plant2",
@@ -3690,6 +3768,7 @@ const blockData = [
 	},
 	{
 		name:"mossCarpet",
+		nameMcd:"moss_carpet",
 		Name: "Moss Carpet",
 		textures: "mossBlock",
 		hardness:0.1,
@@ -3700,6 +3779,7 @@ const blockData = [
 	},
 	{
 		name: "caveVines",
+		nameMcd:"cave_vines",
 		Name:"Cave Vines",
 		solid: false,
 		transparent: true,
@@ -3717,6 +3797,7 @@ const blockData = [
 	},
 	{
 		name: "caveVinesPlant",
+		nameMcd:"cave_vines_plant",
 		solid: false,
 		transparent: true,
 		shadow: false,
@@ -3733,7 +3814,7 @@ const blockData = [
 		liquidBreakable:"drop"
 	},
 	{
-		name: "caveVinesLit",
+		name: "caveVinesLit",//todo n
 		Name: "Cave Vines With Glow Berries",
 		solid: false,
 		transparent: true,
@@ -3748,7 +3829,9 @@ const blockData = [
 			}
 		},
 		liquidBreakable:"drop",
-		category:"nature"
+		category:"nature",
+		hidden:true,
+		replaceWith: block => blockIds.caveVines
 	},
 	{
 		name: "caveVinesPlantLit",
@@ -3765,11 +3848,14 @@ const blockData = [
 			}
 		},
 		hidden:true,
-		liquidBreakable:"drop"
+		liquidBreakable:"drop",
+		hidden:true,
+		replaceWith: block => blockIds.caveVinesPlant
 	},
 	
 	{
 		name:"sporeBlossom",
+		nameMcd:"spore_blossom",
 		Name:"Spore Blossom",
 		sporeBlossom: true,
 		shadow:false,
@@ -3779,6 +3865,7 @@ const blockData = [
 	},
 	{
 		name: "rootedDirt",
+		nameMcd:"rooted_dirt",
 		Name: "Rooted Dirt",
 		category:"nature",
 		type:"ground",
@@ -3789,6 +3876,7 @@ const blockData = [
 	},
 	{
 		name: "hangingRoots",
+		nameMcd:"hanging_roots",
 		Name: "Hanging Roots",
 		solid: false,
 		transparent: true,
@@ -3813,6 +3901,7 @@ const blockData = [
 	},
 	{
 		name:"floweringAzalea",
+		nameMcd:"flowering_azalea",
 		Name:"Flowering Azalea",
 		textures: ["floweringAzaleaTop","floweringAzaleaSide"],
 		potTex:["pottedFloweringAzaleaBushTop","pottedFloweringAzaleaBushSide"],
@@ -3865,6 +3954,7 @@ const blockData = [
 	},
 	{
 		name: "waterBucket",
+		nameMcd:"water_bucket",
 		Name:"Water Bucket",
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
@@ -3877,6 +3967,7 @@ const blockData = [
 	},
 	{
 		name: "lavaBucket",
+		nameMcd:"lava_bucket",
 		Name:"Lava Bucket",
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
@@ -3889,7 +3980,7 @@ const blockData = [
 	},
 	
 	{
-		name: "spawnCow",
+		name: "cow_spawn_egg",
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
@@ -3906,6 +3997,7 @@ const blockData = [
 	
 	{
 		name:"sugarCane",
+		nameMcd:"sugar_cane",
 		Name:"Sugar Cane",
 		iconTexture: "sugarCaneIcon",
 		flatIcon: true,
@@ -3928,6 +4020,7 @@ const blockData = [
 	
 	{
 		name:"woodenSword",
+		nameMcd:"wooden_sword",
 		Name:"Wooden Swords aren't even sharp!",
 		item: true,
 		sword: true,
@@ -3937,6 +4030,7 @@ const blockData = [
 	},
 	{
 		name:"stoneSword",
+		nameMcd:"stone_sword",
 		Name:"Stone Sword",
 		item: true,
 		sword: true,
@@ -3947,6 +4041,7 @@ const blockData = [
 	},
 	{
 		name:"ironSword",
+		nameMcd:"iron_sword",
 		Name:"Iron Sword",
 		item: true,
 		sword: true,
@@ -3957,6 +4052,7 @@ const blockData = [
 	},
 	{
 		name:"goldenSword",
+		nameMcd:"golden_sword",
 		Name:"Golden Sword",
 		item: true,
 		sword: true,
@@ -3967,6 +4063,7 @@ const blockData = [
 	},
 	{
 		name:"diamondSword",
+		nameMcd:"diamond_sword",
 		Name:"Diamond Sword",
 		item: true,
 		sword: true,
@@ -3976,7 +4073,7 @@ const blockData = [
 		category:"tools"
 	},
 	
-	{ name:"azaleaLeaves",
+	{ name:"azaleaLeaves", nameMcd:"azalea_leaves",
 		Name:"Azalea Leaves",
 		transparent: true,
 		cullFace:0,
@@ -3996,7 +4093,7 @@ const blockData = [
 		grassSound: true,
 		leaves:true
 	},
-	{ name:"floweringAzaleaLeaves",
+	{ name:"floweringAzaleaLeaves", nameMcd:"flowering_azalea_leaves",
 		Name:"Flowering Azalea Leaves",
 		transparent: true,
 		cullFace:0,
@@ -4018,7 +4115,7 @@ const blockData = [
 	},
 	
 	{
-		name: "spawnPig",
+		name: "pig_spawn_egg",
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
@@ -4035,47 +4132,47 @@ const blockData = [
 	
 	{name:"tuff",Name:"Tuff",category:"nature",hardness:1.5},
 	{name:"deepslate", Name:"Deepslate", textures:["deepslateTop","deepslate"],category:"nature",hardness:3,deepslateSound:true, randomRotate:"flip",randomRotateTop:true,randomRotateBottom:true, craftSlabs:true, craftStairs:true},
-	{name:"cobbledDeepslate", Name:"Cobbled Deepslate",deepslateSound:true,category:"nature",hardness:3.5, randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true},
-	{name:"chiseledDeepslate", Name:"Chiseled Deepslate",category:"build",hardness:3.5,deepslateSound:true},
-	{name:"polishedDeepslate",Name:"Polished Deepslate",category:"build",hardness:3.5,deepslateSound:true, craftSlabs:true, craftStairs:true},
-	{name:"deepslateTiles",Name:"Deepslate Tiles",category:"build",hardness:3.5,deepslateSound:true, craftSlabs:true, craftStairs:true},
-	{name:"deepslateBricks",Name:"Deepslate Bricks",category:"build",hardness:3.5,deepslateBricksSound:true, craftSlabs:true, craftStairs:true},
-	{name:"crackedDeepslateTiles",Name:"Cracked Deepslate Tiles",category:"build",hardness:3.5,deepslateSound:true},
-	{name:"crackedDeepslateBricks",Name:"Cracked Deepslate Bricks",category:"build",hardness:3.5,deepslateBricksSound:true},
-	{name:"deepslateCoalOre",Name:"Deepslate Coal Ore",category:"nature",hardness:4.5,deepslateSound:true, drop:"coal", dropAmount:[1,3]},
-	{name:"deepslateIronOre",Name:"Deepslate Iron Ore",category:"nature",hardness:4.5,deepslateSound:true, drop:"rawIron", dropAmount:[1,3]},
-	{name:"deepslateCopperOre",Name:"Deepslate Copper Ore",category:"nature",hardness:4.5,deepslateSound:true, drop:"rawCopper", dropAmount:[2,5]},
-	{name:"deepslateGoldOre",Name:"Deepslate Gold Ore",category:"nature",hardness:4.5,deepslateSound:true, drop:"rawGold", dropAmount:[1,3]},
-	{name:"deepslateDiamondOre",Name:"Deepslate Diamond Ore",category:"nature",hardness:4.5,deepslateSound:true, drop:"diamond", dropAmount:[1,3]},
-	{name:"deepslateRedstoneOre",Name:"Deepslate Redstone Ore",category:"nature",hardness:4.5,deepslateSound:true, drop:"redstone", dropAmount:[6,9]},
-	{name:"deepslateEmeraldOre",Name:"Deepslate Emerald Ore",category:"nature",hardness:4.5,deepslateSound:true, drop:"emerald", dropAmount:[1,3]},
-	{name:"deepslateLapisOre",Name:"Deepslate Lapis Lazuli Ore",category:"nature",hardness:4.5,deepslateSound:true,drop:"lapisLazuli", dropAmount:[1,3]},
+	{name:"cobbledDeepslate", nameMcd:"cobbled_deepslate", Name:"Cobbled Deepslate",deepslateSound:true,category:"nature",hardness:3.5, randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true},
+	{name:"chiseledDeepslate", nameMcd:"chiseled_deepslate", Name:"Chiseled Deepslate",category:"build",hardness:3.5,deepslateSound:true},
+	{name:"polishedDeepslate", nameMcd:"polished_deepslate",Name:"Polished Deepslate",category:"build",hardness:3.5,deepslateSound:true, craftSlabs:true, craftStairs:true},
+	{name:"deepslateTiles", nameMcd:"deepslate_tiles",Name:"Deepslate Tiles",category:"build",hardness:3.5,deepslateSound:true, craftSlabs:true, craftStairs:true},
+	{name:"deepslateBricks", nameMcd:"deepslate_bricks",Name:"Deepslate Bricks",category:"build",hardness:3.5,deepslateBricksSound:true, craftSlabs:true, craftStairs:true},
+	{name:"crackedDeepslateTiles", nameMcd:"cracked_deepslate_tiles",Name:"Cracked Deepslate Tiles",category:"build",hardness:3.5,deepslateSound:true},
+	{name:"crackedDeepslateBricks", nameMcd:"cracked_deepslate_bricks",Name:"Cracked Deepslate Bricks",category:"build",hardness:3.5,deepslateBricksSound:true},
+	{name:"deepslateCoalOre", nameMcd:"deepslate_coal_ore",Name:"Deepslate Coal Ore",category:"nature",hardness:4.5,deepslateSound:true, drop:"coal", dropAmount:[1,3]},
+	{name:"deepslateIronOre", nameMcd:"deepslate_iron_ore",Name:"Deepslate Iron Ore",category:"nature",hardness:4.5,deepslateSound:true, drop:"rawIron", dropAmount:[1,3]},
+	{name:"deepslateCopperOre", nameMcd:"deepslate_copper_ore",Name:"Deepslate Copper Ore",category:"nature",hardness:4.5,deepslateSound:true, drop:"rawCopper", dropAmount:[2,5]},
+	{name:"deepslateGoldOre", nameMcd:"deepslate_gold_ore",Name:"Deepslate Gold Ore",category:"nature",hardness:4.5,deepslateSound:true, drop:"rawGold", dropAmount:[1,3]},
+	{name:"deepslateDiamondOre", nameMcd:"deepslate_diamond_ore",Name:"Deepslate Diamond Ore",category:"nature",hardness:4.5,deepslateSound:true, drop:"diamond", dropAmount:[1,3]},
+	{name:"deepslateRedstoneOre", nameMcd:"deepslate_redstone_ore",Name:"Deepslate Redstone Ore",category:"nature",hardness:4.5,deepslateSound:true, drop:"redstone", dropAmount:[6,9]},
+	{name:"deepslateEmeraldOre", nameMcd:"deepslate_emerald_ore",Name:"Deepslate Emerald Ore",category:"nature",hardness:4.5,deepslateSound:true, drop:"emerald", dropAmount:[1,3]},
+	{name:"deepslateLapisOre", nameMcd:"deepslate_lapis_ore",Name:"Deepslate Lapis Lazuli Ore",category:"nature",hardness:4.5,deepslateSound:true,drop:"lapisLazuli", dropAmount:[1,3]},
 	
-	{name:"amethystBlock",Name:"Amethyst Block", category:"nature",hardness:1.5,amethystSound: true},
-	{name:"amethystShard",Name:"Amythest Shard",category:"items",item:true},
-	{name:"buddingAmethyst",Name:"Budding Amethyst", category:"nature",hardness:1.5,amethystSound: true},
-	{name:"smallAmethystBud",Name:"Small Amethyst Bud",category:"nature",hardness:1.5,sideCross:true,
+	{name:"amethystBlock", nameMcd:"amethyst_block",Name:"Amethyst Block", category:"nature",hardness:1.5,amethystSound: true},
+	{name:"amethystShard", nameMcd:"amethyst_shard",Name:"Amythest Shard",category:"items",item:true},
+	{name:"buddingAmethyst", nameMcd:"budding_amethyst",Name:"Budding Amethyst", category:"nature",hardness:1.5,amethystSound: true},
+	{name:"smallAmethystBud", nameMcd:"small_amethyst_bud",Name:"Small Amethyst Bud",category:"nature",hardness:1.5,sideCross:true,
 		solid: false,
 		transparent: true,
 		shadow: false,
 		amethystClusterSound: true,
 		lightLevel:1
 	},
-	{name:"mediumAmethystBud",Name:"Medium Amethyst Bud",category:"nature",hardness:1.5,sideCross:true,
+	{name:"mediumAmethystBud", nameMcd:"medium_amethyst_bud",Name:"Medium Amethyst Bud",category:"nature",hardness:1.5,sideCross:true,
 		solid: false,
 		transparent: true,
 		shadow: false,
 		amethystClusterSound: true,
 		lightLevel:2
 	},
-	{name:"largeAmethystBud",Name:"Large Amethyst Bud",category:"nature",hardness:1.5,sideCross:true,
+	{name:"largeAmethystBud", nameMcd:"large_amethyst_bud",Name:"Large Amethyst Bud",category:"nature",hardness:1.5,sideCross:true,
 		solid: false,
 		transparent: true,
 		shadow: false,
 		amethystClusterSound: true,
 		lightLevel:4
 	},
-	{name:"amethystCluster",Name:"Amethyst Cluster",category:"nature",hardness:1.5,sideCross:true,
+	{name:"amethystCluster", nameMcd:"amethyst_cluster",Name:"Amethyst Cluster",category:"nature",hardness:1.5,sideCross:true,
 		solid: false,
 		transparent: true,
 		shadow: false,
@@ -4086,6 +4183,7 @@ const blockData = [
 	
 	{
 		name:"snowBlock",
+		nameMcd:"snow_block",
 		Name:"Block of Snow",
 		textures:"snow",
 		hardness: 0.2,
@@ -4117,6 +4215,7 @@ const blockData = [
 	},
 	{
 		name:"powderSnow",
+		nameMcd:"powder_snow",
 		Name:"Powder Snow",
 		solid:false,
 		powder: true,
@@ -4140,6 +4239,7 @@ const blockData = [
 	},
 	{
 		name:"powderSnowBucket",
+		nameMcd:"powder_snow_bucket",
 		Name:"Powder Snow Bucket",
 		item:true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
@@ -4165,6 +4265,7 @@ const blockData = [
 	
 	{
 		name:"boneBlock",
+		nameMcd:"bone_block",
 		Name:"Bone Block",
 		textures:["boneBlockTop","boneBlockSide"],
 		category:"nature",
@@ -4191,6 +4292,7 @@ const blockData = [
 	
 	{
 		name:"glowBerries",
+		nameMcd:"glow_berries",
 		Name:"Glow Berries",
 		edible: true,
 		item:true,
@@ -4203,6 +4305,7 @@ const blockData = [
 	
 	{
 		name:"hayBlock",
+		nameMcd:"hay_block",
 		Name:"Hay Bale",
 		textures:["hayBlockTop","hayBlockSide"],
 		type:"plant2",
@@ -4223,6 +4326,7 @@ const blockData = [
 	
 	{
 		name:"woodenShovel",
+		nameMcd:"wooden_shovel",
 		Name:"Wooden Shovel",
 		item: true,
 		shovel: true,
@@ -4233,6 +4337,7 @@ const blockData = [
 	},
 	{
 		name:"stoneShovel",
+		nameMcd:"stone_shovel",
 		Name:"Stone Shovel",
 		item: true,
 		shovel: true,
@@ -4244,6 +4349,7 @@ const blockData = [
 	},
 	{
 		name:"ironShovel",
+		nameMcd:"iron_shovel",
 		Name:"Iron Shovel",
 		item: true,
 		shovel: true,
@@ -4255,6 +4361,7 @@ const blockData = [
 	},
 	{
 		name:"goldenShovel",
+		nameMcd:"golden_shovel",
 		Name:"Golden Shovel",
 		item: true,
 		shovel: true,
@@ -4266,6 +4373,7 @@ const blockData = [
 	},
 	{
 		name:"diamondShovel",
+		nameMcd:"diamond_shovel",
 		Name:"Diamond Shovel",
 		item: true,
 		shovel: true,
@@ -4278,6 +4386,7 @@ const blockData = [
 	
 	{
 		name:"woodenAxe",
+		nameMcd:"wooden_axe",
 		Name:"Wooden Axe",
 		item: true,
 		axe: true,
@@ -4289,6 +4398,7 @@ const blockData = [
 	},
 	{
 		name:"stoneAxe",
+		nameMcd:"stone_axe",
 		Name:"Stone Axe",
 		item: true,
 		axe: true,
@@ -4301,6 +4411,7 @@ const blockData = [
 	},
 	{
 		name:"ironAxe",
+		nameMcd:"iron_axe",
 		Name:"Iron Axe",
 		item: true,
 		axe: true,
@@ -4313,6 +4424,7 @@ const blockData = [
 	},
 	{
 		name:"goldenAxe",
+		nameMcd:"golden_axe",
 		Name:"Golden Axe",
 		item: true,
 		axe: true,
@@ -4325,6 +4437,7 @@ const blockData = [
 	},
 	{
 		name:"diamondAxe",
+		nameMcd:"diamond_axe",
 		Name:"Diamond Axe",
 		item: true,
 		axe: true,
@@ -4338,6 +4451,7 @@ const blockData = [
 	
 	{
 		name: "strippedOakLog",
+		nameMcd:"stripped_oak_log",
 		Name: "Stripped Oak Log",
 		textures: ["strippedOakLogTop", "strippedOakLog"],
 		hardness:2,
@@ -4357,6 +4471,7 @@ const blockData = [
 	},
 	{
 		name: "strippedBirchLog",
+		nameMcd:"stripped_birch_log",
 		Name: "Stripped Birch Log",
 		textures: ["strippedBirchLogTop", "strippedBirchLog"],
 		hardness:2,
@@ -4376,6 +4491,7 @@ const blockData = [
 	},
 	{
 		name: "strippedAcaciaLog",
+		nameMcd:"stripped_acacia_log",
 		Name: "Stripped Acacia Log",
 		textures: ["strippedAcaciaLogTop", "strippedAcaciaLog"],
 		hardness:2,
@@ -4395,6 +4511,7 @@ const blockData = [
 	},
 	{
 		name: "strippedJungleLog",
+		nameMcd:"stripped_jungle_log",
 		Name: "Stripped Jungle Log",
 		textures: ["strippedJungleLogTop", "strippedJungleLog"],
 		hardness:2,
@@ -4414,6 +4531,7 @@ const blockData = [
 	},
 	{
 		name: "strippedSpruceLog",
+		nameMcd:"stripped_spruce_log",
 		Name: "Stripped Spruce Log",
 		textures: ["strippedSpruceLogTop", "strippedSpruceLog"],
 		hardness:2,
@@ -4433,6 +4551,7 @@ const blockData = [
 	},
 	{
 		name: "strippedDarkOakLog",
+		nameMcd:"stripped_dark_oak_log",
 		Name: "Stripped Dark Oak Log",
 		textures: ["strippedDarkOakLogTop", "strippedDarkOakLog"],
 		hardness:2,
@@ -4460,6 +4579,7 @@ const blockData = [
 	
 	{
 		name:"redMushroom",
+		nameMcd:"red_mushroom",
 		Name:"Red Mushroom",
 		solid: false,
 		transparent: true,
@@ -4479,6 +4599,7 @@ const blockData = [
 	},
 	{
 		name:"brownMushroom",
+		nameMcd:"brown_mushroom",
 		Name:"Brown Mushroom",
 		solid: false,
 		transparent: true,
@@ -4498,6 +4619,7 @@ const blockData = [
 	},
 	{
 		name:"mushroomStem",
+		nameMcd:"mushroom_stem",
 		Name: "Mushroom Stem",
 		mushroomBlock:true,
 		compostChance:0.65,
@@ -4505,6 +4627,7 @@ const blockData = [
 	},
 	{
 		name:"redMushroomBlock",
+		nameMcd:"red_mushroom_block",
 		Name: "Red Mushroom Block",
 		mushroomBlock:true,
 		compostChance:0.85,
@@ -4512,6 +4635,7 @@ const blockData = [
 	},
 	{
 		name:"brownMushroomBlock",
+		nameMcd:"brown_mushroom_block",
 		Name: "Brown Mushroom Block",
 		mushroomBlock:true,
 		compostChance:0.85,
@@ -4538,86 +4662,103 @@ const blockData = [
 	},
 	{
 		name:"redTerracotta",
+		nameMcd:"red_terracotta",
 		Name:"Terracotta with watermelon juice",
 		category:"build"
 	},
 	{
 		name:"blueTerracotta",
+		nameMcd:"blue_terracotta",
 		Name:"Terracotta with blueberry juice",
 		category:"build"
 	},
 	{
 		name:"cyanTerracotta",
+		nameMcd:"cyan_terracotta",
 		Name:"Terracotta with cyan colored fruit punch",
 		category:"build"
 	},
 	{
 		name:"grayTerracotta",
+		nameMcd:"gray_terracotta",
 		Name:"Dusty Terracotta",
 		category:"build"
 	},
 	{
 		name:"limeTerracotta",
+		nameMcd:"lime_terracotta",
 		Name:"Terracotta with leaf juice",
 		category:"build"
 	},
 	{
 		name:"pinkTerracotta",
+		nameMcd:"pink_terracotta",
 		Name:"Terracotta with fruit punch",
 		category:"build"
 	},
 	{
 		name:"blackTerracotta",
+		nameMcd:"black_terracotta",
 		Name:"Terracotta painted black",
 		category:"build"
 	},
 	{
 		name:"brownTerracotta",
+		nameMcd:"brown_terracotta",
 		Name:"Dirty Terracotta",
 		category:"build"
 	},
 	{
 		name:"greenTerracotta",
+		nameMcd:"green_terracotta",
 		Name:"Terracotta with some other leaf juice",
 		category:"build"
 	},
 	{
 		name:"whiteTerracotta",
+		nameMcd:"white_terracotta",
 		Name:"Terracotta with flour",
 		category:"build"
 	},
 	{
 		name:"orangeTerracotta",
+		nameMcd:"orange_terracotta",
 		Name:"Orange Terracotta",
 		category:"build"
 	},
 	{
 		name:"purpleTerracotta",
+		nameMcd:"purple_terracotta",
 		Name:"Purple Terracotta",
 		category:"build"
 	},
 	{
 		name:"yellowTerracotta",
+		nameMcd:"yellow_terracotta",
 		Name:"Terracotta with lemon juice",
 		category:"build"
 	},
 	{
 		name:"magentaTerracotta",
+		nameMcd:"magenta_terracotta",
 		Name:"Magenta Terracotta",
 		category:"build"
 	},
 	{
 		name:"lightBlueTerracotta",
+		nameMcd:"light_blue_terracotta",
 		Name:"Light Blue Terracotta",
 		category:"build"
 	},
 	{
 		name:"lightGrayTerracotta",
+		nameMcd:"light_gray_terracotta",
 		Name:"Light Gray Terracotta",
 		category:"build"
 	},
 	{
 		name:"redGlazedTerracotta",
+		nameMcd:"red_glazed_terracotta",
 		Name:"Watermelon Swirl",
 		category:"build",
 		pistonPush:false,
@@ -4626,6 +4767,7 @@ const blockData = [
 	},
 	{
 		name:"blueGlazedTerracotta",
+		nameMcd:"blue_glazed_terracotta",
 		Name:"Blue Fan",
 		category:"build",
 		pistonPush:false,
@@ -4634,6 +4776,7 @@ const blockData = [
 	},
 	{
 		name:"cyanGlazedTerracotta",
+		nameMcd:"cyan_glazed_terracotta",
 		Name:"Creeper in the skies",
 		category:"build",
 		pistonPush:false,
@@ -4642,6 +4785,7 @@ const blockData = [
 	},
 	{
 		name:"grayGlazedTerracotta",
+		nameMcd:"gray_glazed_terracotta",
 		Name:"Bunch of Dust",
 		category:"build",
 		pistonPush:false,
@@ -4650,6 +4794,7 @@ const blockData = [
 	},
 	{
 		name:"limeGlazedTerracotta",
+		nameMcd:"lime_glazed_terracotta",
 		Name:"Overlapping lilies",
 		category:"build",
 		pistonPush:false,
@@ -4658,6 +4803,7 @@ const blockData = [
 	},
 	{
 		name:"pinkGlazedTerracotta",
+		nameMcd:"pink_glazed_terracotta",
 		Name:"Pink turtle shell",
 		category:"build",
 		pistonPush:false,
@@ -4666,6 +4812,7 @@ const blockData = [
 	},
 	{
 		name:"blackGlazedTerracotta",
+		nameMcd:"black_glazed_terracotta",
 		Name:"Red monster",
 		category:"build",
 		pistonPush:false,
@@ -4674,6 +4821,7 @@ const blockData = [
 	},
 	{
 		name:"brownGlazedTerracotta",
+		nameMcd:"brown_glazed_terracotta",
 		Name:"Mudslide in the ocean",
 		category:"build",
 		pistonPush:false,
@@ -4682,6 +4830,7 @@ const blockData = [
 	},
 	{
 		name:"greenGlazedTerracotta",
+		nameMcd:"green_glazed_terracotta",
 		Name:"Camouflaged monster",
 		category:"build",
 		pistonPush:false,
@@ -4690,6 +4839,7 @@ const blockData = [
 	},
 	{
 		name:"whiteGlazedTerracotta",
+		nameMcd:"white_glazed_terracotta",
 		Name:"Sun & clouds",
 		category:"build",
 		pistonPush:false,
@@ -4698,6 +4848,7 @@ const blockData = [
 	},
 	{
 		name:"orangeGlazedTerracotta",
+		nameMcd:"orange_glazed_terracotta",
 		Name:"Flower Monster",
 		category:"build",
 		pistonPush:false,
@@ -4706,6 +4857,7 @@ const blockData = [
 	},
 	{
 		name:"purpleGlazedTerracotta",
+		nameMcd:"purple_glazed_terracotta",
 		Name:"Sword & pickaxe monster",
 		category:"build",
 		pistonPush:false,
@@ -4714,6 +4866,7 @@ const blockData = [
 	},
 	{
 		name:"yellowGlazedTerracotta",
+		nameMcd:"yellow_glazed_terracotta",
 		Name:"Some kind of bug",
 		category:"build",
 		pistonPush:false,
@@ -4722,6 +4875,7 @@ const blockData = [
 	},
 	{
 		name:"magentaGlazedTerracotta",
+		nameMcd:"magenta_glazed_terracotta",
 		Name:"Arrow",
 		category:"build",
 		pistonPush:false,
@@ -4730,6 +4884,7 @@ const blockData = [
 	},
 	{
 		name:"lightBlueGlazedTerracotta",
+		nameMcd:"light_blue_glazed_terracotta",
 		Name:"Monster sticking out tongue and eyes facing opposite direction",
 		category:"build",
 		pistonPush:false,
@@ -4738,6 +4893,7 @@ const blockData = [
 	},
 	{
 		name:"lightGrayGlazedTerracotta",
+		nameMcd:"light_gray_glazed_terracotta",
 		Name:"Monster with blue eyes and mouth",
 		category:"build",
 		pistonPush:false,
@@ -4747,6 +4903,7 @@ const blockData = [
 	
 	{
 		name:"ancientDebris",
+		nameMcd:"ancient_debris",
 		Name:"Ancient Debris",
 		textures:["ancientDebrisTop","ancientDebrisSide"],
 		hardness:30,
@@ -4756,6 +4913,7 @@ const blockData = [
 	
 	{
 		name:"wheatSeeds",
+		nameMcd:"wheat_seeds",
 		Name:"Seeds",
 		item:true,
 		useAs:function(x,y,z,block,face){
@@ -4768,6 +4926,7 @@ const blockData = [
 	
 	{
 		name:"yellowStainedGlass",
+		nameMcd:"yellow_stained_glass",
 		Name: "Yellow Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4778,6 +4937,7 @@ const blockData = [
 	},
 	{
 		name:"whiteStainedGlass",
+		nameMcd:"white_stained_glass",
 		Name: "White Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4788,6 +4948,7 @@ const blockData = [
 	},
 	{
 		name:"redStainedGlass",
+		nameMcd:"red_stained_glass",
 		Name: "Red Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4798,6 +4959,7 @@ const blockData = [
 	},
 	{
 		name:"purpleStainedGlass",
+		nameMcd:"purple_stained_glass",
 		Name: "Purple Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4808,6 +4970,7 @@ const blockData = [
 	},
 	{
 		name:"pinkStainedGlass",
+		nameMcd:"pink_stained_glass",
 		Name: "Pink Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4818,6 +4981,7 @@ const blockData = [
 	},
 	{
 		name:"orangeStainedGlass",
+		nameMcd:"orange_stained_glass",
 		Name: "Orange Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4828,6 +4992,7 @@ const blockData = [
 	},
 	{
 		name:"magentaStainedGlass",
+		nameMcd:"magenta_stained_glass",
 		Name: "Magenta Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4838,6 +5003,7 @@ const blockData = [
 	},
 	{
 		name:"limeStainedGlass",
+		nameMcd:"lime_stained_glass",
 		Name: "Lime Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4848,6 +5014,7 @@ const blockData = [
 	},
 	{
 		name:"lightGrayStainedGlass",
+		nameMcd:"light_gray_stained_glass",
 		Name: "Light Gray Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4858,6 +5025,7 @@ const blockData = [
 	},
 	{
 		name:"lightBlueStainedGlass",
+		nameMcd:"light_blue_stained_glass",
 		Name: "Light Blue Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4868,6 +5036,7 @@ const blockData = [
 	},
 	{
 		name:"greenStainedGlass",
+		nameMcd:"green_stained_glass",
 		Name: "Green Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4878,6 +5047,7 @@ const blockData = [
 	},
 	{
 		name:"grayStainedGlass",
+		nameMcd:"gray_stained_glass",
 		Name: "Gray Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4888,6 +5058,7 @@ const blockData = [
 	},
 	{
 		name:"cyanStainedGlass",
+		nameMcd:"cyan_stained_glass",
 		Name: "Cyan Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4898,6 +5069,7 @@ const blockData = [
 	},
 	{
 		name:"brownStainedGlass",
+		nameMcd:"brown_stained_glass",
 		Name: "Brown Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4908,6 +5080,7 @@ const blockData = [
 	},
 	{
 		name:"blueStainedGlass",
+		nameMcd:"blue_stained_glass",
 		Name: "Blue Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4918,6 +5091,7 @@ const blockData = [
 	},
 	{
 		name:"blackStainedGlass",
+		nameMcd:"black_stained_glass",
 		Name: "Black Stained Glass",
 		transparent: true,
 		shadow: false,
@@ -4929,6 +5103,7 @@ const blockData = [
 	
 	{
 		name: "yellowStainedGlassPane",
+		nameMcd:"yellow_stained_glass_pane",
 		Name: "Yellow Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -4940,6 +5115,7 @@ const blockData = [
 	},
 	{
 		name: "whiteStainedGlassPane",
+		nameMcd:"white_stained_glass_pane",
 		Name: "White Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -4951,6 +5127,7 @@ const blockData = [
 	},
 	{
 		name: "redStainedGlassPane",
+		nameMcd:"red_stained_glass_pane",
 		Name: "Red Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -4962,6 +5139,7 @@ const blockData = [
 	},
 	{
 		name: "purpleStainedGlassPane",
+		nameMcd:"purple_stained_glass_pane",
 		Name: "Purple Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -4973,6 +5151,7 @@ const blockData = [
 	},
 	{
 		name: "pinkStainedGlassPane",
+		nameMcd:"pink_stained_glass_pane",
 		Name: "Pink Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -4984,6 +5163,7 @@ const blockData = [
 	},
 	{
 		name: "orangeStainedGlassPane",
+		nameMcd:"orange_stained_glass_pane",
 		Name: "Orange Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -4995,6 +5175,7 @@ const blockData = [
 	},
 	{
 		name: "magentaStainedGlassPane",
+		nameMcd:"magenta_stained_glass_pane",
 		Name: "Magenta Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -5006,6 +5187,7 @@ const blockData = [
 	},
 	{
 		name: "limeStainedGlassPane",
+		nameMcd:"lime_stained_glass_pane",
 		Name: "Lime Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -5017,6 +5199,7 @@ const blockData = [
 	},
 	{
 		name: "lightGrayStainedGlassPane",
+		nameMcd:"light_gray_stained_glass_pane",
 		Name: "Light Gray Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -5028,6 +5211,7 @@ const blockData = [
 	},
 	{
 		name: "lightBlueStainedGlassPane",
+		nameMcd:"light_blue_stained_glass_pane",
 		Name: "Light Blue Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -5039,6 +5223,7 @@ const blockData = [
 	},
 	{
 		name: "greenStainedGlassPane",
+		nameMcd:"green_stained_glass_pane",
 		Name: "Green Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -5050,6 +5235,7 @@ const blockData = [
 	},
 	{
 		name: "grayStainedGlassPane",
+		nameMcd:"gray_stained_glass_pane",
 		Name: "Gray Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -5061,6 +5247,7 @@ const blockData = [
 	},
 	{
 		name: "cyanStainedGlassPane",
+		nameMcd:"cyan_stained_glass_pane",
 		Name: "Cyan Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -5072,6 +5259,7 @@ const blockData = [
 	},
 	{
 		name: "brownStainedGlassPane",
+		nameMcd:"brown_stained_glass_pane",
 		Name: "Brown Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -5083,6 +5271,7 @@ const blockData = [
 	},
 	{
 		name: "blueStainedGlassPane",
+		nameMcd:"blue_stained_glass_pane",
 		Name: "Blue Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -5094,6 +5283,7 @@ const blockData = [
 	},
 	{
 		name: "blackStainedGlassPane",
+		nameMcd:"black_stained_glass_pane",
 		Name: "Black Stained Glass Pane",
 		transparent: true,
 		shadow: false,
@@ -5121,6 +5311,7 @@ const blockData = [
 	
 	{
 		name: "strippedCrimsonStem",
+		nameMcd:"stripped_crimson_stem",
 		Name: "Stripped Crimson Stem",
 		textures: ["strippedCrimsonStemTop", "strippedCrimsonStem"],
 		hardness:2,
@@ -5137,6 +5328,7 @@ const blockData = [
 	},
 	{
 		name: "strippedWarpedStem",
+		nameMcd:"stripped_warped_stem",
 		Name: "Stripped Warped Stem",
 		textures: ["strippedWarpedStemTop", "strippedWarpedStem"],
 		hardness:2,
@@ -5154,6 +5346,7 @@ const blockData = [
 	
 	{
 		name: "oakPressurePlate",
+		nameMcd:"oak_pressure_plate",
 		Name: "Oak Pressure Plate",
 		textures: "oakPlanks",
 		pressurePlate: true,
@@ -5163,6 +5356,7 @@ const blockData = [
 	},
 	{
 		name: "birchPressurePlate",
+		nameMcd:"birch_pressure_plate",
 		Name: "Birch Pressure Plate",
 		textures: "birchPlanks",
 		pressurePlate: true,
@@ -5172,6 +5366,7 @@ const blockData = [
 	},
 	{
 		name: "sprucePressurePlate",
+		nameMcd:"spruce_pressure_plate",
 		Name: "Spruce Pressure Plate",
 		textures: "sprucePlanks",
 		pressurePlate: true,
@@ -5181,6 +5376,7 @@ const blockData = [
 	},
 	{
 		name: "junglePressurePlate",
+		nameMcd:"jungle_pressure_plate",
 		Name: "Jungle Pressure Plate",
 		textures: "junglePlanks",
 		pressurePlate: true,
@@ -5190,6 +5386,7 @@ const blockData = [
 	},
 	{
 		name: "acaciaPressurePlate",
+		nameMcd:"acacia_pressure_plate",
 		Name: "Acacia Pressure Plate",
 		textures: "acaciaPlanks",
 		pressurePlate: true,
@@ -5199,6 +5396,7 @@ const blockData = [
 	},
 	{
 		name:"darkOakPressurePlate",
+		nameMcd:"dark_oak_pressure_plate",
 		Name: "Dark Oak Pressure Plate",
 		textures: "darkOakPlanks",
 		pressurePlate: true,
@@ -5208,6 +5406,7 @@ const blockData = [
 	},
 	{
 		name: "warpedPressurePlate",
+		nameMcd:"warped_pressure_plate",
 		Name: "Warped Pressure Plate",
 		textures: "warpedPlanks",
 		pressurePlate: true,
@@ -5217,6 +5416,7 @@ const blockData = [
 	},
 	{
 		name: "crimsonPressurePlate",
+		nameMcd:"crimson_pressure_plate",
 		Name: "Crimson Pressure Plate",
 		textures: "crimsonPlanks",
 		pressurePlate: true,
@@ -5226,6 +5426,7 @@ const blockData = [
 	},
 	{
 		name: "stonePressurePlate",
+		nameMcd:"stone_pressure_plate",
 		Name: "Stone Pressure Plate",
 		textures: "stone",
 		pressurePlate: true,
@@ -5235,6 +5436,7 @@ const blockData = [
 	},
 	{
 		name: "polishedBlackstonePressurePlate",
+		nameMcd:"polished_blackstone_pressure_plate",
 		textures: "polishedBlackstone",
 		pressurePlate: true,
 		type:"stone",
@@ -5243,6 +5445,7 @@ const blockData = [
 	},
 	{
 		name: "lightWeightedPressurePlate",
+		nameMcd:"light_weighted_pressure_plate",
 		textures: "goldBlock",
 		pressurePlate: true,
 		type:"stone",
@@ -5252,6 +5455,7 @@ const blockData = [
 	},
 	{
 		name: "heavyWeightedPressurePlate",
+		nameMcd:"heavy_weighted_pressure_plate",
 		textures: "ironBlock",
 		pressurePlate: true,
 		type:"stone",
@@ -5261,6 +5465,7 @@ const blockData = [
 	},
 	{
 		name:"oakButton",
+		nameMcd:"oak_button",
 		Name: "Oak Button",
 		textures:"oakPlanks",
 		button:true,
@@ -5270,6 +5475,7 @@ const blockData = [
 	},
 	{
 		name:"birchButton",
+		nameMcd:"birch_button",
 		Name: "Birch Button",
 		textures:"birchPlanks",
 		button:true,
@@ -5279,6 +5485,7 @@ const blockData = [
 	},
 	{
 		name:"acaciaButton",
+		nameMcd:"acacia_button",
 		Name: "Acacia Button",
 		textures:"acaciaPlanks",
 		button:true,
@@ -5288,6 +5495,7 @@ const blockData = [
 	},
 	{
 		name:"darkOakButton",
+		nameMcd:"dark_oak_button",
 		Name: "Dark Oak Button",
 		textures:"darkOakPlanks",
 		button:true,
@@ -5297,6 +5505,7 @@ const blockData = [
 	},
 	{
 		name:"jungleButton",
+		nameMcd:"jungle_button",
 		Name: "Jungle Button",
 		textures:"junglePlanks",
 		button:true,
@@ -5306,6 +5515,7 @@ const blockData = [
 	},
 	{
 		name:"spruceButton",
+		nameMcd:"spruce_button",
 		Name: "Spruce Button",
 		textures:"sprucePlanks",
 		button:true,
@@ -5315,6 +5525,7 @@ const blockData = [
 	},
 	{
 		name:"warpedButton",
+		nameMcd:"warped_button",
 		Name: "Warped Button",
 		textures:"warpedPlanks",
 		button:true,
@@ -5324,6 +5535,7 @@ const blockData = [
 	},
 	{
 		name:"crimsonButton",
+		nameMcd:"crimson_button",
 		Name: "Crimson Button",
 		textures:"crimsonPlanks",
 		button:true,
@@ -5333,6 +5545,7 @@ const blockData = [
 	},
 	{
 		name:"polishedBlackstoneButton",
+		nameMcd:"polished_blackstone_button",
 		Name: "Polished Blackstone Button",
 		textures:"polishedBlackstone",
 		button:true,
@@ -5343,23 +5556,27 @@ const blockData = [
 	},
 	{
 		name:"copperBlock",
+		nameMcd:"copper_block",
 		Name:"Block of Copper",
 		category:"build"
 	},
 	
 	{
 		name:"crackedPolishedBlackstoneBricks",
+		nameMcd:"cracked_polished_blackstone_bricks",
 		Name:"Cracked Polished Blackstone Bricks",
 		category:"build"
 	},
 	{
 		name:"crackedStoneBricks",
+		nameMcd:"cracked_stone_bricks",
 		Name:"Cracked Stone Bricks",
 		category:"build"
 	},
 	
 	{
 		name:"woodenHoe",
+		nameMcd:"wooden_hoe",
 		Name:"Wooden Hoe",
 		item: true,
 		hoe: true,
@@ -5371,6 +5588,7 @@ const blockData = [
 	},
 	{
 		name:"stoneHoe",
+		nameMcd:"stone_hoe",
 		Name:"Stone Hoe",
 		item: true,
 		hoe: true,
@@ -5383,6 +5601,7 @@ const blockData = [
 	},
 	{
 		name:"ironHoe",
+		nameMcd:"iron_hoe",
 		Name:"Iron Hoe",
 		item: true,
 		hoe: true,
@@ -5395,6 +5614,7 @@ const blockData = [
 	},
 	{
 		name:"goldenHoe",
+		nameMcd:"golden_hoe",
 		Name:"Golden Hoe",
 		item: true,
 		hoe: true,
@@ -5407,6 +5627,7 @@ const blockData = [
 	},
 	{
 		name:"diamondHoe",
+		nameMcd:"diamond_hoe",
 		Name:"Diamond Hoe",
 		item: true,
 		hoe: true,
@@ -5443,6 +5664,7 @@ const blockData = [
 	
 	{
 		name:"rawIronBlock",
+		nameMcd:"raw_iron_block",
 		Name:"Block of Raw Iron",
 		type:"rock2",
 		hardness:5,
@@ -5450,6 +5672,7 @@ const blockData = [
 	},
 	{
 		name:"rawGoldBlock",
+		nameMcd:"raw_gold_block",
 		Name:"Block of Raw Gold",
 		type:"rock3",
 		hardness:5,
@@ -5457,6 +5680,7 @@ const blockData = [
 	},
 	{
 		name:"rawCopperBlock",
+		nameMcd:"raw_copper_block",
 		Name:"Block of Raw Copper",
 		type:"rock2",
 		hardness:5,
@@ -5465,18 +5689,21 @@ const blockData = [
 	
 	{
 		name:"netheriteScrap",
+		nameMcd:"netherite_scrap",
 		Name:"Netherite Scrap",
 		item:true,
 		category:"items"
 	},
 	{
 		name:"netheriteIngot",
+		nameMcd:"netherite_ingot",
 		Name:"Netherite Ingot",
 		item:true,
 		category:"items"
 	},
 	{
 		name:"netheritePickaxe",
+		nameMcd:"netherite_pickaxe",
 		Name:"Netherite Pickaxe",
 		item: true,
 		pickaxe: true,
@@ -5488,6 +5715,7 @@ const blockData = [
 	},
 	{
 		name:"netheriteSword",
+		nameMcd:"netherite_sword",
 		Name:"Netherite Sword",
 		item: true,
 		sword: true,
@@ -5498,6 +5726,7 @@ const blockData = [
 	},
 	{
 		name:"netheriteAxe",
+		nameMcd:"netherite_axe",
 		Name:"Netherite Axe",
 		item: true,
 		axe: true,
@@ -5510,6 +5739,7 @@ const blockData = [
 	},
 	{
 		name:"netheriteShovel",
+		nameMcd:"netherite_shovel",
 		Name:"Netherite Shovel",
 		item: true,
 		shovel: true,
@@ -5521,6 +5751,7 @@ const blockData = [
 	},
 	{
 		name:"netheriteHoe",
+		nameMcd:"netherite_hoe",
 		Name:"Nethrite Hoe",
 		item: true,
 		hoe: true,
@@ -5534,6 +5765,7 @@ const blockData = [
 	
 	{
 		name:"cartographyTable",
+		nameMcd:"cartography_table",
 		Name:"Cartograpgy Table",
 		textures: ["cartographyTableSide3","cartographyTableTop","cartographyTableSide3","cartographyTableSide1","cartographyTableSide2","cartographyTableSide3"],
 		rotate:true,
@@ -5554,6 +5786,7 @@ const blockData = [
 	
 	{
 		name:"smithingTable",
+		nameMcd:"smithing_table",
 		Name:"Smithing Table",
 		textures:["smithingTableBottom","smithingTableTop","smithingTableFront","smithingTableSide"],
 		category:"items"
@@ -5568,6 +5801,7 @@ const blockData = [
 	},
 	{
 		name:"itemFrame",
+		nameMcd:"item_frame",
 		Name:"Item Frame",
 		transparent:true,
 		itemFrame:true,
@@ -5578,6 +5812,7 @@ const blockData = [
 	
 	{
 		name:"enderPearl",
+		nameMcd:"ender_pearl",
 		Name:"Ender Pearl",
 		item:true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
@@ -5590,12 +5825,14 @@ const blockData = [
 	
 	{
 		name:"ironNugget",
+		nameMcd:"iron_nugget",
 		Name:"Iron Nugget",
 		item:true,
 		category:"items"
 	},
 	{
 		name:"goldNugget",
+		nameMcd:"gold_nugget",
 		Name:"Gold Nugget",
 		item:true,
 		category:"items"
@@ -5610,6 +5847,7 @@ const blockData = [
 	},
 	{
 		name:"carvedPumpkin",
+		nameMcd:"carved_pumpkin",
 		Name:"Carved Pumpkin",
 		textures:["pumpkinSide","pumpkinTop","pumpkinSide","carvedPumpkin","pumpkinSide","pumpkinSide"],
 		rotate:true,
@@ -5618,6 +5856,7 @@ const blockData = [
 	},
 	{
 		name:"jackOLantern",
+		nameMcd:"jack_o_lantern",
 		Name:"Jack o'Lantern",
 		textures:["pumpkinSide","pumpkinTop","pumpkinSide","jackOLantern","pumpkinSide","pumpkinSide"],
 		lightLevel:15,
@@ -5636,6 +5875,7 @@ const blockData = [
 	
 	{
 		name:"pumpkinSeeds",
+		nameMcd:"pumpkin_seeds",
 		Name:"Pumpkin Seeds",
 		item:true,
 		compostChance:0.3,
@@ -5643,6 +5883,7 @@ const blockData = [
 	},
 	{
 		name:"melonSeeds",
+		nameMcd:"melon_seeds",
 		Name:"Watermelon Seeds",
 		item:true,
 		compostChance:0.3,
@@ -5661,6 +5902,7 @@ const blockData = [
 	},
 	{
 		name:"melonSlice",
+		nameMcd:"melon_slice",
 		Name:"Slice of Watermelon",
 		item:true,
 		edible: true,
@@ -5672,6 +5914,7 @@ const blockData = [
 	
 	{
 		name:"redstoneLamp",
+		nameMcd:"redstone_lamp",
 		Name:"Redstone Lamp",
 		//if you chang this, change colored lamps too
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
@@ -5689,6 +5932,7 @@ const blockData = [
 	},
 	{
 		name:"glowstoneDust",
+		nameMcd:"glowstone_dust",
 		Name:"Glowstone Dust",
 		item:true,
 		category:"items"
@@ -5702,7 +5946,8 @@ const blockData = [
 	},
 	
 	{
-		name: "endPortalFrame", 
+		name: "endPortalFrame",
+		nameMcd:"end_portal_frame", 
 		Name:"End Portal Frame",
 		textures: ["endStone", "endPortalFrameTop", "endPortalFrameSide"],
 		category:"items",
@@ -5779,6 +6024,7 @@ const blockData = [
 	},
 	{
 		name: "eyeOfEnder",
+		nameMcd:"enderEye",
 		Name:"Eye of Ender",
 		flatIcon:true,
 		item:true,
@@ -5787,6 +6033,7 @@ const blockData = [
 	},
 	{
 		name:"endStone",
+		nameMcd:"end_stone",
 		Name:"End Stone",
 		category:"nature",
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true
@@ -5794,6 +6041,7 @@ const blockData = [
 	
 	{
 		name:"redSand",
+		nameMcd:"red_sand",
 		Name:"Red Sand",
 		hardness:0.5,
 		fallingDust:[178/255, 94/255, 26/255],
@@ -5809,35 +6057,38 @@ const blockData = [
 	},
 	{
 		name:"redSandstone",
+		nameMcd:"red_sandstone",
 		Name:"Red Sandstone",
 		textures: ["redSandstoneBottom", "redSandstoneTop", "redSandstone"],
 		category:"nature",
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,
 		craftSlabs:true, craftStairs:true
 	},
-	{ name:"chiseledRedSandstone",
+	{ name:"chiseledRedSandstone", nameMcd:"chiseled_red_sandstone",
 		Name:"Chiseled Red Sandstone",
 		textures: ["redSandstoneBottom", "redSandstoneTop","chiseledRedSandstone"],
 		category:"build",
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true
 	},
-	{ name:"cutRedSandstone",
+	{ name:"cutRedSandstone", nameMcd:"cut_red_sandstone",
 		Name:"Cut Red Sandstone",
 		textures: ["redSandstoneBottom", "redSandstoneTop","cutRedSandstone"],
 		category:"build",
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,
 		craftSlabs:true, craftStairs:true
 	},
-	{ name:"smoothRedSandstone", Name:"Smooth Red Sandstone", textures:"redSandstoneTop", category:"nature", randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true },
+	{ name:"smoothRedSandstone", nameMcd:"smooth_red_sandstone", Name:"Smooth Red Sandstone", textures:"redSandstoneTop", category:"nature", randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true },
 	
 	{
 		name:"purpurBlock",
+		nameMcd:"purpur_block",
 		Name:"Purpur Block",
 		category:"build",
 		craftSlabs:true, craftStairs:true
 	},
 	{
 		name:"purpurPillar",
+		nameMcd:"purpur_pillar",
 		Name:"Purpur Pillar",
 		textures:["purpurPillarTop","purpurPillar"],
 		category:"build"
@@ -5857,12 +6108,14 @@ const blockData = [
 	},
 	{
 		name:"prismarineBricks",
+		nameMcd:"prismarine_bricks",
 		Name:"Prismarine Bricks",
 		category:"build",
 		craftSlabs:true, craftStairs:true
 	},
 	{
 		name:"darkPrismarine",
+		nameMcd:"dark_prismarine",
 		Name:"Dark Prismarine",
 		category:"build",
 		craftSlabs:true, craftStairs:true
@@ -5870,12 +6123,14 @@ const blockData = [
 	
 	{
 		name:"prismarineCrystals",
+		nameMcd:"prismarine_crystals",
 		Name:"Prismarine Crystals",
 		category:"items",
 		item:true
 	},
 	{
 		name:"prismarineShard",
+		nameMcd:"prismarine_shard",
 		Name:"Prismarine Shard",
 		item:true,
 		category:"items"
@@ -5883,6 +6138,7 @@ const blockData = [
 	
 	{
 		name:"seaLantern",
+		nameMcd:"sea_lantern",
 		Name:"Sea Lantern",
 		lightLevel:15,
 		hardness:0.3,
@@ -5891,6 +6147,7 @@ const blockData = [
 	
 	{
 		name:"oakLeaves",
+		nameMcd:"oak_leaves",
 		Name: "Oak Leaves",
 		transparent: true,
 		cullFace:0,
@@ -5927,6 +6184,7 @@ const blockData = [
 	
 	{
 		name: "acaciaLeaves",
+		nameMcd:"acacia_leaves",
 		Name:"Acacia Leaves",
 		transparent: true,
 		cullFace:0,
@@ -5959,6 +6217,7 @@ const blockData = [
 	},
 	{
 		name: "birchLeaves",
+		nameMcd:"birch_leaves",
 		Name:"Birch Leaves",
 		transparent: true,
 		cullFace:0,
@@ -5991,6 +6250,7 @@ const blockData = [
 	},
 	{
 		name: "darkOakLeaves",
+		nameMcd:"dark_oak_leaves",
 		Name:"Dark Oak Leaves",
 		transparent: true,
 		cullFace:0,
@@ -6024,6 +6284,7 @@ const blockData = [
 	},
 	{
 		name: "jungleLeaves",
+		nameMcd:"jungle_leaves",
 		Name:"Jungle Leaves",
 		transparent: true,
 		cullFace:0,
@@ -6057,6 +6318,7 @@ const blockData = [
 	},
 	{
 		name: "spruceLeaves",
+		nameMcd:"spruce_leaves",
 		Name:"Spruce Leaves",
 		transparent: true,
 		cullFace:0,
@@ -6117,6 +6379,7 @@ const blockData = [
 	},
 	{
 		name:"mushroomStew",
+		nameMcd:"mushroom_stew",
 		Name:"Mushroom Stew",
 		edible: true,
 		item:true,
@@ -6170,6 +6433,7 @@ const blockData = [
 	},
 	{
 		name: "largeFern",
+		nameMcd:"large_fern",
 		Name:"Large Fern",
 		solid: false,
 		transparent: true,
@@ -6382,6 +6646,7 @@ const blockData = [
 	
 	{
 		name: "endRod",
+		nameMcd:"end_rod",
 		Name:"End Rod",
 		transparent: true,
 		shadow: false,
@@ -6391,6 +6656,7 @@ const blockData = [
 	
 	{
 		name: "oakWood",
+		nameMcd:"oak_wood",
 		Name:"Oak Wood",
 		textures: "logSide",
 		hardness:2,
@@ -6403,6 +6669,7 @@ const blockData = [
 	},
 	{
 		name: "acaciaWood",
+		nameMcd:"acacia_wood",
 		Name:"Acacia Wood",
 		textures: "acaciaLogSide",
 		hardness:2,
@@ -6415,6 +6682,7 @@ const blockData = [
 	},
 	{
 		name: "birchWood",
+		nameMcd:"birch_wood",
 		Name:"Birch Wood",
 		textures: "birchLogSide",
 		hardness:2,
@@ -6427,6 +6695,7 @@ const blockData = [
 	},
 	{
 		name: "darkOakWood",
+		nameMcd:"dark_oak_wood",
 		Name:"Dark Oak Wood",
 		textures: "darkOakLogSide",
 		hardness:2,
@@ -6439,6 +6708,7 @@ const blockData = [
 	},
 	{
 		name: "jungleWood",
+		nameMcd:"jungle_wood",
 		Name:"Jungle Wood",
 		textures: "jungleLogSide",
 		hardness:2,
@@ -6451,6 +6721,7 @@ const blockData = [
 	},
 	{
 		name: "spruceWood",
+		nameMcd:"spruce_wood",
 		Name:"Spruce Wood",
 		textures: "spruceLogSide",
 		hardness:2,
@@ -6463,6 +6734,7 @@ const blockData = [
 	},
 	{
 		name: "crimsonHyphae",
+		nameMcd:"crimson_hyphae",
 		textures: "crimsonStemSide",
 		stemSound: true,
 		hardness:2,
@@ -6471,6 +6743,7 @@ const blockData = [
 	},
 	{
 		name: "warpedHyphae",
+		nameMcd:"warped_hyphae",
 		textures: "warpedStemSide",
 		stemSound: true,
 		hardness:2,
@@ -6480,6 +6753,7 @@ const blockData = [
 	
 	{
 		name: "strippedOakWood",
+		nameMcd:"stripped_oak_wood",
 		Name:"Stripped Oak Wood",
 		textures: "strippedOakLog",
 		hardness:2,
@@ -6491,6 +6765,7 @@ const blockData = [
 	},
 	{
 		name: "strippedAcaciaWood",
+		nameMcd:"stripped_acacia_wood",
 		Name:"Stripped Acacia Wood",
 		textures: "strippedAcaciaLog",
 		hardness:2,
@@ -6502,6 +6777,7 @@ const blockData = [
 	},
 	{
 		name: "strippedBirchWood",
+		nameMcd:"stripped_birch_wood",
 		Name:"Stripped Birch Wood",
 		textures: "strippedBirchLog",
 		hardness:2,
@@ -6513,6 +6789,7 @@ const blockData = [
 	},
 	{
 		name: "strippedDarkOakWood",
+		nameMcd:"stripped_dark_oak_wood",
 		Name:"Stripped Dark Oak Wood",
 		textures: "strippedDarkOakLog",
 		hardness:2,
@@ -6524,6 +6801,7 @@ const blockData = [
 	},
 	{
 		name: "strippedJungleWood",
+		nameMcd:"stripped_jungle_wood",
 		Name:"Stripped Jungle Wood",
 		textures: "strippedJungleLog",
 		hardness:2,
@@ -6535,6 +6813,7 @@ const blockData = [
 	},
 	{
 		name: "strippedSpruceWood",
+		nameMcd:"stripped_spruce_wood",
 		Name:"Stripped Spruce Wood",
 		textures: "strippedSpruceLog",
 		hardness:2,
@@ -6546,6 +6825,7 @@ const blockData = [
 	},
 	{
 		name: "strippedCrimsonHyphae",
+		nameMcd:"stripped_crimson_hyphae",
 		textures: "strippedCrimsonStem",
 		stemSound: true,
 		hardness:2,
@@ -6554,6 +6834,7 @@ const blockData = [
 	},
 	{
 		name: "strippedWarpedHyphae",
+		nameMcd:"stripped_warped_hyphae",
 		textures: "strippedWarpedStem",
 		stemSound: true,
 		hardness:2,
@@ -6563,6 +6844,7 @@ const blockData = [
 	
 	{
 		name:"oakFenceGate",
+		nameMcd:"oak_fence_gate",
 		Name:"Oak Fence Gate",
 		textures:"oakPlanks",
 		fenceGate:true,
@@ -6573,6 +6855,7 @@ const blockData = [
 	},
 	{
 		name:"acaciaFenceGate",
+		nameMcd:"acacia_fence_gate",
 		Name:"Acacia Fence Gate",
 		textures:"acaciaPlanks",
 		fenceGate:true,
@@ -6583,6 +6866,7 @@ const blockData = [
 	},
 	{
 		name:"birchFenceGate",
+		nameMcd:"birch_fence_gate",
 		Name:"Birch Fence Gate",
 		textures:"birchPlanks",
 		fenceGate:true,
@@ -6593,6 +6877,7 @@ const blockData = [
 	},
 	{
 		name:"darkOakFenceGate",
+		nameMcd:"dark_oak_fence_gate",
 		Name:"Dark Oak Fence Gate",
 		textures:"darkOakPlanks",
 		fenceGate:true,
@@ -6603,6 +6888,7 @@ const blockData = [
 	},
 	{
 		name:"jungleFenceGate",
+		nameMcd:"jungle_fence_gate",
 		Name:"Jungle Fence Gate",
 		textures:"junglePlanks",
 		fenceGate:true,
@@ -6613,6 +6899,7 @@ const blockData = [
 	},
 	{
 		name:"spruceFenceGate",
+		nameMcd:"spruce_fence_gate",
 		Name:"Spruce Fence Gate",
 		textures:"sprucePlanks",
 		fenceGate:true,
@@ -6623,6 +6910,7 @@ const blockData = [
 	},
 	{
 		name:"crimsonFenceGate",
+		nameMcd:"crimson_fence_gate",
 		Name:"Crimson Fence Gate",
 		textures:"crimsonPlanks",
 		fenceGate:true,
@@ -6633,6 +6921,7 @@ const blockData = [
 	},
 	{
 		name:"warpedFenceGate",
+		nameMcd:"warped_fence_gate",
 		Name:"Warped Fence Gate",
 		textures:"warpedPlanks",
 		fenceGate:true,
@@ -6662,6 +6951,7 @@ const blockData = [
 	},
 	{ 
 		name: "kelpPlant",
+		nameMcd:"kelp_plant",
 		transparent: true,
 		solid: false,
 		shadow: false,
@@ -6688,6 +6978,7 @@ const blockData = [
 	},
 	{
 		name:"tallSeagrass",
+		nameMcd:"tall_seagrass",
 		Name:"Tall Seagrass",
 		textures:"tallSeagrassConnected",
 		transparent: true,
@@ -6729,6 +7020,7 @@ const blockData = [
 	
 	{
 		name:"endStoneBricks",
+		nameMcd:"end_stone_bricks",
 		Name:"End Stone Bricks",
 		stoneSound:true,
 		category:"build",
@@ -6737,6 +7029,7 @@ const blockData = [
 	
 	{
 		name:"beeNest",
+		nameMcd:"bee_nest",
 		Name:"Bee Nest",
 		textures:["beeNestBottom","beeNestTop","beeNestSide","beeNestFront","beeNestSide","beeNestSide"],
 		texturesHoney:["beeNestBottom","beeNestTop","beeNestSide","beeNestFrontHoney","beeNestSide","beeNestSide"],
@@ -6754,6 +7047,7 @@ const blockData = [
 	
 	{
 		name:"honeyBlock",
+		nameMcd:"honey_block",
 		Name:"Block of Honey",
 		textures:"honeyBlockBottom",
 		transparent:true,
@@ -6770,12 +7064,14 @@ const blockData = [
 	},
 	{
 		name:"honeycombBlock",
+		nameMcd:"honeycomb_block",
 		Name:"Honeycomb Block",
 		category:"build"
 	},
 	
 	{
 		name:"coarseDirt",
+		nameMcd:"coarse_dirt",
 		Name:"Coarse Dirt",
 		hardness:1,
 		type:"ground",
@@ -6787,12 +7083,14 @@ const blockData = [
 	
 	{
 		name:"inkSac",
+		nameMcd:"ink_sac",
 		Name:"Ink Sac",
 		item:true,
 		category:"items"
 	},
 	{
 		name:"glowInkSac",
+		nameMcd:"glow_ink_sac",
 		Name:"Glow Ink Sac",
 		item:true,
 		category:"items"
@@ -6800,6 +7098,7 @@ const blockData = [
 	
 	{
 		name:"glowItemFrame",
+		nameMcd:"glow_item_frame",
 		Name:"Glow Item Frame",
 		transparent:true,
 		itemFrame:true,
@@ -6809,6 +7108,7 @@ const blockData = [
 	},
 	{
 		name:"glowLichen",
+		nameMcd:"glow_lichen",
 		Name:"Glow Lichen",
 		transparent: true,
 		shadow: false,
@@ -6830,42 +7130,49 @@ const blockData = [
 	
 	{
 		name:"cutCopper",
+		nameMcd:"cut_copper",
 		Name:"Cut Copper",
 		category:"build",
 		craftSlabs:true, craftStairs:true
 	},
 	{
 		name:"exposedCopper",
+		nameMcd:"exposed_copper",
 		Name:"Exposed Block of Copper",
 		category:"build",
 		craftSlabs:true, craftStairs:true
 	},
 	{
 		name:"exposedCutCopper",
+		nameMcd:"exposed_cut_copper",
 		Name:"Exposed Cut Copper",
 		category:"build",
 		craftSlabs:true, craftStairs:true
 	},
 	{
 		name:"weatheredCopper",
+		nameMcd:"weathered_copper",
 		Name:"Weathered Block of Copper",
 		category:"build",
 		craftSlabs:true, craftStairs:true
 	},
 	{
 		name:"weatheredCutCopper",
+		nameMcd:"weathered_cut_copper",
 		Name:"Weathered Cut Copper",
 		category:"build",
 		craftSlabs:true, craftStairs:true
 	},
 	{
 		name:"oxidizedCopper",
+		nameMcd:"oxidized_copper",
 		Name:"Oxidized Block of Copper",
 		category:"build",
 		craftSlabs:true, craftStairs:true
 	},
 	{
 		name:"oxidizedCutCopper",
+		nameMcd:"oxidized_cut_copper",
 		Name:"Oxidized Cut Copper",
 		category:"build",
 		craftSlabs:true, craftStairs:true
@@ -6873,6 +7180,7 @@ const blockData = [
 	
 	{
 		name:"quartzBricks",
+		nameMcd:"quartz_bricks",
 		Name:"Quartz Bricks",
 		stoneSound:true,
 		category:"build",
@@ -6905,6 +7213,7 @@ const blockData = [
 	},
 	{
 		name:"soulCampfire",
+		nameMcd:"soul_campfire",
 		Name:"Soul Campfire",
 		flatIcon:true,
 		iconTexture:"soulCampfire",
@@ -6930,6 +7239,7 @@ const blockData = [
 	
 	{
 		name:"bambooShoot",
+		name:"bamboo_sapling",
 		Name:"Bamboo Shoot",
 		textures:"bambooStage0",
 		solid: false,
@@ -6943,6 +7253,7 @@ const blockData = [
 	},
 	{
 		name:"bambooStalk",
+		nameMcd:"bamboo",
 		Name:"Bamboo",
 		iconTexture:"bamboo",
 		flatIcon:true,
@@ -6986,6 +7297,7 @@ const blockData = [
 	},
 	{
 		name:"boneMeal",
+		nameMcd:"bone_meal",
 		Name:"Bone \"Meal\"",
 		item:true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
@@ -7013,6 +7325,7 @@ const blockData = [
 	},
 	{
 		name:"clayBall",
+		nameMcd:"clay_ball",
 		Name:"Clay Ball",
 		item:true,
 		category:"items"
@@ -7040,6 +7353,7 @@ const blockData = [
 	
 	{
 		name:"tintedGlass",
+		nameMcd:"tinted_glass",
 		Name:"Tinted Glass",
 		transparent: true,
 		shadow: true,
@@ -7177,6 +7491,7 @@ const blockData = [
 	},
 	{
 		name:"cherryLog",
+		nameMcd:"cherry_log",
 		Name:"Cherry Log",
 		textures:["cherryLogTop","cherryLog"],
 		woodSound:true,
@@ -7220,6 +7535,7 @@ const blockData = [
 	},
 	{
 		name:"cherryLeaves",
+		nameMcd:"cherry_leaves",
 		Name:"Cherry Leaves",
 		transparent: true,
 		cullFace:0,
@@ -7242,6 +7558,7 @@ const blockData = [
 	},
 	{
 		name:"cherrySapling",
+		nameMcd:"cherry_sapling",
 		Name:"Cherry Sapling",
 		transparent: true,
 		shadow: false,
@@ -7257,6 +7574,7 @@ const blockData = [
 	},
 	{
 		name:"cherryWood",
+		nameMcd:"cherry_wood",
 		Name:"Cherry Wood",
 		textures: "cherryLog",
 		hardness:2,
@@ -7283,6 +7601,7 @@ const blockData = [
 	
 	{
 		name:"redstoneTorch",
+		nameMcd:"redstone_torch",
 		Name:"Redstone Torch",
 		transparent: true,
 		shadow: false,
@@ -8388,6 +8707,7 @@ const blockData = [
 	
 	{
 		name:"smoothQuartz",
+		nameMcd:"smooth_quartz",
 		Name:"Smooth Quartz Block",
 		textures:"quartzBlockBottom",
 		stoneSound:true,
@@ -8800,6 +9120,7 @@ const blockData = [
 	},
 	{
 		name:"redDye",
+		nameMcd:"red_dye",
 		Name:"Red Dye",
 		item:true,
 		dye:"red",
@@ -8807,6 +9128,7 @@ const blockData = [
 	},
 	{
 		name:"lightGrayDye",
+		nameMcd:"light_gray_dye",
 		Name:"Light Gray Dye",
 		item:true,
 		dye:"lightGray",
@@ -8814,6 +9136,7 @@ const blockData = [
 	},
 	{
 		name:"lightBlueDye",
+		nameMcd:"light_blue_dye",
 		Name:"Light Blue Dye",
 		item:true,
 		dye:"lightBlue",
@@ -8821,6 +9144,7 @@ const blockData = [
 	},
 	{
 		name:"magentaDye",
+		nameMcd:"magenta_dye",
 		Name:"Magenta Dye",
 		item:true,
 		dye:"magenta",
@@ -8828,6 +9152,7 @@ const blockData = [
 	},
 	{
 		name:"yellowDye",
+		nameMcd:"yellow_dye",
 		Name:"Yellow Dye",
 		item:true,
 		dye:"yellow",
@@ -8835,6 +9160,7 @@ const blockData = [
 	},
 	{
 		name:"purpleDye",
+		nameMcd:"purple_dye",
 		Name:"Purple Dye",
 		item:true,
 		dye:"purple",
@@ -8842,6 +9168,7 @@ const blockData = [
 	},
 	{
 		name:"orangeDye",
+		nameMcd:"orange_dye",
 		Name:"Orange Dye",
 		item:true,
 		dye:"orange",
@@ -8849,6 +9176,7 @@ const blockData = [
 	},
 	{
 		name:"whiteDye",
+		nameMcd:"white_dye",
 		Name:"White Dye",
 		item:true,
 		dye:"white",
@@ -8856,6 +9184,7 @@ const blockData = [
 	},
 	{
 		name:"greenDye",
+		nameMcd:"green_dye",
 		Name:"Green Dye",
 		item:true,
 		dye:"green",
@@ -8863,6 +9192,7 @@ const blockData = [
 	},
 	{
 		name:"brownDye",
+		nameMcd:"brown_dye",
 		Name:"Brown Dye",
 		item:true,
 		dye:"brown",
@@ -8870,6 +9200,7 @@ const blockData = [
 	},
 	{
 		name:"blackDye",
+		nameMcd:"black_dye",
 		Name:"Black Dye",
 		item:true,
 		dye:"black",
@@ -8877,6 +9208,7 @@ const blockData = [
 	},
 	{
 		name:"pinkDye",
+		nameMcd:"pink_dye",
 		Name:"Pink Dye",
 		item:true,
 		dye:"pink",
@@ -8884,6 +9216,7 @@ const blockData = [
 	},
 	{
 		name:"limeDye",
+		nameMcd:"lime_dye",
 		Name:"Lime Dye",
 		item:true,
 		dye:"lime",
@@ -8891,6 +9224,7 @@ const blockData = [
 	},
 	{
 		name:"grayDye",
+		nameMcd:"gray_dye",
 		Name:"Gray Dye",
 		item:true,
 		dye:"gray",
@@ -8898,6 +9232,7 @@ const blockData = [
 	},
 	{
 		name:"cyanDye",
+		nameMcd:"cyan_dye",
 		Name:"Cyan Dye",
 		item:true,
 		dye:"cyan",
@@ -8905,6 +9240,7 @@ const blockData = [
 	},
 	{
 		name:"blueDye",
+		nameMcd:"blue_dye",
 		Name:"Blue Dye",
 		item:true,
 		dye:"blue",
@@ -8912,6 +9248,7 @@ const blockData = [
 	},
 	{
 		name:"endPortal",
+		nameMcd:"end_portal",
 		flatIcon:true,
 		solid:false,
 		transparent:true,
@@ -8968,6 +9305,7 @@ const blockData = [
 	
 	{
 		name:"pearlescentFroglight",
+		nameMcd:"pearlescent_froglight",
 		Name:"Pearlescent Froglight",
 		textures:["pearlescentFroglightTop","pearlescentFroglightSide"],
 		lightLevel:15,
@@ -8976,6 +9314,7 @@ const blockData = [
 	},
 	{
 		name:"verdantFroglight",
+		nameMcd:"verdant_froglight",
 		Name:"Verdant Froglight",
 		textures:["verdantFroglightTop","verdantFroglightSide"],
 		lightLevel:15,
@@ -8984,6 +9323,7 @@ const blockData = [
 	},
 	{
 		name:"ochreFroglight",
+		nameMcd:"ochre_froglight",
 		Name:"Ochre Froglight",
 		textures:["ochreFroglightTop","ochreFroglightSide"],
 		lightLevel:15,
@@ -8992,6 +9332,7 @@ const blockData = [
 	},
 	{
 		name:"mangroveLeaves",
+		nameMcd:"mangrove_leaves",
 		Name:"Mangrove Leaves",
 		transparent: true,
 		cullFace:0,
@@ -9022,6 +9363,7 @@ const blockData = [
 	},
 	{
 		name:"mangroveLog",
+		nameMcd:"mangrove_log",
 		Name:"Mangrove Log",
 		textures:["mangroveLogTop","mangroveLog"],
 		hardness:2,
@@ -9034,6 +9376,7 @@ const blockData = [
 	},
 	{
 		name:"strippedMangroveLog",
+		nameMcd:"stripped_mangrove_log",
 		Name:"Stripped Mangrove Log",
 		textures:["strippedMangroveLogTop","strippedMangroveLog"],
 		hardness:2,
@@ -9054,9 +9397,10 @@ const blockData = [
 		textures: ["strippedMangroveLog","strippedMangroveLog","strippedMangroveLogTop","strippedMangroveLog"],
 		SW: true, woodSound:true, hidden:true
 	},
-	{name:"mangrovePlanks", Name:"Mangrove Planks", type:"wood", category:"build",hardness:2, woodSound:true, burnChance:0.1, burnTime:40},
+	{name:"mangrovePlanks", nameMcd:"mangrove_planks", Name:"Mangrove Planks", type:"wood", category:"build",hardness:2, woodSound:true, burnChance:0.1, burnTime:40},
 	{ 
 		name: "mangroveDoor",
+		nameMcd:"mangrove_door",
 		Name:"Mangrove Door",
 		transparent: true,
 		shadow: false,
@@ -9069,6 +9413,7 @@ const blockData = [
 	},
 	{ 
 		name: "mangroveTrapdoor",
+		nameMcd:"mangrove_trapdoor",
 		Name:"Mangrove Trapdoor",
 		transparent: true,
 		trapdoor: true,
@@ -9077,6 +9422,7 @@ const blockData = [
 	},
 	{
 		name:"mangroveButton",
+		nameMcd:"mangrove_button",
 		Name: "Mangrove Button",
 		textures:"mangrovePlanks",
 		button:true,
@@ -9086,6 +9432,7 @@ const blockData = [
 	},
 	{
 		name: "mangrovePressurePlate",
+		nameMcd:"mangrove_pressure_plate",
 		Name: "Mangrove Pressure Plate",
 		textures: "mangrovePlanks",
 		pressurePlate: true,
@@ -9095,6 +9442,7 @@ const blockData = [
 	},
 	{
 		name:"mangroveFenceGate",
+		nameMcd:"mangrove_fence_gate",
 		Name:"Mangrove Fence Gate",
 		textures:"mangrovePlanks",
 		fenceGate:true,
@@ -9105,6 +9453,7 @@ const blockData = [
 	},
 	{
 		name:"mangroveRoots",
+		nameMcd:"mangrove_roots",
 		textures:["mangroveRootsTop","mangroveRootsSide"],
 		transparent:true,
 		type:"wood",
@@ -9116,6 +9465,7 @@ const blockData = [
 	},
 	{
 		name:"muddyMangroveRoots",
+		nameMcd:"muddy_mangrove_roots",
 		textures:["muddyMangroveRootsTop","muddyMangroveRootsSide"],
 		type:"wood",
 		hardness:0.7,
@@ -9124,6 +9474,7 @@ const blockData = [
 	},
 	{
 		name: "mangroveWood",
+		nameMcd:"mangrove_wood",
 		Name:"Mangrove Wood",
 		textures: "mangroveLog",
 		hardness:2,
@@ -9136,6 +9487,7 @@ const blockData = [
 	},
 	{
 		name: "strippedMangroveWood",
+		nameMcd:"stripped_mangrove_wood",
 		Name:"Stripped Mangrove Wood",
 		textures: "strippedMangroveLog",
 		hardness:2,
@@ -9157,12 +9509,14 @@ const blockData = [
 	},
 	{
 		name:"mudBricks",
+		nameMcd:"mud_bricks",
 		Name:"Mud Bricks",
 		category:"build",
 		hardness:1.5,
 	},
 	{
 		name:"packedMud",
+		nameMcd:"packed_mud",
 		Name:"Packed Mud",
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true,
 		category:"build",
@@ -9170,6 +9524,7 @@ const blockData = [
 	},
 	{
 		name:"reinforcedDeepslate",
+		nameMcd:"reinforced_deepslate",
 		textures:["reinforcedDeepslateBottom","reinforcedDeepslateTop","reinforcedDeepslateSide"],
 		blastResistance:1200,
 		hardness:55,
@@ -9253,6 +9608,7 @@ const blockData = [
 	
 	{
 		name:"soulFire",
+		nameMcd:"soul_fire",
 		fire:true,
 		damage:2,
 		burnEnt:true,
@@ -9300,6 +9656,7 @@ const blockData = [
 	
 	{
 		name:"sweetBerries",
+		nameMcd:"sweet_berries",
 		Name:"Sweet Berries (they're spiky)",
 		item:true,
 		edible:true,
@@ -9312,6 +9669,7 @@ const blockData = [
 	},
 	{
 		name:"sweetBerryBush",
+		nameMcd:"sweet_berry_bush",
 		textures:"sweetBerryBushStage0",
 		textures1:new Array(6).fill("sweetBerryBushStage1"),
 		textures2:new Array(6).fill("sweetBerryBushStage2"),
@@ -9328,6 +9686,7 @@ const blockData = [
 	},
 	{
 		name:"smallDripleaf",
+		nameMcd:"small_dripleaf",
 		Name:"Small Dripleaf",
 		textures:"smallDripleafStemBottom",
 		shapeName:"smallDripleaf",
@@ -9340,6 +9699,7 @@ const blockData = [
 	},
 	{
 		name:"bigDripleaf",
+		nameMcd:"big_dripleaf",
 		Name:"Big Dripleaf",
 		textures:"bigDripleafStem",
 		shapeName:"bigDripleaf",
@@ -9420,6 +9780,7 @@ const blockData = [
 	
 	{
 		name:"dripstoneBlock",
+		nameMcd:"dripstone_block",
 		Name:"Dripstone Block",
 		type:"rock1",
 		hardness:1.5,
@@ -9429,6 +9790,7 @@ const blockData = [
 	},
 	{
 		name:"pointedDripstone",
+		nameMcd:"pointed_dripstone",
 		Name:"Sharp Dripstone",
 		flatIcon:true,
 		iconTexture:"pointedDripstone",
@@ -9480,6 +9842,7 @@ const blockData = [
 	},
 	{
 		name:"oakSign",
+		nameMcd:"oak_sign",
 		Name:"Oak sign",
 		textures:"oakPlanks",
 		poleTop:"logTop",
@@ -9494,6 +9857,7 @@ const blockData = [
 	},
 	{
 		name:"birchSign",
+		nameMcd:"birch_sign",
 		Name:"Birch Sign",
 		textures:"birchPlanks",
 		poleTop:"birchLogTop",
@@ -9508,6 +9872,7 @@ const blockData = [
 	},
 	{
 		name:"acaciaSign",
+		nameMcd:"acacia_sign",
 		Name:"Acacia Sign",
 		textures:"acaciaPlanks",
 		poleTop:"acaciaLogTop",
@@ -9522,6 +9887,7 @@ const blockData = [
 	},
 	{
 		name:"jungleSign",
+		nameMcd:"jungle_sign",
 		Name:"Jungle Sign",
 		textures:"junglePlanks",
 		poleTop:"jungleLogTop",
@@ -9536,6 +9902,7 @@ const blockData = [
 	},
 	{
 		name:"spruceSign",
+		nameMcd:"spruce_sign",
 		Name:"Spruce Sign",
 		textures:"sprucePlanks",
 		poleTop:"spruceLogTop",
@@ -9550,6 +9917,7 @@ const blockData = [
 	},
 	{
 		name:"darkOakSign",
+		nameMcd:"dark_oak_sign",
 		Name:"Dark Oak Sign",
 		textures:"darkOakPlanks",
 		poleTop:"darkOakLogTop",
@@ -9565,6 +9933,7 @@ const blockData = [
 	},
 	{
 		name:"mangroveSign",
+		nameMcd:"mangrove_sign",
 		Name:"Mangrove Sign",
 		textures:"mangrovePlanks",
 		poleTop:"mangroveLogTop",
@@ -9646,6 +10015,7 @@ const blockData = [
 	},
 	{
 		name:"cocoaBeans",
+		nameMcd:"cocoa_beans",
 		Name:"Cocoa Beans",
 		item:true,
 		useAs:"cocoa",
@@ -9675,6 +10045,7 @@ const blockData = [
 	},
 	{
 		name:"pumpkinPie",
+		nameMcd:"pumpkin_pie",
 		Name:"Pumpkin Pie",
 		item:true,
 		edible: true,
@@ -9685,6 +10056,7 @@ const blockData = [
 	},
 	{
 		name:"rawChicken",
+		nameMcd:"chicken",
 		Name:"Raw Chicken",
 		item:true,
 		edible: true,
@@ -9694,6 +10066,7 @@ const blockData = [
 	},
 	{
 		name:"cookedChicken",
+		nameMcd:"cooked_chicken",
 		Name:"Cooked Chicken",
 		item:true,
 		edible: true,
@@ -9703,6 +10076,7 @@ const blockData = [
 	},
 	{
 		name:"rawCod",
+		nameMcd:"cod",
 		Name:"Raw Cod",
 		item:true,
 		edible: true,
@@ -9712,6 +10086,7 @@ const blockData = [
 	},
 	{
 		name:"cookedCod",
+		nameMcd:"cooked_cod",
 		Name:"Cooked Cod",
 		item:true,
 		edible: true,
@@ -9721,6 +10096,7 @@ const blockData = [
 	},
 	{
 		name:"rawMutton",
+		nameMcd:"mutton",
 		Name:"Raw Mutton",
 		item:true,
 		edible: true,
@@ -9730,6 +10106,7 @@ const blockData = [
 	},
 	{
 		name:"cookedMutton",
+		nameMcd:"cooked_mutton",
 		Name:"Cooked Mutton",
 		item:true,
 		edible: true,
@@ -9739,6 +10116,7 @@ const blockData = [
 	},
 	{
 		name:"rawPorkchop",
+		nameMcd:"porkchop",
 		Name:"Raw Porkchop",
 		item:true,
 		edible: true,
@@ -9748,6 +10126,7 @@ const blockData = [
 	},
 	{
 		name:"cookedPorkchop",
+		nameMcd:"cooked_porkchop",
 		Name:"Cooked Porkchop",
 		item:true,
 		edible: true,
@@ -9757,6 +10136,7 @@ const blockData = [
 	},
 	{
 		name:"rawRabbit",
+		nameMcd:"rabbit",
 		Name:"Raw Rabbit",
 		item:true,
 		edible: true,
@@ -9766,6 +10146,7 @@ const blockData = [
 	},
 	{
 		name:"cookedRabbit",
+		nameMcd:"cooked_rabbit",
 		Name:"Cooked Rabbit",
 		item:true,
 		edible: true,
@@ -9775,6 +10156,7 @@ const blockData = [
 	},
 	{
 		name:"rawSalmon",
+		nameMcd:"salmon",
 		Name:"Raw Salmon",
 		item:true,
 		edible: true,
@@ -9784,6 +10166,7 @@ const blockData = [
 	},
 	{
 		name:"cookedSalmon",
+		nameMcd:"cooked_salmon",
 		Name:"Cooked Salmon",
 		item:true,
 		edible: true,
@@ -9793,6 +10176,7 @@ const blockData = [
 	},
 	{
 		name:"tropicalFish",
+		nameMcd:"tropical_fish",
 		Name:"Tropical Fish",
 		item:true,
 		edible: true,
@@ -9812,6 +10196,7 @@ const blockData = [
 	},
 	{
 		name:"beetrootSoup",
+		nameMcd:"beetroot_soup",
 		Name:"Beetroot Soup",
 		item:true,
 		edible: true,
@@ -9836,6 +10221,7 @@ const blockData = [
 	},
 	{
 		name:"goldenCarrot",
+		nameMcd:"golden_carrot",
 		Name:"Golden Carrot",
 		item:true,
 		edible: true,
@@ -9845,6 +10231,7 @@ const blockData = [
 	},
 	{
 		name:"rabbitStew",
+		nameMcd:"rabbit_stew",
 		Name:"Rabbit Stew",
 		item:true,
 		edible: true,
@@ -9854,6 +10241,7 @@ const blockData = [
 	},
 	{
 		name:"goldenApple",
+		nameMcd:"golden_apple",
 		Name:"Golden Apple",
 		item:true,
 		edible: true,
@@ -9864,6 +10252,7 @@ const blockData = [
 	},
 	{
 		name:"rawBeef",
+		nameMcd:"beef",
 		Name:"Raw Beef",
 		item:true,
 		edible: true,
@@ -9873,6 +10262,7 @@ const blockData = [
 	},
 	{
 		name:"cookedBeef",
+		nameMcd:"cooked_beef",
 		Name:"stake cooked befe",
 		item:true,
 		edible: true,
@@ -9899,6 +10289,7 @@ const blockData = [
 	},
 	{
 		name:"bakedPotato",
+		nameMcd:"baked_potato",
 		Name:"Baked Potato",
 		item:true,
 		edible: true,
@@ -9915,12 +10306,14 @@ const blockData = [
 	},
 	{
 		name:"milkBucket",
+		nameMcd:"milk_bucket",
 		Name:"Milk Bucket",
 		item:true,
 		category:"items"
 	},
 	{
 		name:"beetrootSeeds",
+		nameMcd:"beetroot_seeds",
 		Name:"Beetroot Seeds",
 		item:true,
 		useAs:function(x,y,z,block,face){
@@ -10018,6 +10411,7 @@ const blockData = [
 	
 	{
 		name:"lightGrayBed",
+		nameMcd:"light_gray_bed",
 		Name:"Light Gray Bed",
 		textures: "lightGrayBed",
 		iconTexture: "lightGrayBedIcon",
@@ -10029,6 +10423,7 @@ const blockData = [
 	},
 	{
 		name:"lightBlueBed",
+		nameMcd:"light_blue_bed",
 		Name:"Light Blue Bed",
 		textures: "lightBlueBed",
 		iconTexture: "lightBlueBedIcon",
@@ -10040,6 +10435,7 @@ const blockData = [
 	},
 	{
 		name:"magentaBed",
+		nameMcd:"magenta_bed",
 		Name:"Magenta Bed",
 		textures: "magentaBed",
 		iconTexture: "magentaBedIcon",
@@ -10051,6 +10447,7 @@ const blockData = [
 	},
 	{
 		name:"yellowBed",
+		nameMcd:"yellow_bed",
 		Name:"Yellow Bed",
 		textures: "yellowBed",
 		iconTexture: "yellowBedIcon",
@@ -10062,6 +10459,7 @@ const blockData = [
 	},
 	{
 		name:"purpleBed",
+		nameMcd:"purple_bed",
 		Name:"Purple Bed",
 		textures: "purpleBed",
 		iconTexture: "purpleBedIcon",
@@ -10073,6 +10471,7 @@ const blockData = [
 	},
 	{
 		name:"orangeBed",
+		nameMcd:"orange_bed",
 		Name:"Orange Bed",
 		textures: "orangeBed",
 		iconTexture: "orangeBedIcon",
@@ -10084,6 +10483,7 @@ const blockData = [
 	},
 	{
 		name:"whiteBed",
+		nameMcd:"white_bed",
 		Name:"White Bed",
 		textures: "whiteBed",
 		iconTexture: "whiteBedIcon",
@@ -10095,6 +10495,7 @@ const blockData = [
 	},
 	{
 		name:"greenBed",
+		nameMcd:"green_bed",
 		Name:"Green Bed",
 		textures: "greenBed",
 		iconTexture: "greenBedIcon",
@@ -10106,6 +10507,7 @@ const blockData = [
 	},
 	{
 		name:"brownBed",
+		nameMcd:"brown_bed",
 		Name:"Brown Bed",
 		textures: "brownBed",
 		iconTexture: "brownBedIcon",
@@ -10117,6 +10519,7 @@ const blockData = [
 	},
 	{
 		name:"blackBed",
+		nameMcd:"black_bed",
 		Name:"Black Bed",
 		textures: "blackBed",
 		iconTexture: "blackBedIcon",
@@ -10128,6 +10531,7 @@ const blockData = [
 	},
 	{
 		name:"pinkBed",
+		nameMcd:"pink_bed",
 		Name:"Pink Bed",
 		textures: "pinkBed",
 		iconTexture: "pinkBedIcon",
@@ -10139,6 +10543,7 @@ const blockData = [
 	},
 	{
 		name:"limeBed",
+		nameMcd:"lime_bed",
 		Name:"Lime Bed",
 		textures: "limeBed",
 		iconTexture: "limeBedIcon",
@@ -10150,6 +10555,7 @@ const blockData = [
 	},
 	{
 		name:"grayBed",
+		nameMcd:"gray_bed",
 		Name:"Gray Bed",
 		textures: "grayBed",
 		iconTexture: "grayBedIcon",
@@ -10161,6 +10567,7 @@ const blockData = [
 	},
 	{
 		name:"cyanBed",
+		nameMcd:"cyan_bed",
 		Name:"Cyan Bed",
 		textures: "cyanBed",
 		iconTexture: "cyanBedIcon",
@@ -10172,6 +10579,7 @@ const blockData = [
 	},
 	{
 		name:"blueBed",
+		nameMcd:"blue_bed",
 		Name:"Blue Bed",
 		textures: "blueBed",
 		iconTexture: "blueBedIcon",
@@ -10206,6 +10614,7 @@ const blockData = [
 	},
 	{
 		name:"glisteringMelonSlice",
+		nameMcd:"glistering_melon_slice",
 		Name:"Slice of Watermelon With Unedible Gold",
 		item:true,
 		category:"items"
@@ -10232,6 +10641,7 @@ const blockData = [
 	},
 	{
 		name:"crimsonSign",
+		nameMcd:"crimson_sign",
 		Name:"Crimson Sign",
 		textures:"crimsonPlanks",
 		poleTop:"crimsonStemTop",
@@ -10246,6 +10656,7 @@ const blockData = [
 	},
 	{
 		name:"warpedSign",
+		nameMcd:"warped_sign",
 		Name:"Warped Sign",
 		textures:"warpedPlanks",
 		poleTop:"warpedStemTop",
@@ -11021,7 +11432,7 @@ const blockData = [
 		category:"items"
 	},
 	{
-		name: "spawnCreeper",
+		name: "creeper_spawn_egg",
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
@@ -11042,11 +11453,12 @@ const blockData = [
 	},
 	{
 		name:"rottenFlesh",
+		nameMcd:"rotten_flesh",
 		Name:"Rotten Flesh",
 		item:true
 	},
 	{
-		name: "spawnSheep",
+		name: "sheep_spawn_egg",
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
@@ -11061,7 +11473,7 @@ const blockData = [
 		category:"items"
 	},
 	{
-		name: "spawnChicken",
+		name: "chicken_spawn_egg",
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
@@ -11081,7 +11493,7 @@ const blockData = [
 		item:true
 	},
 	{
-		name: "spawnZombie",
+		name: "zombie_spawn_egg",
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
@@ -11096,7 +11508,7 @@ const blockData = [
 		category:"items"
 	},
 	{
-		name: "spawnSkeleton",
+		name: "skeleton_spawn_egg",
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
@@ -11156,6 +11568,7 @@ const blockData = [
 	},
 	{
 		name:"daylightDetector",
+		nameMcd:"daylight_detector",
 		Name:"Daylight detector",
 		textures:["daylightDetectorSide","daylightDetectorTop","daylightDetectorSide"],
 		invertedTextures:fillTextureArray(["daylightDetectorSide","daylightDetectorInvertedTop","daylightDetectorSide"]),
@@ -11198,6 +11611,7 @@ const blockData = [
 	},
 	{
 		name:"commandBlock",
+		nameMcd:"command_block",
 		Name:"Command Block",
 		textures:["commandBlockBack",'commandBlockFront','commandBlockSide'],
 		errorTextures:fillTextureArray(["commandBlockBackError",'commandBlockFrontError','commandBlockSideError']),
@@ -11269,11 +11683,12 @@ const blockData = [
 	},
 	{
 		name:"spiderEye",
+		nameMcd:"spider_eye",
 		item:true,
 		category:"items"
 	},
 	{
-		name: "spawnSpider",
+		name: "spider_spawn_egg",
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
@@ -11288,7 +11703,7 @@ const blockData = [
 		category:"items"
 	},
 	{
-		name: "spawnCaveSpider",
+		name: "cave_spider_spawn_egg",
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
@@ -11303,7 +11718,7 @@ const blockData = [
 		category:"items"
 	},
 	{
-		name: "spawnWolf",
+		name: "wolf_spawn_egg",
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
@@ -11319,6 +11734,7 @@ const blockData = [
 	},
 	{
 		name:"nameTag",
+		nameMcd:"name_tag",
 		Name:"Name Tag",
 		item:true,
 		onserverentityuse:function(ent,holding){
@@ -11331,16 +11747,18 @@ const blockData = [
 	},
 	{
 		name:"blazeRod",
+		nameMcd:"blaze_rod",
 		Name:"Blaze Rod",
 		item:true
 	},
 	{
 		name:"blazePowder",
+		nameMcd:"blaze_powder",
 		Name:"Blaze Powder",
 		item:true
 	},
 	{
-		name: "spawnBlaze",
+		name: "blaze_spawn_egg",
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
@@ -11356,10 +11774,11 @@ const blockData = [
 	},
 	{
 		name:"fireCharge",
+		nameMcd:"fire_charge",
 		item:true
 	},
 	{
-		name: "spawnEnderDragon",
+		name: "ender_dragon_spawn_egg",
 		item: true,
 		/*serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
@@ -11375,6 +11794,7 @@ const blockData = [
 	},
 	{
 		name:"debugStick",
+		nameMcd:"debug_stick",
 		item:true,
 		hidden:true,
 		serveronuse: function(x,y,z, block,world,face,item,p,blockMode){
@@ -11466,7 +11886,7 @@ const blockData = [
 	{ name: "silverBlock", Name:"Block of Silver", hardness:5, type:"metal2",category:"build", stoneSound:true},
 	{ name: "limestone", Name:"Limestone", type:"rock1",category:"nature", hardness:1.25, blastResistance:0.8, stoneSound:true, randomRotate:"flip",randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true},
 	{
-		name: "spawnEnderman",
+		name: "enderman_spawn_egg",
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
@@ -11482,6 +11902,7 @@ const blockData = [
 	},
 	{
 		name:"bambooBlock",
+		nameMcd:"bamboo_block",
 		Name:"Block of Bamboo",
 		textures:["bambooBlockTop","bambooBlock"],
 		hardness:2,
@@ -11499,6 +11920,7 @@ const blockData = [
 	},
 	{
 		name:"strippedBambooBlock",
+		nameMcd:"stripped_bamboo_block",
 		Name:"Stripped Block of Bamboo",
 		textures:["strippedBambooBlockTop","strippedBambooBlock"],
 		hardness:2,
@@ -11514,10 +11936,11 @@ const blockData = [
 		textures: ["strippedBambooBlock","strippedBambooBlock","strippedBambooBlockTop","strippedBambooBlock"],
 		SW: true, hidden:true
 	},
-	{ name: "bambooPlanks", Name:"Bamboo Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40},
-	{ name: "bambooMosaic", Name:"Bamboo Mosaic", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40},
+	{ name: "bambooPlanks", nameMcd:"bamboo_planks", Name:"Bamboo Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40},
+	{ name: "bambooMosaic", nameMcd:"bamboo_mosaic", Name:"Bamboo Mosaic", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40},
 	{
 		name:"bambooButton",
+		nameMcd:"bamboo_button",
 		Name: "Bamboo Button",
 		textures:"bambooPlanks",
 		button:true,
@@ -11527,6 +11950,7 @@ const blockData = [
 	},
 	{ 
 		name: "bambooDoor",
+		nameMcd:"bamboo_door",
 		Name:"Bamboo Door",
 		transparent: true,
 		shadow: false,
@@ -11539,6 +11963,7 @@ const blockData = [
 	},
 	{
 		name:"bambooFenceGate",
+		nameMcd:"bamboo_fence_gate",
 		Name:"Bamboo Fence Gate",
 		textures:"bambooPlanks",
 		fenceGate:true,
@@ -11549,6 +11974,7 @@ const blockData = [
 	},
 	{
 		name: "bambooPressurePlate",
+		nameMcd:"bamboo_pressure_plate",
 		Name: "Bamboo Pressure Plate",
 		textures: "bambooPlanks",
 		pressurePlate: true,
@@ -11558,6 +11984,7 @@ const blockData = [
 	},
 	{
 		name:"bambooSign",
+		nameMcd:"bamboo_sign",
 		Name:"Bamboo sign",
 		textures:"bambooPlanks",
 		poleTop:"bambooBlockTop",
@@ -11572,6 +11999,7 @@ const blockData = [
 	},
 	{ 
 		name: "bambooTrapdoor",
+		nameMcd:"bamboo_trapdoor",
 		Name:"Bamboo Trapdoor",
 		transparent: true,
 		trapdoor: true,
@@ -11580,6 +12008,7 @@ const blockData = [
 	},
 	{
 		name:"strippedCherryLog",
+		nameMcd:"stripped_cherry_log",
 		Name:"Stripped Cherry Log",
 		textures:["strippedCherryLogTop","strippedCherryLog"],
 		woodSound:true,
@@ -11594,9 +12023,10 @@ const blockData = [
 		textures: ["strippedCherryLog","strippedCherryLog","strippedCherryLogTop","strippedCherryLog"],
 		SW: true, hidden:true
 	},
-	{ name: "cherryPlanks", Name:"Cherry Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40},
+	{ name: "cherryPlanks", nameMcd:"cherry_planks", Name:"Cherry Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40},
 	{
 		name:"cherryButton",
+		nameMcd:"cherry_button",
 		Name: "Cherry Button",
 		textures:"cherryPlanks",
 		button:true,
@@ -11606,6 +12036,7 @@ const blockData = [
 	},
 	{ 
 		name: "cherryDoor",
+		nameMcd:"cherry_door",
 		Name:"Cherry Door",
 		transparent: true,
 		shadow: false,
@@ -11618,6 +12049,7 @@ const blockData = [
 	},
 	{
 		name:"cherryFenceGate",
+		nameMcd:"cherry_fence_gate",
 		Name:"Cherry Fence Gate",
 		textures:"cherryPlanks",
 		fenceGate:true,
@@ -11628,6 +12060,7 @@ const blockData = [
 	},
 	{
 		name: "cherryPressurePlate",
+		nameMcd:"cherry_pressure_plate",
 		Name: "Cherry Pressure Plate",
 		textures: "cherryPlanks",
 		pressurePlate: true,
@@ -11637,6 +12070,7 @@ const blockData = [
 	},
 	{
 		name:"cherrySign",
+		nameMcd:"cherry_sign",
 		Name:"Cherry sign",
 		textures:"cherryPlanks",
 		poleTop:"cherryLogTop",
@@ -11651,6 +12085,7 @@ const blockData = [
 	},
 	{ 
 		name: "cherryTrapdoor",
+		nameMcd:"cherry_trapdoor",
 		Name:"Cherry Trapdoor",
 		transparent: true,
 		trapdoor: true,
@@ -11679,6 +12114,7 @@ const blockData = [
 	},
 	{
 		name: "suspicousSand",
+		nameMcd:"suspicious_sand",
 		Name:"Suspicois Sand",
 		textures:"suspiciousSand0",
 		hardness:0.25, blastResistance:0.5,
@@ -11692,6 +12128,7 @@ const blockData = [
 	},
 	{
 		name: "suspicousGravel",
+		nameMcd:"suspicious_gravel",
 		Name:"Suspicous Gravel",
 		textures:"suspiciousGravel0",
 		hardness:0.25, blastResistance:0.5,
@@ -11705,6 +12142,7 @@ const blockData = [
 	},
 	{
 		name:"pitcherPlant",
+		nameMcd:"pitcher_plant",
 		Name:"Pitcher Plant",
 		shapeName:"pitcherPlant",
 		flatIcon:true,
@@ -11717,6 +12155,7 @@ const blockData = [
 	},
 	{
 		name:"pitcherPod",
+		nameMcd:"pitcher_pod",
 		Name:"Pitcher Pod",
 		item:true,
 		useAs:function(x,y,z,block,face){
@@ -11727,6 +12166,7 @@ const blockData = [
 	},
 	{
 		name:"pitcherCrop",
+		nameMcd:"pitcher_crop",
 		textures:"pitcherCropSide",
 		textures1:new Array(6).fill("pitcherCropBottomStage1"),
 		textures2:new Array(6).fill("pitcherCropBottomStage2"),
@@ -11757,6 +12197,7 @@ const blockData = [
 	},
 	{
 		name:"torchflowerSeeds",
+		nameMcd:"torchflower_seeds",
 		Name:"Torchflower seeds",
 		item:true,
 		useAs:function(x,y,z,block,face){
@@ -11806,6 +12247,7 @@ const blockData = [
 	},
 	{
 		name:"strippedCherryWood",
+		nameMcd:"stripped_cherry_wood",
 		Name:"Stripped Cherry Wood",
 		textures: "strippedCherryLog",
 		hardness:2,
@@ -11818,6 +12260,7 @@ const blockData = [
 	},
 	{
 		name:"pinkPetals",
+		nameMcd:"pink_petals",
 		Name:"Pink flowers",
 		textures:["pinkPetalsFlower","pinkPetalsStem"],
 		iconTexture:"pinkPetals",
@@ -11854,6 +12297,7 @@ const blockData = [
 	},
 	{
 		name:"lilyPad",
+		nameMcd:"lily_pad",
 		Name:"Lily Pad",
 		transparent:true,
 		shadow:false,
@@ -11938,36 +12382,42 @@ const blockData = [
 	},
 	{
 		name:"brainCoralBlock",
+		nameMcd:"brain_coral_block",
 		Name:"Sponge-like Coral Block",
 		category:"nature",
 		coralBlock:true
 	},
 	{
 		name:"bubbleCoralBlock",
+		nameMcd:"bubble_coral_block",
 		Name:"Bubble Coral Block",
 		category:"nature",
 		coralBlock:true
 	},
 	{
 		name:"fireCoralBlock",
+		nameMcd:"fire_coral_block",
 		Name:"Fire Coral Block",
 		category:"nature",
 		coralBlock:true
 	},
 	{
 		name:"hornCoralBlock",
+		nameMcd:"horn_coral_block",
 		Name:"Horn Coral Block",
 		category:"nature",
 		coralBlock:true
 	},
 	{
 		name:"tubeCoralBlock",
+		nameMcd:"tube_coral_block",
 		Name:"Tube Coral Block",
 		category:"nature",
 		coralBlock:true
 	},
 	{
 		name:"brainCoral",
+		nameMcd:"brain_coral",
 		Name:"Sponge-like Coral (standing)",
 		category:"nature",
 		coral:true,
@@ -11979,6 +12429,7 @@ const blockData = [
 	},
 	{
 		name:"bubbleCoral",
+		nameMcd:"bubble_coral",
 		Name:"Bubble Coral (standing)",
 		category:"nature",
 		coral:true,
@@ -11990,6 +12441,7 @@ const blockData = [
 	},
 	{
 		name:"fireCoral",
+		nameMcd:"fire_coral",
 		Name:"Fire Coral (standing)",
 		category:"nature",
 		coral:true,
@@ -12001,6 +12453,7 @@ const blockData = [
 	},
 	{
 		name:"hornCoral",
+		nameMcd:"horn_coral",
 		Name:"Horn Coral (standing)",
 		category:"nature",
 		coral:true,
@@ -12012,6 +12465,7 @@ const blockData = [
 	},
 	{
 		name:"tubeCoral",
+		nameMcd:"tube_coral",
 		Name:"Tube Coral (standing)",
 		category:"nature",
 		coral:true,
@@ -12023,6 +12477,7 @@ const blockData = [
 	},
 	{
 		name:"brainCoralFan",
+		nameMcd:"brain_coral_fan",
 		Name:"Sponge-like Coral Fan",
 		category:"nature",
 		coralFan:true,
@@ -12033,6 +12488,7 @@ const blockData = [
 	},
 	{
 		name:"bubbleCoralFan",
+		nameMcd:"bubble_coral_fan",
 		Name:"Bubble Coral Fan",
 		category:"nature",
 		coralFan:true,
@@ -12043,6 +12499,7 @@ const blockData = [
 	},
 	{
 		name:"fireCoralFan",
+		nameMcd:"fire_coral_fan",
 		Name:"Fire Coral Fan",
 		category:"nature",
 		coralFan:true,
@@ -12053,6 +12510,7 @@ const blockData = [
 	},
 	{
 		name:"hornCoralFan",
+		nameMcd:"horn_coral_fan",
 		Name:"Horn Coral Fan",
 		category:"nature",
 		coralFan:true,
@@ -12063,6 +12521,7 @@ const blockData = [
 	},
 	{
 		name:"tubeCoralFan",
+		nameMcd:"tube_coral_fan",
 		Name:"Tube Coral Fan",
 		category:"nature",
 		coralFan:true,
@@ -12100,6 +12559,7 @@ const blockData = [
 	},
 	{
 		name:"poweredRail",
+		nameMcd:"powered_rail",
 		Name:"Powered Rail",
 		transparent:true,
 		shadow:false,
@@ -12169,6 +12629,7 @@ const blockData = [
 	},
 	{
 		name:"dirtPath",
+		nameMcd:"dirt_path",
 		_1PixLower:true,
 		textures: ["dirt","dirtPathTop","dirtPathSide","dirtPathSide","dirtPathSide","dirtPathSide"],
 		solid: true,
@@ -12394,7 +12855,7 @@ function initBlockData(){
 			breakTypes[b][i] = blockIds[breakTypes[b][i]]
 		}
 	}
-	dataLoad.loadNamespace(dataLoad.data.assets, "min"+"ecr"+"aft", {blockData,shapes,textures,blockIds,compareArr})
+	dataLoad.loadNamespace(dataLoad.data.assets, "min"+"ecr"+"aft", {blockData,BLOCK_COUNT,shapes,textures,blockIds,compareArr})
 
 	//fill the crafts that have less than 9 items. Ex: "thing" => "thing,air,air..."
 	let arr, arr2 = new Array(9)
@@ -18326,7 +18787,7 @@ function initShapes() {//todo n: only do required shapes
 }
 function initBlockDataShapes(){
 	blockData[0].shape = shapes.none
-	return//todo n
+	//todo n
 	function makeBlock(tex,shape,Block, base, Name){
 		Block.textures = tex
 		Block.shape = shape
@@ -19060,10 +19521,35 @@ function initBlockDataShapes(){
 	
 	for (let i = 0; i < BLOCK_COUNT; i++) {
 		let baseBlock = blockData[i]
+		if(baseBlock.shape) continue//todo n
 		if(baseBlock.item && baseBlock.name !== "bow"){
 			if(baseBlock.spyglass) baseBlock.shape = shapes.spyglass
 			else baseBlock.shape = shapes.item
 			continue
+		}
+
+		if ( !("textures" in baseBlock) ) {
+			baseBlock.textures = new Array(6).fill(baseBlock.name);
+		} else if (typeof baseBlock.textures === "string") {
+			baseBlock.textures = new Array(6).fill(baseBlock.textures);
+		} else {
+			const { textures } = baseBlock;
+
+			if (textures.length === 3) {
+				textures[3] = textures[2];
+				textures[4] = textures[2];
+				textures[5] = textures[2];
+			} else if (textures.length === 2) {
+				// Top and bottom are the first texture, sides are the second.
+				textures[2] = textures[1];
+				textures[3] = textures[2];
+				textures[4] = textures[2];
+				textures[5] = textures[2];
+				textures[1] = textures[0];
+			}else if(textures.length === 4){
+        textures[4] = textures[5] = textures[3]
+        textures[3] = textures[2]
+      }
 		}
 		
 		let drop = baseBlock.drop || i

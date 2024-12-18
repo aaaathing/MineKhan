@@ -2267,7 +2267,7 @@ strings are texture data
 functions set the texture dynamically
 arrays are texture that will be connected, useful for shapes used for different blocks that all have multiple textures
 */
-	let textures = {
+	let textures = {//todo n: move to world.js
 		grassTop: n => {
       const pix = getPixels("0g0glþÇHĪcWJPWðoH÷-ZéŞZĆåZóEYĎĂHÞĮWĊóWĂÖYí8WĒĒYĖĢZâľHĞłHĢŒYåŎYĚĲWĦŢZ0QMùČ(eOĉA1k5ęÙ#ÀwùÔÁaOĄR1Ăňĥùäĵ1$Ċ#82t5ÃsĮ-ŕôĿðüŋÈŋð0boeİsëFùx(ŌoŇňw4wĳÞl33ðĩEĕRŇľMĭăÆxIĬ3wR%ĔoXĹ{õÇëðSícùĩs4rðĈc[0òFüďIoâIß-÷ÃySÐÌyĕìÀĂĝtĖÂîFĜ2E0+Āřoeá$2BaĸIō");
       //const c = grassColor
@@ -9001,10 +9001,9 @@ otherwise
       -0.5412658773652741,0.3125,0.8125,0.1875,1, 0,0,0.1875,0.1875,1, 0,-0.625,0.1875,0.8125,1, -0.5412658773652741,-0.3125,0.8125,0.8125,1, -0.8660254037844386,0.5,-1,0,1, 0,0,-2,0,1, 0,-1,-2,1,1, -0.8660254037844386,-0.5,-1,1,1, -0.649519052838329,-0.3125,-0.25,0.1875,1, 0,-0.6875,-1,0.1875,1, 0,-0.875,-1,0.375,1, -0.649519052838329,-0.5,-0.25,0.375,1,
     ]
 	}
-	function genIcons() {
+	function genIcons() {//todo n: update icons
 		blockIcons = [null]
 		blockIcons.lengths = []
-		return//todo n
 		let texOrder = [ 1, 4, 3 ]
 		let shadows = [ 1, 0.4, 0.7 ]
 		let scale = 1
@@ -9033,13 +9032,8 @@ otherwise
       if(block.icon){
         block = blockData[blockIds[block.icon]]
       }
-      if(block.iconTexture){
-        prevTexture = block.textures
-        var t = block.iconTexture
-        block.textures = new Array(6).fill(t)
-      }
       if(block.flatIcon){
-				let tex = textureCoords[textureMap[block.textures[2]]]
+				let tex = textureCoords[textureMap["error"]]//todo n
 				data.push(-scale, scale, 1/6, tex[2], tex[3], 1)
 				data.push(scale, scale, 1/6, tex[0], tex[1], 1)
 				data.push(scale, -scale, 1/6, tex[6], tex[7], 1)
@@ -9059,144 +9053,14 @@ otherwise
         blockIcons.lengths[i | TORCH] = 6
         blockIcons[i | PANE] = buffer
         blockIcons.lengths[i | PANE] = 6
-      }else if(block.carpet){
-        v = carpetIconVerts
-        for (let j = 11; j >= 0; j--) {
-          let tex = textureCoords[textureMap[block.textures[texOrder[floor(j / 4)]]]]
-          data.push(-v[j * 3 + 0] * scale)
-          data.push(v[j * 3 + 1] * scale)
-          data.push(0.1666666)
-          data.push(tex[(j * 2 + 0) % 8])
-          data.push(tex[(j * 2 + 1) % 8])
-          data.push(shadows[floor(j / 4)])
-        }
-        buffer = gl.createBuffer()
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
-        blockIcons[i] = buffer
-        blockIcons.lengths[i] = 6 * 3
-      }else if(block.trapdoor){
-        v = trapdoorIconVerts
-        for (let j = 11; j >= 0; j--) {
-          let tex = textureCoords[textureMap[block.textures[texOrder[floor(j / 4)]]]]
-          data.push(-v[j * 3 + 0] * scale)
-          data.push(v[j * 3 + 1] * scale)
-          data.push(0.1666666)
-          data.push(tex[(j * 2 + 0) % 8])
-          data.push(tex[(j * 2 + 1) % 8])
-          data.push(shadows[floor(j / 4)])
-        }
-        buffer = gl.createBuffer()
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
-        blockIcons[i] = buffer
-        blockIcons.lengths[i] = 6 * 3
-        blockIcons[i | TRAPDOOR] = buffer
-        blockIcons.lengths[i | TRAPDOOR] = 6 * 3
-        blockIcons[i | TRAPDOOROPEN] = buffer
-        blockIcons.lengths[i | TRAPDOOROPEN] = 6 * 3
-      }else if(block.layers){
-        v = snowIconVerts
-        for (let j = 11; j >= 0; j--) {
-          let tex = textureCoords[textureMap[block.textures[texOrder[floor(j / 4)]]]]
-          data.push(-v[j * 3 + 0] * scale)
-          data.push(v[j * 3 + 1] * scale)
-          data.push(0.1666666)
-          data.push(tex[(j * 2 + 0) % 8])
-          data.push(tex[(j * 2 + 1) % 8])
-          data.push(shadows[floor(j / 4)])
-        }
-        buffer = gl.createBuffer()
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
-        blockIcons[i] = buffer
-        blockIcons.lengths[i] = 6 * 3
-        blockIcons[i | LAYER1] = buffer
-        blockIcons.lengths[i | LAYER1] = 6 * 3
-        blockIcons[i | LAYER2] = buffer
-        blockIcons.lengths[i | LAYER2] = 6 * 3
-        blockIcons[i | LAYER3] = buffer
-        blockIcons.lengths[i | LAYER3] = 6 * 3
-        blockIcons[i | LAYER4] = buffer
-        blockIcons.lengths[i | LAYER4] = 6 * 3
-        blockIcons[i | LAYER5] = buffer
-        blockIcons.lengths[i | LAYER5] = 6 * 3
-        blockIcons[i | LAYER6] = buffer
-        blockIcons.lengths[i | LAYER6] = 6 * 3
-        blockIcons[i | LAYER7] = buffer
-        blockIcons.lengths[i | LAYER7] = 6 * 3
-        blockIcons[i | LAYER8] = buffer
-        blockIcons.lengths[i | LAYER8] = 6 * 3
-      }else if(block.cactus){
-        v = cactusIconVerts
-        for (let j = 11; j >= 0; j--) {
-          let tex = textureCoords[textureMap[block.textures[texOrder[floor(j / 4)]]]]
-          data.push(-v[j * 3 + 0] * scale)
-          data.push(v[j * 3 + 1] * scale)
-          data.push(0.1666666)
-          data.push(tex[(j * 2 + 0) % 8])
-          data.push(tex[(j * 2 + 1) % 8])
-          data.push(shadows[floor(j / 4)])
-        }
-        buffer = gl.createBuffer()
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
-        blockIcons[i] = buffer
-        blockIcons.lengths[i] = 6 * 3
-        blockIcons[i | CACTUS] = buffer
-        blockIcons.lengths[i | CACTUS] = 6 * 3
-      }/*else if(block.beacon){
-        v = beaconIconVerts
-        for (let j = v.length/5-1; j >= 0; j--) {
-          let num = floor(j / (v.length/15))
-          let tex = textureCoords[textureMap[block.textures[texOrder[num]]]]
-          let tx = tex[0]
-          let ty = tex[1]
-          data.push(-v[j * 5 + 0] * scale)
-          data.push(v[j * 5 + 1] * scale)
-          data.push(0.1666666)
-          data.push(tx + v[j * 5 + 2] / 16)
-          data.push(ty + v[j * 5 + 3] / 16)
-          data.push(shadows[num])
-        }
-        buffer = gl.createBuffer()
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
-        blockIcons[i] = buffer
-        blockIcons.lengths[i] = 6 * 3
-        blockIcons[i | CACTUS] = buffer
-        blockIcons.lengths[i | CACTUS] = 6 * 3
-      }*/else if(block.name === "bow"){
-        v = squareVerts
-				let buffers = []
-				for(let i of block.pullTextures){
-					data = []
-					let tex = textureCoords[textureMap[i]]
-					data.push(-scale, scale, 1/6, tex[2], tex[3], 1)
-					data.push(scale, scale, 1/6, tex[0], tex[1], 1)
-					data.push(scale, -scale, 1/6, tex[6], tex[7], 1)
-					data.push(-scale, -scale, 1/6, tex[4], tex[5], 1)
-					buffer = gl.createBuffer()
-					gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-					gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
-					buffers.push(buffer)
-				}
-				blockIcons[i] = buffers[0]
-				blockIcons.lengths[i] = 6
-				blockIcons[i|SLAB] = buffers[1]
-				blockIcons.lengths[i|SLAB] = 6
-				blockIcons[i|STAIR] = buffers[2]
-				blockIcons.lengths[i|STAIR] = 6
-				blockIcons[i|CROSS] = buffers[3]
-				blockIcons.lengths[i|CROSS] = 6
-				continue
-			}else{
+      }else{//todo n: bow icon
         for (let j = 11; j >= 0; j--) {
           data.push(-hexagonVerts[j * 3 + 0] * scale)
           data.push(hexagonVerts[j * 3 + 1] * scale)
           data.push(0.1666666)
-          data.push(textureCoords[textureMap[block.textures[texOrder[floor(j / 4)]]]][(j * 2 + 0) % 8])
-          data.push(textureCoords[textureMap[block.textures[texOrder[floor(j / 4)]]]][(j * 2 + 1) % 8])
+					let t=block.shape.texVerts[texOrder[floor(j / 4)]]?.[0]?.texture||"error"
+          data.push(textureCoords[textureMap[t]][(j * 2 + 0) % 8])
+          data.push(textureCoords[textureMap[t]][(j * 2 + 1) % 8])
           data.push(shadows[floor(j / 4)])
         }
         buffer = gl.createBuffer()
@@ -9204,122 +9068,6 @@ otherwise
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
         blockIcons[i] = buffer
         blockIcons.lengths[i] = 6 * 3
-      }
-
-			data = []
-			for (let j = 11; j >= 0; j--) {
-				let tex = textureCoords[textureMap[block.textures[texOrder[floor(j / 4)]]]]
-
-				data.push(-slabIconVerts[j * 3 + 0] * scale)
-				data.push(slabIconVerts[j * 3 + 1] * scale)
-				data.push(0.1666666)
-				data.push(tex[(j * 2 + 0) % 8])
-				data.push(tex[(j * 2 + 1) % 8])
-				data.push(shadows[floor(j / 4)])
-			}
-			buffer = gl.createBuffer()
-			gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
-			blockIcons[i | SLAB] = buffer
-			blockIcons.lengths[i | SLAB] = 6 * 3
-
-      data = []
-			for (let j = 11; j >= 0; j--) {
-				let tex = textureCoords[textureMap[block.textures[texOrder[floor(j / 4)]]]]
-
-				data.push(-verticalSlabIconVerts[j * 3 + 0] * scale)
-				data.push(verticalSlabIconVerts[j * 3 + 1] * scale)
-				data.push(0.1666666)
-				data.push(tex[(j * 2 + 0) % 8])
-				data.push(tex[(j * 2 + 1) % 8])
-				data.push(shadows[floor(j / 4)])
-			}
-			buffer = gl.createBuffer()
-			gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
-			blockIcons[i | VERTICALSLAB] = buffer
-			blockIcons.lengths[i | VERTICALSLAB] = 6 * 3
-
-			data = []
-			v = stairIconVerts
-			for (let j = 23; j >= 0; j--) {
-				let num = floor(j / 8)
-				let tex = textureCoords[textureMap[block.textures[texOrder[num]]]]
-				let tx = tex[0]
-				let ty = tex[1]
-				let tw = tex[2] - tx
-				let th = tex[5] - ty
-				data.push(-v[j * 5 + 0] * scale)
-				data.push(v[j * 5 + 1] * scale)
-				data.push(0.1666666)
-				data.push(tx + v[j * 5 + 2] * tw)
-				data.push(ty + v[j * 5 + 3] * th)
-				data.push(shadows[num])
-			}
-			buffer = gl.createBuffer()
-			gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
-			blockIcons[i | STAIR] = buffer
-			blockIcons.lengths[i | STAIR] = 6 * 6
-      
-      data = []
-      v = fenceIconVerts
-			for (let j = 11; j >= 0; j--) {
-        let num = floor(j / 4)
-				let tex = textureCoords[textureMap[block.textures[texOrder[num]]]]
-				let tx = tex[0]
-				let ty = tex[1]
-				let tw = tex[2] - tx
-				let th = tex[5] - ty
-				data.push(-v[j * 5 + 0] * scale)
-				data.push(v[j * 5 + 1] * scale)
-				data.push(0.1666666)
-				data.push(tx + v[j * 5 + 2] * tw)
-				data.push(ty + v[j * 5 + 3] * th)
-				data.push(shadows[num])
-			}
-			buffer = gl.createBuffer()
-			gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
-			blockIcons[i | FENCE] = buffer
-			blockIcons.lengths[i | FENCE] = 6 * 3
-			
-			data = []
-			for (let j = 11; j >= 0; j--) {
-				let tex = textureCoords[textureMap[block.textures[texOrder[Math.floor(j / 4)]]]]
-
-				data.push(-wallPostIconVerts[j * 3 + 0] * scale)
-				data.push(wallPostIconVerts[j * 3 + 1] * scale)
-				data.push(0.1666666)
-				data.push(tex[(j * 2 + 0) % 8])
-				data.push(tex[(j * 2 + 1) % 8])
-				data.push(shadows[Math.floor(j / 16)])
-			}
-			buffer = gl.createBuffer()
-			gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
-			blockIcons[i | WALLPOST] = buffer
-			blockIcons.lengths[i | WALLPOST] = 6 * 1
-			
-			data = []
-			for (let j = 11; j >= 0; j--) {
-				let tex = textureCoords[textureMap[block.textures[texOrder[Math.floor(j / 4)]]]]
-
-				data.push(-buttonIconVerts[j * 3 + 0] * scale)
-				data.push(buttonIconVerts[j * 3 + 1] * scale)
-				data.push(0.1666666)
-				data.push(tex[(j * 2 + 0) % 8])
-				data.push(tex[(j * 2 + 1) % 8])
-				data.push(shadows[Math.floor(j / 16)])
-			}
-			buffer = gl.createBuffer()
-			gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
-			blockIcons[i | BUTTON] = buffer
-			blockIcons.lengths[i | BUTTON] = 6 * 1
-      
-      if(block.iconTexture){
-        block.textures = prevTexture
       }
 		}
 	}
@@ -13046,286 +12794,196 @@ r 11 y  n  n  n
 		ret[offset+1] = ((a.length>3 ? a[colorOffset+1] : a[1])+(b.length>3 ? b[colorOffset+1] : b[1])+(c.length>3 ? c[colorOffset+1] : c[1])+(d.length>3 ? d[colorOffset+1] : d[1]))*0.25
 		ret[offset+2] = ((a.length>3 ? a[colorOffset+2] : a[2])+(b.length>3 ? b[colorOffset+2] : b[2])+(c.length>3 ? c[colorOffset+2] : c[2])+(d.length>3 ? d[colorOffset+2] : d[2]))*0.25
 	}
-  let getTint = {
+  let getTint = {//todo n: entity tint
+		none: function(ret){
+			ret[0] = ret[3] = ret[6] = ret[9] = 1
+			ret[1] = ret[4] = ret[7] = ret[10] = 1
+			ret[2] = ret[5] = ret[8] = ret[11] = 1
+			return ret
+		},
     bottom: function(x,y,z,ret,dimension,block,tags){
-      let side = "tagTintPropertyBottom"
-      let tint = null
-      if(block[side]){
-        let name = block[side]
-        let tag = getTag(tags,name,block)
-        tint = block.tint[tag || 0]
-      }
-      if(block.biomeTintBottom){
-        let b = world.getBiome(x,y,z,dimension)
-        let t = block.tint
-        tint = t[b] || t.default
-				if(performFast){
-					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
-					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
-					ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
-					return ret
-				}
-        const north = t[world.getBiome(x,y,z-1,dimension)] || t.default
-        const south = t[world.getBiome(x,y,z+1,dimension)] || t.default
-        const east = t[world.getBiome(x-1,y,z,dimension)] || t.default
-        const west = t[world.getBiome(x+1,y,z,dimension)] || t.default
-        const northeast = t[world.getBiome(x-1,y,z-1,dimension)] || t.default
-        const southeast = t[world.getBiome(x-1,y,z+1,dimension)] || t.default
-        const northwest = t[world.getBiome(x+1,y,z-1,dimension)] || t.default
-        const southwest = t[world.getBiome(x+1,y,z+1,dimension)] || t.default
-				let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
-				if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
-					noisene = (tintNoise.noise2d((x-0.5)*0.1,(z-0.5)*0.1)>0)*3
-					noisese = (tintNoise.noise2d((x-0.5)*0.1,(z+0.5)*0.1)>0)*3
-					noisenw = (tintNoise.noise2d((x+0.5)*0.1,(z-0.5)*0.1)>0)*3
-					noisesw = (tintNoise.noise2d((x+0.5)*0.1,(z+0.5)*0.1)>0)*3
-				}
-				averageTint(ret,0,tint,north,east,northeast,noisene)
-				averageTint(ret,3,tint,north,west,northwest,noisenw)
-				averageTint(ret,6,tint,south,west,southwest,noisesw)
-				averageTint(ret,9,tint,south,east,southeast,noisese)
-        return ret
-      }
-      if(tint){
-        ret[0] = ret[3] = ret[6] = ret[9] = tint[0] || 0
-        ret[1] = ret[4] = ret[7] = ret[10] = tint[1] || 0
-        ret[2] = ret[5] = ret[8] = ret[11] = tint[2] || 0
-      }else{
-        ret[0] = ret[1] = ret[2] = ret[3] = ret[4] = ret[5] = ret[6] = ret[7] = ret[8] = ret[9] = ret[10] = ret[11] = 1
-      }
-      return ret
+			let tint
+			let b = world.getBiome(x,y,z,dimension)
+			let t = block.tint
+			tint = t[b] || t.default
+			if(performFast){
+				ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
+				ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
+				ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
+				return ret
+			}
+			const north = t[world.getBiome(x,y,z-1,dimension)] || t.default
+			const south = t[world.getBiome(x,y,z+1,dimension)] || t.default
+			const east = t[world.getBiome(x-1,y,z,dimension)] || t.default
+			const west = t[world.getBiome(x+1,y,z,dimension)] || t.default
+			const northeast = t[world.getBiome(x-1,y,z-1,dimension)] || t.default
+			const southeast = t[world.getBiome(x-1,y,z+1,dimension)] || t.default
+			const northwest = t[world.getBiome(x+1,y,z-1,dimension)] || t.default
+			const southwest = t[world.getBiome(x+1,y,z+1,dimension)] || t.default
+			let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
+			if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
+				noisene = (tintNoise.noise2d((x-0.5)*0.1,(z-0.5)*0.1)>0)*3
+				noisese = (tintNoise.noise2d((x-0.5)*0.1,(z+0.5)*0.1)>0)*3
+				noisenw = (tintNoise.noise2d((x+0.5)*0.1,(z-0.5)*0.1)>0)*3
+				noisesw = (tintNoise.noise2d((x+0.5)*0.1,(z+0.5)*0.1)>0)*3
+			}
+			averageTint(ret,0,tint,north,east,northeast,noisene)
+			averageTint(ret,3,tint,north,west,northwest,noisenw)
+			averageTint(ret,6,tint,south,west,southwest,noisesw)
+			averageTint(ret,9,tint,south,east,southeast,noisese)
+			return ret
     },
     top: function(x,y,z,ret,dimension,block,tags){
-      let side = "tagTintPropertyTop"
-      let tint = null
-      if(block[side]){
-        let name = block[side]
-        let tag = getTag(tags,name,block)
-        tint = block.tint[tag || 0]
-      }
-      if(block.biomeTintTop){
-        let b = world.getBiome(x,y,z,dimension)
-        let t = block.tint
-        tint = t[b] || t.default
-				if(performFast){
-					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
-					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
-					ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
-					return ret
-				}
-        const north = t[world.getBiome(x,y,z-1,dimension)] || t.default
-        const south = t[world.getBiome(x,y,z+1,dimension)] || t.default
-        const east = t[world.getBiome(x-1,y,z,dimension)] || t.default
-        const west = t[world.getBiome(x+1,y,z,dimension)] || t.default
-        const northeast = t[world.getBiome(x-1,y,z-1,dimension)] || t.default
-        const southeast = t[world.getBiome(x-1,y,z+1,dimension)] || t.default
-        const northwest = t[world.getBiome(x+1,y,z-1,dimension)] || t.default
-        const southwest = t[world.getBiome(x+1,y,z+1,dimension)] || t.default
-				let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
-				if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
-					noisene = (tintNoise.noise2d((x-0.5)*0.1,(z-0.5)*0.1)>0)*3
-					noisese = (tintNoise.noise2d((x-0.5)*0.1,(z+0.5)*0.1)>0)*3
-					noisenw = (tintNoise.noise2d((x+0.5)*0.1,(z-0.5)*0.1)>0)*3
-					noisesw = (tintNoise.noise2d((x+0.5)*0.1,(z+0.5)*0.1)>0)*3
-				}
-				averageTint(ret,0,tint,south,east,southeast,noisese)
-				averageTint(ret,3,tint,south,west,southwest,noisesw)
-				averageTint(ret,6,tint,north,west,northwest,noisenw)
-				averageTint(ret,9,tint,north,east,northeast,noisene)
-        return ret
-      }
-      if(tint){
-        ret[0] = ret[3] = ret[6] = ret[9] = tint[0] || 0
-        ret[1] = ret[4] = ret[7] = ret[10] = tint[1] || 0
-        ret[2] = ret[5] = ret[8] = ret[11] = tint[2] || 0
-      }else{
-        ret[0] = ret[1] = ret[2] = ret[3] = ret[4] = ret[5] = ret[6] = ret[7] = ret[8] = ret[9] = ret[10] = ret[11] = 1
-      }
-      return ret
+			let tint
+			let b = world.getBiome(x,y,z,dimension)
+			let t = block.tint
+			tint = t[b] || t.default
+			if(performFast){
+				ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
+				ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
+				ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
+				return ret
+			}
+			const north = t[world.getBiome(x,y,z-1,dimension)] || t.default
+			const south = t[world.getBiome(x,y,z+1,dimension)] || t.default
+			const east = t[world.getBiome(x-1,y,z,dimension)] || t.default
+			const west = t[world.getBiome(x+1,y,z,dimension)] || t.default
+			const northeast = t[world.getBiome(x-1,y,z-1,dimension)] || t.default
+			const southeast = t[world.getBiome(x-1,y,z+1,dimension)] || t.default
+			const northwest = t[world.getBiome(x+1,y,z-1,dimension)] || t.default
+			const southwest = t[world.getBiome(x+1,y,z+1,dimension)] || t.default
+			let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
+			if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
+				noisene = (tintNoise.noise2d((x-0.5)*0.1,(z-0.5)*0.1)>0)*3
+				noisese = (tintNoise.noise2d((x-0.5)*0.1,(z+0.5)*0.1)>0)*3
+				noisenw = (tintNoise.noise2d((x+0.5)*0.1,(z-0.5)*0.1)>0)*3
+				noisesw = (tintNoise.noise2d((x+0.5)*0.1,(z+0.5)*0.1)>0)*3
+			}
+			averageTint(ret,0,tint,south,east,southeast,noisese)
+			averageTint(ret,3,tint,south,west,southwest,noisesw)
+			averageTint(ret,6,tint,north,west,northwest,noisenw)
+			averageTint(ret,9,tint,north,east,northeast,noisene)
+			return ret
     },
     north: function(x,y,z,ret,dimension,block,tags){
-      let side = "tagTintPropertyNorth"
-      let tint = null
-      if(block[side]){
-        let name = block[side]
-        let tag = getTag(tags,name,block)
-        tint = block.tint[tag || 0]
-      }
-      if(block.biomeTintNorth){
-        let b = world.getBiome(x,y,z,dimension)
-        let t = block.tint
-        tint = t[b] || t.default
-				if(performFast){
-					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
-					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
-					ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
-					return ret
-				}
-        const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
-        const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
-        const east = t[world.getBiome(x+1,y,z,dimension)] || t.default
-        const west = t[world.getBiome(x-1,y,z,dimension)] || t.default
-        const northeast = t[world.getBiome(x+1,y+1,z,dimension)] || t.default
-        const southeast = t[world.getBiome(x+1,y-1,z,dimension)] || t.default
-        const northwest = t[world.getBiome(x-1,y+1,z,dimension)] || t.default
-        const southwest = t[world.getBiome(x-1,y-1,z,dimension)] || t.default
-				let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
-				if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
-					noisene = noisese = (tintNoise.noise2d((x+0.5)*0.1,z*0.1)>0)*3
-					noisenw = noisesw = (tintNoise.noise2d((x-0.5)*0.1,z*0.1)>0)*3
-				}
-				averageTint(ret,0,tint,north,east,northeast,noisene)
-				averageTint(ret,3,tint,north,west,northwest,noisenw)
-				averageTint(ret,6,tint,south,west,southwest,noisesw)
-				averageTint(ret,9,tint,south,east,southeast,noisese)
-        return ret
-      }
-      if(tint){
-        ret[0] = ret[3] = ret[6] = ret[9] = tint[0] || 0
-        ret[1] = ret[4] = ret[7] = ret[10] = tint[1] || 0
-        ret[2] = ret[5] = ret[8] = ret[11] = tint[2] || 0
-      }else{
-        ret[0] = ret[1] = ret[2] = ret[3] = ret[4] = ret[5] = ret[6] = ret[7] = ret[8] = ret[9] = ret[10] = ret[11] = 1
-      }
-      return ret
+			let tint
+			let b = world.getBiome(x,y,z,dimension)
+			let t = block.tint
+			tint = t[b] || t.default
+			if(performFast){
+				ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
+				ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
+				ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
+				return ret
+			}
+			const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
+			const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
+			const east = t[world.getBiome(x+1,y,z,dimension)] || t.default
+			const west = t[world.getBiome(x-1,y,z,dimension)] || t.default
+			const northeast = t[world.getBiome(x+1,y+1,z,dimension)] || t.default
+			const southeast = t[world.getBiome(x+1,y-1,z,dimension)] || t.default
+			const northwest = t[world.getBiome(x-1,y+1,z,dimension)] || t.default
+			const southwest = t[world.getBiome(x-1,y-1,z,dimension)] || t.default
+			let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
+			if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
+				noisene = noisese = (tintNoise.noise2d((x+0.5)*0.1,z*0.1)>0)*3
+				noisenw = noisesw = (tintNoise.noise2d((x-0.5)*0.1,z*0.1)>0)*3
+			}
+			averageTint(ret,0,tint,north,east,northeast,noisene)
+			averageTint(ret,3,tint,north,west,northwest,noisenw)
+			averageTint(ret,6,tint,south,west,southwest,noisesw)
+			averageTint(ret,9,tint,south,east,southeast,noisese)
+			return ret
     },
     south: function(x,y,z,ret,dimension,block,tags){
-      let side = "tagTintPropertySouth"
-      let tint = null
-      if(block[side]){
-        let name = block[side]
-        let tag = getTag(tags,name,block)
-        tint = block.tint[tag || 0]
-      }
-      if(block.biomeTintSouth){
-        let b = world.getBiome(x,y,z,dimension)
-        let t = block.tint
-        tint = t[b] || t.default
-				if(performFast){
-					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
-					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
-					ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
-					return ret
-				}
-        const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
-        const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
-        const east = t[world.getBiome(x-1,y,z,dimension)] || t.default
-        const west = t[world.getBiome(x+1,y,z,dimension)] || t.default
-        const northeast = t[world.getBiome(x-1,y+1,z,dimension)] || t.default
-        const southeast = t[world.getBiome(x-1,y-1,z,dimension)] || t.default
-        const northwest = t[world.getBiome(x+1,y+1,z,dimension)] || t.default
-        const southwest = t[world.getBiome(x+1,y-1,z,dimension)] || t.default
-				let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
-				if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
-					noisene = noisese = (tintNoise.noise2d((x-0.5)*0.1,z*0.1)>0)*3
-					noisenw = noisesw = (tintNoise.noise2d((x+0.5)*0.1,z*0.1)>0)*3
-				}
-				averageTint(ret,0,tint,north,east,northeast,noisene)
-				averageTint(ret,3,tint,north,west,northwest,noisenw)
-				averageTint(ret,6,tint,south,west,southwest,noisesw)
-				averageTint(ret,9,tint,south,east,southeast,noisese)
-        return ret
-      }
-      if(tint){
-        ret[0] = ret[3] = ret[6] = ret[9] = tint[0] || 0
-        ret[1] = ret[4] = ret[7] = ret[10] = tint[1] || 0
-        ret[2] = ret[5] = ret[8] = ret[11] = tint[2] || 0
-      }else{
-        ret[0] = ret[1] = ret[2] = ret[3] = ret[4] = ret[5] = ret[6] = ret[7] = ret[8] = ret[9] = ret[10] = ret[11] = 1
-      }
-      return ret
+			let tint
+			let b = world.getBiome(x,y,z,dimension)
+			let t = block.tint
+			tint = t[b] || t.default
+			if(performFast){
+				ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
+				ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
+				ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
+				return ret
+			}
+			const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
+			const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
+			const east = t[world.getBiome(x-1,y,z,dimension)] || t.default
+			const west = t[world.getBiome(x+1,y,z,dimension)] || t.default
+			const northeast = t[world.getBiome(x-1,y+1,z,dimension)] || t.default
+			const southeast = t[world.getBiome(x-1,y-1,z,dimension)] || t.default
+			const northwest = t[world.getBiome(x+1,y+1,z,dimension)] || t.default
+			const southwest = t[world.getBiome(x+1,y-1,z,dimension)] || t.default
+			let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
+			if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
+				noisene = noisese = (tintNoise.noise2d((x-0.5)*0.1,z*0.1)>0)*3
+				noisenw = noisesw = (tintNoise.noise2d((x+0.5)*0.1,z*0.1)>0)*3
+			}
+			averageTint(ret,0,tint,north,east,northeast,noisene)
+			averageTint(ret,3,tint,north,west,northwest,noisenw)
+			averageTint(ret,6,tint,south,west,southwest,noisesw)
+			averageTint(ret,9,tint,south,east,southeast,noisese)
+			return ret
     },
     east: function(x,y,z,ret,dimension,block,tags){
-      let side = "tagTintPropertyEast"
-      let tint = null
-      if(block[side]){
-        let name = block[side]
-        let tag = getTag(tags,name,block)
-        tint = block.tint[tag || 0]
-      }
-      if(block.biomeTintEast){
-        let b = world.getBiome(x,y,z,dimension)
-        let t = block.tint
-        tint = t[b] || t.default
-				if(performFast){
-					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
-					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
-					ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
-					return ret
-				}
-        const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
-        const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
-        const east = t[world.getBiome(x,y,z-1,dimension)] || t.default
-        const west = t[world.getBiome(x,y,z+1,dimension)] || t.default
-        const northeast = t[world.getBiome(x,y+1,z-1,dimension)] || t.default
-        const southeast = t[world.getBiome(x,y-1,z-1,dimension)] || t.default
-        const northwest = t[world.getBiome(x,y+1,z+1,dimension)] || t.default
-        const southwest = t[world.getBiome(x,y-1,z+1,dimension)] || t.default
-				let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
-				if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
-					noisene = noisese = (tintNoise.noise2d(x*0.1,(z-0.5)*0.1)>0)*3
-					noisenw = noisesw = (tintNoise.noise2d(x*0.1,(z+0.5)*0.1)>0)*3
-				}
-				averageTint(ret,0,tint,north,east,northeast,noisene)
-				averageTint(ret,3,tint,north,west,northwest,noisenw)
-				averageTint(ret,6,tint,south,west,southwest,noisesw)
-				averageTint(ret,9,tint,south,east,southeast,noisese)
-        return ret
-      }
-      if(tint){
-        ret[0] = ret[3] = ret[6] = ret[9] = tint[0] || 0
-        ret[1] = ret[4] = ret[7] = ret[10] = tint[1] || 0
-        ret[2] = ret[5] = ret[8] = ret[11] = tint[2] || 0
-      }else{
-        ret[0] = ret[1] = ret[2] = ret[3] = ret[4] = ret[5] = ret[6] = ret[7] = ret[8] = ret[9] = ret[10] = ret[11] = 1
-      }
-      return ret
+			let tint
+			let b = world.getBiome(x,y,z,dimension)
+			let t = block.tint
+			tint = t[b] || t.default
+			if(performFast){
+				ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
+				ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
+				ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
+				return ret
+			}
+			const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
+			const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
+			const east = t[world.getBiome(x,y,z-1,dimension)] || t.default
+			const west = t[world.getBiome(x,y,z+1,dimension)] || t.default
+			const northeast = t[world.getBiome(x,y+1,z-1,dimension)] || t.default
+			const southeast = t[world.getBiome(x,y-1,z-1,dimension)] || t.default
+			const northwest = t[world.getBiome(x,y+1,z+1,dimension)] || t.default
+			const southwest = t[world.getBiome(x,y-1,z+1,dimension)] || t.default
+			let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
+			if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
+				noisene = noisese = (tintNoise.noise2d(x*0.1,(z-0.5)*0.1)>0)*3
+				noisenw = noisesw = (tintNoise.noise2d(x*0.1,(z+0.5)*0.1)>0)*3
+			}
+			averageTint(ret,0,tint,north,east,northeast,noisene)
+			averageTint(ret,3,tint,north,west,northwest,noisenw)
+			averageTint(ret,6,tint,south,west,southwest,noisesw)
+			averageTint(ret,9,tint,south,east,southeast,noisese)
+			return ret
     },
     west: function(x,y,z,ret,dimension,block,tags){
-      let side = "tagTintPropertyWest"
-      let tint = null
-      if(block[side]){
-        let name = block[side]
-        let tag = getTag(tags,name,block)
-        tint = block.tint[tag || 0]
-      }
-      if(block.biomeTintWest){
-        let b = world.getBiome(x,y,z,dimension)
-        let t = block.tint
-        tint = t[b] || t.default
-				if(performFast){
-					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
-					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
-					ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
-					return ret
-				}
-        const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
-        const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
-        const east = t[world.getBiome(x,y,z+1,dimension)] || t.default
-        const west = t[world.getBiome(x,y,z-1,dimension)] || t.default
-        const northeast = t[world.getBiome(x,y+1,z+1,dimension)] || t.default
-        const southeast = t[world.getBiome(x,y-1,z+1,dimension)] || t.default
-        const northwest = t[world.getBiome(x,y+1,z-1,dimension)] || t.default
-        const southwest = t[world.getBiome(x,y-1,z-1,dimension)] || t.default
-				let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
-				if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
-					noisene = noisese = (tintNoise.noise2d(x*0.1,(z+0.5)*0.1)>0)*3
-					noisenw = noisesw = (tintNoise.noise2d(x*0.1,(z-0.5)*0.1)>0)*3
-				}
-				averageTint(ret,0,tint,north,east,northeast,noisene)
-				averageTint(ret,3,tint,north,west,northwest,noisenw)
-				averageTint(ret,6,tint,south,west,southwest,noisesw)
-				averageTint(ret,9,tint,south,east,southeast,noisese)
-        return ret
-      }
-      if(tint){
-        ret[0] = ret[3] = ret[6] = ret[9] = tint[0] || 0
-        ret[1] = ret[4] = ret[7] = ret[10] = tint[1] || 0
-        ret[2] = ret[5] = ret[8] = ret[11] = tint[2] || 0
-      }else{
-        ret[0] = ret[1] = ret[2] = ret[3] = ret[4] = ret[5] = ret[6] = ret[7] = ret[8] = ret[9] = ret[10] = ret[11] = 1
-      }
-      return ret
+			let tint
+			let b = world.getBiome(x,y,z,dimension)
+			let t = block.tint
+			tint = t[b] || t.default
+			if(performFast){
+				ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
+				ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
+				ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
+				return ret
+			}
+			const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
+			const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
+			const east = t[world.getBiome(x,y,z+1,dimension)] || t.default
+			const west = t[world.getBiome(x,y,z-1,dimension)] || t.default
+			const northeast = t[world.getBiome(x,y+1,z+1,dimension)] || t.default
+			const southeast = t[world.getBiome(x,y-1,z+1,dimension)] || t.default
+			const northwest = t[world.getBiome(x,y+1,z-1,dimension)] || t.default
+			const southwest = t[world.getBiome(x,y-1,z-1,dimension)] || t.default
+			let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
+			if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
+				noisene = noisese = (tintNoise.noise2d(x*0.1,(z+0.5)*0.1)>0)*3
+				noisenw = noisesw = (tintNoise.noise2d(x*0.1,(z-0.5)*0.1)>0)*3
+			}
+			averageTint(ret,0,tint,north,east,northeast,noisene)
+			averageTint(ret,3,tint,north,west,northwest,noisenw)
+			averageTint(ret,6,tint,south,west,southwest,noisesw)
+			averageTint(ret,9,tint,south,east,southeast,noisese)
+			return ret
     },
   }
 
@@ -13590,7 +13248,7 @@ r 11 y  n  n  n
 				data = rData[i]
         id = pallete[data & 0x1fff]
 				block = blockData[id]
-				//tex = block.textures//todo n
+				tex = block.textures
 				sides = data >> 13 & 0x3f
 				loc = data >> 19 & 0xfff
 				x = loc & 15
@@ -13609,7 +13267,6 @@ r 11 y  n  n  n
 
 				shapeVerts = block.shape.verts
 				shapeTexVerts = block.shape.texVerts
-        //shapeOriginalVerts = block.shape.originalVerts//todo n
 				shapeNormal = block.shape.normal
 
 				let texNum = 0
@@ -13619,14 +13276,12 @@ r 11 y  n  n  n
 						shadows = getShadows[side](x, y, z, blocks)
 						slights = getLight[side](x, y, z, skyLightChunks, slights, 0, block, x2,y2,z2)
 						blights = getLight[side](x, y, z, blockLightChunks, blights, 1, block, x2,y2,z2)
-            tints = getTint[side](x2, y2, z2, tints, this.type, block, tags)
 						let directionalFaces = shapeVerts[n]
 						for (let facei = 0; facei < directionalFaces.length; facei++) {
 							verts = directionalFaces[facei]
-              //originalShapeVerts = shapeOriginalVerts[n][facei]//todo n
-							//texVerts = textureCoords[textureMap[tex[texNum]]]
 							texShapeVerts = shapeTexVerts[n][facei]
-              texVerts = textureCoords[textureMap[texShapeVerts.texture]]
+              texVerts = textureCoords[textureMap[texShapeVerts.texture]] || textureCoords[textureMap[tex[texNum]]]
+            	tints = texShapeVerts.tintindex>-1 ? getTint[side](x2, y2, z2, tints, this.type, block, tags) : getTint.none(tints)
 							if(block.customShape){
 								verts = verts.slice()
 								texShapeVerts = texShapeVerts.slice()
@@ -14964,10 +14619,11 @@ r 11 y  n  n  n
 			let directionalFaces = shapeVerts[n]
 			for (let facei = 0; facei < directionalFaces.length; facei++) {
 				let texShapeVerts = shapeTexVerts[n][facei]
-				let texVerts// = textureCoords[textureMap[tex[texNum]]]//todo n
-				//let originalShapeVerts = shape.originalVerts[n][facei]
-				if(replaceTextures && replaceTextures[texShapeVerts.texture]) texVerts = textureCoords[textureMap[replaceTextures[texShapeVerts.texture]]]
-				else texVerts = textureCoords[textureMap[texShapeVerts.texture]]
+				let texVerts
+				if(texShapeVerts.texture){
+					if(replaceTextures && replaceTextures[texShapeVerts.texture]) texVerts = textureCoords[textureMap[replaceTextures[texShapeVerts.texture]]]
+					else texVerts = textureCoords[textureMap[texShapeVerts.texture]]
+				}else texVerts = textureCoords[textureMap[tex[texNum]]]
 				let tx = texVerts[0]
 				let ty = texVerts[1]
 				let tw = texVerts[2]-tx
@@ -15752,9 +15408,8 @@ r 11 y  n  n  n
 					let directionalFaces = shapeVerts[n]
 					for (let facei = 0; facei < directionalFaces.length; facei++) {
 						let texShapeVerts = shapeTexVerts[n][facei]
-						let texVerts// = textureCoords[textureMap[tex[texNum]]]//todo n
-						let originalShapeVerts = shape.originalVerts[n][facei]
-						texVerts = textureCoords[textureMap[texShapeVerts.texture]]
+						let texVerts
+						texVerts = textureCoords[textureMap[texShapeVerts.texture]] || textureCoords[textureMap[tex[texNum]]]
 						let tx = texVerts[0]
 						let ty = texVerts[1]
 						let tw = texVerts[2]-tx

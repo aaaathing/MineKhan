@@ -1,17 +1,17 @@
 import idata from "./data.js"
 export const data = idata
 
+//todo: flat icons for blocks, shape array
 export function loadNamespace(allData, namespace, {
-	blockData,
+	blockData, BLOCK_COUNT,
 	shapes, textures, blockIds,
 	compareArr
 }){
 	let data = allData[namespace]
-	for(let name in data.blockstates){
+	for(let blockId = 0; blockId < BLOCK_COUNT; blockId++){
+		const name = blockData[blockId].nameMcd || blockData[blockId].name
 		let bstates = data.blockstates[name]
-		if(!bstates) throw new Error("missing "+name)
-		const blockId = blockIds[name]
-		if(blockId === undefined) continue
+		if(!bstates) continue
 		
 		let blockstateValues = {}
 		if(bstates.variants){ // find name and values of states
@@ -61,8 +61,9 @@ export function loadNamespace(allData, namespace, {
 	function getTexture(name, textureSelectors){
 		if(name.startsWith("#")){
 			return textureSelectors[name.substring(1)]
-		}else if(!textures[name]){
-			textures[name] = getFromData(name, "textures/")
+		}else{
+			name = fixResourceLocation(name)
+			if(!textures[name]) textures[name] = getFromData(name, "textures/")
 		}
 		return name
 	}
@@ -78,6 +79,7 @@ export function loadNamespace(allData, namespace, {
 			tex[i+1] /= texHeight
 		}
 		tex.texture = getTexture(dataFace.texture, textureSelectors)
+		tex.tintindex = dataFace.tintindex
 		shape.verts[side].push(pos)
 		shape.texVerts[side].push(tex)
 		shape.normal[side].push(normal)
@@ -93,34 +95,34 @@ export function loadNamespace(allData, namespace, {
 		if(dataModel.parent){
 			makeShape(dataModel.parent, shape, textureSelectors)
 		}
-		if(dataModel.elements) for(let i=0; i<dataModel.elements.length; i++){
+		if(dataModel.elements) for(let i=dataModel.elements.length-1; i>=0; i--){
 			const faces = dataModel.elements[i].faces
 			const [x,y,z] = dataModel.elements[i].from
 			const [X,Y,Z] = dataModel.elements[i].to
-			if(faces.down) addFace(faces.down, shape, 0, [x,y,z, X,y,z, X,y,Z, x,y,Z], [0,1,0], textureSelectors)
-			if(faces.up) addFace(faces.up, shape, 1, [x,Y,Z, X,Y,Z, X,Y,z, x,Y,z], [0,-1,0], textureSelectors)
-			if(faces.north) addFace(faces.north, shape, 2, [X,Y,Z, x,Y,Z, x,y,Z, X,y,Z], [0,0,-1], textureSelectors)
-			if(faces.south) addFace(faces.south, shape, 3, [x,Y,z, X,Y,z, X,y,z, x,y,z], [0,0,1], textureSelectors)
-			if(faces.east) addFace(faces.east, shape, 4, [X,Y,z, X,Y,Z, X,y,Z, X,y,z], [-1,0,0], textureSelectors)
-			if(faces.west) addFace(faces.west, shape, 5, [x,Y,Z, x,Y,z, x,y,z, x,y,Z], [1,0,0], textureSelectors)
+			if(faces.down) addFace(faces.down, shape, 0, [x,y,z, X,y,z, X,y,Z, x,y,Z], [0,1,0], textureSelectors), faces.down.cullface !== "down" && (shape.cull.bottom = 0)
+			if(faces.up) addFace(faces.up, shape, 1, [x,Y,Z, X,Y,Z, X,Y,z, x,Y,z], [0,-1,0], textureSelectors), faces.up.cullface !== "up" && (shape.cull.top = 0)
+			if(faces.north) addFace(faces.north, shape, 2, [X,Y,Z, x,Y,Z, x,y,Z, X,y,Z], [0,0,-1], textureSelectors), faces.north.cullface !== "north" && (shape.cull.north = 0)
+			if(faces.south) addFace(faces.south, shape, 3, [x,Y,z, X,Y,z, X,y,z, x,y,z], [0,0,1], textureSelectors), faces.south.cullface !== "south" && (shape.cull.south = 0)
+			if(faces.east) addFace(faces.east, shape, 4, [X,Y,z, X,Y,Z, X,y,Z, X,y,z], [-1,0,0], textureSelectors), faces.east.cullface !== "east" && (shape.cull.east = 0)
+			if(faces.west) addFace(faces.west, shape, 5, [x,Y,Z, x,Y,z, x,y,z, x,y,Z], [1,0,0], textureSelectors), faces.west.cullface !== "west" && (shape.cull.west = 0)
 		}
 	}
 	function getShapeFromVariant(v){
-		if(!shapes[v.model]){
-			let shape = {verts:[[],[],[],[],[],[]], cull:{/*todo*/}, texVerts:[[],[],[],[],[],[]], normal:[[],[],[],[],[],[]], textureSelectors:{}}
-			makeShape(v.model,shape, shape.textureSelectors)
-			shapes[v.model] = shape
+		let model = fixResourceLocation(v.model)
+		if(!shapes[model]){
+			let shape = {verts:[[],[],[],[],[],[]], cull:{bottom:3,top:3,north:3,south:3,east:3,west:3}, texVerts:[[],[],[],[],[],[]], normal:[[],[],[],[],[],[]], textureSelectors:{}}
+			makeShape(model,shape, shape.textureSelectors)
+			shapes[model] = shape
 		}
-		return shapes[v.model]
+		return shapes[model]
 		//todo: rotation (v.x and v.y)
 	}
 
+	function fixResourceLocation(str){
+		return str.includes(":") ? str : namespace+":"+str
+	}
 	function getFromData(ostr, prefix=""){
-		let [tnamespace, str] = ostr.split(":")
-		if(!str){
-			str = tnamespace
-			tnamespace = namespace
-		}
+		let [tnamespace, str] = fixResourceLocation(ostr).split(":")
 		str = prefix + str
 		let obj = allData[tnamespace]
 		let arr = str.split("/")
