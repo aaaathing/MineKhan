@@ -270,14 +270,15 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 		shape.normal[side].push(normal)
 	}
 	function getShapeForVariant(shapes, shapePrefix, model, texture){
-		let bones = []
+		let bones = {}
 		texture = getTexture(texture)
 		for(let i=0; i<model.bones.length; i++){
 			let bone = model.bones[i]
 			let shape = {
 				verts:[[],[],[],[],[],[]], texVerts:[[],[],[],[],[],[]], normal:[[],[],[],[],[],[]],
 				position: bone.pivot || [0,0,0],
-				boneName: bone.name
+				boneName: bone.name,
+				attachChain: [], parent: bone.parent
 			}
 			let rot = bone.bind_pose_rotation || bone.rotation
 			let boneRotation = rot ? [rot[0]*Math.PI/180, rot[1]*Math.PI/180, rot[2]*Math.PI/180] : [0,0,0]
@@ -290,8 +291,18 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 				addFace(cube, shape, 4, elemFaces.east, texture, cube.texturewidth, cube.textureheight)
 				addFace(cube, shape, 5, elemFaces.west, texture, cube.texturewidth, cube.textureheight)
 			}
-			bones.push(shape)
+			bones[bone.name] = bone
 			shapes[shapePrefix+":"+bone.name] = shape
+		}
+		for(let i in bones){
+			let bone = bones[i]
+			if(bone.parent){
+				let bone2 = bone
+				while(bone2.parent){
+					bone2 = bones[bone2.parent]
+					bone.attachChain.push(bone2.name)
+				}
+			}
 		}
 		return bones
 	}
