@@ -72,6 +72,7 @@ function loadNamespaceAssets(allData, namespace, {
 		let minmax = compareArr(pos, [])
 		pos.max = minmax.splice(3, 3)
 		pos.min = minmax
+		//todo: rotate using element.rotation
 		const [tx,ty,tX,tY] = dataFace.uv || [0,0,texWidth,texHeight]
 		let tex = [tX,ty, tx,ty, tx,tY, tX,tY]
 		for(let i=0; i<tex.length; i+=2){
@@ -110,7 +111,10 @@ function loadNamespaceAssets(allData, namespace, {
 	function getShapeFromVariant(v){
 		let model = fixResourceLocation(v.model)
 		if(!shapes[model]){
-			let shape = {verts:[[],[],[],[],[],[]], cull:{bottom:3,top:3,north:3,south:3,east:3,west:3}, texVerts:[[],[],[],[],[],[]], normal:[[],[],[],[],[],[]], textureSelectors:{}}
+			let shape = {
+				verts:[[],[],[],[],[],[]], cull:{bottom:3,top:3,north:3,south:3,east:3,west:3}, texVerts:[[],[],[],[],[],[]], normal:[[],[],[],[],[],[]],
+				textureSelectors:{}
+			}
 			makeShape(model,shape, shape.textureSelectors)
 			shapes[model] = shape
 		}
@@ -132,15 +136,179 @@ function loadNamespaceAssets(allData, namespace, {
 	}
 }
 
-function loadNamespaceAssetsBe(allData, namespace, {
-	blockData, BLOCK_COUNT,
-	shapes, textures, blockIds,
+
+export function loadNamespaceAssetsBe(allData, namespace, {
+	entities,
+	shapes, textures,
 	compareArr
 }){
+	const elemFaces = {
+		up: {
+			dir: [0, 1, 0],
+			u0: [0, 0, 1],
+			v0: [0, 0, 0],
+			u1: [1, 0, 1],
+			v1: [0, 0, 1],
+			corners: [
+				[0, 1, 1, 0, 0],
+				[1, 1, 1, 1, 0],
+				[0, 1, 0, 0, 1],
+				[1, 1, 0, 1, 1]
+			]
+		},
+		down: {
+			dir: [0, -1, 0],
+			u0: [1, 0, 1],
+			v0: [0, 0, 0],
+			u1: [2, 0, 1],
+			v1: [0, 0, 1],
+			corners: [
+				[1, 0, 1, 0, 0],
+				[0, 0, 1, 1, 0],
+				[1, 0, 0, 0, 1],
+				[0, 0, 0, 1, 1]
+			]
+		},
+		east: {
+			dir: [1, 0, 0],
+			u0: [0, 0, 0],
+			v0: [0, 0, 1],
+			u1: [0, 0, 1],
+			v1: [0, 1, 1],
+			corners: [
+				[1, 1, 1, 0, 0],
+				[1, 0, 1, 0, 1],
+				[1, 1, 0, 1, 0],
+				[1, 0, 0, 1, 1]
+			]
+		},
+		west: {
+			dir: [-1, 0, 0],
+			u0: [1, 0, 1],
+			v0: [0, 0, 1],
+			u1: [1, 0, 2],
+			v1: [0, 1, 1],
+			corners: [
+				[0, 1, 0, 0, 0],
+				[0, 0, 0, 0, 1],
+				[0, 1, 1, 1, 0],
+				[0, 0, 1, 1, 1]
+			]
+		},
+		north: {
+			dir: [0, 0, -1],
+			u0: [0, 0, 1],
+			v0: [0, 0, 1],
+			u1: [1, 0, 1],
+			v1: [0, 1, 1],
+			corners: [
+				[1, 0, 0, 0, 1],
+				[0, 0, 0, 1, 1],
+				[1, 1, 0, 0, 0],
+				[0, 1, 0, 1, 0]
+			]
+		},
+		south: {
+			dir: [0, 0, 1],
+			u0: [1, 0, 2],
+			v0: [0, 0, 1],
+			u1: [2, 0, 2],
+			v1: [0, 1, 1],
+			corners: [
+				[0, 0, 1, 0, 1],
+				[1, 0, 1, 1, 1],
+				[0, 1, 1, 0, 0],
+				[1, 1, 1, 1, 0]
+			]
+		}
+	}
+	
 	let data = allData[namespace]
-	data.textures.entity
-	data.entity
+	for(let i=0; i<entities.length; i++){
+		let name = entities[i].nameMcd || entities[i].name
+		let entity = data.entity[name]
+		if(!entity) continue
+		let variantsBones = {}
+		for(let v in entity.geometry){
+			variantsBones[v] = getShapeForVariant(shapes, fixResourceLocation(name)+":"+v, entity.geometry[v], entity.textures[v])
+		}
+		entities[i].variantsBones = variantsBones
+	}
+
+	function getTexture(name){
+		name = fixResourceLocation(name)
+		if(!textures[name]) textures[name] = getFromData(name, "")
+		return name
+	}
+	function dot (a, b) {
+		return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+	}
+	function addFace(cube, shape, side, faceMult, texture, texWidth=16, texHeight=16){
+		let pos = [], tex = []
+		const { dir, corners, u0, v0, u1, v1 } = faceMult
+		let normal = [-dir[0],-dir[1],-dir[2]]
+		// loop from https://github.com/PrismarineJS/prismarine-viewer/blob/master/viewer/lib/entity/Entity.js
+		for (const cpos of corners) {
+      const u = (cube.uv[0] + dot(cpos[3] ? u1 : u0, cube.size)) / texWidth
+      const v = (cube.uv[1] + dot(cpos[4] ? v1 : v0, cube.size)) / texHeight
+			tex.push(u,v)
+
+      const inflate = cube.inflate ? cube.inflate : 0
+      pos.push(
+        (cube.origin[0] + cpos[0] * cube.size[0] + (cpos[0] ? inflate : -inflate)) / 16 - 0.5,
+        (cube.origin[1] + cpos[1] * cube.size[1] + (cpos[1] ? inflate : -inflate)) / 16 - 0.5,
+        (cube.origin[2] + cpos[2] * cube.size[2] + (cpos[2] ? inflate : -inflate)) / 16 - 0.5
+      )
+			//todo rotate bone.rotation, cubeRotation
+		}
+		let minmax = compareArr(pos, [])
+		pos.max = minmax.splice(3, 3)
+		pos.min = minmax
+		tex.texture = texture
+		shape.verts[side].push(pos)
+		shape.texVerts[side].push(tex)
+		shape.normal[side].push(normal)
+	}
+	function getShapeForVariant(shapes, shapePrefix, model, texture){
+		let bones = []
+		texture = getTexture(texture)
+		for(let i=0; i<model.bones.length; i++){
+			let bone = model.bones[i]
+			let shape = {
+				verts:[[],[],[],[],[],[]], texVerts:[[],[],[],[],[],[]], normal:[[],[],[],[],[],[]],
+				position: bone.pivot || [0,0,0],
+				boneName: bone.name
+			}
+			let rot = bone.bind_pose_rotation || bone.rotation
+			let boneRotation = rot ? [rot[0]*Math.PI/180, rot[1]*Math.PI/180, rot[2]*Math.PI/180] : [0,0,0]
+			if(bone.cubes) for(let i=0; i<bone.cubes.length; i++){
+				let cube = bone.cubes[i]
+				addFace(cube, shape, 0, elemFaces.down, texture, cube.texturewidth, cube.textureheight)
+				addFace(cube, shape, 1, elemFaces.up, texture, cube.texturewidth, cube.textureheight)
+				addFace(cube, shape, 2, elemFaces.north, texture, cube.texturewidth, cube.textureheight)
+				addFace(cube, shape, 3, elemFaces.south, texture, cube.texturewidth, cube.textureheight)
+				addFace(cube, shape, 4, elemFaces.east, texture, cube.texturewidth, cube.textureheight)
+				addFace(cube, shape, 5, elemFaces.west, texture, cube.texturewidth, cube.textureheight)
+			}
+			bones.push(shape)
+			shapes[shapePrefix+":"+bone.name] = shape
+		}
+		return bones
+	}
+	function fixResourceLocation(str){
+		return str.includes(":") ? str : namespace+":"+str
+	}
+	function getFromData(ostr, prefix=""){
+		let [tnamespace, str] = fixResourceLocation(ostr).split(":")
+		str = prefix + str
+		let obj = allData[tnamespace]
+		let arr = str.split("/")
+		for(let i=0; i<arr.length; i++) obj = obj[arr[i]]
+		if(!obj) throw new Error(ostr+" not found in "+prefix)
+		return obj
+	}
 }
+
 
 export function loadNamespace(allData, namespace, options){
 	loadNamespaceAssets(allData.assets,namespace,options)
