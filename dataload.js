@@ -139,7 +139,7 @@ function loadNamespaceAssets(allData, namespace, {
 
 
 export function loadNamespaceAssetsBe(allData, namespace, {
-	entities,
+	entityData,
 	shapes, textures,
 	compareArr
 }){
@@ -225,16 +225,15 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 	}
 	
 	let data = allData[namespace]
-	for(let i=0; i<entities.length; i++){
-		if(!entities[i]) continue
-		let name = entities[i].nameMcd || entities[i].name2
+	for(let i=0; i<entityData.length; i++){
+		let name = entityData[i].nameMcd || entityData[i].name
 		let entity = data.entity[name]
 		if(!entity) continue
 		let variantsBones = {}
 		for(let v in entity.geometry){
 			variantsBones[v] = getShapeForVariant(shapes, fixResourceLocation(name)+":"+v, entity.geometry[v], entity.textures[v])
 		}
-		entities[i].variantsBones = variantsBones
+		entityData[i].variantsBones = variantsBones
 	}
 
 	function getTexture(name){

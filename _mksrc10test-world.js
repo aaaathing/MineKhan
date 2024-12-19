@@ -3984,13 +3984,13 @@ const blockData = [
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
-			let ent = new entities[entityIds.Cow](pos[0],pos[1],pos[2])
+			let ent = new entities[entityIds.cow](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
 			world.addEntity(ent)
 			item.amount--
 		},
 		spawnMob: function(x,y,z,world){
-			world.addEntity(new entities[entityIds.Cow](x,y,z),false)
+			world.addEntity(new entities[entityIds.cow](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -4119,13 +4119,13 @@ const blockData = [
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
-			let ent = new entities[entityIds.Pig](pos[0],pos[1],pos[2])
+			let ent = new entities[entityIds.pig](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
 			world.addEntity(ent)
 			item.amount--
 		},
 		spawnMob: function(x,y,z,world){
-			world.addEntity(new entities[entityIds.Pig](x,y,z),false)
+			world.addEntity(new entities[entityIds.pig](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -11436,13 +11436,13 @@ const blockData = [
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
-			let ent = new entities[entityIds.Creeper](pos[0],pos[1],pos[2])
+			let ent = new entities[entityIds.creeper](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
 			world.addEntity(ent)
 			item.amount--
 		},
 		spawnMob: function(x,y,z,world){
-			world.addEntity(new entities[entityIds.Creeper](x,y,z),false)
+			world.addEntity(new entities[entityIds.creeper](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -11462,13 +11462,13 @@ const blockData = [
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
-			let ent = new entities[entityIds.Sheep](pos[0],pos[1],pos[2])
+			let ent = new entities[entityIds.sheep](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
 			world.addEntity(ent)
 			item.amount--
 		},
 		spawnMob: function(x,y,z,world){
-			world.addEntity(new entities[entityIds.Sheep](x,y,z),false)
+			world.addEntity(new entities[entityIds.sheep](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -11477,13 +11477,13 @@ const blockData = [
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
-			let ent = new entities[entityIds.Chicken](pos[0],pos[1],pos[2])
+			let ent = new entities[entityIds.chicken](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
 			world.addEntity(ent)
 			item.amount--
 		},
 		spawnMob: function(x,y,z,world){
-			world.addEntity(new entities[entityIds.Chicken](x,y,z),false)
+			world.addEntity(new entities[entityIds.chicken](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -11497,13 +11497,13 @@ const blockData = [
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
-			let ent = new entities[entityIds.Zombie](pos[0],pos[1],pos[2])
+			let ent = new entities[entityIds.zombie](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
 			world.addEntity(ent)
 			item.amount--
 		},
 		spawnMob: function(x,y,z,world){
-			world.addEntity(new entities[entityIds.Zombie](x,y,z),false)
+			world.addEntity(new entities[entityIds.zombie](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -11692,13 +11692,13 @@ const blockData = [
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
-			let ent = new entities[entityIds.Spider](pos[0],pos[1],pos[2])
+			let ent = new entities[entityIds.spider](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
 			world.addEntity(ent)
 			item.amount--
 		},
 		spawnMob: function(x,y,z,world){
-			world.addEntity(new entities[entityIds.Spider](x,y,z),false)
+			world.addEntity(new entities[entityIds.spider](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -11707,13 +11707,13 @@ const blockData = [
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
-			let ent = new entities[entityIds.Spider](pos[0],pos[1],pos[2],true)
+			let ent = new entities[entityIds.spider](pos[0],pos[1],pos[2],true)
 			if(item.customName) ent.name = item.customName
 			world.addEntity(ent)
 			item.amount--
 		},
 		spawnMob: function(x,y,z,world){
-			world.addEntity(new entities[entityIds.Spider](x,y,z,true),false)
+			world.addEntity(new entities[entityIds.spider](x,y,z,true),false)
 		},
 		category:"items"
 	},
@@ -11722,13 +11722,13 @@ const blockData = [
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
-			let ent = new entities[entityIds.Wolf](pos[0],pos[1],pos[2])
+			let ent = new entities[entityIds.wolf](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
 			world.addEntity(ent)
 			item.amount--
 		},
 		spawnMob: function(x,y,z,world){
-			world.addEntity(new entities[entityIds.Wolf](x,y,z),false)
+			world.addEntity(new entities[entityIds.wolf](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -11762,13 +11762,13 @@ const blockData = [
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
-			let ent = new entities[entityIds.Blaze](pos[0],pos[1],pos[2])
+			let ent = new entities[entityIds.blaze](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
 			world.addEntity(ent)
 			item.amount--
 		},
 		spawnMob: function(x,y,z,world){
-			world.addEntity(new entities[entityIds.Blaze](x,y,z),false)
+			world.addEntity(new entities[entityIds.blaze](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -11890,13 +11890,13 @@ const blockData = [
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
-			let ent = new entities[entityIds.Enderman](pos[0],pos[1],pos[2])
+			let ent = new entities[entityIds.enderman](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
 			world.addEntity(ent)
 			item.amount--
 		},
 		spawnMob: function(x,y,z,world){
-			world.addEntity(new entities[entityIds.Enderman](x,y,z),false)
+			world.addEntity(new entities[entityIds.enderman](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -12855,7 +12855,7 @@ function initBlockData(){
 			breakTypes[b][i] = blockIds[breakTypes[b][i]]
 		}
 	}
-	dataLoad.loadNamespace(dataLoad.data, "min"+"ecr"+"aft", {blockData,BLOCK_COUNT,shapes,textures,blockIds,compareArr,entities})
+	dataLoad.loadNamespace(dataLoad.data, "min"+"ecr"+"aft", {blockData,BLOCK_COUNT,shapes,textures,blockIds,compareArr,entityData})
 
 	//fill the crafts that have less than 9 items. Ex: "thing" => "thing,air,air..."
 	let arr, arr2 = new Array(9)
@@ -23724,8 +23724,19 @@ entities[entities.length] = class Minecart extends Entity{
 }
 class Mob extends Entity{
 	static mob = true
-	mob = true
-	pushes = true
+	static{
+		this.prototype.mob = true
+		this.prototype.pushes = true
+		this.prototype.minFollowDist = 0
+		this.prototype.maxFollowDist = 0
+		this.prototype.detectionDist = 0
+		this.prototype.attackStrength = 0
+		this.prototype.maxAttackCooldown = 0
+		this.prototype.canClimb = false
+		this.prototype.canFly = false
+		this.prototype.attacks = null
+		this.prototype.attracts = null
+	}
 	constructor(){
 		super(...arguments)
 		/*this.moveTime = 0
@@ -23733,7 +23744,7 @@ class Mob extends Entity{
 		this.spin = 0
 		this.dirx = 0
 		this.dirz = 0*/
-		this.health = 0
+		this.health = this.health || 0
 		this.lastDamage = 0
 		this.lastY = this.y
 		this.path = null
@@ -23752,18 +23763,10 @@ class Mob extends Entity{
 		this.spinTargetPitch = 0
 		this.die = false
 		this.lastStepSound = 0
-		this.hostile = false
-		this.minFollowDist = 0
-		this.maxFollowDist = 0
-		this.detectionDist = 0
+		this.hostile = this.hostile || false
 		this.target = null, this.targetEnt = null
-		this.attackStrength = 0
-		this.attackCooldown = 0, this.maxAttackCooldown = 0
+		this.attackCooldown = 0
 		this.holding = this.prevHolding = 0
-		this.canClimb = false
-		this.canFly = false
-		this.attacks = null
-		this.attracts = null
 		this.attractEnt = null
 		this.attractedBy = null
 		this.sitting = false
@@ -24252,6 +24255,10 @@ class Mob extends Entity{
 		}
 		if(this.panick > 0) this.panick--
 	}
+	update(){
+		this.mobUpdate(now)
+		if(this.additionalUpdate) this.additionalUpdate()
+	}
 	updateAlways(){
 		let canDespawn = true
 		for(let p of this.world.world.players){
@@ -24312,569 +24319,463 @@ class Mob extends Entity{
 		this.effects[name] = {level, time, showParticles}
 	}
 }
-entities[entities.length] = class Cow extends Mob{
-	static name2 = "Cow"
-	static nameMcd = "cow"
-	drop = [blockIds.rawBeef]
-	dropAmount = [1,3]
-	saySound = ["cow.say1","cow.say2","cow.say3","cow.say4"]
-	stepSound = ["cow.step1","cow.step2","cow.step3","cow.step4"]
-	hurtSound = ["cow.hurt1","cow.hurt2","cow.hurt3"]
-	defaultName = "Cow"
-	constructor(x,y,z){
-		super(x, y, z, 0, 0, 0, 0, 0, 1, 21/16, 1, null,null, null, 300000)
-		var pix = 1/16
-		this.offsetY = pix*9.5
-		
-		this.addPart("frontRightLeg",null,null,pix*-4,pix*-8,pix*7,1,1,1,0,0)
-		this.addPart("frontLeftLeg",null,null,pix*4,pix*-8,pix*7,1,1,1,0,0)
-		this.addPart("backRightLeg",null,null,pix*-4,pix*-8,pix*-6,1,1,1,0,0)
-		this.addPart("backLeftLeg",null,null,pix*4,pix*-8,pix*-6,1,1,1,0,0)
-		this.addPart("head",null,null,0,0,pix*9,1,1,1,0,0)
-		
-		this.health = 10
-		this.attracts = [blockIds.wheat]
-	}
-	update(){
-		this.mobUpdate(now)
-	}
-	onclick(holding){
-		if(holding && holding.id === blockIds.bucket) holding.id = blockIds.milkBucket
-	}
-}
-entities[entities.length] = class Pig extends Mob{
-	static name2 = "Pig"
-	drop = [blockIds.rawPorkchop]
-	dropAmount = [1,3]
-	saySound = ["pig.say1","pig.say2","pig.say3"]
-	stepSound = ["pig.step1","pig.step2","pig.step3","pig.step4","pig.step5"]
-	deathSound = "pig.death"
-	defaultName = "Pig"
-	constructor(x,y,z){
-		super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, null,null, null, 300000)
-		var pix = 1/16
-		this.offsetY = pix*6
-		this.addPart("frontRightLeg",null,null,pix*-3,pix*-8,pix*5,1,1,1,0,0)
-		this.addPart("frontLeftLeg",null,null,pix*3,pix*-8,pix*5,1,1,1,0,0)
-		this.addPart("backRightLeg",null,null,pix*-3,pix*-8,pix*-7,1,1,1,0,0)
-		this.addPart("backLeftLeg",null,null,pix*3,pix*-8,pix*-7,1,1,1,0,0)
-		this.addPart("head",null,null,0,pix*-2,pix*10,1,1,1,0,0)
-		
-		this.health = 10
-		this.attracts = [blockIds.carrot, blockIds.potato]
-	}
-	update(){
-		this.mobUpdate(now)
-	}
-}
-entities[entities.length] = class Creeper extends Mob{
-	static name2 = "Creeper"
-	drop = [blockIds.gunpowder]
-	dropAmount = [0,2]
-	experience = 5
-	hurtSound = ["creeper.say1","creeper.say2","creeper.say3","creeper.say4"]
-	deathSound = "creeper.death"
-	defaultName = "Creeper"
-	constructor(x,y,z){
-		super(x, y, z, 0, 0, 0, 0, 0, 0.5, 26/16, 0.5, null,null, null, 300000)
-		var pix = 1/16
-		this.offsetY = pix*-1
-		this.addPart("frontRightLeg",null,null,pix*-2,pix*-6,pix*4,1,1,1,0,0)
-		this.addPart("frontLeftLeg",null,null,pix*2,pix*-6,pix*4,1,1,1,0,0)
-		this.addPart("backRightLeg",null,null,pix*-2,pix*-6,pix*-4,1,1,1,0,0)
-		this.addPart("backLeftLeg",null,null,pix*2,pix*-6,pix*-4,1,1,1,0,0)
-		this.addPart("head",null,null,0,pix*10,0,1,1,1,0,0)
-		
-		this.health = 10
-		this.hostile = true
-		this.minFollowDist = 3
-		this.maxFollowDist = this.detectionDist = 16
-		this.timerStart = 0
-		this.explodeAmount = 0
-		this.timeLimit = 30
-	}
-	explode(){
-		var x = round(this.x), y = round(this.y), z = round(this.z)
-		this.world.explode(x,y,z,3, this.liquid || !this.world.world.settings.tntExplode, this.dimension)
-	}
-	update(){
-		this.mobUpdate(now)
-
-		let d = this.targetEnt && max(abs(this.targetEnt.x-this.x),abs(this.targetEnt.y-this.y),abs(this.targetEnt.z-this.z))
-		if(this.targetEnt && d<=this.minFollowDist){
-			if(!this.explodeAmount){
-				this.timerStart = now
-				this.world.playSound(this.x,this.y,this.z, "random.fuse")
-			}
-			this.explodeAmount++
-			if(this.explodeAmount > 20) this.explodeAmount = 20
-		}else if(this.explodeAmount) this.explodeAmount--
-		this.shader = 0, this.extraSize = 0
-		if(this.explodeAmount>0){
-			var i = Math.floor((now - this.timerStart) / 125)
-			if(!(i%2)){
-				this.shader = 1
-			}
-			if((now - this.timerStart) / tickTime >= this.timeLimit - 10){
-				//get bigger
-				this.extraSize = min(-((this.timeLimit - 10) - ((now - this.timerStart) / tickTime)) / 40,0.25)
-				this.shader = 1
-			}
-			if((now - this.timerStart) / tickTime >= this.timeLimit){
-				this.canDespawn = true
-				this.explode()
-			}
+let entityData = [//todo n: do after initialize blockIds
+	{
+		name:"cow",
+		drop: [blockIds.rawBeef],
+		dropAmount: [1,3],
+		saySound: ["cow.say1","cow.say2","cow.say3","cow.say4"],
+		stepSound: ["cow.step1","cow.step2","cow.step3","cow.step4"],
+		hurtSound: ["cow.hurt1","cow.hurt2","cow.hurt3"],
+		defaultName: "Cow",
+		width:1, height:21/16, depth:1,
+		health: 10,
+		attracts: [blockIds.wheat],
+		onclick(holding){
+			if(holding && holding.id === blockIds.bucket) holding.id = blockIds.milkBucket
 		}
-	}
-	onclick(block){
-		if(!block || block.id !== blockIds.flintAndSteel) return
-		this.explodeAmount = 100
-		this.timerStart = now
-		this.world.sendEntityPos(this)
-		//this.world.sendAllInChunk({type:"entEvent",event:"creeperForceExplode",id:this.id},this.chunkX,this.chunkZ,this.chunkDimension)
-	}
-}
-entities[entities.length] = class Sheep extends Mob{
-	static name2 = "Sheep"
-	drop = [blockIds.rawMutton]
-	dropAmount = [1,2]
-	saySound = ["sheep.say1","sheep.say2","sheep.say3"]
-	hurtSound = ["sheep.say1","sheep.say2","sheep.say3"]
-	stepSound = ["sheep.step1","sheep.step2","sheep.step3","sheep.step4","sheep.step5"]
-	defaultName = "Sheep"
-	constructor(x,y,z, color, wool){
-		super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, null,null, 0, 300000, "vao")
-		var pix = 1/16
-		this.offsetY = pix*7
-		this.addPart("frontRightLeg",null,null,pix*-3,pix*-3,pix*5,1,1,1,0,0)
-		this.addPart("frontLeftLeg",null,null,pix*3,pix*-3,pix*5,1,1,1,0,0)
-		this.addPart("backRightLeg",null,null,pix*-3,pix*-3,pix*-7,1,1,1,0,0)
-		this.addPart("backLeftLeg",null,null,pix*3,pix*-3,pix*-7,1,1,1,0,0)
-		this.addPart("head",null,null,0,pix*4,pix*10,1,1,1,0,0)
-		this.health = 10
-		this.fur = true
-		this.eating = 0
-		this.color = color
-		this.wool = wool
-		if(!color){
-			let r = rand(100), dye
-			if(r > 50) dye = "white"
-			else if(r > 35) dye = "lightGray"
-			else if(r > 20) dye = "gray"
-			else if(r > 5) dye = "black"
-			else if(r > 1) dye = "brown"
-			else dye = "pink"
-			this.color = colors.dye[dye].slice()
-			this.wool = dye+"Wool"
-		}
-		this.attracts = [blockIds.wheat]
-	}
-	ondie(){
-		this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds[this.wool],true,round(rand(1,2)))
-	}
-	onclick(holding){
-		let data = blockData[holding ? holding.id : 0]
-		if(data.dye){
-			this.color = colors.dye[data.dye].slice()
-			this.wool = data.dye+"Wool"
-			//if(multiplayer) send({type:"entEvent",event:"sheepColor",data:{color:this.color,wool:this.wool},id:this.id})
+	},
+	{
+		name:"pig",
+		drop: [blockIds.rawPorkchop],
+		dropAmount: [1,3],
+		saySound: ["pig.say1","pig.say2","pig.say3"],
+		stepSound: ["pig.step1","pig.step2","pig.step3","pig.step4","pig.step5"],
+		deathSound: "pig.death",
+		defaultName: "Pig",
+		width:1, height:1, depth:1,
+		health: 10,
+		attracts: [blockIds.carrot, blockIds.potato],
+	},
+	{
+		name:"creeper",
+		drop: [blockIds.gunpowder],
+		dropAmount: [0,2],
+		experience: 5,
+		hurtSound: ["creeper.say1","creeper.say2","creeper.say3","creeper.say4"],
+		deathSound: "creeper.death",
+		defaultName: "Creeper",
+		width:0.5, height:25/16, depth:0.5,
+		health: 10,
+		hostile: true,
+		minFollowDist: 3,
+		maxFollowDist: 16,
+		detectionDist: 16,
+		onspawn(){
+			this.timerStart = 0
+			this.explodeAmount = 0
+			this.timeLimit = 30
+		},
+		explode(){
+			var x = round(this.x), y = round(this.y), z = round(this.z)
+			this.world.explode(x,y,z,3, this.liquid || !this.world.world.settings.tntExplode, this.dimension)
+		},
+		additionalUpdate(){
+			let d = this.targetEnt && max(abs(this.targetEnt.x-this.x),abs(this.targetEnt.y-this.y),abs(this.targetEnt.z-this.z))
+			if(this.targetEnt && d<=this.minFollowDist){
+				if(!this.explodeAmount){
+					this.timerStart = now
+					this.world.playSound(this.x,this.y,this.z, "random.fuse")
+				}
+				this.explodeAmount++
+				if(this.explodeAmount > 20) this.explodeAmount = 20
+			}else if(this.explodeAmount) this.explodeAmount--
+			this.shader = 0, this.extraSize = 0
+			if(this.explodeAmount>0){
+				var i = Math.floor((now - this.timerStart) / 125)
+				if(!(i%2)){
+					this.shader = 1
+				}
+				if((now - this.timerStart) / tickTime >= this.timeLimit - 10){
+					//get bigger
+					this.extraSize = min(-((this.timeLimit - 10) - ((now - this.timerStart) / tickTime)) / 40,0.25)
+					this.shader = 1
+				}
+				if((now - this.timerStart) / tickTime >= this.timeLimit){
+					this.canDespawn = true
+					this.explode()
+				}
+			}
+		},
+		onclick(block){
+			if(!block || block.id !== blockIds.flintAndSteel) return
+			this.explodeAmount = 100
+			this.timerStart = now
 			this.world.sendEntityPos(this)
-		}else if(data.shears){
-			if(!this.fur) return
-			this.fur = false
-			this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds[this.wool],true,round(rand(1,3)))
-			//this.world.sendAllInChunk({type:"entEvent",event:"sheepFur",data:false,id:this.id},this.chunkX,this.chunkZ,this.chunkDimension)
-			this.world.sendEntityPos(this)
-			this.world.playSound(this.x,this.y,this.z, "sheep.shear")
+			//this.world.sendAllInChunk({type:"entEvent",event:"creeperForceExplode",id:this.id},this.chunkX,this.chunkZ,this.chunkDimension)
 		}
-	}
-	additionalAI(now){
-		if(!this.eating && this.standingOn === blockIds.grass && rand() > 0.999){
-			this.eating = 1
-			//this.world.sendAllInChunk({type:"entEvent",event:"sheepEat",id:this.id},this.chunkX,this.chunkZ,this.chunkDimension)
-			this.world.sendEntityPos(this)
-		}
-		if(this.eating && this.standingOn !== blockIds.grass) this.eating = 0
-		if(this.eating && ++this.eating > 40){
-			this.eating = 0
-			this.world.setBlock(round(this.x),floor(this.y-this.height/2),round(this.z),blockIds.dirt,false,false,false,false,this.dimension)
+	},
+	{
+		name:"sheep",
+		drop: [blockIds.rawMutton],
+		dropAmount: [1,2],
+		saySound: ["sheep.say1","sheep.say2","sheep.say3"],
+		hurtSound: ["sheep.say1","sheep.say2","sheep.say3"],
+		stepSound: ["sheep.step1","sheep.step2","sheep.step3","sheep.step4","sheep.step5"],
+		defaultName: "Sheep",
+		width:1, height:1, depth:1,
+		attracts: [blockIds.wheat],
+		health: 10,
+		onspawn(){
 			this.fur = true
-			//this.world.sendAllInChunk({type:"entEvent",event:"sheepFur",data:true,id:this.id},this.chunkX,this.chunkZ,this.chunkDimension)
-			this.world.sendEntityPos(this)
-			this.world.blockParticles(this.standingOn,round(this.x),floor(this.y-this.height/2)+0.5,round(this.z),30, "break")
-		}
-	}
-	update(){
-		this.mobUpdate(now)
-	}
-}
-entities[entities.length] = class Chicken extends Mob{
-	static name2 = "Chicken"
-	drop = [blockIds.rawChicken,blockIds.feather]
-	saySound = ["chicken.say1","chicken.say2","chicken.say3"]
-	stepSound = ["chicken.step1","chicken.step2"]
-	hurtSound = ["chicken.hurt1","chicken.hurt2"]
-	defaultName = "Chicken"
-	constructor(x,y,z){
-		var pix = 1/16
-		super(x, y, z, 0, 0, 0, 0, 0, 0.5, pix*11, 0.5, null,null, null, 300000)
-		this.offsetY = pix*2.5
-		this.addPart("leftWing",null,null,pix*3.5,pix*3,0,1,1,1,0,0)
-		this.addPart("rightWing",null,null,pix*-3.5,pix*3,0,1,1,1,0,0)
-		this.addPart("rightLeg",null,null,pix*-1.5,pix*-3,0,1,1,1,0,0)
-		this.addPart("leftLeg",null,null,pix*1.5,pix*-3,0,1,1,1,0,0)
-		this.addPart("head",null,null,0,pix*4,pix*4.5,1,1,1,0,0)
-		
-		this.health = 4
-		this.attracts = [blockIds.beetrootSeeds, blockIds.tomatoSeeds, blockIds.pumpkinSeeds, blockIds.melonSeeds, blockIds.wheatSeeds]
-	}
-	additionalAI(){
-		if(rand() > 0.9998){
-			this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds.egg,true)
-			this.world.playSound(this.x,this.y,this.z, "chicken.plop")
-		}
-	}
-	update(){
-		this.mobUpdate(now)
-
-		if(this.vely < 0){
-			this.vely *= 0.5
-			this.lastY = this.y
-		}
-	}
-}
-entities[entities.length] = class Zombie extends Mob{
-	static name2 = "Zombie"
-	drop = [blockIds.rottenFlesh]
-	dropAmount = [0,3]
-	experience = 5
-	saySound = ["zombie.say1","zombie.say2","zombie.say3"]
-	stepSound = ["zombie.step1","zombie.step2","zombie.step3","zombie.step4","zombie.step5"]
-	hurtSound = ["zombie.hurt1","zombie.hurt2"]
-	deathSound = "zombie.death"
-	defaultName = "Zombie"
-	constructor(x,y,z){
-		super(x, y, z, 0, 0, 0, 0, 0, 1, 2, 1, null,null, null, 300000)
-		var pix = 1/16
-		this.offsetY = pix*2
-		this.addPart("rightLeg",null,null,pix*-2,pix*-6,0,1,1,1,0,0)
-		this.addPart("leftLeg",null,null,pix*2,pix*-6,0,1,1,1,0,0)
-		this.addPart("rightArm",null,null,pix*-6,pix*6,pix*0,1,1,1,0,0)
-		this.addPart("leftArm",null,null,pix*6,pix*6,pix*0,1,1,1,0,0)
-		this.addPart("head",null,null,0,pix*10,0,1,1,1,0,0)
-		
-		this.health = 20
-		this.hostile = true
-		this.minFollowDist = 1
-		this.maxFollowDist = 35
-		this.detectionDist = 17.5
-		this.attackStrength = 3
-		this.maxAttackCooldown = 20
-	}
-	killMessage(username){return username+" died from some small punches from a Zombie."}
-	update(){
-		this.mobUpdate(now)
-		if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0)*this.world.world.skyLight > 11){
-			this.burnTimer += 0.2
-		}
-	}
-}
-entities[entities.length] = class Skeleton extends Mob{
-	static name2 = "Skeleton"
-	drop = [blockIds.bone,blockIds.arrow]
-	dropAmount = [1,2]
-	experience = 5
-	saySound = ["skeleton.say1","skeleton.say2","skeleton.say3"]
-	stepSound = ["skeleton.step1","skeleton.step2","skeleton.step3","skeleton.step4"]
-	hurtSound = ["skeleton.hurt1","skeleton.hurt2","skeleton.hurt3","skeleton.hurt4"]
-	deathSound = "skeleton.death"
-	defaultName = "Skeleton"
-	constructor(x,y,z){
-		super(x, y, z, 0, 0, 0, 0, 0, 0.75, 2, 0.75, null,null, null, 300000)
-		var pix = 1/16
-		this.offsetY = pix*2
-		this.addPart("rightLeg",null,null,pix*-2,pix*-6,0,1,1,1,0,0)
-		this.addPart("leftLeg",null,null,pix*2,pix*-6,0,1,1,1,0,0)
-		this.addPart("rightArm",null,null,pix*-5,pix*6,pix*0,1,1,1,0,0)
-		this.addPart("leftArm",null,null,pix*5,pix*6,pix*0,1,1,1,0,0)
-		this.addPart("head",null,null,0,pix*10,0,1,1,1,0,0)
-		this.addPart("holding",null,null,0,0,0,1,1,1,0,0,undefined,"rightArm") //changed later
-		
-		this.health = 20
-		this.hostile = true
-		this.minFollowDist = 8
-		this.maxFollowDist = this.detectionDist = 16
-		this.holding = blockIds.bow, this.maxAttackCooldown = 20
-	}
-	additionalAI(){
-		if(blockData[this.holding].name === "bow" && this.targetEnt && this.attackCooldown <= 0){
-			let vx = this.targetEnt.x - this.x, vy = this.targetEnt.y - this.y, vz = this.targetEnt.z - this.z
-			let mag = sqrt(vx*vx+vy*vy+vz*vz)
-			vx /= mag, vy /= mag, vz /= mag
-			this.world.addEntity(new entities[entityIds.Arrow](this.x+vx,this.y+vy,this.z+vz,vx,vy,vz,this.id),false,this.dimension)
-			this.attackCooldown = this.maxAttackCooldown
-			this.world.sendEntityPos(this)
-			//this.world.sendAllInChunk({type:"entEvent",event:"mobAttack",id:this.id},this.chunkX,this.chunkZ,this.chunkDimension)
-		}
-	}
-	update(){
-		this.mobUpdate(now)
-		if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0)*this.world.world.skyLight > 11){
-			this.burnTimer += 0.2
-		}
-	}
-}
-entities[entities.length] = class Spider extends Mob{
-	static name2 = "Spider"
-	saySound = ["spider.say1","spider.say2","spider.say3","spider.say4"]
-	stepSound = ["spider.step1","spider.step2","spider.step3","spider.step4"]
-	deathSound = "spider.death"
-	drop = [blockIds.string,blockIds.spiderEye]
-	dropAmount = [0,2]
-	experience = 5
-	constructor(x,y,z,cave){
-		let s = cave ? 0.7 : 1
-		super(x, y, z, 0, 0, 0, 0, 0, s, s, s, null,null, null, 300000)
-		var pix = 1/16
-		this.offsetY = pix*2
-		let legRot = Math.PI/8
-		this.addPart("rightLeg0",null,null,pix*-3,0,0,1,1,1,0,0,legRot)
-		this.addPart("rightLeg1",null,null,pix*-3,0,0,1,1,1,0,0,legRot)
-		this.addPart("rightLeg2",null,null,pix*-3,0,0,1,1,1,0,0,legRot)
-		this.addPart("rightLeg3",null,null,pix*-3,0,0,1,1,1,0,0,legRot)
-		this.addPart("leftLeg0",null,null,pix*3,0,0,1,1,1,0,0,-legRot)
-		this.addPart("leftLeg1",null,null,pix*3,0,0,1,1,1,0,0,-legRot)
-		this.addPart("leftLeg2",null,null,pix*3,0,0,1,1,1,0,0,-legRot)
-		this.addPart("leftLeg3",null,null,pix*3,0,0,1,1,1,0,0,-legRot)
-		this.addPart("head",null,null,0,0,pix*7,1,1,1,0,0)
-		
-		this.fur = !!cave
-		this.defaultName = cave ? "Cave Spider" : "Spider"
-		this.health = 16
-		this.canClimb = true
-		this.hostile = true
-		this.minFollowDist = 1.5
-		this.maxFollowDist = 16
-		this.detectionDist = -1
-		this.attackStrength = 2
-		this.maxAttackCooldown = 20
-	}
-	killMessage(username){return username+" died from a tiny little spider."}
-	update(){
-		this.mobUpdate(now)
-
-		if(this.prevWalking !== this.walking){
-			this.prevWalking = this.walking
-			this.walkStart = now
-		}
-	}
-}
-entities[entities.length] = class Wolf extends Mob{
-	static name2 = "Wolf"
-	defaultName = "Wolf"
-	constructor(x,y,z){
-		super(x, y, z, 0, 0, 0, 0, 0, 0.6, 0.8, 0.6, null,null, null, Infinity, "vao")
-		var pix = 1/16
-		this.addPart("head",null,null,0,0,pix*10,1,1,1,0,0)
-		this.addPart("frontRightLeg",null,null,pix*-1.5,pix*-3,pix*5,1,1,1,0,0)
-		this.addPart("frontLeftLeg",null,null,pix*1.5,pix*-3,pix*5,1,1,1,0,0)
-		this.addPart("backRightLeg",null,null,pix*-1.5,pix*-3,pix*-6,1,1,1,0,0)
-		this.addPart("backLeftLeg",null,null,pix*1.5,pix*-3,pix*-6,1,1,1,0,0)
-		this.addPart("tail",null,null,0,0,pix*-8,1,1,1,Math.PI2,0)
-		this.addPart("collar",null,null,0,0,pix*6.1,1,1,1,0,0)
-		
-		this.health = 8
-		this.hostile = true
-		this.minFollowDist = 1.5
-		this.maxFollowDist = 16
-		this.detectionDist = 16
-		this.attackStrength = 4
-		this.maxAttackCooldown = 20
-		this.attacks = ["Sheep","Rabbit","Fox","Skeleton"]
-		this.attracts = [blockIds.bone]
-		this.wetStuff = 0
-		this.tame = false
-		this.color = colors.dye.red.slice()
-	}
-	feed(id,from){
-		if(id === blockIds.bone){
-			if(this.tame){
-				let prev = this.health
-				this.health++
-				if(this.health > 20) this.health = 20
+			this.eating = 0
+			if(!this.color){
+				let r = rand(100), dye
+				if(r > 50) dye = "white"
+				else if(r > 35) dye = "lightGray"
+				else if(r > 20) dye = "gray"
+				else if(r > 5) dye = "black"
+				else if(r > 1) dye = "brown"
+				else dye = "pink"
+				this.color = colors.dye[dye].slice()
+				this.wool = dye+"Wool"
+			}
+		},
+		ondie(){
+			this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds[this.wool],true,round(rand(1,2)))
+		},
+		onclick(holding){
+			let data = blockData[holding ? holding.id : 0]
+			if(data.dye){
+				this.color = colors.dye[data.dye].slice()
+				this.wool = data.dye+"Wool"
+				//if(multiplayer) send({type:"entEvent",event:"sheepColor",data:{color:this.color,wool:this.wool},id:this.id})
 				this.world.sendEntityPos(this)
-			}else{
-				if(rand(3) > 1){
-					this.world.sendAllInChunk({
-						type:"particles",particleType:"smokeCube",
-						x:this.x,y:this.y,z:this.z,dimension:this.dimension,amount:10
-					},this.chunkX,this.chunkZ,this.chunkDimension)
-				}else{
-					this.world.sendAllInChunk({
-						type:"particles",particleType:"hearts",
-						x:this.x,y:this.y,z:this.z,dimension:this.dimension,amount:10
-					},this.chunkX,this.chunkZ,this.chunkDimension)
-					this.world.addEntity(new entities[entityIds.ExperienceOrb](this.x,this.y,this.z, rand(1,7)),false,this.dimension)
-					this.tame = true
-					this.health *= 20/8
-					let owner = getPlayerById(from,this.world)
-					this.owner = owner.username
-					this.world.sendEntityPos(this)
-				}
+			}else if(data.shears){
+				if(!this.fur) return
+				this.fur = false
+				this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds[this.wool],true,round(rand(1,3)))
+				//this.world.sendAllInChunk({type:"entEvent",event:"sheepFur",data:false,id:this.id},this.chunkX,this.chunkZ,this.chunkDimension)
+				this.world.sendEntityPos(this)
+				this.world.playSound(this.x,this.y,this.z, "sheep.shear")
+			}
+		},
+		additionalAI(now){
+			if(!this.eating && this.standingOn === blockIds.grass && rand() > 0.999){
+				this.eating = 1
+				//this.world.sendAllInChunk({type:"entEvent",event:"sheepEat",id:this.id},this.chunkX,this.chunkZ,this.chunkDimension)
+				this.world.sendEntityPos(this)
+			}
+			if(this.eating && this.standingOn !== blockIds.grass) this.eating = 0
+			if(this.eating && ++this.eating > 40){
+				this.eating = 0
+				this.world.setBlock(round(this.x),floor(this.y-this.height/2),round(this.z),blockIds.dirt,false,false,false,false,this.dimension)
+				this.fur = true
+				//this.world.sendAllInChunk({type:"entEvent",event:"sheepFur",data:true,id:this.id},this.chunkX,this.chunkZ,this.chunkDimension)
+				this.world.sendEntityPos(this)
+				this.world.blockParticles(this.standingOn,round(this.x),floor(this.y-this.height/2)+0.5,round(this.z),30, "break")
 			}
 		}
-	}
-	onclick(holding,p){
-		let data = blockData[holding ? holding.id : 0]
-		if(data.dye){
-			this.color = colors.dye[data.dye].slice()
-			//if(multiplayer) send({type:"entEvent",event:"wolfCollarColor",data:this.color,id:this.id})
-			//this.updateShape()
-			this.world.sendEntityPos(this)
-		}else if(holding && holding.id === blockIds.bone){
-			holding.amount--
-			this.feed(holding.id,p.id)
-		}else if(this.tame){
-			this.sitting = !this.sitting
-			this.world.sendEntityPos(this)
-			//if(multiplayer) send({type:"entEvent",event:"sit",id:this.id, data:this.sitting})
-		}
-	}
-	killMessage(username){return username+" got bited by a wolf."}
-	additionalAI(){
-		let owner = this.owner && getPlayerByUsername(this.owner,this.world)
-		if(!owner || owner.die || owner.hidden) return
-		let d = max(abs(this.x-owner.x),abs(this.y-owner.y),abs(this.z-owner.z))
-		if(d > 16 && !this.sitting){
-			this.target = null
-			let x = round(this.x), y = round(this.y), z = round(this.z)
-			let closest = Infinity, cx, cy, cz
-			for(let x2=-5;x2<5;x2++) for(let z2=-5;z2<5;z2++) for(let y2=-5;y2<5;y2++){
-				if(!blockData[this.world.getBlock(owner.x+x2,owner.y+y2,owner.z+z2)].solid){
-					let dist = max(abs(x2),abs(y2),abs(z2))
-					if(dist < closest && blockData[this.world.getBlock(owner.x+x2,owner.y+y2-1,owner.z+z2)].solid) closest = dist, cx = x2, cy = y2, cz = z2
-				}
+	},
+	{
+		name:"chicken",
+		drop: [blockIds.rawChicken,blockIds.feather],
+		saySound: ["chicken.say1","chicken.say2","chicken.say3"],
+		stepSound: ["chicken.step1","chicken.step2"],
+		hurtSound: ["chicken.hurt1","chicken.hurt2"],
+		defaultName: "Chicken",
+		width:0.5, height:11/16, depth:0.5,
+		health: 4,
+		attracts: [blockIds.beetrootSeeds, blockIds.tomatoSeeds, blockIds.pumpkinSeeds, blockIds.melonSeeds, blockIds.wheatSeeds],
+		additionalAI(){
+			if(rand() > 0.9998){
+				this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds.egg,true)
+				this.world.playSound(this.x,this.y,this.z, "chicken.plop")
 			}
-			if(isFinite(closest)){
-				this.x = owner.x+cx
-				this.y = owner.y+cy
-				this.z = owner.z+cz
-				this.path = null
+		},
+		additionalUpdate(){
+			if(this.vely < 0){
+				this.vely *= 0.5
 				this.lastY = this.y
-				//this.world.sendAll({type:"entEvent",event:"tp",id:this.id, data:{x:this.x,y:this.y,z:this.z}})
-				this.world.sendEntityPos(this)
-			}
-		}else if(d > 8 && !this.sitting){
-			if(now-this.lastPathFind>1000){
-				this.lastPathFind = now
-				let path = this.findPath(round(this.x),round(this.y-this.height/2),round(this.z),round(owner.x),round(owner.y),round(owner.z))
-				if(path){
-					path.splice(0,3)
-					this.path = path
-				}
 			}
 		}
-		if(owner && !owner.die && !owner.hidden){
-			if(owner.attackedById && this.target !== owner.attackedById){
-				this.target = owner.attackedById
-				this.world.sendEntityPos(this)
-				//send({type:"entEvent",event:"wolfTarget",id:this.id, data:this.target})
+	},
+	{
+		name:"zombie",
+		drop: [blockIds.rottenFlesh],
+		dropAmount: [0,3],
+		experience: 5,
+		saySound: ["zombie.say1","zombie.say2","zombie.say3"],
+		stepSound: ["zombie.step1","zombie.step2","zombie.step3","zombie.step4","zombie.step5"],
+		hurtSound: ["zombie.hurt1","zombie.hurt2"],
+		deathSound: "zombie.death",
+		defaultName: "Zombie",
+		width:1, height:2, depth:1,
+		health: 20,
+		hostile: true,
+		minFollowDist: 1,
+		maxFollowDist: 35,
+		detectionDist: 17.5,
+		attackStrength: 3,
+		maxAttackCooldown: 20,
+		killMessage(username){return username+" died from some small punches from a Zombie."},
+		additionalUpdate(){
+			if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0)*this.world.world.skyLight > 11){
+				this.burnTimer += 0.2
 			}
 		}
-	}
-	update(){
-		this.mobUpdate(now)
-		let pix = 1 / 16
-		if(!this.target && !this.tame){
-			this.world.getEntitiesNear(this.x,this.y,this.z, 16, nearEntityArray)
-			let cd = Infinity, ctarget
-			for(let i of nearEntityArray){
-				if(i.dimension === this.dimension && i.type === this.type && i.target){
-					let d = max(abs(i.x-this.x),abs(i.y-this.y),abs(i.z-this.z))
-					if(d < 16 && d < cd) cd = d, ctarget = i.target
-				}
-			}
-			if(ctarget) this.target = ctarget
-		}
-	}
-}
-entities[entities.length] = class Blaze extends Mob{
-	static name2 = "Blaze"
-	drop = [blockIds.blazeRod]
-	dropAmount = [0,1]
-	experience = 10
-	saySound = ["blaze.breathe1","blaze.breathe2","blaze.breathe3","blaze.breathe4"]
-	hurtSound = ["blaze.hit1","blaze.hit2","blaze.hit3","blaze.hit4"]
-	deathSound = "blaze.death"
-	defaultName = "Blaze"
-	constructor(x,y,z){
-		var pix = 1/16
-		super(x, y, z, 0, 0, 0, 0, 0, 1, pix*22, 1, null,null, null, 300000)
-		this.addPart("head",null,null,0,pix*10,0,1,1,1,0,0)
-		
-		this.health = 20
-		this.hostile = true
-		this.minFollowDist = 1
-		this.maxFollowDist = 48
-		this.detectionDist = 48
-		this.attackStrength = 6
-		this.maxAttackCooldown = 200
-		this.canFly = true
-	}
-	killMessage(username){return username+" got killed by blaze."}
-	additionalAI(){
-		if(this.targetEnt){
-			if(this.attackCooldown <= 0){
-				this.attackCooldown = this.maxAttackCooldown
-				//this.world.sendAll({type:"entEvent",event:"mobAttack",id:this.id})
-				this.world.sendEntityPos(this)
-			}
-			if(this.attackCooldown === 20 || this.attackCooldown === 11 || this.attackCooldown === 2){
+	},
+	{
+		name:"skeleton",
+		drop: [blockIds.bone,blockIds.arrow],
+		dropAmount: [1,2],
+		experience: 5,
+		saySound: ["skeleton.say1","skeleton.say2","skeleton.say3"],
+		stepSound: ["skeleton.step1","skeleton.step2","skeleton.step3","skeleton.step4"],
+		hurtSound: ["skeleton.hurt1","skeleton.hurt2","skeleton.hurt3","skeleton.hurt4"],
+		deathSound: "skeleton.death",
+		defaultName: "Skeleton",
+		width:0.75, height:2, depth:0.75,
+		health: 20,
+		hostile: true,
+		minFollowDist: 8,
+		maxFollowDist: 16,
+		detectionDist: 16,
+		holding: blockIds.bow,
+		maxAttackCooldown: 20,
+		additionalAI(){
+			if(blockData[this.holding].name === "bow" && this.targetEnt && this.attackCooldown <= 0){
 				let vx = this.targetEnt.x - this.x, vy = this.targetEnt.y - this.y, vz = this.targetEnt.z - this.z
 				let mag = sqrt(vx*vx+vy*vy+vz*vz)
 				vx /= mag, vy /= mag, vz /= mag
-				this.world.addEntity(new entities[entityIds.SmallFireball](this.x+vx,this.y+vy,this.z+vz,vx,vy,vz,this.id),false,this.dimension)
+				this.world.addEntity(new entities[entityIds.Arrow](this.x+vx,this.y+vy,this.z+vz,vx,vy,vz,this.id),false,this.dimension)
+				this.attackCooldown = this.maxAttackCooldown
+				this.world.sendEntityPos(this)
+				//this.world.sendAllInChunk({type:"entEvent",event:"mobAttack",id:this.id},this.chunkX,this.chunkZ,this.chunkDimension)
+			}
+		},
+		additionalUpdate(){
+			if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0)*this.world.world.skyLight > 11){
+				this.burnTimer += 0.2
+			}
+		}
+	},
+	{
+		name:"spider",
+		saySound: ["spider.say1","spider.say2","spider.say3","spider.say4"],
+		stepSound: ["spider.step1","spider.step2","spider.step3","spider.step4"],
+		deathSound: "spider.death",
+		drop: [blockIds.string,blockIds.spiderEye],
+		dropAmount: [0,2],
+		experience: 5,
+		width:1, height:1, depth:1,
+		health: 16,
+		canClimb: true,
+		hostile: true,
+		minFollowDist: 1.5,
+		maxFollowDist: 16,
+		detectionDist: -1,
+		attackStrength: 2,
+		maxAttackCooldown: 20,
+		onspawn(){
+			this.fur = !!this.cave
+			this.defaultName = this.cave ? "Cave Spider" : "Spider"
+			if(this.cave){
+				this.width = this.height = this.depth = 0.7
+			}
+		},
+		killMessage(username){return username+" died from a tiny little spider."},
+		additionalUpdate(){
+			if(this.prevWalking !== this.walking){
+				this.prevWalking = this.walking
+				this.walkStart = now
+			}
+		}
+	},
+	{
+		name:"wolf",
+		defaultName: "Wolf",
+		width:0.6, height:0.8, depth:0.6,
+		health: 8,
+		hostile: true,
+		minFollowDist: 1.5,
+		maxFollowDist: 16,
+		detectionDist: 16,
+		attackStrength: 4,
+		maxAttackCooldown: 20,
+		attacks: ["Sheep","Rabbit","Fox","Skeleton"],
+		attracts: [blockIds.bone],
+		onspawn(){
+			this.wetStuff = 0
+			this.tame = false
+			this.color = colors.dye.red.slice()
+		},
+		feed(id,from){
+			if(id === blockIds.bone){
+				if(this.tame){
+					let prev = this.health
+					this.health++
+					if(this.health > 20) this.health = 20
+					this.world.sendEntityPos(this)
+				}else{
+					if(rand(3) > 1){
+						this.world.sendAllInChunk({
+							type:"particles",particleType:"smokeCube",
+							x:this.x,y:this.y,z:this.z,dimension:this.dimension,amount:10
+						},this.chunkX,this.chunkZ,this.chunkDimension)
+					}else{
+						this.world.sendAllInChunk({
+							type:"particles",particleType:"hearts",
+							x:this.x,y:this.y,z:this.z,dimension:this.dimension,amount:10
+						},this.chunkX,this.chunkZ,this.chunkDimension)
+						this.world.addEntity(new entities[entityIds.ExperienceOrb](this.x,this.y,this.z, rand(1,7)),false,this.dimension)
+						this.tame = true
+						this.health *= 20/8
+						let owner = getPlayerById(from,this.world)
+						this.owner = owner.username
+						this.world.sendEntityPos(this)
+					}
+				}
+			}
+		},
+		onclick(holding,p){
+			let data = blockData[holding ? holding.id : 0]
+			if(data.dye){
+				this.color = colors.dye[data.dye].slice()
+				//if(multiplayer) send({type:"entEvent",event:"wolfCollarColor",data:this.color,id:this.id})
+				//this.updateShape()
+				this.world.sendEntityPos(this)
+			}else if(holding && holding.id === blockIds.bone){
+				holding.amount--
+				this.feed(holding.id,p.id)
+			}else if(this.tame){
+				this.sitting = !this.sitting
+				this.world.sendEntityPos(this)
+				//if(multiplayer) send({type:"entEvent",event:"sit",id:this.id, data:this.sitting})
+			}
+		},
+		killMessage(username){return username+" got bited by a wolf."},
+		additionalAI(){
+			let owner = this.owner && getPlayerByUsername(this.owner,this.world)
+			if(!owner || owner.die || owner.hidden) return
+			let d = max(abs(this.x-owner.x),abs(this.y-owner.y),abs(this.z-owner.z))
+			if(d > 16 && !this.sitting){
+				this.target = null
+				let x = round(this.x), y = round(this.y), z = round(this.z)
+				let closest = Infinity, cx, cy, cz
+				for(let x2=-5;x2<5;x2++) for(let z2=-5;z2<5;z2++) for(let y2=-5;y2<5;y2++){
+					if(!blockData[this.world.getBlock(owner.x+x2,owner.y+y2,owner.z+z2)].solid){
+						let dist = max(abs(x2),abs(y2),abs(z2))
+						if(dist < closest && blockData[this.world.getBlock(owner.x+x2,owner.y+y2-1,owner.z+z2)].solid) closest = dist, cx = x2, cy = y2, cz = z2
+					}
+				}
+				if(isFinite(closest)){
+					this.x = owner.x+cx
+					this.y = owner.y+cy
+					this.z = owner.z+cz
+					this.path = null
+					this.lastY = this.y
+					//this.world.sendAll({type:"entEvent",event:"tp",id:this.id, data:{x:this.x,y:this.y,z:this.z}})
+					this.world.sendEntityPos(this)
+				}
+			}else if(d > 8 && !this.sitting){
+				if(now-this.lastPathFind>1000){
+					this.lastPathFind = now
+					let path = this.findPath(round(this.x),round(this.y-this.height/2),round(this.z),round(owner.x),round(owner.y),round(owner.z))
+					if(path){
+						path.splice(0,3)
+						this.path = path
+					}
+				}
+			}
+			if(owner && !owner.die && !owner.hidden){
+				if(owner.attackedById && this.target !== owner.attackedById){
+					this.target = owner.attackedById
+					this.world.sendEntityPos(this)
+					//send({type:"entEvent",event:"wolfTarget",id:this.id, data:this.target})
+				}
+			}
+		},
+		additionalUpdate(){
+			let pix = 1 / 16
+			if(!this.target && !this.tame){
+				this.world.getEntitiesNear(this.x,this.y,this.z, 16, nearEntityArray)
+				let cd = Infinity, ctarget
+				for(let i of nearEntityArray){
+					if(i.dimension === this.dimension && i.type === this.type && i.target){
+						let d = max(abs(i.x-this.x),abs(i.y-this.y),abs(i.z-this.z))
+						if(d < 16 && d < cd) cd = d, ctarget = i.target
+					}
+				}
+				if(ctarget) this.target = ctarget
+			}
+		}
+	},
+	{
+		name:"blaze",
+		drop: [blockIds.blazeRod],
+		dropAmount: [0,1],
+		experience: 10,
+		saySound: ["blaze.breathe1","blaze.breathe2","blaze.breathe3","blaze.breathe4"],
+		hurtSound: ["blaze.hit1","blaze.hit2","blaze.hit3","blaze.hit4"],
+		deathSound: "blaze.death",
+		defaultName: "Blaze",
+		width:1, height:22/16, depth:1,
+		health: 20,
+		hostile: true,
+		minFollowDist: 1,
+		maxFollowDist: 48,
+		detectionDist: 48,
+		attackStrength: 6,
+		maxAttackCooldown: 200,
+		canFly: true,
+		killMessage(username){return username+" got killed by blaze."},
+		additionalAI(){
+			if(this.targetEnt){
+				if(this.attackCooldown <= 0){
+					this.attackCooldown = this.maxAttackCooldown
+					//this.world.sendAll({type:"entEvent",event:"mobAttack",id:this.id})
+					this.world.sendEntityPos(this)
+				}
+				if(this.attackCooldown === 20 || this.attackCooldown === 11 || this.attackCooldown === 2){
+					let vx = this.targetEnt.x - this.x, vy = this.targetEnt.y - this.y, vz = this.targetEnt.z - this.z
+					let mag = sqrt(vx*vx+vy*vy+vz*vz)
+					vx /= mag, vy /= mag, vz /= mag
+					this.world.addEntity(new entities[entityIds.SmallFireball](this.x+vx,this.y+vy,this.z+vz,vx,vy,vz,this.id),false,this.dimension)
+				}
+			}
+		},
+		additionalUpdate(){
+			if(this.burnTimer) this.burnTimer = 0
+			if(this.targetEnt && this.attackCooldown > 0 && this.attackCooldown < 100) this.burning = true
+		}
+	},
+	{
+		name:"enderman",
+		defaultName: "Enderman",
+		width:0.75, height:3, depth:0.75,
+		health: 40,
+		hostile: true,
+		minFollowDist: 1,
+		maxFollowDist: 16,
+		detectionDist: 16,
+		attackStrength: 7,
+		maxAttackCooldown: 20,
+		killMessage(username){return username+" died from Enderman."},
+		additionalUpdate(){
+			if(this.wet){
+				if(now - this.lastBlockDamage > 1000){
+					this.lastBlockDamage = now
+					this.damage(1)
+				}
 			}
 		}
 	}
-	update(){
-		this.mobUpdate(now)
-		if(this.burnTimer) this.burnTimer = 0
-
-		if(this.targetEnt && this.attackCooldown > 0 && this.attackCooldown < 100) this.burning = true
-	}
-}
-entities[entities.length] = class Enderman extends Mob{
-	static name2 = "Enderman"
-	defaultName = "Enderman"
-	constructor(x,y,z){
-		super(x, y, z, 0, 0, 0, 0, 0, 0.75, 3, 0.75, null,null, null, 300000)
-		let pix = 1/16
-		this.offsetY = pix*13
-		this.addPart("rightLeg",null,null,pix*-2,pix*-6,0,1,1,1,0,0)
-		this.addPart("leftLeg",null,null,pix*2,pix*-6,0,1,1,1,0,0)
-		this.addPart("rightArm",null,null,pix*-4,pix*6,pix*0,1,1,1,0,0)
-		this.addPart("leftArm",null,null,pix*4,pix*6,pix*0,1,1,1,0,0)
-		this.addPart("head",null,null,0,pix*10,0,1,1,1,0,0)
-		
-		this.health = 40
-		this.hostile = true
-		this.minFollowDist = 1
-		this.maxFollowDist = 16
-		this.detectionDist = 16
-		this.attackStrength = 7
-		this.maxAttackCooldown = 20
-	}
-	killMessage(username){return username+" died from Enderman."}
-	update(){
-		this.mobUpdate(now)
-		if(this.wet){
-			if(now - this.lastBlockDamage > 1000){
-				this.lastBlockDamage = now
-				this.damage(1)
-			}
+]//todo n: extra used variables (like color) in posEntity
+//find: \t+(this.)*(\w*?) = (.*?)\n
+//replace: \t\t$2: $3,\n
+win.entityData = entityData
+for(let i=0; i<entityData.length; i++){
+	let data = entityData[i]
+	let ent = class extends Mob {
+		static name2 = data.name
+		constructor(x,y,z){
+			super(x,y,z,0,0,0,0,0, data.width,data.height,data.depth, null,null,null, 300000)
+			if(this.onspawn) this.onspawn()
 		}
 	}
+	Object.assign(ent.prototype, data)
+	entities[entities.length] = ent
 }
 
 entities[entities.length] = class TextDisplay extends Entity{
@@ -24892,14 +24793,14 @@ entities[entities.length] = class TextDisplay extends Entity{
 	setText(t){this.text = t}
 }
 
-let entityOrder = ['Item','BlockEntity', 'PrimedTNT', 'PrimedSuperTNT', 'PrimedUltraTNT', 'PrimedUnTNT', 'MovingBlock', 'EnderPearl', 'Snowball', 'Egg', 'SlingshotShot', 'Arrow', 'Sign', 'ItemFrame', 'ExperienceOrb', 'Cow', 'Pig', 'Creeper', 'Sheep', 'Chicken', 'Zombie', 'Skeleton', 'Spider', 'EnderDragon', 'BlockParticle', 'PoofParticle', 'FallingDustParticle', 'RedstoneParticle', 'ShockwaveParticle', 'SmokeParticle', 'NoteParticle', 'GlintParticle', 'FlameParticle', 'LavaParticle', 'DripParticle', 'SplashParticle', 'Spark', 'TextDisplay','Wolf','HeartParticle',"Blaze","SmallFireball","BlockDisplay","BeaconBeam","Enderman","Minecart"]
-let unorderedEntities = entities.slice()
+let entityOrder = ['Item','BlockEntity', 'PrimedTNT', 'PrimedSuperTNT', 'PrimedUltraTNT', 'PrimedUnTNT', 'MovingBlock', 'EnderPearl', 'Snowball', 'Egg', 'SlingshotShot', 'Arrow', 'Sign', 'ItemFrame', 'ExperienceOrb', 'cow', 'pig', 'creeper', 'sheep', 'chicken', 'zombie', 'skeleton', 'spider', 'EnderDragon', 'BlockParticle', 'PoofParticle', 'FallingDustParticle', 'RedstoneParticle', 'ShockwaveParticle', 'SmokeParticle', 'NoteParticle', 'GlintParticle', 'FlameParticle', 'LavaParticle', 'DripParticle', 'SplashParticle', 'Spark', 'TextDisplay','Wolf','HeartParticle',"Blaze","SmallFireball","BlockDisplay","BeaconBeam","Enderman","Minecart"]
 for(let i=0; i<entities.length; i++){
 	entityIds[entities[i].name2] = i
 }
+let unorderedEntities = entities
+entities = []
 for(let i=0; i<entityOrder.length; i++){
 	if(entityIds[entityOrder[i]] === undefined){
-		delete entities[i]
 		delete entityIds[entityOrder[i]]
 		continue
 	}
@@ -32132,7 +32033,10 @@ class World{ // aka trueWorld
 			if(entType === "Item" && ent.amount !== p.amount) ent.amount = p.amount, ent.willUpdateShape = true
 		}else{
 			ent = entities[p.entId]
-			switch(entType){
+			if(ent.mob){
+				ent = new ent(p.x,p.y,p.z) //todo: cave spider 'cave', fur
+			}
+			else switch(entType){
 				case "Item":
 					ent = new ent(p.x, p.y, p.z, p.velx, p.vely, p.velz, p.block, false, p.amount, p.durability||null, null)
 					break
@@ -32161,26 +32065,6 @@ class World{ // aka trueWorld
 					break
 				case "ExperienceOrb":
 					ent = new ent(p.x,p.y,p.z,p.amount)
-					break
-				case "Cow":
-				case "Pig":
-				case "Creeper":
-				case "Chicken":
-				case "Zombie":
-				case "Skeleton":
-				case "Wolf":
-				case "Blaze":
-				case "Enderman":
-					ent = new ent(p.x,p.y,p.z)
-					break
-				case "Sheep":
-					ent = new ent(p.x,p.y,p.z, p.color, p.wool)
-					break
-				case "Spider":
-					ent = new ent(p.x,p.y,p.z,p.fur)
-					break
-				case "EnderDragon":
-					ent = new ent(p.x,p.y,p.z)
 					break
 				case "TextDisplay":
 					ent = new ent(p.x,p.y,p.z,p.text,p.size,p.color,p.background,p.glow)
@@ -32248,7 +32132,7 @@ class World{ // aka trueWorld
 		ent.updateChunk()
 		return ent
 	}
-	posEntityOldBab(p, m, preBetaVersion){
+	posEntityOldBab(p, m, preBetaVersion){ //todo n
 		let now = performance.now()
 		let nameLen = p.read(8)
 		let id = ""

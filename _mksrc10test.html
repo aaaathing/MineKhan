@@ -17730,6 +17730,10 @@ r 11 y  n  n  n
         this.nameText.z = this.z
 			}
 		}
+		update(){
+			this.mobUpdate(now)
+			if(this.additionalUpdate) this.additionalUpdate()
+		}
     /*onhit(damage,remote, vx,vz, from){
       if(!remote) send({
         type:"entEvent",event:"damageMob",id:this.id,
@@ -17751,994 +17755,215 @@ r 11 y  n  n  n
     }*/
   }
   
-  entities[entities.length] = class Cow extends Mob{
-		static name2 = "Cow"
-		static nameMcd = "cow"
-		defaultName = "Cow"
-    constructor(x,y,z){
-      super(x, y, z, 0, 0, 0, 0, 0, 1, 21/16, 1, null,null, null, 300000, null)
-      
-			this.setPartShapes(serverEntities[this.entId].variantsBones.default)
-			this.offsetry = Math.PI
-      
-      this.health = 10
-      this.prevWalking = false
-      this.walkStart = 0
-      this.walkRot = 0
-    }
-    update(){
-      this.mobUpdate(now)
-return
-      if(this.prevWalking !== this.walking){
-        this.prevWalking = this.walking
-        this.walkStart = now
-      }
-      var walkRotTarget = 0
-      if(this.walking){
-        if(this.panick > 0) walkRotTarget = sin(((now - this.walkStart) / 500) * Math.PI) * Math.PI / 4
-        else walkRotTarget = sin(((now - this.walkStart) / 1000) * Math.PI) * Math.PI / 4
-      }
-      this.walkRot = lerp(0.5,this.walkRot,walkRotTarget)
-      this.parts.frontLeftLeg.rx = this.walkRot
-      this.parts.frontRightLeg.rx = -this.walkRot
-      this.parts.backLeftLeg.rx = this.walkRot
-      this.parts.backRightLeg.rx = -this.walkRot
-
-      if(this.targetEnt || this.attractEnt){
-        let {x,y,z} = this.targetEnt || this.attractEnt
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry2 = -(this.yaw - yaw)
-        if(this.parts.head.ry2 - this.parts.head.pry2 > Math.PI) this.parts.head.pry2 += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry2 - this.parts.head.pry2 < -Math.PI) this.parts.head.pry2 -= Math.PId
-        let adjacent = dist2(this.x,this.z,x,z)
-        this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
-				this.parts.head.ry = 0
-      }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }else if(this.spinTarget){
-        let yaw = this.spinTarget
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }
-    }
-  }
-  
-  entities[entities.length] = class Pig extends Mob{
-		static name2 = "Pig"
-		defaultName = "Pig"
-    constructor(x,y,z){
-      var tex = textureCoords[textureMap.pig]
-      var vao = generateVAO(shapes.pigBody, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, null,null, vao.size, 300000, vao.vao)
-      var pix = 1/16
-      this.offsetY = pix*6
-      var part = generateVAO(shapes.pigLeg,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("frontRightLeg",part.size,part.vao,pix*-3,pix*-8,pix*5,1,1,1,0,0)
-      this.addPart("frontLeftLeg",part.size,part.vao,pix*3,pix*-8,pix*5,1,1,1,0,0)
-      this.addPart("backRightLeg",part.size,part.vao,pix*-3,pix*-8,pix*-7,1,1,1,0,0)
-      this.addPart("backLeftLeg",part.size,part.vao,pix*3,pix*-8,pix*-7,1,1,1,0,0)
-      var part = generateVAO(shapes.pigHead,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("head",part.size,part.vao,0,pix*-2,pix*10,1,1,1,0,0)
-      
-      this.health = 10
-      this.prevWalking = false
-      this.walkStart = 0
-      this.walkRot = 0
-    }
-    update(){
-      this.mobUpdate(now)
-
-      if(this.prevWalking !== this.walking){
-        this.prevWalking = this.walking
-        this.walkStart = now
-      }
-      var walkRotTarget = 0
-      if(this.walking){
-        if(this.panick > 0) walkRotTarget = sin(((now - this.walkStart) / 500) * Math.PI) * Math.PI / 4
-        else walkRotTarget = sin(((now - this.walkStart) / 1000) * Math.PI) * Math.PI / 4
-      }
-      this.walkRot = lerp(0.5,this.walkRot,walkRotTarget)
-      this.parts.frontLeftLeg.rx = this.walkRot
-      this.parts.frontRightLeg.rx = -this.walkRot
-      this.parts.backLeftLeg.rx = this.walkRot
-      this.parts.backRightLeg.rx = -this.walkRot
-
-      if(this.targetEnt || this.attractEnt){
-        let {x,y,z} = this.targetEnt || this.attractEnt
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry2 = -(this.yaw - yaw)
-        if(this.parts.head.ry2 - this.parts.head.pry2 > Math.PI) this.parts.head.pry2 += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry2 - this.parts.head.pry2 < -Math.PI) this.parts.head.pry2 -= Math.PId
-        let adjacent = dist2(this.x,this.z,x,z)
-        this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
-				this.parts.head.ry = 0
-      }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }else if(this.spinTarget){
-        let yaw = this.spinTarget
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }
-    }
-  }
-  entities[entities.length] = class Creeper extends Mob{
-		static name2 = "Creeper"
-		defaultName = "Creeper"
-    constructor(x,y,z){
-      var tex = textureCoords[textureMap.creeper]
-      var vao = generateVAO(shapes.creeperBody, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      super(x, y, z, 0, 0, 0, 0, 0, 0.5, 26/16, 0.5, null,null, vao.size, 300000, vao.vao)
-      var pix = 1/16
-      this.offsetY = pix*-1
-      var part = generateVAO(shapes.pigLeg,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("frontRightLeg",part.size,part.vao,pix*-2,pix*-6,pix*4,1,1,1,0,0)
-      this.addPart("frontLeftLeg",part.size,part.vao,pix*2,pix*-6,pix*4,1,1,1,0,0)
-      this.addPart("backRightLeg",part.size,part.vao,pix*-2,pix*-6,pix*-4,1,1,1,0,0)
-      this.addPart("backLeftLeg",part.size,part.vao,pix*2,pix*-6,pix*-4,1,1,1,0,0)
-      var part = generateVAO(shapes.creeperHead,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("head",part.size,part.vao,0,pix*10,0,1,1,1,0,0)
-      
-      this.health = 10
-      this.prevWalking = false
-      this.walkStart = 0
-      this.walkRot = 0
-      this.timerStart = 0
-      this.explodeAmount = 0
-      this.timeLimit = 30
-    }
-    update(){
-      this.mobUpdate(now)
-
-      if(this.prevWalking !== this.walking){
-        this.prevWalking = this.walking
-        this.walkStart = now
-      }
-      var walkRotTarget = 0
-      if(this.walking){
-        if(this.panick > 0) walkRotTarget = sin(((now - this.walkStart) / 500) * Math.PI) * Math.PI / 4
-        else walkRotTarget = sin(((now - this.walkStart) / 1000) * Math.PI) * Math.PI / 4
-      }
-      this.walkRot = lerp(0.5,this.walkRot,walkRotTarget)
-      this.parts.frontLeftLeg.rx = this.walkRot
-      this.parts.frontRightLeg.rx = -this.walkRot
-      this.parts.backLeftLeg.rx = this.walkRot
-      this.parts.backRightLeg.rx = -this.walkRot
-
-      if(this.targetEnt){
-        let {x,y,z} = this.targetEnt
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry2 = -(this.yaw - yaw)
-        if(this.parts.head.ry2 - this.parts.head.pry2 > Math.PI) this.parts.head.pry2 += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry2 - this.parts.head.pry2 < -Math.PI) this.parts.head.pry2 -= Math.PId
-        let adjacent = dist2(this.x,this.z,x,z)
-        this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
-				this.parts.head.ry = 0
-      }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }else if(this.spinTarget){
-        let yaw = this.spinTarget
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }
-
-      let d = this.targetEnt && max(abs(this.targetEnt.x-this.x),abs(this.targetEnt.y-this.y),abs(this.targetEnt.z-this.z))
-      if(this.targetEnt && d<=3){
-        if(!this.explodeAmount){
-          this.timerStart = now
-        }
-        this.explodeAmount++
-        if(this.explodeAmount > 20) this.explodeAmount = 20
-      }else if(this.explodeAmount) this.explodeAmount--
-      this.shader = 0, this.extraSize = 0
-      if(this.explodeAmount>0){
-        var i = Math.floor((now - this.timerStart) / 125)
-        if(!(i%2)){
-          this.shader = 1
-        }
-        if((now - this.timerStart) / tickTime >= this.timeLimit - 10){
-          //get bigger
-          this.extraSize = min(-((this.timeLimit - 10) - ((now - this.timerStart) / tickTime)) / 40,0.25)
-					this.shader = 1
-        }
-      }
-    }
-  }
-  entities[entities.length] = class Sheep extends Mob{
-		static name2 = "Sheep"
-		defaultName = "Sheep"
-    constructor(x,y,z, color, wool){
-      super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, null,null, 0, 300000, "vao")
-      var pix = 1/16
-      this.offsetY = pix*7
-      this.addPart("frontRightLeg",null,null,pix*-3,pix*-3,pix*5,1,1,1,0,0)
-      this.addPart("frontLeftLeg",null,null,pix*3,pix*-3,pix*5,1,1,1,0,0)
-      this.addPart("backRightLeg",null,null,pix*-3,pix*-3,pix*-7,1,1,1,0,0)
-      this.addPart("backLeftLeg",null,null,pix*3,pix*-3,pix*-7,1,1,1,0,0)
-      this.addPart("head",null,null,0,pix*4,pix*10,1,1,1,0,0)
-      this.health = 10
-      this.prevWalking = false
-      this.walkStart = 0
-      this.walkRot = 0
-      this.fur = true
-      this.prevFur = true
-      this.updateShape()
-      this.eating = 0
-      this.color = color
-			this.wool = wool
-      this.tintGray = true
-			this.attracts = [blockIds.wheat]
-    }
-    update(){
-      this.mobUpdate(now)
-
-      if(this.prevWalking !== this.walking){
-        this.prevWalking = this.walking
-        this.walkStart = now
-      }
-      var walkRotTarget = 0
-      if(this.walking){
-        if(this.panick > 0) walkRotTarget = sin(((now - this.walkStart) / 500) * Math.PI) * Math.PI / 4
-        else walkRotTarget = sin(((now - this.walkStart) / 1000) * Math.PI) * Math.PI / 4
-      }
-      this.walkRot = lerp(0.5,this.walkRot,walkRotTarget)
-      this.parts.frontLeftLeg.rx = this.walkRot
-      this.parts.frontRightLeg.rx = -this.walkRot
-      this.parts.backLeftLeg.rx = this.walkRot
-      this.parts.backRightLeg.rx = -this.walkRot
-
-      if(this.targetEnt || this.attractEnt){
-        let {x,y,z} = this.targetEnt || this.attractEnt
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry2 = -(this.yaw - yaw)
-        if(this.parts.head.ry2 - this.parts.head.pry2 > Math.PI) this.parts.head.pry2 += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry2 - this.parts.head.pry2 < -Math.PI) this.parts.head.pry2 -= Math.PId
-        let adjacent = dist2(this.x,this.z,x,z)
-        this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
-				this.parts.head.ry = 0
-      }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }else if(this.spinTarget){
-        let yaw = this.spinTarget
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }
-      if(this.eating){
-        if(this.parts.head.y > this.parts.head.originalY - 0.5){
-          this.parts.head.y -= 0.05
-        }else{
-          this.parts.head.rx = (sin(((now - this.spawn) / 250) * Math.PI) * Math.PI / 8)+Math.PI4
-        }
-      }else if(this.parts.head.y < this.parts.head.originalY){
-        this.parts.head.y += 0.05
-        this.parts.head.rx = 0
-        if(this.parts.head.y > this.parts.head.originalY) this.parts.head.y = this.parts.head.originalY
-      }
-      if(this.fur !== this.prevFur){
-        this.prevFur = this.fur
-        this.updateShape()
-      }
-      this.tint = this.color
-    }
-    updateShape(){
-      let tex = textureCoords[textureMap.sheepCombined]
-      let vao = generateVAO(this.fur ? shapes.sheepBodyFur : shapes.sheepBody, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.vao = vao.vao, this.faces = vao.size
-      let part = generateVAO(this.fur ? shapes.sheepLegFur : shapes.sheepLeg,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.parts.frontLeftLeg.vao = this.parts.frontRightLeg.vao = this.parts.backLeftLeg.vao = this.parts.backRightLeg.vao = part.vao
-      this.parts.frontLeftLeg.size = this.parts.frontRightLeg.size = this.parts.backLeftLeg.size = this.parts.backRightLeg.size = part.size
-      part = generateVAO(this.fur ? shapes.sheepHeadFur : shapes.sheepHead,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.parts.head.vao = part.vao
-      this.parts.head.size = part.size
-    }
-  }
-  entities[entities.length] = class Chicken extends Mob{
-		static name2 = "Chicken"
-		defaultName = "Chicken"
-    constructor(x,y,z){
-      var tex = textureCoords[textureMap.chicken]
-      var vao = generateVAO(shapes.chickenBody, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      var pix = 1/16
-      super(x, y, z, 0, 0, 0, 0, 0, 0.5, pix*11, 0.5, null,null, vao.size, 300000, vao.vao)
-      this.offsetY = pix*2.5
-      var part = generateVAO(shapes.chickenWing,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("leftWing",part.size,part.vao,pix*3.5,pix*3,0,1,1,1,0,0)
-      this.addPart("rightWing",part.size,part.vao,pix*-3.5,pix*3,0,1,1,1,0,0)
-      part = generateVAO(shapes.chickenLeg,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("rightLeg",part.size,part.vao,pix*-1.5,pix*-3,0,1,1,1,0,0)
-      this.addPart("leftLeg",part.size,part.vao,pix*1.5,pix*-3,0,1,1,1,0,0)
-      var part = generateVAO(shapes.chickenHead,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("head",part.size,part.vao,0,pix*4,pix*4.5,1,1,1,0,0)
-      
-      this.health = 4
-      this.prevWalking = false
-      this.walkStart = 0
-      this.walkRot = 0
-    }
-    update(){
-      this.mobUpdate(now)
-
-      if(this.vely < 0){
-        this.vely *= 0.5
-        this.lastY = this.y
-      }
-      if(this.vely < 0 || this.liquid){
-        let rot = sin(((now - this.walkStart) / 125) * Math.PI) * Math.PI / 4 + Math.PI2
-        this.parts.leftWing.rz = rot
-        this.parts.rightWing.rz = -rot
-      }else{
-        this.parts.leftWing.rz = this.parts.rightWing.rz = 0
-      }
-      if(this.prevWalking !== this.walking){
-        this.prevWalking = this.walking
-        this.walkStart = now
-      }
-      var walkRotTarget = 0
-      if(this.walking){
-        if(this.panick > 0) walkRotTarget = sin(((now - this.walkStart) / 500) * Math.PI) * Math.PI / 4
-        else walkRotTarget = sin(((now - this.walkStart) / 1000) * Math.PI) * Math.PI / 4
-      }
-      this.walkRot = lerp(0.5,this.walkRot,walkRotTarget)
-      this.parts.leftLeg.rx = this.walkRot
-      this.parts.rightLeg.rx = -this.walkRot
-
-      if(this.targetEnt || this.attractEnt){
-        let {x,y,z} = this.targetEnt || this.attractEnt
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry2 = -(this.yaw - yaw)
-        if(this.parts.head.ry2 - this.parts.head.pry2 > Math.PI) this.parts.head.pry2 += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry2 - this.parts.head.pry2 < -Math.PI) this.parts.head.pry2 -= Math.PId
-        let adjacent = dist2(this.x,this.z,x,z)
-        this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
-				this.parts.head.ry = 0
-      }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }else if(this.spinTarget){
-        let yaw = this.spinTarget
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }
-    }
-  }
-  entities[entities.length] = class Zombie extends Mob{
-		static name2 = "Zombie"
-		defaultName = "Zombie"
-    constructor(x,y,z){
-      var tex = textureCoords[textureMap.zombie]
-      var vao = generateVAO(shapes.zombieBody, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      super(x, y, z, 0, 0, 0, 0, 0, 1, 2, 1, null,null, vao.size, 300000, vao.vao)
-      var pix = 1/16
-      this.offsetY = pix*2
-      var part = generateVAO(shapes.zombieLeg,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("rightLeg",part.size,part.vao,pix*-2,pix*-6,0,1,1,1,0,0)
-      this.addPart("leftLeg",part.size,part.vao,pix*2,pix*-6,0,1,1,1,0,0)
-      var part = generateVAO(shapes.zombieArm,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("rightArm",part.size,part.vao,pix*-6,pix*6,pix*0,1,1,1,0,0)
-      this.addPart("leftArm",part.size,part.vao,pix*6,pix*6,pix*0,1,1,1,0,0)
-      var part = generateVAO(shapes.zombieHead,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("head",part.size,part.vao,0,pix*10,0,1,1,1,0,0)
-      
-      this.health = 20
-      this.prevWalking = false
-      this.walkStart = 0
-      this.walkRot = 0
-			this.maxAttackCooldown = 20
-    }
-    update(){
-      this.mobUpdate(now)
-			if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0, this.dimension)*skyLight > 11){
-				this.burnTimer += 0.2
-			}
-
-      if(this.prevWalking !== this.walking){
-        this.prevWalking = this.walking
-        this.walkStart = now
-      }
-      var walkRotTarget = 0
-      if(this.walking){
-        if(this.panick > 0) walkRotTarget = sin(((now - this.walkStart) / 500) * Math.PI) * Math.PI / 4
-        else walkRotTarget = sin(((now - this.walkStart) / 1000) * Math.PI) * Math.PI / 4
-      }
-      this.walkRot = lerp(0.5,this.walkRot,walkRotTarget)
-      this.parts.leftLeg.rx = this.walkRot
-      this.parts.rightLeg.rx = -this.walkRot
-      let pix = 1 / 16
-      let armRot = (sin((now - this.spawn) / 1000) / 2 + 0.5) * Math.PI / 40
-			this.parts.leftArm.rz = armRot
-			this.parts.rightArm.rz = -armRot
-			this.parts.leftArm.rx = this.walkRot
-      this.parts.rightArm.rx = -this.walkRot
-			if(this.targetEnt){
-				let offset = -(10-abs(this.attackCooldown-10))*Math.PI4/10
-				this.parts.leftArm.rx = -Math.PI2+offset
-				this.parts.rightArm.rx = -Math.PI2+offset
-			}else{
-				this.parts.leftArm.rx = this.walkRot
-				this.parts.rightArm.rx = -this.walkRot
-			}
-      if(this.targetEnt){
-        let {x,y,z} = this.targetEnt
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry2 = -(this.yaw - yaw)
-        if(this.parts.head.ry2 - this.parts.head.pry2 > Math.PI) this.parts.head.pry2 += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry2 - this.parts.head.pry2 < -Math.PI) this.parts.head.pry2 -= Math.PId
-        let adjacent = dist2(this.x,this.z,x,z)
-        this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
-				this.parts.head.ry = 0
-      }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }else if(this.spinTarget){
-        let yaw = this.spinTarget
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }
-    }
-  }
-	entities[entities.length] = class Skeleton extends Mob{
-		static name2 = "Skeleton"
-    defaultName = "Skeleton"
-    constructor(x,y,z){
-      var tex = textureCoords[textureMap.skeleton]
-      var vao = generateVAO(shapes.skeletonBody, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      super(x, y, z, 0, 0, 0, 0, 0, 0.75, 2, 0.75, null,null, vao.size, 300000, vao.vao)
-      var pix = 1/16
-      this.offsetY = pix*2
-      var part = generateVAO(shapes.skeletonLeg,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("rightLeg",part.size,part.vao,pix*-2,pix*-6,0,1,1,1,0,0)
-      this.addPart("leftLeg",part.size,part.vao,pix*2,pix*-6,0,1,1,1,0,0)
-      var part = generateVAO(shapes.skeletonArm,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("rightArm",part.size,part.vao,pix*-5,pix*6,pix*0,1,1,1,0,0)
-      this.addPart("leftArm",part.size,part.vao,pix*5,pix*6,pix*0,1,1,1,0,0)
-      var part = generateVAO(shapes.creeperHead,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("head",part.size,part.vao,0,pix*10,0,1,1,1,0,0)
-      this.addPart("holding",0,part.vao,0,0,0,1,1,1,0,0,undefined,"rightArm") //changed later
-      
-      this.health = 20
-      this.prevWalking = false
-      this.walkStart = 0
-      this.walkRot = 0
-			this.holding = blockIds.bow, this.maxAttackCooldown = 20
-    }
-		updateHolding(){
-			let part = this.parts.holding
-			let v = generateBlockVAO(this.holding)
-			part.vao = v.vao
-			part.size = v.size
-      let pix = 1 / 16
-			if(blockData[this.holding].tool){
-        part.x = 0
-        part.y = pix*-12
-        part.z = pix*6
-        part.w = part.h = part.d = 1
-        part.rx = Math.PI / 1.25
-        part.ry = Math.PI * -0.5
-      }else if(blockData[this.holding].name === "bow"){
-        part.x = 0
-        part.y = pix*-12
-        part.z = 0
-        part.w = part.h = part.d = 1
-        part.rx = Math.PI / 1.25
-        part.ry = Math.PI * -0.5
-      }else if(blockData[this.holding].spyglass){
-        part.x = pix*2
-        part.y = pix*-10
-        part.z = 0
-        part.w = part.h = part.d = 1
-        part.rx = -this.holdRot
-        part.ry = 0
-      }else if(blockData[this.holding].item){
-        part.x = 0
-        part.y = pix*-11
-        part.z = pix*4
-        part.w = part.h = part.d = 0.5
-        part.rx = Math.PI2
-        part.ry = 0
-      }else if(this.holding){
-        part.x = 0
-        part.y = pix*-12
-        part.z = pix*3
-        part.w = part.h = part.d = 0.25
-        part.rx = 0
-        part.ry = Math.PI / 4
-      }else{
-        this.parts.rightArm.rx = 0
-      }
-		}
-    update(){
-      this.mobUpdate(now)
-			if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0, this.dimension)*skyLight > 11){
-				this.burnTimer += 0.2
-			}
-
-      if(this.prevWalking !== this.walking){
-        this.prevWalking = this.walking
-        this.walkStart = now
-      }
-      var walkRotTarget = 0
-      if(this.walking){
-        if(this.panick > 0) walkRotTarget = sin(((now - this.walkStart) / 500) * Math.PI) * Math.PI / 4
-        else walkRotTarget = sin(((now - this.walkStart) / 1000) * Math.PI) * Math.PI / 4
-      }
-      this.walkRot = lerp(0.5,this.walkRot,walkRotTarget)
-      this.parts.leftLeg.rx = this.walkRot
-      this.parts.rightLeg.rx = -this.walkRot
-      let armRot = (sin((now - this.spawn) / 1000) / 2 + 0.5) * Math.PI / 40
-			this.parts.leftArm.rz = armRot
-			this.parts.rightArm.rz = -armRot
-			if(this.targetEnt){
-				if(blockData[this.holding].name === "bow"){
-          this.parts.leftArm.rx = -Math.PI2
-          this.parts.leftArm.ry2 = -Math.PI4
-          this.parts.rightArm.rx = -Math.PI2
-        }else if(blockData[this.holding].spyglass){
-          this.parts.rightArm.rx = -Math.PI2+this.holdRot
-        }else{
-					this.parts.leftArm.rx = this.parts.rightArm.rx = -Math.PI2
+	let entityDataAdditional = {
+		creeper:{
+			additionalUpdateClient(){
+				let d = this.targetEnt && max(abs(this.targetEnt.x-this.x),abs(this.targetEnt.y-this.y),abs(this.targetEnt.z-this.z))
+				if(this.targetEnt && d<=3){
+					if(!this.explodeAmount){
+						this.timerStart = now
+					}
+					this.explodeAmount++
+					if(this.explodeAmount > 20) this.explodeAmount = 20
+				}else if(this.explodeAmount) this.explodeAmount--
+				this.shader = 0, this.extraSize = 0
+				if(this.explodeAmount>0){
+					var i = Math.floor((now - this.timerStart) / 125)
+					if(!(i%2)){
+						this.shader = 1
+					}
+					if((now - this.timerStart) / tickTime >= this.timeLimit - 10){
+						//get bigger
+						this.extraSize = min(-((this.timeLimit - 10) - ((now - this.timerStart) / tickTime)) / 40,0.25)
+						this.shader = 1
+					}
 				}
-			}else{
-				this.parts.leftArm.rx = this.walkRot
-				this.parts.rightArm.rx = -this.walkRot
 			}
-      if(this.targetEnt){
-        let {x,y,z} = this.targetEnt
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry2 = -(this.yaw - yaw)
-        if(this.parts.head.ry2 - this.parts.head.pry2 > Math.PI) this.parts.head.pry2 += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry2 - this.parts.head.pry2 < -Math.PI) this.parts.head.pry2 -= Math.PId
-        let adjacent = dist2(this.x,this.z,x,z)
-        this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
-				this.parts.head.ry = 0
-      }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }else if(this.spinTarget){
-        let yaw = this.spinTarget
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }
-    }
-  }
-	entities[entities.length] = class Spider extends Mob{
-		static name2 = "Spider"
-		experience = 5
-    constructor(x,y,z,cave){
-      var tex = textureCoords[textureMap[cave ? "caveSpider" : "spider"]]
-      var vao = generateVAO(shapes.spiderBody, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-			let s = cave ? 0.7 : 1
-      super(x, y, z, 0, 0, 0, 0, 0, s, s, s, null,null, vao.size, 300000, vao.vao)
-			this.noScale = false
-      var pix = 1/16
-      this.offsetY = pix*2
-			let legRot = Math.PI/8
-      let part = generateVAO(shapes.spiderLeg,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("rightLeg0",part.size,part.vao,pix*-3,0,0,1,1,1,0,0,legRot)
-      this.addPart("rightLeg1",part.size,part.vao,pix*-3,0,0,1,1,1,0,0,legRot)
-      this.addPart("rightLeg2",part.size,part.vao,pix*-3,0,0,1,1,1,0,0,legRot)
-      this.addPart("rightLeg3",part.size,part.vao,pix*-3,0,0,1,1,1,0,0,legRot)
-      this.addPart("leftLeg0",part.size,part.vao,pix*3,0,0,1,1,1,0,0,-legRot)
-      this.addPart("leftLeg1",part.size,part.vao,pix*3,0,0,1,1,1,0,0,-legRot)
-      this.addPart("leftLeg2",part.size,part.vao,pix*3,0,0,1,1,1,0,0,-legRot)
-      this.addPart("leftLeg3",part.size,part.vao,pix*3,0,0,1,1,1,0,0,-legRot)
-      part = generateVAO(shapes.spiderHead,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("head",part.size,part.vao,0,0,pix*7,1,1,1,0,0)
-			let eyeTex = textureCoords[textureMap.spiderEyes]
-			let eye = generateVAO(shapes.spiderHead, eyeTex[0],eyeTex[1],eyeTex[2]-eyeTex[0],eyeTex[5]-eyeTex[1])
-      this.addPart("eyes",eye.size,eye.vao,0,0,0,1,1,1,0,0,0,"head",true)
-			let head = this.parts.head
-			delete this.parts.head
-			this.parts.head = head//put in front
-      
-			this.fur = !!cave
-      this.defaultName = cave ? "Cave Spider" : "Spider"
-      this.health = 16
-      this.prevWalking = false
-      this.walkStart = 0
-      this.walkRot = 0
-			this.canClimb = true
-			this.maxAttackCooldown = 20
-    }
-    update(){
-      this.mobUpdate(now)
+		},//todo n: tint sheep
+		sheep:{
+			additionalUpdateClient(){
+				if(this.eating){
+					if(this.parts.head.y > this.parts.head.originalY - 0.5){
+						this.parts.head.y -= 0.05
+					}else{
+						this.parts.head.rx = (sin(((now - this.spawn) / 250) * Math.PI) * Math.PI / 8)+Math.PI4
+					}
+				}else if(this.parts.head.y < this.parts.head.originalY){
+					this.parts.head.y += 0.05
+					this.parts.head.rx = 0
+					if(this.parts.head.y > this.parts.head.originalY) this.parts.head.y = this.parts.head.originalY
+				}
+				if(this.fur !== this.prevFur){
+					this.prevFur = this.fur
+					this.setPartShapes(this.fur ? this.variantsBones.default : this.variantsBones.sheared)
+				}
+				this.tint = this.color
+			}
+		},
+		chicken:{
+			additionalUpdateClient(){
+				if(this.vely < 0 || this.liquid){
+					let rot = sin(((now - this.walkStart) / 125) * Math.PI) * Math.PI / 4 + Math.PI2
+					this.parts.leftWing.rz = rot
+					this.parts.rightWing.rz = -rot
+				}else{
+					this.parts.leftWing.rz = this.parts.rightWing.rz = 0
+				}
+			}
+		},
+		zombie:{
+			additionalUpdateClient(){
+				if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0, this.dimension)*skyLight > 11){
+					this.burnTimer += 0.2
+				}
+			}
+		},
+		skeleton:{
+			updateHolding(){//todo n: update holding
+				let part = this.parts.holding
+				let v = generateBlockVAO(this.holding)
+				part.vao = v.vao
+				part.size = v.size
+				let pix = 1 / 16
+				if(blockData[this.holding].tool){
+					part.x = 0
+					part.y = pix*-12
+					part.z = pix*6
+					part.w = part.h = part.d = 1
+					part.rx = Math.PI / 1.25
+					part.ry = Math.PI * -0.5
+				}else if(blockData[this.holding].name === "bow"){
+					part.x = 0
+					part.y = pix*-12
+					part.z = 0
+					part.w = part.h = part.d = 1
+					part.rx = Math.PI / 1.25
+					part.ry = Math.PI * -0.5
+				}else if(blockData[this.holding].spyglass){
+					part.x = pix*2
+					part.y = pix*-10
+					part.z = 0
+					part.w = part.h = part.d = 1
+					part.rx = -this.holdRot
+					part.ry = 0
+				}else if(blockData[this.holding].item){
+					part.x = 0
+					part.y = pix*-11
+					part.z = pix*4
+					part.w = part.h = part.d = 0.5
+					part.rx = Math.PI2
+					part.ry = 0
+				}else if(this.holding){
+					part.x = 0
+					part.y = pix*-12
+					part.z = pix*3
+					part.w = part.h = part.d = 0.25
+					part.rx = 0
+					part.ry = Math.PI / 4
+				}else{
+					this.parts.rightArm.rx = 0
+				}
+			},
+			additionalUpdateClient(){
+				if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0, this.dimension)*skyLight > 11){
+					this.burnTimer += 0.2
+				}
+			}
+		},//todo n: spider animat, wolf
+		wolf:{
+			additionalUpdateClient(){
+				if(this.sitting){
+					this.offsetY = this.defaultOffsetY - pix*3
+					this.parts.collar.rx = this.pitch2 = -Math.PI4
+					this.parts.frontLeftLeg.rx = -Math.PI/8
+					this.parts.frontRightLeg.rx = -Math.PI/8
+					this.parts.backLeftLeg.rx = -Math.PI2
+					this.parts.backRightLeg.rx = -Math.PI2
+					this.parts.tail.y = this.parts.tail.originalY-pix*4
+					this.parts.tail.z = this.parts.tail.originalZ+pix*2
+					this.parts.frontLeftLeg.y = this.parts.frontLeftLeg.originalY+pix*3
+					this.parts.frontRightLeg.y = this.parts.frontRightLeg.originalY+pix*3
+					this.parts.backLeftLeg.y = this.parts.backLeftLeg.originalY-pix*4
+					this.parts.backRightLeg.y = this.parts.backRightLeg.originalY-pix*4
+					this.parts.head.y = this.parts.head.originalY+pix*6
+					this.parts.head.z = this.parts.head.originalZ-pix*3
+				}else{
+					this.offsetY = this.defaultOffsetY
+					this.parts.collar.rx = this.pitch2 = 0
+					this.parts.frontLeftLeg.rx = this.walkRot
+					this.parts.frontRightLeg.rx = -this.walkRot
+					this.parts.backLeftLeg.rx = this.walkRot
+					this.parts.backRightLeg.rx = -this.walkRot
+					this.parts.tail.y = this.parts.tail.originalY
+					this.parts.tail.z = this.parts.tail.originalZ
+					this.parts.frontLeftLeg.y = this.parts.frontLeftLeg.originalY
+					this.parts.frontRightLeg.y = this.parts.frontRightLeg.originalY
+					this.parts.backLeftLeg.y = this.parts.backLeftLeg.originalY
+					this.parts.backRightLeg.y = this.parts.backRightLeg.originalY
+					this.parts.head.y = this.parts.head.originalY
+					this.parts.head.z = this.parts.head.originalZ
+				}
+				this.parts.tail.rx = this.target ? Math.PI2 : this.health/20*Math.PI
+				if(this.prevTarget !== this.target || this.prevTame !== this.tame){
+					this.prevTarget = this.target
+					this.prevTame = this.tame
+					this.updateShape()
+				}
+				if(this.wet) this.wetStuff = 40
+				else if(this.wetStuff){
+					this.wetStuff--
+					this.roll = sin(this.wetStuff/2*Math.PI)*Math.PI4*this.wetStuff/40
+					this.parts.head.rz = sin(this.wetStuff+0.5/2*Math.PI)*Math.PI4*this.wetStuff/40
+					if(!performFast) world.addParticle(new entities[entityIds.SplashParticle](this.x+rand(-0.5,0.5),this.y+0.5,this.z+rand(-0.5,0.5)),this.dimension)
+				}
+				if(this.wet || !this.wetStuff){
+					this.roll = this.parts.head.rz = 0
+				}
+			}
+		},
+		blaze:{
+			putThingy(layer,n,speed,size){
+				let part = this.parts["thingy"+layer+"_"+n]
+				let where = (now-this.spawn)/speed+n/2
+				part.x = sin(where*Math.PI)*size
+				part.z = cos(where*Math.PI)*size
+			},
+			additionalUpdateClient(){
+				if(this.burnTimer) this.burnTimer = 0
 
-      if(this.prevWalking !== this.walking){
-        this.prevWalking = this.walking
-        this.walkStart = now
-      }
-      var walkRotTarget = 0
-      if(this.walking){
-        if(this.panick > 0) walkRotTarget = sin(((now - this.walkStart) / 125) * Math.PI) * 0.1
-        else walkRotTarget = sin(((now - this.walkStart) / 250) * Math.PI) * 0.1
-      }
-      this.walkRot = lerp(0.5,this.walkRot,walkRotTarget)
-      this.parts.leftLeg0.ry = this.walkRot+Math.PI2*1.3
-      this.parts.leftLeg1.ry = -this.walkRot+Math.PI2*1.1
-      this.parts.leftLeg2.ry = this.walkRot+Math.PI2*0.9
-      this.parts.leftLeg3.ry = -this.walkRot+Math.PI2*0.6
-      this.parts.rightLeg0.ry = -this.walkRot-Math.PI2*1.3
-      this.parts.rightLeg1.ry = this.walkRot-Math.PI2*1.1
-      this.parts.rightLeg2.ry = -this.walkRot-Math.PI2*0.9
-      this.parts.rightLeg3.ry = this.walkRot-Math.PI2*0.6
-      if(this.targetEnt){
-        let {x,y,z} = this.targetEnt
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry2 = -(this.yaw - yaw)
-        if(this.parts.head.ry2 - this.parts.head.pry2 > Math.PI) this.parts.head.pry2 += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry2 - this.parts.head.pry2 < -Math.PI) this.parts.head.pry2 -= Math.PId
-        let adjacent = dist2(this.x,this.z,x,z)
-        this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
-				this.parts.head.ry = 0
-      }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }else if(this.spinTarget){
-        let yaw = this.spinTarget
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }
-    }
-  }
-	entities[entities.length] = class Wolf extends Mob{
-		static name2 = "Wolf"
-    defaultName = "Wolf"
-    constructor(x,y,z){
-      super(x, y, z, 0, 0, 0, 0, 0, 0.6, 0.8, 0.6, null,null, null, Infinity, "vao")
-      var pix = 1/16
-      this.defaultOffsetY = pix*4.5
-      this.addPart("head",null,null,0,0,pix*10,1,1,1,0,0)
-      this.addPart("frontRightLeg",null,null,pix*-1.5,pix*-3,pix*5,1,1,1,0,0)
-      this.addPart("frontLeftLeg",null,null,pix*1.5,pix*-3,pix*5,1,1,1,0,0)
-      this.addPart("backRightLeg",null,null,pix*-1.5,pix*-3,pix*-6,1,1,1,0,0)
-      this.addPart("backLeftLeg",null,null,pix*1.5,pix*-3,pix*-6,1,1,1,0,0)
-      this.addPart("tail",null,null,0,0,pix*-8,1,1,1,Math.PI2,0)
-      this.addPart("collar",null,null,0,0,pix*6.1,1,1,1,0,0)
-			this.updateShape()
-      
-      this.health = 8
-      this.prevWalking = false
-      this.walkStart = 0
-      this.walkRot = 0
-			this.hostile = true
-      this.minFollowDist = 1.5
-      this.maxFollowDist = 16
-			this.detectionDist = 16
-			this.attackStrength = 4
-			this.maxAttackCooldown = 20
-			this.attacks = ["Sheep","Rabbit","Fox","Skeleton"]
-			this.prevTarget = null
-			this.attracts = [blockIds.bone]
-			this.wetStuff = 0
-			this.tame = false
-			this.prevTame = false
-			this.color = colors.dye.red.slice()
-    }
-		updateShape(){
-			var tex = textureCoords[textureMap[this.target ? "wolfAngry" : (this.tame ? "wolfTame" : "wolf")]]
-      var vao = generateVAO(shapes.wolfBody, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.faces = vao.size
-			this.vao = vao.vao
-      var pix = 1/16
-      var part = generateVAO(shapes.wolfHead,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.parts.head.size = part.size
-			this.parts.head.vao = part.vao
-      var part = generateVAO(shapes.wolfLeg,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.parts.backLeftLeg.vao = this.parts.frontLeftLeg.vao = this.parts.backRightLeg.vao = this.parts.frontRightLeg.vao = part.vao
-      this.parts.backLeftLeg.size = this.parts.frontLeftLeg.size = this.parts.backRightLeg.size = this.parts.frontRightLeg.size = part.size
-      var part = generateVAO(shapes.wolfTail,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.parts.tail.vao = part.vao
-			this.parts.tail.size = part.size
-			if(this.tame){
-				var tex = textureCoords[textureMap.wolfCollar]
-				this.parts.collar.hidden = false
-				var part = generateVAO(shapes.wolfBody,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-				this.parts.collar.vao = part.vao
-				this.parts.collar.size = part.size
-				this.parts.collar.tint = this.color
-			}else this.parts.collar.hidden = true
+				this.putThingy(1,0,1000,0.5)
+				this.putThingy(1,1,1000,0.5)
+				this.putThingy(1,2,1000,0.5)
+				this.putThingy(1,3,1000,0.5)
+				this.putThingy(2,0,-750,0.375)
+				this.putThingy(2,1,-750,0.375)
+				this.putThingy(2,2,-750,0.375)
+				this.putThingy(2,3,-750,0.375)
+				this.putThingy(3,0,500,0.25)
+				this.putThingy(3,1,500,0.25)
+				this.putThingy(3,2,500,0.25)
+				this.putThingy(3,3,500,0.25)
+			}
 		}
-    update(){
-      this.mobUpdate(now)
-      let pix = 1 / 16
+	}
 
-      if(this.prevWalking !== this.walking){
-        this.prevWalking = this.walking
-        this.walkStart = now
-      }
-      var walkRotTarget = 0
-      if(this.walking){
-        if(this.panick > 0) walkRotTarget = sin(((now - this.walkStart) / 500) * Math.PI) * Math.PI / 4
-        else walkRotTarget = sin(((now - this.walkStart) / 1000) * Math.PI) * Math.PI / 4
-      }
-      this.walkRot = lerp(0.5,this.walkRot,walkRotTarget)
-			if(this.sitting){
-				this.offsetY = this.defaultOffsetY - pix*3
-				this.parts.collar.rx = this.pitch2 = -Math.PI4
-				this.parts.frontLeftLeg.rx = -Math.PI/8
-				this.parts.frontRightLeg.rx = -Math.PI/8
-				this.parts.backLeftLeg.rx = -Math.PI2
-				this.parts.backRightLeg.rx = -Math.PI2
-				this.parts.tail.y = this.parts.tail.originalY-pix*4
-				this.parts.tail.z = this.parts.tail.originalZ+pix*2
-				this.parts.frontLeftLeg.y = this.parts.frontLeftLeg.originalY+pix*3
-				this.parts.frontRightLeg.y = this.parts.frontRightLeg.originalY+pix*3
-				this.parts.backLeftLeg.y = this.parts.backLeftLeg.originalY-pix*4
-				this.parts.backRightLeg.y = this.parts.backRightLeg.originalY-pix*4
-				this.parts.head.y = this.parts.head.originalY+pix*6
-				this.parts.head.z = this.parts.head.originalZ-pix*3
-			}else{
-				this.offsetY = this.defaultOffsetY
-				this.parts.collar.rx = this.pitch2 = 0
-				this.parts.frontLeftLeg.rx = this.walkRot
-				this.parts.frontRightLeg.rx = -this.walkRot
-				this.parts.backLeftLeg.rx = this.walkRot
-				this.parts.backRightLeg.rx = -this.walkRot
-				this.parts.tail.y = this.parts.tail.originalY
-				this.parts.tail.z = this.parts.tail.originalZ
-				this.parts.frontLeftLeg.y = this.parts.frontLeftLeg.originalY
-				this.parts.frontRightLeg.y = this.parts.frontRightLeg.originalY
-				this.parts.backLeftLeg.y = this.parts.backLeftLeg.originalY
-				this.parts.backRightLeg.y = this.parts.backRightLeg.originalY
-				this.parts.head.y = this.parts.head.originalY
-				this.parts.head.z = this.parts.head.originalZ
+	let entityData = win.entityData
+	for(let i=0; i<entityData.length; i++){
+		let data = entityData[i]
+		let ent = class extends Mob {
+			static name2 = data.name
+			constructor(x,y,z){
+				super(x,y,z,0,0,0,0,0, data.width,data.height,data.depth, null,null,null, 300000)
+				if(this.onspawn) this.onspawn()
+				this.setPartShapes(data.variantsBones.default)
 			}
-			this.parts.tail.rx = this.target ? Math.PI2 : this.health/20*Math.PI
-      if(this.targetEnt || this.attractEnt){
-        let {x,y,z} = this.targetEnt || this.attractEnt
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry2 = -(this.yaw - yaw)
-        if(this.parts.head.ry2 - this.parts.head.pry2 > Math.PI) this.parts.head.pry2 += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry2 - this.parts.head.pry2 < -Math.PI) this.parts.head.pry2 -= Math.PId
-        let adjacent = dist2(this.x,this.z,x,z)
-        this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
-				this.parts.head.ry = 0
-      }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }else if(this.spinTarget){
-        let yaw = this.spinTarget
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }
-			if(this.prevTarget !== this.target || this.prevTame !== this.tame){
-				this.prevTarget = this.target
-				this.prevTame = this.tame
-				this.updateShape()
-			}
-			if(this.wet) this.wetStuff = 40
-			else if(this.wetStuff){
-				this.wetStuff--
-				this.roll = sin(this.wetStuff/2*Math.PI)*Math.PI4*this.wetStuff/40
-				this.parts.head.rz = sin(this.wetStuff+0.5/2*Math.PI)*Math.PI4*this.wetStuff/40
-				if(!performFast) world.addParticle(new entities[entityIds.SplashParticle](this.x+rand(-0.5,0.5),this.y+0.5,this.z+rand(-0.5,0.5)),this.dimension)
-			}
-			if(this.wet || !this.wetStuff){
-				this.roll = this.parts.head.rz = 0
-			}
-    }
-  }
-	entities[entities.length] = class Blaze extends Mob{
-		static name2 = "Blaze"
-    defaultName = "Blaze"
-    constructor(x,y,z){
-      var tex = textureCoords[textureMap.none]
-      var vao = generateVAO(shapes.cube, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      var pix = 1/16
-      super(x, y, z, 0, 0, 0, 0, 0, 1, pix*22, 1, null,null, vao.size, 300000, vao.vao)
-      tex = textureCoords[textureMap.blaze]
-      var part = generateVAO(shapes.creeperHead,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("head",part.size,part.vao,0,pix*10,0,1,1,1,0,0)
-      var part = generateVAO(shapes.blazeThingy,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("thingy1_0",part.size,part.vao,0,pix*8,0,1,1,1,0,0)
-      this.addPart("thingy1_1",part.size,part.vao,0,pix*8,0,1,1,1,0,0)
-      this.addPart("thingy1_2",part.size,part.vao,0,pix*8,0,1,1,1,0,0)
-      this.addPart("thingy1_3",part.size,part.vao,0,pix*8,0,1,1,1,0,0)
-      this.addPart("thingy2_0",part.size,part.vao,0,pix*6,0,1,1,1,0,0)
-      this.addPart("thingy2_1",part.size,part.vao,0,pix*6,0,1,1,1,0,0)
-      this.addPart("thingy2_2",part.size,part.vao,0,pix*6,0,1,1,1,0,0)
-      this.addPart("thingy2_3",part.size,part.vao,0,pix*6,0,1,1,1,0,0)
-      this.addPart("thingy3_0",part.size,part.vao,0,pix*-2,0,1,1,1,0,0)
-      this.addPart("thingy3_1",part.size,part.vao,0,pix*-2,0,1,1,1,0,0)
-      this.addPart("thingy3_2",part.size,part.vao,0,pix*-2,0,1,1,1,0,0)
-      this.addPart("thingy3_3",part.size,part.vao,0,pix*-2,0,1,1,1,0,0)
-      
-      this.health = 20
-			this.hostile = true
-			this.maxAttackCooldown = 200
-			this.canFly = true
-    }
-		putThingy(layer,n,speed,size){
-			let part = this.parts["thingy"+layer+"_"+n]
-			let where = (now-this.spawn)/speed+n/2
-			part.x = sin(where*Math.PI)*size
-			part.z = cos(where*Math.PI)*size
 		}
-    update(){
-      this.mobUpdate(now)
-			if(this.burnTimer) this.burnTimer = 0
+		Object.assign(ent.prototype, data)
+		if(entityDataAdditional[data.name]) Object.assign(ent.prototype, entityDataAdditional[data.name])
+		entities[entities.length] = ent
+	}
 
-      this.putThingy(1,0,1000,0.5)
-			this.putThingy(1,1,1000,0.5)
-			this.putThingy(1,2,1000,0.5)
-			this.putThingy(1,3,1000,0.5)
-			this.putThingy(2,0,-750,0.375)
-			this.putThingy(2,1,-750,0.375)
-			this.putThingy(2,2,-750,0.375)
-			this.putThingy(2,3,-750,0.375)
-			this.putThingy(3,0,500,0.25)
-			this.putThingy(3,1,500,0.25)
-			this.putThingy(3,2,500,0.25)
-			this.putThingy(3,3,500,0.25)
-			if(this.targetEnt && this.attackCooldown > 0 && this.attackCooldown < 100) this.burning = true
-      if(this.targetEnt){
-        let {x,y,z} = this.targetEnt
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry2 = -(this.yaw - yaw)
-        if(this.parts.head.ry2 - this.parts.head.pry2 > Math.PI) this.parts.head.pry2 += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry2 - this.parts.head.pry2 < -Math.PI) this.parts.head.pry2 -= Math.PId
-        let adjacent = dist2(this.x,this.z,x,z)
-        this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
-				this.parts.head.ry = 0
-      }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }else if(this.spinTarget){
-        let yaw = this.spinTarget
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }
-    }
-  }
-	entities[entities.length] = class Enderman extends Mob{
-		static name2 = "Enderman"
-		defaultName = "Enderman"
-    constructor(x,y,z){
-      let tex = textureCoords[textureMap.enderman]
-      let vao = generateVAO(shapes.endermanBody, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      super(x, y, z, 0, 0, 0, 0, 0, 0.75, 3, 0.75, null,null, vao.size, 300000, vao.vao)
-      let pix = 1/16
-      this.offsetY = pix*13
-      let part = generateVAO(shapes.endermanLeg,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("rightLeg",part.size,part.vao,pix*-2,pix*-6,0,1,1,1,0,0)
-      this.addPart("leftLeg",part.size,part.vao,pix*2,pix*-6,0,1,1,1,0,0)
-      this.addPart("rightArm",part.size,part.vao,pix*-4,pix*6,pix*0,1,1,1,0,0)
-      this.addPart("leftArm",part.size,part.vao,pix*4,pix*6,pix*0,1,1,1,0,0)
-      part = generateVAO(shapes.creeperHead,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("head",part.size,part.vao,0,pix*10,0,1,1,1,0,0)
-			let eyeTex = textureCoords[textureMap.endermanEyes]
-			let eye = generateVAO(shapes.creeperHead, eyeTex[0],eyeTex[1],eyeTex[2]-eyeTex[0],eyeTex[5]-eyeTex[1])
-      this.addPart("eyes",eye.size,eye.vao,0,0,0,1,1,1,0,0,0,"head",true)
-			let head = this.parts.head
-			delete this.parts.head
-			this.parts.head = head//put in front
-      
-      this.health = 40
-      this.prevWalking = false
-      this.walkStart = 0
-      this.walkRot = 0
-			this.maxAttackCooldown = 20
-    }
-    update(){
-      this.mobUpdate(now)
-      if(this.prevWalking !== this.walking){
-        this.prevWalking = this.walking
-        this.walkStart = now
-      }
-      let walkRotTarget = 0
-      if(this.walking){
-        if(this.panick > 0) walkRotTarget = sin(((now - this.walkStart) / 500) * Math.PI) * Math.PI / 4
-        else walkRotTarget = sin(((now - this.walkStart) / 1000) * Math.PI) * Math.PI / 4
-      }
-      this.walkRot = lerp(0.5,this.walkRot,walkRotTarget)
-      this.parts.leftLeg.rx = this.walkRot
-      this.parts.rightLeg.rx = -this.walkRot
-      let pix = 1 / 16
-      let armRot = (sin((now - this.spawn) / 1000) / 2 + 0.5) * Math.PI / 40
-			this.parts.leftArm.rz = armRot
-			this.parts.rightArm.rz = -armRot
-			this.parts.leftArm.rx = this.walkRot
-      this.parts.rightArm.rx = -this.walkRot
-      if(this.targetEnt){
-        let {x,y,z} = this.targetEnt
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry2 = -(this.yaw - yaw)
-        if(this.parts.head.ry2 - this.parts.head.pry2 > Math.PI) this.parts.head.pry2 += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry2 - this.parts.head.pry2 < -Math.PI) this.parts.head.pry2 -= Math.PId
-        let adjacent = dist2(this.x,this.z,x,z)
-        this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
-				this.parts.head.ry = 0
-      }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
-        let yaw = angleOf(x,z,this.x,this.z)
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }else if(this.spinTarget){
-        let yaw = this.spinTarget
-        this.parts.head.ry = -(this.yaw - yaw)
-        if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
-        if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
-        this.parts.head.rx = this.parts.head.ry2 = 0
-      }
-    }
-  }
-
-	entities[entities.length] = class EnderDragon extends Mob{
+	/*entities[entities.length] = class EnderDragon extends Mob{
 		static name2 = "EnderDragon"
 		defaultName = "Ender Dragon"
     constructor(x,y,z){
@@ -18829,7 +18054,7 @@ return
         this.parts.head.rx = this.parts.head.ry2 = 0
       }
     }
-  }
+  }*/
   
   class Particle extends Entity{
 		constructor() {
@@ -20512,6 +19737,7 @@ return
 		entities[ri] = unorderedEntities[i]
 		entities[ri].prototype.entId = ri
 		entities[ri].prototype.type = entities[ri].name2
+		if(serverEntities[ri]) entities[ri].nameMcd = serverEntities[ri].nameMcd
 	}
 	console.log(entities.length,'entities and particles')
 	win.entities = entities
@@ -22910,7 +22136,10 @@ switch(name){
 				if(entType === "Item" && ent.amount !== p.amount) ent.amount = p.amount, ent.willUpdateShape = true
 			}else{
 				ent = entities[p.entId]
-				switch(entType){
+					if(ent.mob){
+					ent = new ent(p.x,p.y,p.z) //todo n: cave spider 'cave', fur
+				}
+				else switch(entType){
 					case "Item":
 						ent = new ent(p.x, p.y, p.z, p.velx, p.vely, p.velz, p.block, false, p.amount, p.durability||null, null)
 						break
@@ -22939,26 +22168,6 @@ switch(name){
 						break
 					case "ExperienceOrb":
 						ent = new ent(p.x,p.y,p.z,p.amount)
-						break
-					case "Cow":
-					case "Pig":
-					case "Creeper":
-					case "Chicken":
-					case "Zombie":
-					case "Skeleton":
-					case "Wolf":
-					case "Blaze":
-					case "Enderman":
-						ent = new ent(p.x,p.y,p.z)
-						break
-					case "Sheep":
-						ent = new ent(p.x,p.y,p.z, p.color, p.wool)
-						break
-					case "Spider":
-						ent = new ent(p.x,p.y,p.z,p.fur)
-						break
-					case "EnderDragon":
-						ent = new ent(p.x,p.y,p.z)
 						break
 					case "TextDisplay":
 						ent = new ent(p.x,p.y,p.z,p.text,p.size,p.color,p.background,p.glow)
