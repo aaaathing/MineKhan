@@ -867,6 +867,156 @@ const minEntityY = minHeight-40
 const netherHeight = 127
 const waterHeight = 62
 
+
+
+let CUBE,SLAB,STAIR,CROSS,TALLCROSS,DOOR,TORCH,LANTERN,LANTERNHANG,BEACON,
+		CACTUS,PANE,PORTAL,WALLFLAT,TRAPDOOR,TRAPDOOROPEN,FENCE,WALLPOST,
+		BUTTON,CHAIN,POT,POTCROSS,CORNERSTAIRIN,CORNERSTAIROUT,VERTICALSLAB,
+		//if you change this, change debugStick and server side
+		LAYER1,LAYER2,LAYER3,LAYER4,LAYER5,LAYER6,LAYER7,LAYER8,
+		FLIP,NORTH,SOUTH,EAST,WEST,ROTATION// Mask for the direction bits
+let isCube, isState
+let prevConstVersion = null
+
+function verMoreThan(a,b){
+	a = a.split(".").map(r => parseInt(r))
+	b = b.split(".").map(r => parseInt(r))
+	if(a[0] > b[0]) return true
+	if(a[1] > b[1] && a[0] === b[0]) return true
+	if(a[2] > b[2] && a[1] === b[1]) return true
+}
+function bin(n){
+	return parseInt(n,2)
+}
+function constVersion(v){
+	if(v === prevConstVersion) return
+	prevConstVersion = v
+	isCube = 0xff
+	//let verNum = v.replace(/(Alpha|Beta) /, '')//.replace(/(?<=\..*)\./g, '') //second regex removes the periods after the first
+	//if(verMoreThan(verNum, "1.0.3") || verNum==="1.0.3"){
+CUBE = 0
+LAYER2=SLAB =          0b10000000000000 // 9th bit
+LAYER3=STAIR =        0b100000000000000 // 10th bit
+LAYER4=CROSS =        0b110000000000000
+LAYER5=TALLCROSS =0b1001110000000000000
+LAYER6=LANTERN =    0b10010000000000000
+LAYER7=LANTERNHANG=0b100010000000000000
+BEACON =           0b100110000000000000
+CACTUS =           0b101000000000000000
+POT =              0b101010000000000000
+POTCROSS =         0b101110000000000000
+LAYER1 = TORCH =   0b110000000000000000
+CHAIN =            0b110010000000000000
+LAYER8 = DOOR =   0b1000010000000000000
+PORTAL =          0b1000100000000000000
+WALLFLAT =        0b1000110000000000000
+PANE =           0b10001000000000000000
+TRAPDOOR =        0b1010000000000000000
+TRAPDOOROPEN =   0b10000000000000000000
+FENCE =          0b11000000000000000000
+WALLPOST =       0b11000100000000000000
+//WALL = 0x6400<<5
+//WALLU = 0x6600<<5 //wall withe exteion under another wall
+//FENCQ = 0x4100<<5 //fence (one extension)
+BUTTON =         0b10000100000000000000
+//CARPET    =      0b10000110000000000000
+CORNERSTAIRIN =      0b1000000000000000
+CORNERSTAIROUT =     0b1010000000000000
+VERTICALSLAB =       0b1100000000000000
+FLIP      =               0b10000000000 // 11th bit
+NORTH = 0 // 12th and 13th bits for the 4 directions
+SOUTH =                  0b100000000000
+EAST =                  0b1000000000000
+WEST =                  0b1100000000000
+ROTATION =              0b1100000000000 // Mask for the direction bits
+isCube =                   0b1111111111 // Mask for block id bits
+isState =        0b11111110000000000000
+	/*}else if(verMoreThan(verNum, "1.0.0") || verNum === "1.0.0"){
+CUBE = 0
+LAYER2 = SLAB = 0x100 // 9th bit
+LAYER3 = STAIR = 0x200 // 10th bit
+LAYER4 = CROSS = 0x300
+FLIP = 0x400 // 11th bit
+LAYER5 = TALLCROSS = 0x700
+LAYER6 = LANTERN = 0x900
+LAYER7 = LANTERNHANG=0x1100
+BEACON = 0x1300
+CACTUS = 0x1400
+POT = 0x1500
+POTCROSS = 0x1700
+LAYER1 = TORCH = 0x1800
+CHAIN = 0x1900
+LAYER8 = DOOR = 0x2100
+PORTAL = 0x2200
+WALLFLAT = 0x2300
+PANE = 0x4400
+TRAPDOOR = 0x2800
+TRAPDOOROPEN=0x4000
+FENCE = 0x6000
+WALLPOST = 0x6200
+//WALL = 0x6400
+//WALLU = 0x6600 //wall withe exteion under another wall
+//FENCQ = 0x4100 //fence (one extension)
+BUTTON = 0x4200
+CARPET    = 0x4300
+FLIP      = 0x400 // 11th bit
+NORTH = 0 // 12th and 13th bits for the 4 directions
+SOUTH = 0x800
+EAST = 0x1000
+WEST = 0x1800
+ROTATION = 0x1800 // Mask for the direction bits
+	}else{
+		CUBE      = 0
+		LAYER2 = SLAB      = 0x100 // 9th bit
+		LAYER3 = STAIR     = 0x200 // 10th bit
+		LAYER4 = CROSS     = 0x2000
+		LAYER5 = TALLCROSS = 0x2200
+		LAYER8 = DOOR      = 0x2400
+		LAYER1 = TORCH     = 0x2600
+		LAYER6 = LANTERN   = 0x2800
+		LAYER7 = LANTERNHANG=0x3000
+		BEACON    = 0x4200
+		CACTUS    = 0x4400
+		PANE      = 0x4600
+		PORTAL    = 0x5000
+		WALLFLAT  = 0x4800
+		TRAPDOOR  = 0x5200
+		TRAPDOOROPEN=0x5400
+		FENCE     = 0x6000
+		WALLPOST  = 0x6200
+		//WALL      = 0x6400
+		//WALLU     = 0x6600 //wall withe exteion under another wall
+		//FENCQ     = 0x6800 //fence (one extension)
+		BUTTON    = 0x7000
+		CHAIN     = 0x7200
+		POT       = 0x8000
+		POTCROSS  = 0x8200
+		CARPET    = 0x8400
+		FLIP      = 0x400 // 11th bit
+		NORTH     = 0 // 12th and 13th bits for the 4 directions
+		SOUTH     = 0x800
+		EAST      = 0x1000
+		WEST      = 0x1800
+		ROTATION  = 0x1800 // Mask for the direction bits
+	}*/
+}
+constVersion(version)
+
+/* //binary flag block state code
+baseBlock.blockStates = [{group:["delay","powered"],map:{1:{0:0,1:PANE},2:{0:SLAB,1:PORTAL}},mapRev:{0:[1,0],[PANE]:[1,1],[SLAB]:[2,0],[PORTAL]:[2,1]},mask:isState}]
+baseBlock.blockStatesMap = {delay:baseBlock.blockStates[0], powered:baseBlock.blockStates[0]}
+function set(id, blockStateName, newValue){
+	let blockObj = blockData[id]
+	let {group,map,mask,mapRev} = blockObj.blockStatesMap[blockStateName]
+	let v = mapRev[id&mask]
+	let mapped = map
+	for(let i=0;i<v.length;i++){
+		mapped = mapped[group[i] === blockStateName ? newValue : v[i]]
+	}
+	return id&(~mask) | mapped
+}
+*/
+
 const blockData = [
 	{
 		name: "air",
@@ -900,7 +1050,7 @@ const blockData = [
 		craftSlabs:true, craftStairs:true,
 		invTint: [grassColor.r,grassColor.g,grassColor.b],
 		tint:grassTint,
-		biomeTintTop:true,
+		biomeTintTop:true,//todo n: remove unused ones
 		biomeTintEast:true,
 		biomeTintWest:true,
 		biomeTintNorth:true,
@@ -3252,7 +3402,7 @@ const blockData = [
 	{ name: "smoothBasalt", nameMcd:"smooth_basalt", Name: "Smooth Basalt", basaltSound: true},
 	
 	{
-		name: "oakLogSW",
+		name: "oakLogSW",//todo n: maybe convert
 		textures: ["logSide","logSide","logTop","logSide"],
 		SW: true, woodSound:true, hidden:true
 	},
@@ -20562,139 +20712,6 @@ function initBlockDataShapes(){
 		}
 	}
 }
-
-let CUBE,SLAB,STAIR,CROSS,TALLCROSS,DOOR,TORCH,LANTERN,LANTERNHANG,BEACON,
-		CACTUS,PANE,PORTAL,WALLFLAT,TRAPDOOR,TRAPDOOROPEN,FENCE,WALLPOST,
-		BUTTON,CHAIN,POT,POTCROSS,CORNERSTAIRIN,CORNERSTAIROUT,VERTICALSLAB,
-		//if you change this, change debugStick and server side
-		LAYER1,LAYER2,LAYER3,LAYER4,LAYER5,LAYER6,LAYER7,LAYER8,
-		FLIP,NORTH,SOUTH,EAST,WEST,ROTATION// Mask for the direction bits
-let isCube, isState
-let prevConstVersion = null
-
-function verMoreThan(a,b){
-	a = a.split(".").map(r => parseInt(r))
-	b = b.split(".").map(r => parseInt(r))
-	if(a[0] > b[0]) return true
-	if(a[1] > b[1] && a[0] === b[0]) return true
-	if(a[2] > b[2] && a[1] === b[1]) return true
-}
-function bin(n){
-	return parseInt(n,2)
-}
-function constVersion(v){
-	if(v === prevConstVersion) return
-	prevConstVersion = v
-	isCube = 0xff
-	//let verNum = v.replace(/(Alpha|Beta) /, '')//.replace(/(?<=\..*)\./g, '') //second regex removes the periods after the first
-	//if(verMoreThan(verNum, "1.0.3") || verNum==="1.0.3"){
-CUBE = 0
-LAYER2=SLAB =          0b10000000000000 // 9th bit
-LAYER3=STAIR =        0b100000000000000 // 10th bit
-LAYER4=CROSS =        0b110000000000000
-LAYER5=TALLCROSS =0b1001110000000000000
-LAYER6=LANTERN =    0b10010000000000000
-LAYER7=LANTERNHANG=0b100010000000000000
-BEACON =           0b100110000000000000
-CACTUS =           0b101000000000000000
-POT =              0b101010000000000000
-POTCROSS =         0b101110000000000000
-LAYER1 = TORCH =   0b110000000000000000
-CHAIN =            0b110010000000000000
-LAYER8 = DOOR =   0b1000010000000000000
-PORTAL =          0b1000100000000000000
-WALLFLAT =        0b1000110000000000000
-PANE =           0b10001000000000000000
-TRAPDOOR =        0b1010000000000000000
-TRAPDOOROPEN =   0b10000000000000000000
-FENCE =          0b11000000000000000000
-WALLPOST =       0b11000100000000000000
-//WALL = 0x6400<<5
-//WALLU = 0x6600<<5 //wall withe exteion under another wall
-//FENCQ = 0x4100<<5 //fence (one extension)
-BUTTON =         0b10000100000000000000
-//CARPET    =      0b10000110000000000000
-CORNERSTAIRIN =      0b1000000000000000
-CORNERSTAIROUT =     0b1010000000000000
-VERTICALSLAB =       0b1100000000000000
-FLIP      =               0b10000000000 // 11th bit
-NORTH = 0 // 12th and 13th bits for the 4 directions
-SOUTH =                  0b100000000000
-EAST =                  0b1000000000000
-WEST =                  0b1100000000000
-ROTATION =              0b1100000000000 // Mask for the direction bits
-isCube =                   0b1111111111 // Mask for block id bits
-isState =        0b11111110000000000000
-	/*}else if(verMoreThan(verNum, "1.0.0") || verNum === "1.0.0"){
-CUBE = 0
-LAYER2 = SLAB = 0x100 // 9th bit
-LAYER3 = STAIR = 0x200 // 10th bit
-LAYER4 = CROSS = 0x300
-FLIP = 0x400 // 11th bit
-LAYER5 = TALLCROSS = 0x700
-LAYER6 = LANTERN = 0x900
-LAYER7 = LANTERNHANG=0x1100
-BEACON = 0x1300
-CACTUS = 0x1400
-POT = 0x1500
-POTCROSS = 0x1700
-LAYER1 = TORCH = 0x1800
-CHAIN = 0x1900
-LAYER8 = DOOR = 0x2100
-PORTAL = 0x2200
-WALLFLAT = 0x2300
-PANE = 0x4400
-TRAPDOOR = 0x2800
-TRAPDOOROPEN=0x4000
-FENCE = 0x6000
-WALLPOST = 0x6200
-//WALL = 0x6400
-//WALLU = 0x6600 //wall withe exteion under another wall
-//FENCQ = 0x4100 //fence (one extension)
-BUTTON = 0x4200
-CARPET    = 0x4300
-FLIP      = 0x400 // 11th bit
-NORTH = 0 // 12th and 13th bits for the 4 directions
-SOUTH = 0x800
-EAST = 0x1000
-WEST = 0x1800
-ROTATION = 0x1800 // Mask for the direction bits
-	}else{
-		CUBE      = 0
-		LAYER2 = SLAB      = 0x100 // 9th bit
-		LAYER3 = STAIR     = 0x200 // 10th bit
-		LAYER4 = CROSS     = 0x2000
-		LAYER5 = TALLCROSS = 0x2200
-		LAYER8 = DOOR      = 0x2400
-		LAYER1 = TORCH     = 0x2600
-		LAYER6 = LANTERN   = 0x2800
-		LAYER7 = LANTERNHANG=0x3000
-		BEACON    = 0x4200
-		CACTUS    = 0x4400
-		PANE      = 0x4600
-		PORTAL    = 0x5000
-		WALLFLAT  = 0x4800
-		TRAPDOOR  = 0x5200
-		TRAPDOOROPEN=0x5400
-		FENCE     = 0x6000
-		WALLPOST  = 0x6200
-		//WALL      = 0x6400
-		//WALLU     = 0x6600 //wall withe exteion under another wall
-		//FENCQ     = 0x6800 //fence (one extension)
-		BUTTON    = 0x7000
-		CHAIN     = 0x7200
-		POT       = 0x8000
-		POTCROSS  = 0x8200
-		CARPET    = 0x8400
-		FLIP      = 0x400 // 11th bit
-		NORTH     = 0 // 12th and 13th bits for the 4 directions
-		SOUTH     = 0x800
-		EAST      = 0x1000
-		WEST      = 0x1800
-		ROTATION  = 0x1800 // Mask for the direction bits
-	}*/
-}
-constVersion(version)
 
 {//Commands
 let copiedBlocks
