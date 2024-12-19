@@ -5842,7 +5842,7 @@ if time is 0, it will update every time
     narratorVoice: null, // defined later
 		joystick: true,
 		language: null,
-		adjustBrightness: true,
+		adjustBrightness: false,
 		reach: 5, // Max distance player can place or break blocks
 		graphics: null, //Null means not changed yet (same as normal)
 		resolution: true,
@@ -13280,7 +13280,7 @@ r 11 y  n  n  n
 						for (let facei = 0; facei < directionalFaces.length; facei++) {
 							verts = directionalFaces[facei]
 							texShapeVerts = shapeTexVerts[n][facei]
-              texVerts = textureCoords[textureMap[texShapeVerts.texture]] || textureCoords[textureMap[tex[texNum]]]
+              texVerts = textureCoords[textureMap[texShapeVerts.texture] || tex && textureMap[tex[texNum]] || textureMap.error]
             	tints = texShapeVerts.tintindex>-1 ? getTint[side](x2, y2, z2, tints, this.type, block, tags) : getTint.none(tints)
 							if(block.customShape){
 								verts = verts.slice()
@@ -14490,16 +14490,15 @@ r 11 y  n  n  n
 			let side = blockSides[n]
 			let directionalFaces = shapeVerts[n]
 			for (let facei = 0; facei < directionalFaces.length; facei++) {
-				//let originalShapeVerts = shape.originalVerts[n][facei]//todo n
+				let texShapeVerts = shapeTexVerts[n][facei]
 				let tx = textureX, ty = textureY, tw = textureW, th = textureH
-				/*if(originalShapeVerts && originalShapeVerts.t && textureMap[originalShapeVerts.t]){
-					let texVerts = textureCoords[textureMap[originalShapeVerts.t]]
+				if(texShapeVerts.texture){
+					let texVerts = textureCoords[textureMap[texShapeVerts.texture]]
 					tx = texVerts[0]
 					ty = texVerts[1]
 					tw = texVerts[2]-tx
 					th = texVerts[5]-ty
-				}*/
-				let texShapeVerts = shapeTexVerts[n][facei]
+				}
 				texture[index    ] = tx + texShapeVerts[0]*tw
 				texture[index + 1] = ty + texShapeVerts[1]*th
 				texture[index + 2] = tx + texShapeVerts[2]*tw
@@ -14623,7 +14622,7 @@ r 11 y  n  n  n
 				if(texShapeVerts.texture){
 					if(replaceTextures && replaceTextures[texShapeVerts.texture]) texVerts = textureCoords[textureMap[replaceTextures[texShapeVerts.texture]]]
 					else texVerts = textureCoords[textureMap[texShapeVerts.texture]]
-				}else texVerts = textureCoords[textureMap[tex[texNum]]]
+				}else texVerts = textureCoords[tex && textureMap[tex[texNum]] || textureMap.error]
 				let tx = texVerts[0]
 				let ty = texVerts[1]
 				let tw = texVerts[2]-tx
@@ -14667,7 +14666,8 @@ r 11 y  n  n  n
 		return {vao, size}
 	}
 
-	let entities = [], entityIds = {}
+	let entities = []
+	let {serverEntities} = win
 	class Entity {
 		constructor(x, y, z, pitch, yaw, velx, vely, velz, width, height, depth, vertices, texture, faces, despawns, vao, dimension) {
 			this.x = x
@@ -14728,6 +14728,7 @@ r 11 y  n  n  n
 			this.rideOffsetX = 0
 			this.rideOffsetY = this.hitboxHeight/2
 			this.rideOffsetZ = 0
+			this.offsetry = 0
       if(vao){
         this.vao = vao
 				if(vao.tHeVerticesBuffer){
@@ -15125,7 +15126,7 @@ r 11 y  n  n  n
 			modelMatrix.identity()
 			modelMatrix.translate(renderx, rendery, renderz)
 			modelMatrix.rotX(lerp(diff,this.previousPitch,this.pitch))
-			modelMatrix.rotY(lerp(diff,prevYaw,this.yaw))
+			modelMatrix.rotY(lerp(diff,prevYaw,this.yaw)+this.offsetry)
 			if(this.pitch2 || this.previousPitch2) modelMatrix.rotX(lerp(diff,this.previousPitch2,this.pitch2))
 			if(this.roll || this.previousRoll) modelMatrix.rotZ(lerp(diff,this.previousRoll,this.roll))
 			if(this.dieRotate){
@@ -15162,11 +15163,13 @@ r 11 y  n  n  n
       if(this.shader) gl.uniform1i(glCache.shaderEntity, this.shader)
 			if(this.alwaysRender) gl.uniform3f(glCache.uPosEntity, 0, 0, 0)
 			else gl.uniform3f(glCache.uPosEntity, p.renderX-this.x, p.renderY-this.y, p.renderZ-this.z)
-			gl.uniformMatrix4fv(glCache.uViewEntity, false, modelViewProjectionMatrix.elements)
-			gl.uniformMatrix4fv(glCache.uModelMatEntity, false, modelMatrix.elements)
-			glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
-			gl.drawElements(gl.TRIANGLES, 6 * this.faces, gl.UNSIGNED_INT, 0)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
+			if(this.vao){
+				gl.uniformMatrix4fv(glCache.uViewEntity, false, modelViewProjectionMatrix.elements)
+				gl.uniformMatrix4fv(glCache.uModelMatEntity, false, modelMatrix.elements)
+				glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
+				gl.drawElements(gl.TRIANGLES, 6 * this.faces, gl.UNSIGNED_INT, 0)
+				glExtensions.vertex_array_object.bindVertexArrayOES(null)
+			}
       for(var part in this.parts){
         this.renderPart(this.parts[part], modelMatrix, modelViewProjectionMatrix, projectionMatrix, viewMatrix, renderx, rendery, renderz, blockLight)
       }
@@ -15178,6 +15181,28 @@ r 11 y  n  n  n
         entityFire.render(this)
       }
 			if(this.nameText && (p.thirdPerson || this !== p.spectating && this !== p)) this.nameText.render()
+		}
+		//todo n: share same entity on server
+		setPartShapes(bones){
+			for(let i in bones){
+				let shape = bones[i]
+				if(!this.parts[shape.boneName]){
+					let x=0,y=0,z=0, rx=0,ry=0,rz=0
+					let w=1,h=1,d=1
+					this.parts[shape.boneName] = {
+						name:shape.boneName,
+						size:null, vao:null,
+						x,y,z,w,h,d,rx,ry,rz,ry2:0, //x,y,z,rx,ry are relative to entity position
+						px:x,py:y,pz:z,prx:rx,pry:ry,prz:rz,
+						originalX:x, originalY:y, originalZ:z,
+						attached:shape.attached, attachChain:shape.attachChain
+					}
+				}
+				let part = this.parts[shape.boneName]
+				let vao = generateVAO(shape)
+				part.size = vao.size
+				part.vao = vao.vao
+			}
 		}
     addPart(name,size,vao,x,y,z,w,h,d,rx,ry,rz = 0,attached = null,glow = false){
       let part =  this.parts[name] = {
@@ -15214,7 +15239,7 @@ r 11 y  n  n  n
 			if(this.yaw - prevYaw > Math.PI) prevYaw += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
 			if(this.yaw - prevYaw < -Math.PI) prevYaw -= Math.PId
 			modelMatrix.rotX(lerp(diff,this.previousPitch,this.pitch))
-			modelMatrix.rotY(lerp(diff,prevYaw,this.yaw))
+			modelMatrix.rotY(lerp(diff,prevYaw,this.yaw)+this.offsetry)
 			if(this.dieRotate){
 				modelMatrix.translate(0,-this.height/2,0)
 				modelMatrix.rotZ(this.dieRotate)
@@ -15409,7 +15434,7 @@ r 11 y  n  n  n
 					for (let facei = 0; facei < directionalFaces.length; facei++) {
 						let texShapeVerts = shapeTexVerts[n][facei]
 						let texVerts
-						texVerts = textureCoords[textureMap[texShapeVerts.texture]] || textureCoords[textureMap[tex[texNum]]]
+						texVerts = textureCoords[textureMap[texShapeVerts.texture] || tex && textureMap[tex[texNum]] || textureMap.error]
 						let tx = texVerts[0]
 						let ty = texVerts[1]
 						let tw = texVerts[2]-tx
@@ -17728,21 +17753,13 @@ r 11 y  n  n  n
   
   entities[entities.length] = class Cow extends Mob{
 		static name2 = "Cow"
+		static nameMcd = "cow"
 		defaultName = "Cow"
     constructor(x,y,z){
-      var tex = textureCoords[textureMap.cow]
-      var vao = generateVAO(shapes.cowBody, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      super(x, y, z, 0, 0, 0, 0, 0, 1, 21/16, 1, null,null, vao.size, 300000, vao.vao)
-      var pix = 1/16
-      this.offsetY = pix*9.5
+      super(x, y, z, 0, 0, 0, 0, 0, 1, 21/16, 1, null,null, null, 300000, null)
       
-      var part = generateVAO(shapes.cowLeg,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("frontRightLeg",part.size,part.vao,pix*-4,pix*-8,pix*7,1,1,1,0,0)
-      this.addPart("frontLeftLeg",part.size,part.vao,pix*4,pix*-8,pix*7,1,1,1,0,0)
-      this.addPart("backRightLeg",part.size,part.vao,pix*-4,pix*-8,pix*-6,1,1,1,0,0)
-      this.addPart("backLeftLeg",part.size,part.vao,pix*4,pix*-8,pix*-6,1,1,1,0,0)
-      var part = generateVAO(shapes.cowHead,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-      this.addPart("head",part.size,part.vao,0,0,pix*9,1,1,1,0,0)
+			this.setPartShapes(serverEntities[this.entId].variantsBones.default)
+			this.offsetry = Math.PI
       
       this.health = 10
       this.prevWalking = false
@@ -17751,7 +17768,7 @@ r 11 y  n  n  n
     }
     update(){
       this.mobUpdate(now)
-
+return
       if(this.prevWalking !== this.walking){
         this.prevWalking = this.walking
         this.walkStart = now
@@ -20484,24 +20501,20 @@ r 11 y  n  n  n
 			glExtensions.vertex_array_object.bindVertexArrayOES(null)
 		}
 	}
-	let entityOrder = ['Item','BlockEntity', 'PrimedTNT', 'PrimedSuperTNT', 'PrimedUltraTNT', 'PrimedUnTNT', 'MovingBlock', 'EnderPearl', 'Snowball', 'Egg', 'SlingshotShot', 'Arrow', 'Sign', 'ItemFrame', 'ExperienceOrb', 'Cow', 'Pig', 'Creeper', 'Sheep', 'Chicken', 'Zombie', 'Skeleton', 'Spider', 'EnderDragon', 'BlockParticle', 'PoofParticle', 'FallingDustParticle', 'RedstoneParticle', 'ShockwaveParticle', 'SmokeParticle', 'NoteParticle', 'GlintParticle', 'FlameParticle', 'LavaParticle', 'DripParticle', 'SplashParticle', 'Spark', 'TextDisplay','Wolf','HeartParticle',"Blaze","SmallFireball","BlockDisplay","BeaconBeam","Enderman","Minecart"]
-	let unorderedEntities = entities.slice()
-	for(let i=0; i<entities.length; i++){
-		entityIds[entities[i].name2] = i
-	}
-	for(let i=0; i<entityOrder.length; i++){
-		if(entityIds[entityOrder[i]] === undefined){
-			delete entities[i]
-			delete entityIds[entityOrder[i]]
+	let {entityOrder, entityIds} = win
+	let unorderedEntities = entities
+	entities = []
+	for(let i=0; i<unorderedEntities.length; i++){
+		if(unorderedEntities[i] === undefined){
 			continue
 		}
-		entities[i] = unorderedEntities[entityIds[entityOrder[i]]]
-		entities[i].prototype.entId = i
-		entities[i].prototype.type = entities[i].name2
-		entityIds[entities[i].name2] = i
+		let ri = entityIds[unorderedEntities[i].name2]
+		entities[ri] = unorderedEntities[i]
+		entities[ri].prototype.entId = ri
+		entities[ri].prototype.type = entities[ri].name2
 	}
 	console.log(entities.length,'entities and particles')
-	win.entities = entities, win.entityIds = entityIds
+	win.entities = entities
 
 	let analytics = {
 		totalTickTime: 0,

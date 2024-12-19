@@ -112,10 +112,11 @@ function loadNamespaceAssets(allData, namespace, {
 		let model = fixResourceLocation(v.model)
 		if(!shapes[model]){
 			let shape = {
-				verts:[[],[],[],[],[],[]], cull:{bottom:3,top:3,north:3,south:3,east:3,west:3}, texVerts:[[],[],[],[],[],[]], normal:[[],[],[],[],[],[]],
+				verts:[[],[],[],[],[],[]], cull:{bottom:3,top:3,north:3,south:3,east:3,west:3}, texVerts:[[],[],[],[],[],[]], normal:[[],[],[],[],[],[]], size:0,
 				textureSelectors:{}
 			}
 			makeShape(model,shape, shape.textureSelectors)
+			for(let i=0; i<6; i++) shape.size += shape.verts[i].length
 			shapes[model] = shape
 		}
 		return shapes[model]
@@ -152,8 +153,8 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 			corners: [
 				[0, 1, 1, 0, 0],
 				[1, 1, 1, 1, 0],
+				[1, 1, 0, 1, 1],
 				[0, 1, 0, 0, 1],
-				[1, 1, 0, 1, 1]
 			]
 		},
 		down: {
@@ -165,8 +166,8 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 			corners: [
 				[1, 0, 1, 0, 0],
 				[0, 0, 1, 1, 0],
+				[0, 0, 0, 1, 1],
 				[1, 0, 0, 0, 1],
-				[0, 0, 0, 1, 1]
 			]
 		},
 		east: {
@@ -178,8 +179,8 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 			corners: [
 				[1, 1, 1, 0, 0],
 				[1, 0, 1, 0, 1],
+				[1, 0, 0, 1, 1],
 				[1, 1, 0, 1, 0],
-				[1, 0, 0, 1, 1]
 			]
 		},
 		west: {
@@ -191,8 +192,8 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 			corners: [
 				[0, 1, 0, 0, 0],
 				[0, 0, 0, 0, 1],
+				[0, 0, 1, 1, 1],
 				[0, 1, 1, 1, 0],
-				[0, 0, 1, 1, 1]
 			]
 		},
 		north: {
@@ -204,8 +205,8 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 			corners: [
 				[1, 0, 0, 0, 1],
 				[0, 0, 0, 1, 1],
+				[0, 1, 0, 1, 0],
 				[1, 1, 0, 0, 0],
-				[0, 1, 0, 1, 0]
 			]
 		},
 		south: {
@@ -217,15 +218,16 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 			corners: [
 				[0, 0, 1, 0, 1],
 				[1, 0, 1, 1, 1],
+				[1, 1, 1, 1, 0],
 				[0, 1, 1, 0, 0],
-				[1, 1, 1, 1, 0]
 			]
 		}
 	}
 	
 	let data = allData[namespace]
 	for(let i=0; i<entities.length; i++){
-		let name = entities[i].nameMcd || entities[i].name
+		if(!entities[i]) continue
+		let name = entities[i].nameMcd || entities[i].name2
 		let entity = data.entity[name]
 		if(!entity) continue
 		let variantsBones = {}
@@ -255,9 +257,9 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 
       const inflate = cube.inflate ? cube.inflate : 0
       pos.push(
-        (cube.origin[0] + cpos[0] * cube.size[0] + (cpos[0] ? inflate : -inflate)) / 16 - 0.5,
-        (cube.origin[1] + cpos[1] * cube.size[1] + (cpos[1] ? inflate : -inflate)) / 16 - 0.5,
-        (cube.origin[2] + cpos[2] * cube.size[2] + (cpos[2] ? inflate : -inflate)) / 16 - 0.5
+        (cube.origin[0] + cpos[0] * cube.size[0] + (cpos[0] ? inflate : -inflate)) / 16,
+        (cube.origin[1] + cpos[1] * cube.size[1] + (cpos[1] ? inflate : -inflate)) / 16,
+        (cube.origin[2] + cpos[2] * cube.size[2] + (cpos[2] ? inflate : -inflate)) / 16
       )
 			//todo rotate bone.rotation, cubeRotation
 		}
@@ -275,23 +277,24 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 		for(let i=0; i<model.bones.length; i++){
 			let bone = model.bones[i]
 			let shape = {
-				verts:[[],[],[],[],[],[]], texVerts:[[],[],[],[],[],[]], normal:[[],[],[],[],[],[]],
+				verts:[[],[],[],[],[],[]], texVerts:[[],[],[],[],[],[]], normal:[[],[],[],[],[],[]], size:0,
 				position: bone.pivot || [0,0,0],
 				boneName: bone.name,
-				attachChain: [], parent: bone.parent
+				attachChain: [], attached: bone.parent
 			}
 			let rot = bone.bind_pose_rotation || bone.rotation
 			let boneRotation = rot ? [rot[0]*Math.PI/180, rot[1]*Math.PI/180, rot[2]*Math.PI/180] : [0,0,0]
 			if(bone.cubes) for(let i=0; i<bone.cubes.length; i++){
 				let cube = bone.cubes[i]
-				addFace(cube, shape, 0, elemFaces.down, texture, cube.texturewidth, cube.textureheight)
-				addFace(cube, shape, 1, elemFaces.up, texture, cube.texturewidth, cube.textureheight)
-				addFace(cube, shape, 2, elemFaces.north, texture, cube.texturewidth, cube.textureheight)
-				addFace(cube, shape, 3, elemFaces.south, texture, cube.texturewidth, cube.textureheight)
-				addFace(cube, shape, 4, elemFaces.east, texture, cube.texturewidth, cube.textureheight)
-				addFace(cube, shape, 5, elemFaces.west, texture, cube.texturewidth, cube.textureheight)
+				addFace(cube, shape, 0, elemFaces.down, texture, model.texturewidth, model.textureheight)
+				addFace(cube, shape, 1, elemFaces.up, texture, model.texturewidth, model.textureheight)
+				addFace(cube, shape, 2, elemFaces.north, texture, model.texturewidth, model.textureheight)
+				addFace(cube, shape, 3, elemFaces.south, texture, model.texturewidth, model.textureheight)
+				addFace(cube, shape, 4, elemFaces.east, texture, model.texturewidth, model.textureheight)
+				addFace(cube, shape, 5, elemFaces.west, texture, model.texturewidth, model.textureheight)
 			}
-			bones[bone.name] = bone
+			for(let i=0; i<6; i++) shape.size += shape.verts[i].length
+			bones[bone.name] = shape
 			shapes[shapePrefix+":"+bone.name] = shape
 		}
 		for(let i in bones){
@@ -302,6 +305,7 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 					bone2 = bones[bone2.parent]
 					bone.attachChain.push(bone2.name)
 				}
+				bone.attachChain.reverse()
 			}
 		}
 		return bones

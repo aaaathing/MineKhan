@@ -12855,7 +12855,7 @@ function initBlockData(){
 			breakTypes[b][i] = blockIds[breakTypes[b][i]]
 		}
 	}
-	dataLoad.loadNamespace(dataLoad.data.assets, "min"+"ecr"+"aft", {blockData,BLOCK_COUNT,shapes,textures,blockIds,compareArr})
+	dataLoad.loadNamespace(dataLoad.data, "min"+"ecr"+"aft", {blockData,BLOCK_COUNT,shapes,textures,blockIds,compareArr,entities})
 
 	//fill the crafts that have less than 9 items. Ex: "thing" => "thing,air,air..."
 	let arr, arr2 = new Array(9)
@@ -19522,11 +19522,6 @@ function initBlockDataShapes(){
 	for (let i = 0; i < BLOCK_COUNT; i++) {
 		let baseBlock = blockData[i]
 		if(baseBlock.shape) continue//todo n
-		if(baseBlock.item && baseBlock.name !== "bow"){
-			if(baseBlock.spyglass) baseBlock.shape = shapes.spyglass
-			else baseBlock.shape = shapes.item
-			continue
-		}
 
 		if ( !("textures" in baseBlock) ) {
 			baseBlock.textures = new Array(6).fill(baseBlock.name);
@@ -19550,6 +19545,12 @@ function initBlockDataShapes(){
         textures[4] = textures[5] = textures[3]
         textures[3] = textures[2]
       }
+		}
+
+		if(baseBlock.item && baseBlock.name !== "bow"){
+			if(baseBlock.spyglass) baseBlock.shape = shapes.spyglass
+			else baseBlock.shape = shapes.item
+			continue
 		}
 		
 		let drop = baseBlock.drop || i
@@ -24313,6 +24314,7 @@ class Mob extends Entity{
 }
 entities[entities.length] = class Cow extends Mob{
 	static name2 = "Cow"
+	static nameMcd = "cow"
 	drop = [blockIds.rawBeef]
 	dropAmount = [1,3]
 	saySound = ["cow.say1","cow.say2","cow.say3","cow.say4"]
@@ -24906,7 +24908,8 @@ for(let i=0; i<entityOrder.length; i++){
 	entities[i].prototype.type = entities[i].name2
 	entityIds[entities[i].name2] = i
 }
-win.serverEntities = entities, win.serverEntityIds = entityIds
+win.serverEntities = entities, win.entityIds = entityIds
+win.entityOrder = entityOrder
 console.log(entities.length,'entities and particles on server side')
 
 //islandgenerator from https://www.khanacademy.org/computer-programming/minekhan-island-world-type/5771215095939072
