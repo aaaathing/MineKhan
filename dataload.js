@@ -277,7 +277,7 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 			let bone = model.bones[i]
 			let shape = {
 				verts:[[],[],[],[],[],[]], texVerts:[[],[],[],[],[],[]], normal:[[],[],[],[],[],[]], size:0,
-				position: bone.pivot || [0,0,0],
+				pivot: bone.pivot ? [bone.pivot[0]/16,bone.pivot[1]/16,bone.pivot[2]/16] : null,
 				boneName: bone.name,
 				attachChain: [], attached: bone.parent
 			}

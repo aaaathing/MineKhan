@@ -15195,7 +15195,8 @@ r 11 y  n  n  n
 						x,y,z,w,h,d,rx,ry,rz,ry2:0, //x,y,z,rx,ry are relative to entity position
 						px:x,py:y,pz:z,prx:rx,pry:ry,prz:rz,
 						originalX:x, originalY:y, originalZ:z,
-						attached:shape.attached, attachChain:shape.attachChain
+						attached:shape.attached, attachChain:shape.attachChain,
+						pivot: shape.pivot
 					}
 				}
 				let part = this.parts[shape.boneName]
@@ -15260,6 +15261,7 @@ r 11 y  n  n  n
 				}
 			}
 			modelMatrix.translate(part.x, part.y, part.z)
+			if(part.pivot) modelMatrix.translate(part.pivot[0], part.pivot[1], part.pivot[2])
 			prevYaw = part.pry
 			if(part.ry - prevYaw > Math.PI) prevYaw += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
 			if(part.ry - prevYaw < -Math.PI) prevYaw -= Math.PId
@@ -15267,6 +15269,7 @@ r 11 y  n  n  n
       if(part.ry2) modelMatrix.rotY(lerp(diff,part.pry2,part.ry2))
 			modelMatrix.rotX(lerp(diff,part.prx,part.rx))
 			modelMatrix.rotY(lerp(diff,prevYaw,part.ry))
+			if(part.pivot) modelMatrix.translate(-part.pivot[0], -part.pivot[1], -part.pivot[2])
       modelMatrix.scale(part.w, part.h, part.d)
       
       modelViewProjectionMatrix.identity()
@@ -17675,6 +17678,7 @@ r 11 y  n  n  n
 			this.name = null
 			this.effects = {}
 			this.doInterpolate = true
+			this.offsetry = Math.PI
     }
     mobUpdate(now) {
       this.maxBurnBlock = this.maxDamageBlock = 0
@@ -17730,8 +17734,57 @@ r 11 y  n  n  n
         this.nameText.z = this.z
 			}
 		}
+		walkStart = 0
+		prevWalking = false
+		walkRot = 0
 		update(){
-			this.mobUpdate(now)
+      this.mobUpdate(now)
+
+      if(this.prevWalking !== this.walking){
+        this.prevWalking = this.walking
+        this.walkStart = now
+      }
+      var walkRotTarget = 0
+      if(this.walking){
+        if(this.panick > 0) walkRotTarget = sin(((now - this.walkStart) / 500) * Math.PI) * Math.PI / 4
+        else walkRotTarget = sin(((now - this.walkStart) / 1000) * Math.PI) * Math.PI / 4
+      }
+      this.walkRot = lerp(0.5,this.walkRot,walkRotTarget)
+      if(this.parts.leg0) this.parts.leg0.rx = -this.walkRot
+      if(this.parts.leg2) this.parts.leg2.rx = this.walkRot
+      if(this.parts.leg1) this.parts.leg1.rx = this.walkRot
+      if(this.parts.leg3) this.parts.leg3.rx = -this.walkRot
+      if(this.parts.leftleg) this.parts.leftleg.rx = this.walkRot
+      if(this.parts.rightleg) this.parts.rightleg.rx = -this.walkRot
+      if(this.parts.leftLeg) this.parts.leftLeg.rx = this.walkRot
+      if(this.parts.rightLeg) this.parts.rightLeg.rx = -this.walkRot
+
+			if(this.parts.head){
+				if(this.targetEnt || this.attractEnt){
+					let {x,y,z} = this.targetEnt || this.attractEnt
+					let yaw = angleOf(x,z,this.x,this.z)
+					this.parts.head.ry2 = -(this.yaw - yaw)
+					if(this.parts.head.ry2 - this.parts.head.pry2 > Math.PI) this.parts.head.pry2 += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
+					if(this.parts.head.ry2 - this.parts.head.pry2 < -Math.PI) this.parts.head.pry2 -= Math.PId
+					let adjacent = dist2(this.x,this.z,x,z)
+					this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
+					this.parts.head.ry = 0
+				}else if(this.path){
+					let i = this.path.length - 3
+					let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
+					let yaw = angleOf(x,z,this.x,this.z)
+					this.parts.head.ry = -(this.yaw - yaw)
+					if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
+					if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
+					this.parts.head.rx = this.parts.head.ry2 = 0
+				}else if(this.spinTarget){
+					let yaw = this.spinTarget
+					this.parts.head.ry = -(this.yaw - yaw)
+					if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
+					if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
+					this.parts.head.rx = this.parts.head.ry2 = 0
+				}
+			}
 			if(this.additionalUpdate) this.additionalUpdate()
 		}
     /*onhit(damage,remote, vx,vz, from){
