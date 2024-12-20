@@ -54,18 +54,20 @@ function loadNamespaceBlocks(allData, namespace, {
 		if(bstates.variants){
 			for(let v in bstates.variants){
 				let id = blockId
-				let a = v.split(",")
-				findIdLoop:for(let i=0; i<a.length; i++){
-					let [statename,statevalue] = a[i].split("=")
-					let bs = baseBlock.blockStatesMap[statename]
-					for(let v=0; v<bs.values.length; v++){
-						if(bs.values[v]+"" === statevalue){
-							id += v * bs.minMult
-							continue findIdLoop
+				if(v){
+					let a = v.split(",")
+					findIdLoop:for(let i=0; i<a.length; i++){
+						let [statename,statevalue] = a[i].split("=")
+						let bs = baseBlock.blockStatesMap[statename]
+						for(let v=0; v<bs.values.length; v++){
+							if(bs.values[v]+"" === statevalue){
+								id += v * bs.minMult
+								continue findIdLoop
+							}
 						}
+						throw new Error("did not find blockstate "+statename+" "+statevalue)
+						// id |= blockstateValues[statename].indexOf(statevalue) << blockstatePos[statename]
 					}
-					throw new Error("did not find blockstate "+statename+" "+statevalue)
-					// id |= blockstateValues[statename].indexOf(statevalue) << blockstatePos[statename]
 				}
 				let block = Object.create(baseBlock)
 				let variant = bstates.variants[v]

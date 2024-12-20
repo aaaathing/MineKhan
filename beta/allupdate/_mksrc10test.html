@@ -12287,7 +12287,7 @@ return//*/
             break
         }
       }else if(type === "player") tex = 1//actually stepping
-      world.addParticle(new entities[entityIds.BlockParticle](blockData[block].shape.textureSelectors.particle, ax,ay,az, type, block), dimension)
+      world.addParticle(new entities[entityIds.BlockParticle]((blockData[block].shape.textureSelectors && blockData[block].shape.textureSelectors.particle) || blockData[block].textures[2], ax,ay,az, type, block), dimension)
     }
     if(!remote) send({
       type:"particles", particleType:"blockParticles",
