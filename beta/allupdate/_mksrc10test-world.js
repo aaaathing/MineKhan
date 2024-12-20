@@ -4160,7 +4160,7 @@ const blockData = [
 		mineSpeed: 4,
 		durability: 131,
 		attackDamage: 2,
-		material:"cobblestone",
+		repairMaterial:"cobblestone",
 		category:"tools",
 	},
 	{
@@ -4172,7 +4172,7 @@ const blockData = [
 		mineSpeed: 6,
 		durability: 250,
 		attackDamage: 3,
-		material:"ironIngot",
+		repairMaterial:"ironIngot",
 		category:"tools",
 	},
 	{
@@ -4184,7 +4184,7 @@ const blockData = [
 		mineSpeed: 12,
 		durability: 32,
 		attackDamage: 4,
-		material:"goldIngot",
+		repairMaterial:"goldIngot",
 		category:"tools",
 	},
 	{
@@ -4196,7 +4196,7 @@ const blockData = [
 		mineSpeed: 8,
 		durability: 1561,
 		attackDamage: 5,
-		material:"diamond",
+		repairMaterial:"diamond",
 		category:"tools",
 	},
 	{ name:"flint", Name:"Flint", item:true, category:"items" },
@@ -4498,7 +4498,7 @@ const blockData = [
 		sword: true,
 		durability: 131,
 		attackDamage: 5,
-		material:"cobblestone",
+		repairMaterial:"cobblestone",
 		category:"tools"
 	},
 	{
@@ -4509,7 +4509,7 @@ const blockData = [
 		sword: true,
 		durability: 250,
 		attackDamage: 6,
-		material:"ironIngot",
+		repairMaterial:"ironIngot",
 		category:"tools"
 	},
 	{
@@ -4520,7 +4520,7 @@ const blockData = [
 		sword: true,
 		durability: 32,
 		attackDamage: 4,
-		material:"goldIngot",
+		repairMaterial:"goldIngot",
 		category:"tools"
 	},
 	{
@@ -4531,7 +4531,7 @@ const blockData = [
 		sword: true,
 		durability: 1561,
 		attackDamage: 7,
-		material:"diamond",
+		repairMaterial:"diamond",
 		category:"tools"
 	},
 	
@@ -4845,7 +4845,7 @@ const blockData = [
 		durability: 131,
 		mineSpeed:3.6,
 		attackDamage: 4,
-		material:"cobblestone",
+		repairMaterial:"cobblestone",
 		category:"tools"
 	},
 	{
@@ -4857,7 +4857,7 @@ const blockData = [
 		durability: 250,
 		mineSpeed:6,
 		attackDamage: 4,
-		material:"ironIngot",
+		repairMaterial:"ironIngot",
 		category:"tools"
 	},
 	{
@@ -4869,7 +4869,7 @@ const blockData = [
 		durability: 32,
 		mineSpeed:12,
 		attackDamage: 2,
-		material:"goldIngot",
+		repairMaterial:"goldIngot",
 		category:"tools"
 	},
 	{
@@ -4881,7 +4881,7 @@ const blockData = [
 		durability: 1561,
 		mineSpeed:8,
 		attackDamage: 5,
-		material:"diamond",
+		repairMaterial:"diamond",
 		category:"tools"
 	},
 	
@@ -4907,7 +4907,7 @@ const blockData = [
 		mineSpeed:4,
 		attackDamage: 9,
 		attackSpeed:0.8,
-		material:"cobblestone",
+		repairMaterial:"cobblestone",
 		category:"tools"
 	},
 	{
@@ -4920,7 +4920,7 @@ const blockData = [
 		mineSpeed:6,
 		attackDamage: 9,
 		attackSpeed:0.9,
-		material:"ironIngot",
+		repairMaterial:"ironIngot",
 		category:"tools"
 	},
 	{
@@ -4933,7 +4933,7 @@ const blockData = [
 		mineSpeed:12,
 		attackDamage: 7,
 		attackSpeed:1,
-		material:"goldIngot",
+		repairMaterial:"goldIngot",
 		category:"tools"
 	},
 	{
@@ -4946,7 +4946,7 @@ const blockData = [
 		mineSpeed:8,
 		attackDamage: 9,
 		attackSpeed:1,
-		material:"diamond",
+		repairMaterial:"diamond",
 		category:"tools"
 	},
 	
@@ -6419,7 +6419,7 @@ const blockData = [
 		mineSpeed:4,
 		attackDamage: 1,
 		attackSpeed:2,
-		material:"cobblestone",
+		repairMaterial:"cobblestone",
 		category:"tools"
 	},
 	{
@@ -6432,7 +6432,7 @@ const blockData = [
 		mineSpeed:6,
 		attackDamage: 1,
 		attackSpeed:3,
-		material:"ironIngot",
+		repairMaterial:"ironIngot",
 		category:"tools"
 	},
 	{
@@ -6445,7 +6445,7 @@ const blockData = [
 		mineSpeed:12,
 		attackDamage: 1,
 		attackSpeed:1,
-		material:"goldIngot",
+		repairMaterial:"goldIngot",
 		category:"tools"
 	},
 	{
@@ -6458,7 +6458,7 @@ const blockData = [
 		mineSpeed:8,
 		attackDamage: 1,
 		attackSpeed:4,
-		material:"diamond",
+		repairMaterial:"diamond",
 		category:"tools"
 	},
 	
@@ -6541,7 +6541,7 @@ const blockData = [
 		mineSpeed: 9,
 		durability: 2031,
 		attackDamage: 6,
-		material:"netheriteIngot",
+		repairMaterial:"netheriteIngot",
 		category:"tools"
 	},
 	{
@@ -6552,7 +6552,7 @@ const blockData = [
 		sword: true,
 		durability: 2031,
 		attackDamage: 8,
-		material:"netheriteIngot",
+		repairMaterial:"netheriteIngot",
 		category:"tools"
 	},
 	{
@@ -6565,7 +6565,7 @@ const blockData = [
 		mineSpeed:9,
 		attackDamage: 10,
 		attackSpeed:1,
-		material:"netheriteIngot",
+		repairMaterial:"netheriteIngot",
 		category:"tools"
 	},
 	{
@@ -6577,7 +6577,7 @@ const blockData = [
 		durability: 2031,
 		mineSpeed:9,
 		attackDamage: 6,
-		material:"netheriteIngot",
+		repairMaterial:"netheriteIngot",
 		category:"tools"
 	},
 	{
@@ -6590,7 +6590,7 @@ const blockData = [
 		mineSpeed:9,
 		attackDamage: 1,
 		attackSpeed:4,
-		material:"netheriteIngot",
+		repairMaterial:"netheriteIngot",
 		category:"tools"
 	},
 	
@@ -14266,6 +14266,15 @@ function initBlockData(){
 		data.pistonPush = data.pistonPush !== undefined ? data.pistonPush : true
 		data.pistonPull = data.pistonPull !== undefined ? data.pistonPull : true
 
+		/*if(data.material){
+			let m = data.material.split(";")
+			for(let i=0; i<m.length; i++){
+				let material = m[i]
+				if(!material.startsWith("mineable/")) data.material = material
+				if(breakTypes[material]) data.harvestTools = breakTypes[material]
+				if(handBreakable.includes(material)) data.harvestTools = true
+			}
+		}*/
 		if(breakTypes[data.type]) data.harvestTools = breakTypes[data.type]
 		if(handBreakable.includes(data.type)) data.harvestTools = true
 
@@ -35507,10 +35516,10 @@ window.parent.postMessage({ready:true}, "*")
 					inventory.anvilOutput.customName = inventory.anvilRename
 					inventory.anvilCost++
 				}
-				if(blockData[id].durability && blockData[id].material && inventory.anvilMaterial){
+				if(blockData[id].durability && blockData[id].repairMaterial && inventory.anvilMaterial){
 					let materialName = blockData[inventory.anvilMaterial.id].name
 					let maxDurability = blockData[id].durability
-					if(blockData[id].material === materialName){
+					if(blockData[id].repairMaterial === materialName){
 						inventory.anvilOutput.durability += maxDurability/4
 						if(inventory.anvilOutput.durability > maxDurability) inventory.anvilOutput.durability = maxDurability
 						inventory.anvilCost++
