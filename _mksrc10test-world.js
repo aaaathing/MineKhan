@@ -1016,6 +1016,18 @@ function set(id, blockStateName, newValue){
 	return id&(~mask) | mapped
 }
 */
+function setBlockStateValue(id, blockStateObj, newValue){
+	return (id % blockStateObj.minMult) + newValue * blockStateObj.minMult + floor(id / blockStateObj.maxMult) * blockStateObj.maxMult
+}
+function setBlockState(id, blockStateObj, newValue){
+	return (id % blockStateObj.minMult) + blockStateObj.values.indexOf(newValue) * blockStateObj.minMult + floor(id / blockStateObj.maxMult) * blockStateObj.maxMult
+}
+function getBlockStateValue(id, blockStateObj){
+	return floor(id / blockStateObj.minMult) % blockStateObj.maxMult
+}
+function getBlockState(id, blockStateObj){
+	return blockStateObj.values[ floor(id / blockStateObj.minMult) % blockStateObj.maxMult ]
+}
 
 const blockData = [
 	{
@@ -1030,6 +1042,12 @@ const blockData = [
 		name:"grass",
 		nameMcd: "grass_block",
 		Name: "Grass Block",
+		blockStates: [
+      {
+				name:"snowy",
+        values: [false,true]
+      },
+		],
 		textures: [ "dirt", "grassTop", "grassSide" ],
 		hardness: 0.6,
 		blastResistance:0.6,
@@ -1039,10 +1057,11 @@ const blockData = [
 		onupdate:function(x,y,z,b,world,sx,sy,sz){
 			var top = world.getBlock(x,y+1,z)
 			var isSnow = blockData[top].name === "snow" || blockData[top].name === "snowBlock"
-			if(b === blockIds.grass && isSnow){
-				world.setBlock(x,y,z,blockIds.grass | CROSS)
-			}else if(b === (blockIds.grass | CROSS) && !isSnow){
-				world.setBlock(x,y,z,blockIds.grass)
+			let curIsSnow = getBlockStateValue(b, this.blockStatesMap.snowy)
+			if(!curIsSnow && isSnow){
+				world.setBlock(x,y,z, setBlockStateValue(b,this.blockStatesMap.snowy,1))
+			}else if(curIsSnow && !isSnow){
+				world.setBlock(x,y,z, setBlockStateValue(b,this.blockStatesMap.snowy,0))
 			}
 		},
 		compostChance:0.3,
@@ -12980,6 +12999,18 @@ function initBlockData(){
 
 		if(breakTypes[data.type]) data.harvestTools = breakTypes[data.type]
 		if(handBreakable.includes(data.type)) data.harvestTools = true
+
+		if(data.blockStates){
+			let obj = {}, mult = 0x10000
+			for(let s=0; s<data.blockStates.length; s++){
+				let bs = data.blockStates[s]
+				bs.minMult = mult
+				mult *= bs.values.length
+				bs.maxMult = mult
+				obj[bs.name] = bs
+			}
+			data.blockStatesMap = obj
+		}
 	}
 
   blockData.forEach(block => {
@@ -13005,7 +13036,7 @@ function initBlockData(){
 			breakTypes[b][i] = blockIds[breakTypes[b][i]]
 		}
 	}
-	dataLoad.loadNamespace(dataLoad.data, "min"+"ecr"+"aft", {blockData,BLOCK_COUNT,shapes,textures,blockIds,compareArr,entityData})
+	dataLoad.loadNamespace(dataLoad.data, "min"+"ecr"+"aft", {blockData,BLOCK_COUNT,shapes,textures:textures2,blockIds,compareArr,entityData})
 
 	//fill the crafts that have less than 9 items. Ex: "thing" => "thing,air,air..."
 	let arr, arr2 = new Array(9)
@@ -18935,6 +18966,7 @@ function initShapes() {//todo n: only do required shapes
 		}
 	}
 }
+let textures2 = textures
 function initBlockDataShapes(){
 	blockData[0].shape = shapes.none
 	//todo n

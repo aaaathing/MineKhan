@@ -1,19 +1,36 @@
 import idata from "./data.js"
 export const data = idata
 
+/*
+blockStates: {
+	snowy:{
+		values: [false,true],
+		minMult:16,maxMult:32
+	},
+},
+*/
 //todo: flat icons for blocks, shape array, animatd texture
-function loadNamespaceAssets(allData, namespace, {
+function loadNamespaceBlocks(allData, namespace, {
 	blockData, BLOCK_COUNT,
 	shapes, textures, blockIds,
 	compareArr
 }){
-	let data = allData[namespace]
+	let data = allData.assets[namespace]
+
+	//let blockDataMore = allData.blockData[namespace]
+	//let blockDataMoreMap = {}
+	//for(let i=0; i<blockDataMore.length; i++) blockDataMoreMap[blockDataMore[i].name] = blockDataMore[i]
+	
 	for(let blockId = 0; blockId < BLOCK_COUNT; blockId++){
 		const name = blockData[blockId].nameMcd || blockData[blockId].name
 		let bstates = data.blockstates[name]
 		if(!bstates) continue
+		let baseBlock = blockData[blockId]
+
+		//let more = blockDataMoreMap[baseBlock.name]
+		//baseBlock.blockStates = more.states
 		
-		let blockstateValues = {}
+		/*let blockstateValues = {}
 		if(bstates.variants){ // find name and values of states
 			for(let v in bstates.variants){
 				let a = v.split(",")
@@ -31,17 +48,24 @@ function loadNamespaceAssets(allData, namespace, {
 			blockstatePos[statename] = blockstatePosI
 			blockstatePosI += Math.ceil(Math.log2(blockstateValues[statename].length))
 		}
-		let baseBlock = blockData[blockId]
 		baseBlock.blockstateValues = blockstateValues
 		baseBlock.blockstatePos = blockstatePos
-		blockData[blockId] = baseBlock
+		blockData[blockId] = baseBlock*/
 		if(bstates.variants){
 			for(let v in bstates.variants){
 				let id = blockId
 				let a = v.split(",")
-				for(let i=0; i<a.length; i++){
+				findIdLoop:for(let i=0; i<a.length; i++){
 					let [statename,statevalue] = a[i].split("=")
-					id |= blockstateValues[statename].indexOf(statevalue) << blockstatePos[statename]
+					let bs = baseBlock.blockStatesMap[statename]
+					for(let v=0; v<bs.values.length; v++){
+						if(bs.values[v]+"" === statevalue){
+							id += v * bs.minMult
+							continue findIdLoop
+						}
+					}
+					throw new Error("did not find blockstate "+statename+" "+statevalue)
+					// id |= blockstateValues[statename].indexOf(statevalue) << blockstatePos[statename]
 				}
 				let block = Object.create(baseBlock)
 				let variant = bstates.variants[v]
@@ -129,7 +153,7 @@ function loadNamespaceAssets(allData, namespace, {
 	function getFromData(ostr, prefix=""){
 		let [tnamespace, str] = fixResourceLocation(ostr).split(":")
 		str = prefix + str
-		let obj = allData[tnamespace]
+		let obj = allData.assets[tnamespace]
 		let arr = str.split("/")
 		for(let i=0; i<arr.length; i++) obj = obj[arr[i]]
 		if(!obj) throw new Error(ostr+" not found in "+prefix)
@@ -138,7 +162,7 @@ function loadNamespaceAssets(allData, namespace, {
 }
 
 
-export function loadNamespaceAssetsBe(allData, namespace, {
+export function loadNamespaceEntityBe(allData, namespace, {
 	entityData,
 	shapes, textures,
 	compareArr
@@ -224,7 +248,7 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 		}
 	}
 	
-	let data = allData[namespace]
+	let data = allData.assetsBe[namespace]
 	for(let i=0; i<entityData.length; i++){
 		let name = entityData[i].nameMcd || entityData[i].name
 		let entity = data.entity[name]
@@ -315,7 +339,7 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 	function getFromData(ostr, prefix=""){
 		let [tnamespace, str] = fixResourceLocation(ostr).split(":")
 		str = prefix + str
-		let obj = allData[tnamespace]
+		let obj = allData.assetsBe[tnamespace]
 		let arr = str.split("/")
 		for(let i=0; i<arr.length; i++) obj = obj[arr[i]]
 		if(!obj) throw new Error(ostr+" not found in "+prefix)
@@ -325,6 +349,6 @@ export function loadNamespaceAssetsBe(allData, namespace, {
 
 
 export function loadNamespace(allData, namespace, options){
-	loadNamespaceAssets(allData.assets,namespace,options)
-	loadNamespaceAssetsBe(allData.assetsBe,namespace,options)
+	loadNamespaceBlocks(allData,namespace,options)
+	loadNamespaceEntityBe(allData,namespace,options)
 }
