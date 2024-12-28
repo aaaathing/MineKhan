@@ -1512,6 +1512,9 @@ const blockData = [
 	},
 	{
 		name: "portal",
+		nameMcd:"nether_portal",
+		blockStates: [{"name":"axis","values":["x","z"]}],
+		hardness: -1,
 		solid:false,
 		shadow: false,
 		portal: true,
@@ -1576,16 +1579,16 @@ const blockData = [
 						world.setBlock(x+1,y-5,z,blockIds.obsidian)
 						//layer2
 						world.setBlock(x-2,y-4,z,blockIds.obsidian)
-						world.setBlock(x-1,y-4,z,blockIds.portal|PORTAL|NORTH)
-						world.setBlock(x,y-4,z,blockIds.portal|PORTAL|NORTH)
+						world.setBlock(x-1,y-4,z,blockIds.portal+blockStateMaps.portal.axis.z)
+						world.setBlock(x,y-4,z,blockIds.portal+blockStateMaps.portal.axis.z)
 						world.setBlock(x+1,y-4,z,blockIds.obsidian)
 						world.setBlock(x-2,y-3,z,blockIds.obsidian)
-						world.setBlock(x-1,y-3,z,blockIds.portal|PORTAL|NORTH)
-						world.setBlock(x,y-3,z,blockIds.portal|PORTAL|NORTH)
+						world.setBlock(x-1,y-3,z,blockIds.portal+blockStateMaps.portal.axis.z)
+						world.setBlock(x,y-3,z,blockIds.portal+blockStateMaps.portal.axis.z)
 						world.setBlock(x+1,y-3,z,blockIds.obsidian)
 						world.setBlock(x-2,y-2,z,blockIds.obsidian)
-						world.setBlock(x-1,y-2,z,blockIds.portal|PORTAL|NORTH)
-						world.setBlock(x,y-2,z,blockIds.portal|PORTAL|NORTH)
+						world.setBlock(x-1,y-2,z,blockIds.portal+blockStateMaps.portal.axis.z)
+						world.setBlock(x,y-2,z,blockIds.portal+blockStateMaps.portal.axis.z)
 						world.setBlock(x+1,y-2,z,blockIds.obsidian)
 						//layer5
 						world.setBlock(x-2,y-1,z,blockIds.obsidian)
@@ -1599,16 +1602,16 @@ const blockData = [
 						world.setBlock(x,y-5,z+1,blockIds.obsidian)
 						//layer2
 						world.setBlock(x,y-4,z-2,blockIds.obsidian)
-						world.setBlock(x,y-4,z-1,blockIds.portal|PORTAL|EAST)
-						world.setBlock(x,y-4,z,blockIds.portal|PORTAL|EAST)
+						world.setBlock(x,y-4,z-1,blockIds.portal+blockStateMaps.portal.axis.x)
+						world.setBlock(x,y-4,z,blockIds.portal+blockStateMaps.portal.axis.x)
 						world.setBlock(x,y-4,z+1,blockIds.obsidian)
 						world.setBlock(x,y-3,z-2,blockIds.obsidian)
-						world.setBlock(x,y-3,z-1,blockIds.portal|PORTAL|EAST)
-						world.setBlock(x,y-3,z,blockIds.portal|PORTAL|EAST)
+						world.setBlock(x,y-3,z-1,blockIds.portal+blockStateMaps.portal.axis.x)
+						world.setBlock(x,y-3,z,blockIds.portal+blockStateMaps.portal.axis.x)
 						world.setBlock(x,y-3,z+1,blockIds.obsidian)
 						world.setBlock(x,y-2,z-2,blockIds.obsidian)
-						world.setBlock(x,y-2,z-1,blockIds.portal|PORTAL|EAST)
-						world.setBlock(x,y-2,z,blockIds.portal|PORTAL|EAST)
+						world.setBlock(x,y-2,z-1,blockIds.portal+blockStateMaps.portal.axis.x)
+						world.setBlock(x,y-2,z,blockIds.portal+blockStateMaps.portal.axis.xT)
 						world.setBlock(x,y-2,z+1,blockIds.obsidian)
 						//layer5
 						world.setBlock(x,y-1,z-2,blockIds.obsidian)
@@ -2065,7 +2068,7 @@ const blockData = [
 		name:"blueRedstone",
 		Name:"Blue Redstone Dust",
 		item:true,
-		useAs:() => blockIds.redstoneDust | FLIP,
+		useAs:() => blockIds.redstoneDust | FLIP,//todo n
 		category:"redstone",
 	},
 	{ name: "soup",category:"food"},
@@ -2676,7 +2679,7 @@ const blockData = [
 			}
 			return minSize
 		},
-		update: function(x,y,z,world){
+		update: function(x,y,z,world){//todo n
 			let minSize = this.getSize(x,y,z,world), block = world.getBlock(x,y,z)
 			if(minSize){
 				if(block !== (this.id | BEACON)){
@@ -2754,20 +2757,10 @@ const blockData = [
 		solid:false,
 		onupdate:function(x,y,z,b,world,sx,sy,sz){
 			var fx = x, fz = z
-			switch(b){
-				case this.id | WALLFLAT | NORTH:
-					fz++
-					break
-				case this.id | WALLFLAT | SOUTH:
-					fz--
-					break
-				case this.id | WALLFLAT | EAST:
-					fx++
-					break
-				case this.id | WALLFLAT | WEST:
-					fx--
-					break
-			}
+			if(getBlockState(b,this.blockStatesMap.north)) fz++
+			else if(getBlockState(b,this.blockStatesMap.south)) fz--
+			else if(getBlockState(b,this.blockStatesMap.east)) fx++
+			else if(getBlockState(b,this.blockStatesMap.west)) fx--
 			var block = world.getBlock(fx,y,fz)
 			var above = world.getBlock(x,y+1,z)
 			if(!world.world.settings.blocksFall || block && blockData[block].solid || above === b) return
@@ -2777,7 +2770,7 @@ const blockData = [
 				if(block && blockData[block].solid || above === b) return
 				
 				world.setBlock(x,y,z, 0)
-				world.addItems(x,y,z,0,0,0,b&isCube,true)
+				world.addItems(x,y,z,0,0,0,this.id,true)
 				world.blockParticles(b,x,y,z,30, "break")
 				world.blockSound(b, "dig", x,y,z)
 			},tickTime,x,y,z)
@@ -3163,7 +3156,7 @@ const blockData = [
 			var top = world.getBlock(x,y+1,z)
 			var isIt = blockData[top].name === "twistingVines" || blockData[top].name === "twistingVinesPlant"
 			if(isIt){
-				world.setBlock(x,y,z,blockIds.twistingVinesPlant | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.twistingVinesPlant,false,false,false,false)
 			}
 		},
 		hidden:true,
@@ -3184,7 +3177,7 @@ const blockData = [
 			var top = world.getBlock(x,y+1,z)
 			var isIt = blockData[top].name === "twistingVines" || blockData[top].name === "twistingVinesPlant"
 			if(!isIt){
-				world.setBlock(x,y,z,blockIds.twistingVines | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.twistingVines,false,false,false,false)
 			}
 		},
 		category:"nature",
@@ -3203,7 +3196,7 @@ const blockData = [
 			var top = world.getBlock(x,y-1,z)
 			var isIt = blockData[top].name === "weepingVines" || blockData[top].name === "weepingVinesPlant"
 			if(isIt){
-				world.setBlock(x,y,z,blockIds.weepingVinesPlant | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.weepingVinesPlant,false,false,false,false)
 			}
 		},
 		hidden:true,
@@ -3223,7 +3216,7 @@ const blockData = [
 			var top = world.getBlock(x,y-1,z)
 			var isIt = blockData[top].name === "weepingVines" || blockData[top].name === "weepingVinesPlant"
 			if(!isIt){
-				world.setBlock(x,y,z,blockIds.weepingVines | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.weepingVines,false,false,false,false)
 			}
 		},
 		category:"nature"
@@ -3306,7 +3299,7 @@ const blockData = [
 			if(block === blockIds.tnt){
 				blockData[blockIds.tnt].explode(x,y,z,null,world)
 				item.durability--
-			}else if(block === (blockIds.tnt | SLAB)){
+			}else if(block === (blockIds.tnt | SLAB)){//todo n
 				blockData[blockIds.tnt].superTntExplode(x,y,z,world)
 				item.durability--
 			}else if(block === (blockIds.tnt | STAIR)){
@@ -3321,11 +3314,11 @@ const blockData = [
 				if(attached && blockData[attached].canHaveSoulFire) b = blockIds.soulFire
 				;([x,y,z] = movePositionByFace(face,x,y,z))
 				switch(face){
-					case "bottom": b |= STAIR; break
-					case "north": b |= SLAB | SOUTH; break
-					case "south": b |= SLAB | NORTH; break
-					case "east": b |= SLAB | WEST; break
-					case "west": b |= SLAB | EAST; break
+					case "top": b += blockStateMaps[b].up.true; break
+					case "north": b += blockStateMaps[b].north.true; break
+					case "south": b += blockStateMaps[b].south.true; break
+					case "east": b += blockStateMaps[b].east.true; break
+					case "west": b += blockStateMaps[b].west.true; break
 				}
 				item.durability--
 				if(block === blockIds.obsidian && blockData[blockIds.fire].tryCreatePortal(x,y,z,world)) return
@@ -3809,7 +3802,7 @@ const blockData = [
 		compostChance:0.65,
 		category:"nature",
 		growBonemeal:function(x,y,z,world){
-			world.setBlock(x,y,z, this.id|LANTERN)
+			world.setBlock(x,y,z, this.id+this.blockStatesMap.age[7])
 		}
 	},
 	{
@@ -3970,10 +3963,7 @@ const blockData = [
 			}
 			
 			var block = world.getBlock(x,y,z)
-			var needs = blockIds.furnace | (block & ROTATION)
-			if(data.smelting){
-				needs |= SLAB
-			}
+			var needs = setBlockState(block,this.blockStatesMap.lit, !!data.smelting)
 			if(block !== needs){
 				world.setBlock(x,y,z, needs, false, false, false, true)//last argument is keepTags
 			}
@@ -4288,9 +4278,9 @@ const blockData = [
 		crossShape: true,
 		onupdate:function(x,y,z,b,world,sx,sy,sz){
 			var top = world.getBlock(x,y-1,z)
-			var isIt = blockData[top].name === "caveVines" || blockData[top].name === "caveVinesPlant" || blockData[top].name === "caveVinesLit" || blockData[top].name === "caveVinesPlantLit"
+			var isIt = blockData[top].name === "caveVines" || blockData[top].name === "caveVinesPlant"
 			if(isIt){
-				world.setBlock(x,y,z,blockIds.caveVinesPlant | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,setBlockState(blockIds.caveVinesPlant,blockStateMaps.caveVinesPlant.berries,getBlockState(b,this.blockStatesMap.berries)),false,false,false,false)
 			}
 		},
 		liquidBreakable:"drop",
@@ -4307,9 +4297,9 @@ const blockData = [
 		crossShape: true,
 		onupdate:function(x,y,z,b,world,sx,sy,sz){
 			var top = world.getBlock(x,y-1,z)
-			var isIt = blockData[top].name === "caveVines" || blockData[top].name === "caveVinesPlant" || blockData[top].name === "caveVinesLit" || blockData[top].name === "caveVinesPlantLit"
+			var isIt = blockData[top].name === "caveVines" || blockData[top].name === "caveVinesPlant"
 			if(!isIt){
-				world.setBlock(x,y,z,blockIds.caveVines | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,setBlockState(blockIds.caveVines,blockStateMaps.caveVines.berries,getBlockState(b,this.blockStatesMap.berries)),false,false,false,false)
 			}
 		},
 		hidden:true,
@@ -4317,20 +4307,13 @@ const blockData = [
 		liquidBreakable:"drop"
 	},
 	{
-		name: "caveVinesLit",//todo n
+		name: "caveVinesLit",//todo n: convert
 		Name: "Cave Vines With Glow Berries",
 		solid: false,
 		transparent: true,
 		shadow: false,
 		crossShape: true,
 		lightLevel: 14,
-		onupdate:function(x,y,z,b,world,sx,sy,sz){
-			var top = world.getBlock(x,y-1,z)
-			var isIt = blockData[top].name === "caveVines" || blockData[top].name === "caveVinesPlant" || blockData[top].name === "caveVinesLit" || blockData[top].name === "caveVinesPlantLit"
-			if(isIt){
-				world.setBlock(x,y,z,blockIds.caveVinesPlantLit | CROSS,false,false,false,false)
-			}
-		},
 		liquidBreakable:"drop",
 		category:"nature",
 		hidden:true,
@@ -4343,13 +4326,6 @@ const blockData = [
 		shadow: false,
 		crossShape: true,
 		lightLevel: 14,
-		onupdate:function(x,y,z,b,world,sx,sy,sz){
-			var top = world.getBlock(x,y-1,z)
-			var isIt = blockData[top].name === "caveVines" || blockData[top].name === "caveVinesPlant" || blockData[top].name === "caveVinesLit" || blockData[top].name === "caveVinesPlantLit"
-			if(!isIt){
-				world.setBlock(x,y,z,blockIds.caveVinesLit | CROSS,false,false,false,false)
-			}
-		},
 		hidden:true,
 		liquidBreakable:"drop",
 		hidden:true,
@@ -4831,13 +4807,14 @@ const blockData = [
 		hardness:0.6, blastResistance:0.6,
 		type:"ground",
 		tick:function(block,x,y,z,world){
-			var target = this.id
+			var water = false
 			for(var X=x-4;X<=x+4;X++){
 				for(var Z=z-4;Z<=z+4;Z++){
 					var b = world.getBlock(X,y,Z), a = world.getBlock(X,y+1,Z)
-					if(b && blockData[b].name === "Water" || a && blockData[a].name === "Water") target = this.id|SLAB
+					if(b && blockData[b].name === "Water" || a && blockData[a].name === "Water") water = true
 				}
 			}
+			let target = setBlockState(block,this.blockStatesMap.moisture, water?7:0)
 			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
 		}
 	},
@@ -6570,12 +6547,13 @@ const blockData = [
 		blastResistance:0.5,
 		type:"ground",
 		onupdate:function(x,y,z,b,world,sx,sy,sz){
-			let top = world.getBlock(x,y+1,z)
-			let isSnow = blockData[top].name === "snow" || blockData[top].name === "snowBlock"
-			if(b === blockIds.podzol && isSnow){
-				world.setBlock(x,y,z,blockIds.podzol | CROSS,false,false,false,false)
-			}else if(b === (blockIds.podzol | CROSS) && !isSnow){
-				world.setBlock(x,y,z,blockIds.podzol,false,false,false,false)
+			var top = world.getBlock(x,y+1,z)
+			var isSnow = blockData[top].name === "snow" || blockData[top].name === "snowBlock"
+			let curIsSnow = getBlockStateValue(b, this.blockStatesMap.snowy)
+			if(!curIsSnow && isSnow){
+				world.setBlock(x,y,z, setBlockStateValue(b,this.blockStatesMap.snowy,1))
+			}else if(curIsSnow && !isSnow){
+				world.setBlock(x,y,z, setBlockStateValue(b,this.blockStatesMap.snowy,0))
 			}
 		},
 		compostChance:0.3,
@@ -6881,11 +6859,9 @@ const blockData = [
 		//if you chang this, change colored lamps too
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
-			var block = this.id
-			if(power){
-				block = this.id | SLAB
-			}
-			if(world.getBlock(x,y,z) !== block) world.setBlock(x,y,z,block,false,false,false,false)
+			var block = world.getBlock(x,y,z)
+			let target = setBlockState(block,this.blockStatesMap.lit,power)
+			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
 		},
 		onset:function(x,y,z,world){
 			this.onpowerupdate(x,y,z,null,null,null,null,world)
@@ -6958,18 +6934,19 @@ const blockData = [
 			}
 			//check if frame is correct
 			x = minX-1, z = minZ-1
-			if(world.getBlock(x+1,y,z) !== (this.id | SLAB | SOUTH)) return
-			if(world.getBlock(x+2,y,z) !== (this.id | SLAB | SOUTH)) return
-			if(world.getBlock(x+3,y,z) !== (this.id | SLAB | SOUTH)) return
-			if(world.getBlock(x+4,y,z+1) !== (this.id | SLAB | EAST)) return
-			if(world.getBlock(x+4,y,z+2) !== (this.id | SLAB | EAST)) return
-			if(world.getBlock(x+4,y,z+3) !== (this.id | SLAB | EAST)) return
-			if(world.getBlock(x+1,y,z+4) !== (this.id | SLAB | NORTH)) return
-			if(world.getBlock(x+2,y,z+4) !== (this.id | SLAB | NORTH)) return
-			if(world.getBlock(x+3,y,z+4) !== (this.id | SLAB | NORTH)) return
-			if(world.getBlock(x,y,z+1) !== (this.id | SLAB | WEST)) return
-			if(world.getBlock(x,y,z+2) !== (this.id | SLAB | WEST)) return
-			if(world.getBlock(x,y,z+3) !== (this.id | SLAB | WEST)) return
+			let b
+			if(world.getBlock(x+1,y,z) !== this.id + this.blockStatesMap.eye.true + this.blockStatesMap.facing.south) return
+			if(world.getBlock(x+2,y,z) !== this.id + this.blockStatesMap.eye.true + this.blockStatesMap.facing.south) return
+			if(world.getBlock(x+3,y,z) !== this.id + this.blockStatesMap.eye.true + this.blockStatesMap.facing.south) return
+			if(world.getBlock(x+4,y,z+1) !== this.id + this.blockStatesMap.eye.true + this.blockStatesMap.facing.east) return
+			if(world.getBlock(x+4,y,z+2) !== this.id + this.blockStatesMap.eye.true + this.blockStatesMap.facing.east) return
+			if(world.getBlock(x+4,y,z+3) !== this.id + this.blockStatesMap.eye.true + this.blockStatesMap.facing.east) return
+			if(world.getBlock(x+1,y,z+4) !== this.id + this.blockStatesMap.eye.true + this.blockStatesMap.facing.north) return
+			if(world.getBlock(x+2,y,z+4) !== this.id + this.blockStatesMap.eye.true + this.blockStatesMap.facing.north) return
+			if(world.getBlock(x+3,y,z+4) !== this.id + this.blockStatesMap.eye.true + this.blockStatesMap.facing.north) return
+			if(world.getBlock(x,y,z+1) !== this.id + this.blockStatesMap.eye.true + this.blockStatesMap.facing.west) return
+			if(world.getBlock(x,y,z+2) !== this.id + this.blockStatesMap.eye.true + this.blockStatesMap.facing.west) return
+			if(world.getBlock(x,y,z+3) !== this.id + this.blockStatesMap.eye.true + this.blockStatesMap.facing.west) return
 
 			//place the frame
 			world.setBlock(x+1,y,z+1,blockIds.endPortal)
@@ -7505,26 +7482,12 @@ const blockData = [
 		},
 		getAttached:function(x,y,z,block,getBlockOnly,world){
 			var ax = x, ay = y, az = z
-			switch(block){
-				case this.id:
-					ay--
-					break
-				case this.id | STAIR:
-					ay++
-					break
-				case this.id | SLAB | NORTH:
-					az++
-					break
-				case this.id | SLAB | SOUTH:
-					az--
-					break
-				case this.id | SLAB | EAST:
-					ax++
-					break
-				case this.id | SLAB | WEST:
-					ax--
-					break
-			}
+			if(getBlockState(block,this.blockStatesMap.up)) ay++
+			else if(getBlockState(block,this.blockStatesMap.north)) az++
+			else if(getBlockState(block,this.blockStatesMap.south)) az--
+			else if(getBlockState(block,this.blockStatesMap.east)) ax++
+			else if(getBlockState(block,this.blockStatesMap.west)) ax--
+			else ay--
 			var attached = world.getBlock(ax,ay,az)
 			if(getBlockOnly) return attached
 			else return [attached,ax,ay,az]
@@ -7574,27 +7537,26 @@ const blockData = [
 								rx = i, ry = j, rz = k
 								switch(floor(rand(6))){
 									case 0:
-										block = this.id
 										ry++
 										break
 									case 1:
-										block = this.id | STAIR
+										block = setBlockState(block,this.blockStatesMap.up,true)
 										ry--
 										break
 									case 2:
-										block = this.id | SLAB | NORTH
+										block = setBlockState(block,this.blockStatesMap.north,true)
 										rz--
 										break
 									case 3:
-										block = this.id | SLAB | SOUTH
+										block = setBlockState(block,this.blockStatesMap.south,true)
 										rz++
 										break
 									case 4:
-										block = this.id | SLAB | EAST
+										block = setBlockState(block,this.blockStatesMap.east,true)
 										rx--
 										break
 									case 5:
-										block = this.id | SLAB | WEST
+										block = setBlockState(block,this.blockStatesMap.west,true)
 										rx++
 										break
 								}
@@ -7634,7 +7596,7 @@ const blockData = [
 				}
 			}
 			for(let i=0; i<spread.length; i+=4){
-				world.setBlock(spread[i],spread[i+1],spread[i+2],blockIds.portal|PORTAL|EAST)
+				world.setBlock(spread[i],spread[i+1],spread[i+2],blockIds.portal+blockStateMaps.portal.axis.x)
 			}
 			return true
 		},
@@ -7666,7 +7628,7 @@ const blockData = [
 				}
 			}
 			for(let i=0; i<spread.length; i+=4){
-				world.setBlock(spread[i],spread[i+1],spread[i+2],blockIds.portal|PORTAL|NORTH)
+				world.setBlock(spread[i],spread[i+1],spread[i+2],blockIds.portal+blockStateMaps.portal.axis.z)
 			}
 			return true
 		},
@@ -8050,7 +8012,7 @@ const blockData = [
 			var top = world.getBlock(x,y+1,z)
 			var isIt = blockData[top].name === "kelp" || blockData[top].name === "kelpPlant"
 			if(isIt){
-				world.setBlock(x,y,z,blockIds.kelpPlant | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.kelpPlant,false,false,false,false)
 			}
 		},
 		category:"nature"
@@ -8067,7 +8029,7 @@ const blockData = [
 			var top = world.getBlock(x,y+1,z)
 			var isIt = blockData[top].name === "kelp" || blockData[top].name === "kelpPlant"
 			if(!isIt){
-				world.setBlock(x,y,z,blockIds.kelp | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.kelp,false,false,false,false)
 			}
 		},
 		hidden:true
@@ -8378,7 +8340,7 @@ const blockData = [
 		blastResistance:2,
 		hardness:2,
 		activate:function(x,y,z,block,ent,world){
-			if(ent.burning && block === (this.id | SLAB) && onBoxEnt(x,y,z,1,1,1,ent)){
+			if(ent.burning && getBlockState(block,this.blockStatesMap.lit) && onBoxEnt(x,y,z,1,1,1,ent)){
 				world.setBlock(x,y,z,this.id,false,false,false,false)
 			}
 		}
@@ -8405,7 +8367,7 @@ const blockData = [
 		blastResistance:2,
 		hardness:2,
 		activate:function(x,y,z,block,ent,world){
-			if(ent.burning && block === (this.id | SLAB) && onBoxEnt(x,y,z,1,1,1,ent)){
+			if(ent.burning && getBlockState(block,this.blockStatesMap.lit) && onBoxEnt(x,y,z,1,1,1,ent)){
 				world.setBlock(x,y,z,this.id,false,false,false,false)
 			}
 		}
@@ -8562,6 +8524,7 @@ const blockData = [
 	{
 		name:"tomatoPlant",
 		Name:"Tomato Plant",
+		blockStates:"???",//todo n
 		textures:new Array(6).fill("tomatoPlantStage0"),
 		textures1:new Array(6).fill("tomatoPlantStage1"),
 		textures2:new Array(6).fill("tomatoPlantStage2"),
@@ -8578,7 +8541,7 @@ const blockData = [
 		category:"nature",
 		liquidBreakable:"drop",
 		growBonemeal:function(x,y,z,world){
-			world.setBlock(x,y,z, this.id|TALLCROSS)
+			world.setBlock(x,y,z, this.id+this.blockStateMaps.age[4])
 		}
 	},
 	{
@@ -8830,7 +8793,7 @@ const blockData = [
 				//find block it's attached to
 				var me = world.getBlock(x,y,z)
 				var ax=x,ay=y,az=z
-				var wall = that.id | SLAB
+				var wall = that.id | SLAB//todo n (wall torch)
 				var wallOff = that.id | STAIR
 				switch(me){
 					case wall | NORTH:
@@ -14196,6 +14159,8 @@ win.emptyFunc = function(){}
 	
 let blockIds = {}
 win.blockIds = blockIds
+let blockStateMaps = {}
+win.blockStateMaps = blockStateMaps
 let generateBlockIds = {
 	grass:true, dirt:true, stone: true, gravel: true,
 	snowBlock: true, snow: true, packedIce:true, ice:true,
@@ -14413,15 +14378,21 @@ function initBlockData(){
 			if(typeof data.blockStates === "string"){
 				data.blockStates = blockData[blockIds[data.blockStates]].blockStates
 			}
-			let obj = {}, mult = 0x10000
+			let obj = {}, mult = 0x10000 //16th bit
 			for(let s=0; s<data.blockStates.length; s++){
 				let bs = data.blockStates[s]
 				bs.minMult = mult
 				mult *= bs.values.length
 				bs.maxMult = mult
+				//let bsids = {}
+				for(let v=0; v<bs.values.length; v++){
+					if(!(bs.values[v] in bs)) bs[bs.values[v]] = v*bs.minMult
+				}
+				//blockStateIds[data.name] = bsids
 				obj[bs.name] = bs
 			}
 			data.blockStatesMap = obj
+			blockStateMaps[data.name] = obj
 		}
 	}
 	dataLoad.loadNamespace(dataLoad.data, "min"+"ecr"+"aft", {blockData,BLOCK_COUNT,shapes,textures:textures2,blockIds,compareArr,entityData})
@@ -33990,7 +33961,7 @@ class World{ // aka trueWorld
 		return done
 	}
 	
-	getSaveString(){
+	getSaveString(){//todo n: new save format (blockStates seperate, include name of blockstate and block, pallete has values and id of name, name pallete has names)
 		let loadFrom = this.loadFrom
 
 		let worldTypeBits1 = this.worldType==="island" ? 2 : (this.worldType === "void" ? 3 : (this.worldType === "superflat" ? 1 : 0))

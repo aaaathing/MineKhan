@@ -4,6 +4,7 @@ const fs=require("fs")
 update()
 
 async function update(){
+	// CUBE|SLAB|STAIR|CROSS|TALLCROSS|DOOR|TORCH|LANTERN|LANTERNHANG|BEACON|CACTUS|PANE|PORTAL|WALLFLAT|TRAPDOOR|TRAPDOOROPEN|FENCE|WALLPOST|BUTTON|CHAIN|POT|POTCROSS|CORNERSTAIRIN|CORNERSTAIROUT|VERTICALSLAB|LAYER1|LAYER2|LAYER3|LAYER4|LAYER5|LAYER6|LAYER7|LAYER8|FLIP|NORTH|SOUTH|EAST|WEST|ROTATION|isCube|isState
 	var esprima = require('esprima')
 
 	let str=fs.readFileSync("public/minekhan/beta/allupdate/_mksrc10test-world.js","utf-8")
@@ -62,7 +63,7 @@ async function update(){
 		if(nb.filterLight && nb.transparent) replaceProp(b,"decreaseLight",nb.filterLight,space,["Name","nameMcd","name"])
 		if(nb.transparent) replaceProp(b,"transparent",nb.transparent,space,["Name","nameMcd","name"])
 		if(nb.boundingBox === "empty") replaceProp(b,"solid","false",space,["Name","nameMcd","name"])
-		if(nb.hardness) replaceProp(b,"hardness",nb.hardness,space,["Name","nameMcd","name"])
+		if(nb.hardness) replaceProp(b,"hardness",nb.hardness===-1?"Infinity":nb.hardness,space,["Name","nameMcd","name"])
 		if(nb.resistance) replaceProp(b,"blastResistance",nb.resistance,space,["Name","nameMcd","name"])
 		if(nb.material !== "default") replaceProp(b,"material",JSON.stringify(nb.material),space,["Name","nameMcd","name"])
 		if(nb.stackSize !== 64) replaceProp(b,"stackSize",nb.stackSize,space,["Name","nameMcd","name"])
