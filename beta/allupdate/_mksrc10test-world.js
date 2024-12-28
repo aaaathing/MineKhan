@@ -8921,93 +8921,28 @@ const blockData = [
 		onclick:function(x,y,z,world){
 			var block = world.getBlock(x,y,z)
 			var me = blockData[blockIds.lever]
-			var wall = me.id
-			var wallOn = me.id | SLAB
 			var ax = x, ay = y, az = z
 			var dir
-			switch(block){
-				case wall | NORTH:
-				case wallOn | NORTH:
-					az++
-					dir = "south"
-					break
-				case wall | SOUTH:
-				case wallOn | SOUTH:
-					az--
-					dir = "north"
-					break
-				case wall | EAST:
-				case wallOn | EAST:
-					ax++
-					dir = "east"
-					break
-				case wall | WEST:
-				case wallOn | WEST:
-					ax--
-					dir = "west"
-					break
-				case me.id | STAIR:
-				case me.id | CROSS:
-					ay --
-					dir = "top"
-					break
-				case me.id | TALLCROSS:
-				case me.id | DOOR:
-					ay ++
-					dir = "bottom"
-					break
+			if(getBlockState(block,me.blockStatesMap.face) === "ceiling"){
+				ay --
+				dir = "top"
+			}else if(getBlockState(block,me.blockStatesMap.face) === "floor"){
+				ay ++
+				dir = "bottom"
+			}else if(getBlockState(block,me.blockStatesMap.facing) === "north"){
+				az++
+				dir = "south"
+			}else if(getBlockState(block,me.blockStatesMap.facing) === "south"){
+				az--
+				dir = "north"
+			}else if(getBlockState(block,me.blockStatesMap.facing) === "east"){
+				ax++
+				dir = "east"
+			}else if(getBlockState(block,me.blockStatesMap.facing) === "west"){
+				ax--
+				dir = "west"
 			}
-			var target, on
-			switch(block){
-				case wall | NORTH:
-					on = true
-					target = wallOn | NORTH
-					break
-				case wall | SOUTH:
-					on = true
-					target = wallOn | SOUTH
-					break
-				case wall | EAST:
-					on = true
-					target = wallOn | EAST
-					break
-				case wall | WEST:
-					on = true
-					target = wallOn | WEST
-					break
-				case wallOn | NORTH:
-					on = false
-					target = wall | NORTH
-					break
-				case wallOn | SOUTH:
-					on = false
-					target = wall | SOUTH
-					break
-				case wallOn | EAST:
-					on = false
-					target = wall | EAST
-					break
-				case wallOn | WEST:
-					on = false
-					target = wall | WEST
-					break
-				case me.id | STAIR:
-					on = true
-					target = me.id | CROSS
-					break
-				case me.id | CROSS:
-					on = false
-					target = me.id | STAIR
-					break
-				case me.id | TALLCROSS:
-					on = true
-					target = me.id | DOOR
-					break
-				case me.id | DOOR:
-					on = false
-					target = me.id | TALLCROSS
-					break
-			}
+			var on = !getBlockState(block,me.blockStatesMap.powered), target = setBlockState(block,me.blockStatesMap.powered,on)
 			world.setBlock(x,y,z,target)
 			if(on){
 				world.setPower(x,y,z,16)
@@ -9028,41 +8963,26 @@ const blockData = [
 				
 				var block = prevBlock
 				var me = blockData[blockIds.lever]
-				var wall = me.id
-				var wallOn = me.id | SLAB
 				var ax = x, ay = y, az = z
 				var dir
-				switch(block){
-					case wall | NORTH:
-					case wallOn | NORTH:
-						az++
-						dir = "south"
-						break
-					case wall | SOUTH:
-					case wallOn | SOUTH:
-						az--
-						dir = "north"
-						break
-					case wall | EAST:
-					case wallOn | EAST:
-						ax++
-						dir = "east"
-						break
-					case wall | WEST:
-					case wallOn | WEST:
-						ax--
-						dir = "west"
-						break
-					case me.id | STAIR:
-					case me.id | CROSS:
-						ay --
-						dir = "top"
-						break
-					case me.id | TALLCROSS:
-					case me.id | DOOR:
-						ay ++
-						dir = "bottom"
-						break
+				if(getBlockState(block,me.blockStatesMap.face) === "ceiling"){
+					ay --
+					dir = "top"
+				}else if(getBlockState(block,me.blockStatesMap.face) === "floor"){
+					ay ++
+					dir = "bottom"
+				}else if(getBlockState(block,me.blockStatesMap.facing) === "north"){
+					az++
+					dir = "south"
+				}else if(getBlockState(block,me.blockStatesMap.facing) === "south"){
+					az--
+					dir = "north"
+				}else if(getBlockState(block,me.blockStatesMap.facing) === "east"){
+					ax++
+					dir = "east"
+				}else if(getBlockState(block,me.blockStatesMap.facing) === "west"){
+					ax--
+					dir = "west"
 				}
 				
 				var a = world.getBlock(ax,ay,az)
@@ -9097,124 +9017,28 @@ const blockData = [
 			var tx = x, ty = y, tz = z //pointing to
 			var side //side of block it's pointing to
 			var block = world.getBlock(x,y,z)
-			var d1 = this.id, d2 = this.id | SLAB, d3 = this.id | STAIR, d4 = this.id | DOOR //delay
-			var D1 = this.id | PANE, D2 = this.id | PORTAL, D3 = this.id | WALLFLAT, D4 = this.id | TRAPDOOROPEN //delay for on repeaters
-			switch(block){
-				case d1 | NORTH:
-				case d2 | NORTH:
-				case d3 | NORTH:
-				case d4 | NORTH:
-				case D1 | NORTH:
-				case D2 | NORTH:
-				case D3 | NORTH:
-				case D4 | NORTH:
-					fz--
-					tz++
-					side = "south"
-					break
-				case d1 | SOUTH:
-				case d2 | SOUTH:
-				case d3 | SOUTH:
-				case d4 | SOUTH:
-				case D1 | SOUTH:
-				case D2 | SOUTH:
-				case D3 | SOUTH:
-				case D4 | SOUTH:
-					fz++
-					tz--
-					side = "north"
-					break
-				case d1 | EAST:
-				case d2 | EAST:
-				case d3 | EAST:
-				case d4 | EAST:
-				case D1 | EAST:
-				case D2 | EAST:
-				case D3 | EAST:
-				case D4 | EAST:
-					fx--
-					tx++
-					side = "east"
-					break
-				case d1 | WEST:
-				case d2 | WEST:
-				case d3 | WEST:
-				case d4 | WEST:
-				case D1 | WEST:
-				case D2 | WEST:
-				case D3 | WEST:
-				case D4 | WEST:
-					fx++
-					tx--
-					side = "west"
-					break
+			if(getBlockState(block,this.blockStatesMap.facing) === "north"){
+				fz--
+				tz++
+				side = "south"
+			}else if(getBlockState(block,this.blockStatesMap.facing) === "south"){
+				fz++
+				tz--
+				side = "north"
+			}else if(getBlockState(block,this.blockStatesMap.facing) === "east"){
+				fx--
+				tx++
+				side = "east"
+			}else if(getBlockState(block,this.blockStatesMap.facing) === "west"){
+				fx++
+				tx--
+				side = "west"
 			}
 			if(fx === x && fy === y && fz === z) return console.log("doesn't match up") //doesn't match up
-			var delay
-			switch(block){
-				case d1 | NORTH:
-				case d1 | SOUTH:
-				case d1 | EAST:
-				case d1 | WEST:
-				case D1 | NORTH:
-				case D1 | SOUTH:
-				case D1 | EAST:
-				case D1 | WEST:
-					delay = 1
-					break
-				case d2 | NORTH:
-				case d2 | SOUTH:
-				case d2 | EAST:
-				case d2 | WEST:
-				case D2 | NORTH:
-				case D2 | SOUTH:
-				case D2 | EAST:
-				case D2 | WEST:
-					delay = 2
-					break
-				case d3 | NORTH:
-				case d3 | SOUTH:
-				case d3 | EAST:
-				case d3 | WEST:
-				case D3 | NORTH:
-				case D3 | SOUTH:
-				case D3 | EAST:
-				case D3 | WEST:
-					delay = 3
-					break
-				case d4 | NORTH:
-				case d4 | SOUTH:
-				case d4 | EAST:
-				case d4 | WEST:
-				case D4 | NORTH:
-				case D4 | SOUTH:
-				case D4 | EAST:
-				case D4 | WEST:
-					delay = 4
-					break
-			}
+			var delay = +getBlockState(block,this.blockStatesMap.delay)
 			if(!delay) return console.log("delay hasn't been set")
 			
-			var on = false
-			switch(block){ //todo: make it an if loop
-				case D1 | NORTH:
-				case D2 | NORTH:
-				case D3 | NORTH:
-				case D4 | NORTH:
-				case D1 | SOUTH:
-				case D2 | SOUTH:
-				case D3 | SOUTH:
-				case D4 | SOUTH:
-				case D1 | EAST:
-				case D2 | EAST:
-				case D3 | EAST:
-				case D4 | EAST:
-				case D1 | WEST:
-				case D2 | WEST:
-				case D3 | WEST:
-				case D4 | WEST:
-					on = true
-			}
+			var on = getBlockState(block,this.blockStatesMap.powered)
 
 			var tblock = world.getBlock(tx,ty,tz)
 			if(tblock && blockData[tblock].carryRedstone){
@@ -9237,139 +9061,9 @@ const blockData = [
 			var t = function(){
 				block = world.getBlock(x,y,z)
 				var on = world.getRepeaterPower(x,y,z,fx,fy,fz) || world.getBlockPower(fx,fy,fz,null) ? true : false //should it be on?
-				var isOn = false
-				switch(block){ //todo: make it an if loop
-					case D1 | NORTH:
-					case D2 | NORTH:
-					case D3 | NORTH:
-					case D4 | NORTH:
-					case D1 | SOUTH:
-					case D2 | SOUTH:
-					case D3 | SOUTH:
-					case D4 | SOUTH:
-					case D1 | EAST:
-					case D2 | EAST:
-					case D3 | EAST:
-					case D4 | EAST:
-					case D1 | WEST:
-					case D2 | WEST:
-					case D3 | WEST:
-					case D4 | WEST:
-						isOn = true
-				}
+				var isOn = getBlockState(block,this.blockStatesMap.powered)
 				if(on !== isOn) {
-					var target
-					var f = "north"
-					switch(block){
-						case d1 | NORTH:
-							target = D1
-							break
-						case d2 | NORTH:
-							target = D2
-							break
-						case d3 | NORTH:
-							target = D3
-							break
-						case d4 | NORTH:
-							target = D4
-							break
-						case D1 | NORTH:
-							target = d1
-							break
-						case D2 | NORTH:
-							target = d2
-							break
-						case D3 | NORTH:
-							target = d3
-							break
-						case D4 | NORTH:
-							target = d4
-							break
-						case d1 | SOUTH:
-							target = D1, f = "south"
-							break
-						case d2 | SOUTH:
-							target = D2, f = "south"
-							break
-						case d3 | SOUTH:
-							target = D3, f = "south"
-							break
-						case d4 | SOUTH:
-							target = D4, f = "south"
-							break
-						case D1 | SOUTH:
-							target = d1, f = "south"
-							break
-						case D2 | SOUTH:
-							target = d2, f = "south"
-							break
-						case D3 | SOUTH:
-							target = d3, f = "south"
-							break
-						case D4 | SOUTH:
-							target = d4, f = "south"
-							break
-						case d1 | EAST:
-							target = D1, f = "east"
-							break
-						case d2 | EAST:
-							target = D2, f = "east"
-							break
-						case d3 | EAST:
-							target = D3, f = "east"
-							break
-						case d4 | EAST:
-							target = D4, f = "east"
-							break
-						case D1 | EAST:
-							target = d1, f = "east"
-							break
-						case D2 | EAST:
-							target = d2, f = "east"
-							break
-						case D3 | EAST:
-							target = d3, f = "east"
-							break
-						case D4 | EAST:
-							target = d4, f = "east"
-							break
-						case d1 | WEST:
-							target = D1, f = "west"
-							break
-						case d2 | WEST:
-							target = D2, f = "west"
-							break
-						case d3 | WEST:
-							target = D3, f = "west"
-							break
-						case d4 | WEST:
-							target = D4, f = "west"
-							break
-						case D1 | WEST:
-							target = d1, f = "west"
-							break
-						case D2 | WEST:
-							target = d2, f = "west"
-							break
-						case D3 | WEST:
-							target = d3, f = "west"
-							break
-						case D4 | WEST:
-							target = d4, f = "west"
-							break
-					}
-					switch(f){
-						case "north":
-							break
-						case "south":
-							target |= SOUTH
-							break
-						case "east":
-							target |= EAST
-							break
-						case "west":
-							target |= WEST
-					}
+					var target = setBlockState(block,this.blockStatesMap.powered,on)
 					if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
 					
 					var tblock = world.getBlock(tx,ty,tz)
@@ -9396,226 +9090,29 @@ const blockData = [
 		onclick:function(x,y,z,world){
 			var me = blockData[blockIds.repeater]
 			var block = world.getBlock(x,y,z)
-			var d1 = me.id, d2 = me.id | SLAB, d3 = me.id | STAIR, d4 = me.id | DOOR //delay
-			var D1 = me.id | PANE, D2 = me.id | PORTAL, D3 = me.id | WALLFLAT, D4 = me.id | TRAPDOOROPEN //delay for on repeaters
-			var target
-			switch(block){
-				case d1 | NORTH:
-					target = d2 | NORTH
-					break
-				case d2 | NORTH:
-					target = d3 | NORTH
-					break
-				case d3 | NORTH:
-					target = d4 | NORTH
-					break
-				case d4 | NORTH:
-					target = d1 | NORTH
-					break
-				case D1 | NORTH:
-					target = D2 | NORTH
-					break
-				case D2 | NORTH:
-					target = D3 | NORTH
-					break
-				case D3 | NORTH:
-					target = D4 | NORTH
-					break
-				case D4 | NORTH:
-					target = D1 | NORTH
-					break
-				case d1 | SOUTH:
-					target = d2 | SOUTH
-					break
-				case d2 | SOUTH:
-					target = d3 | SOUTH
-					break
-				case d3 | SOUTH:
-					target = d4 | SOUTH
-					break
-				case d4 | SOUTH:
-					target = d1 | SOUTH
-					break
-				case D1 | SOUTH:
-					target = D2 | SOUTH
-					break
-				case D2 | SOUTH:
-					target = D3 | SOUTH
-					break
-				case D3 | SOUTH:
-					target = D4 | SOUTH
-					break
-				case D4 | SOUTH:
-					target = D1 | SOUTH
-					break
-				case d1 | EAST:
-					target = d2 | EAST
-					break
-				case d2 | EAST:
-					target = d3 | EAST
-					break
-				case d3 | EAST:
-					target = d4 | EAST
-					break
-				case d4 | EAST:
-					target = d1 | EAST
-					break
-				case D1 | EAST:
-					target = D2 | EAST
-					break
-				case D2 | EAST:
-					target = D3 | EAST
-					break
-				case D3 | EAST:
-					target = D4 | EAST
-					break
-				case D4 | EAST:
-					target = D1 | EAST
-					break
-				case d1 | WEST:
-					target = d2 | WEST
-					break
-				case d2 | WEST:
-					target = d3 | WEST
-					break
-				case d3 | WEST:
-					target = d4 | WEST
-					break
-				case d4 | WEST:
-					target = d1 | WEST
-					break
-				case D1 | WEST:
-					target = D2 | WEST
-					break
-				case D2 | WEST:
-					target = D3 | WEST
-					break
-				case D3 | WEST:
-					target = D4 | WEST
-					break
-				case D4 | WEST:
-					target = D1 | WEST
-					break
-			}
+			let prevDelay = getBlockState(block,me.blockStatesMap.delay)
+			var target = setBlockState(block,me.blockStatesMap.delay, prevDelay === "4" ? "1" : ""+(+prevDelay+1))
 			world.setBlock(x,y,z,target)
 		},
 		getFacing:function(x,y,z,world){
 			var block = world.getBlock(x,y,z)
-			var d1 = this.id, d2 = this.id | SLAB, d3 = this.id | STAIR, d4 = this.id | DOOR //delay
-			var D1 = this.id | PANE, D2 = this.id | PORTAL, D3 = this.id | WALLFLAT, D4 = this.id | TRAPDOOROPEN //delay for on repeaters
-			var f
-			switch(block){
-				case d1 | NORTH:
-				case d2 | NORTH:
-				case d3 | NORTH:
-				case d4 | NORTH:
-				case D1 | NORTH:
-				case D2 | NORTH:
-				case D3 | NORTH:
-				case D4 | NORTH:
-					f = "north"
-					break
-				case d1 | SOUTH:
-				case d2 | SOUTH:
-				case d3 | SOUTH:
-				case d4 | SOUTH:
-				case D1 | SOUTH:
-				case D2 | SOUTH:
-				case D3 | SOUTH:
-				case D4 | SOUTH:
-					f = "south"
-					break
-				case d1 | EAST:
-				case d2 | EAST:
-				case d3 | EAST:
-				case d4 | EAST:
-				case D1 | EAST:
-				case D2 | EAST:
-				case D3 | EAST:
-				case D4 | EAST:
-					f = "east"
-					break
-				case d1 | WEST:
-				case d2 | WEST:
-				case d3 | WEST:
-				case d4 | WEST:
-				case D1 | WEST:
-				case D2 | WEST:
-				case D3 | WEST:
-				case D4 | WEST:
-					f = "west"
-					break
-			}
+			var f = getBlockState(block,this.blockStatesMap.facing)
 			return f
 		},
 		canHavePower:function(/*repeater*/rx,ry,rz,/*other thing*/x,y,z,world){
 			var tx = rx, ty = ry, tz = rz
 			var block = world.getBlock(rx,ry,rz)
-			var d1 = this.id, d2 = this.id | SLAB, d3 = this.id | STAIR, d4 = this.id | DOOR //delay
-			var D1 = this.id | PANE, D2 = this.id | PORTAL, D3 = this.id | WALLFLAT, D4 = this.id | TRAPDOOROPEN //delay for on repeaters
-			switch(block){
-				case d1 | NORTH:
-				case d2 | NORTH:
-				case d3 | NORTH:
-				case d4 | NORTH:
-				case D1 | NORTH:
-				case D2 | NORTH:
-				case D3 | NORTH:
-				case D4 | NORTH:
-					tz++
-					break
-				case d1 | SOUTH:
-				case d2 | SOUTH:
-				case d3 | SOUTH:
-				case d4 | SOUTH:
-				case D1 | SOUTH:
-				case D2 | SOUTH:
-				case D3 | SOUTH:
-				case D4 | SOUTH:
-					tz--
-					break
-				case d1 | EAST:
-				case d2 | EAST:
-				case d3 | EAST:
-				case d4 | EAST:
-				case D1 | EAST:
-				case D2 | EAST:
-				case D3 | EAST:
-				case D4 | EAST:
-					tx++
-					break
-				case d1 | WEST:
-				case d2 | WEST:
-				case d3 | WEST:
-				case d4 | WEST:
-				case D1 | WEST:
-				case D2 | WEST:
-				case D3 | WEST:
-				case D4 | WEST:
-					tx--
-					break
+			if(getBlockState(block,this.blockStatesMap.facing) === "north"){
+				tz++
+			}else if(getBlockState(block,this.blockStatesMap.facing) === "south"){
+				tz--
+			}else if(getBlockState(block,this.blockStatesMap.facing) === "east"){
+				tx++
+			}else if(getBlockState(block,this.blockStatesMap.facing) === "west"){
+				tx--
 			}
 			
-			var on = false
-			switch(block){ //todo: make it an if loop
-				case D1 | NORTH:
-				case D2 | NORTH:
-				case D3 | NORTH:
-				case D4 | NORTH:
-				case D1 | SOUTH:
-				case D2 | SOUTH:
-				case D3 | SOUTH:
-				case D4 | SOUTH:
-				case D1 | EAST:
-				case D2 | EAST:
-				case D3 | EAST:
-				case D4 | EAST:
-				case D1 | WEST:
-				case D2 | WEST:
-				case D3 | WEST:
-				case D4 | WEST:
-					on = true
-			}
+			var on = getBlockState(block,this.blockStatesMap.powered)
 
 			if(on && tx === x && ty === y && tz === z){
 				return 15
@@ -9637,7 +9134,7 @@ const blockData = [
 		headSideTexture:"pistonHeadSide",
 		frontOpenTexture:"pistonFrontOpen",
 		headBackTexture:"pistonFront",
-		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,world){//todo n
 			var block = world.getBlock(x,y,z)
 			var extended = false, facing, attachedHead = false
 			switch(block){
@@ -10159,73 +9656,38 @@ const blockData = [
 		hardness:3,
 		getFacing:function(x,y,z,world){
 			var block = world.getBlock(x,y,z)
-			var facing
-			switch(block){
-				case this.id | NORTH:
-				case this.id | STAIR | NORTH:
-					facing = "north"
-					break
-				case this.id | SOUTH:
-				case this.id | STAIR | SOUTH:
-					facing = "south"
-					break
-				case this.id | EAST:
-				case this.id | STAIR | EAST:
-					facing = "east"
-					break
-				case this.id | WEST:
-				case this.id | STAIR | WEST:
-					facing = "west"
-					break
-				case this.id | SLAB:
-				case this.id | CROSS:
+			var facing = getBlockState(block,this.blockStatesMap.facing)
+			switch(facing){
+				case "down":
 					facing = "bottom"
-					break
-				case this.id | SLAB | FLIP:
-				case this.id | CROSS | FLIP:
+				case "up":
 					facing = "top"
-					break
-				default:
-					return
 			}
 			return facing
 		},
 		detected:function(x,y,z,sx,sy,sz,world, detected = false){ //if detected is true, it will send a signal no matter what
 			var block = world.getBlock(x,y,z)
-			var facing, tx = 0, ty = 0, tz = 0, onBlock
-			switch(block){
-				case this.id | NORTH:
-					facing = "north"
+			if(getBlockState(block,this.blockStatesMap.powered)) return
+			var facing = getBlockState(block,this.blockStatesMap.facing), tx = 0, ty = 0, tz = 0, onBlock = setBlockState(block,this.blockStatesMap.powered,true)
+			switch(facing){
+				case "north":
 					tz = -1
-					onBlock = this.id | STAIR | NORTH
 					break
-				case this.id | SOUTH:
-					facing = "south"
+				case "south":
 					tz = 1
-					onBlock = this.id | STAIR | SOUTH
 					break
-				case this.id | EAST:
-					facing = "east"
+				case "east":
 					tx = -1
-					onBlock = this.id | STAIR | EAST
 					break
-				case this.id | WEST:
-					facing = "west"
+				case "west":
 					tx = 1
-					onBlock = this.id | STAIR | WEST
 					break
-				case this.id | SLAB:
-					facing = "bottom"
+				case "down":
 					ty = -1
-					onBlock = this.id | CROSS
 					break
-				case this.id | SLAB | FLIP:
-					facing = "top"
+				case "up":
 					ty = 1
-					onBlock = this.id | CROSS | FLIP
 					break
-				default:
-					return
 			}
 			
 			if(!(x+tx === sx && y+ty === sy && z+tz === sz) && !detected) return
@@ -10259,27 +9721,26 @@ const blockData = [
 		canHavePower:function(rx,ry,rz, x,y,z,world){
 			var block = world.getBlock(rx,ry,rz)
 			var tx = 0, ty = 0, tz = 0
-			switch(block){
-				case this.id | STAIR | NORTH:
+			var facing = getBlockState(block,this.blockStatesMap.facing)
+			switch(facing){
+				case "north":
 					tz = -1
 					break
-				case this.id | STAIR | SOUTH:
+				case "south":
 					tz = 1
 					break
-				case this.id | STAIR | EAST:
+				case "east":
 					tx = -1
 					break
-				case this.id | STAIR | WEST:
+				case "west":
 					tx = 1
 					break
-				case this.id | CROSS:
+				case "down":
 					ty = -1
 					break
-				case this.id | CROSS | FLIP:
+				case "up":
 					ty = 1
 					break
-				default:
-					return
 			}
 			
 			if(rx-tx === x && ry-ty === y && rz-tz === z) return 15
@@ -10770,13 +10231,12 @@ const blockData = [
 		name:"redRedstoneLamp",
 		Name:"Red Redstone Lamp",
 		textures:"redstoneLamp",
+		blockStates:"redstoneLamp",
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
-			var block = this.id
-			if(power){
-				block = this.id | SLAB
-			}
-			if(world.getBlock(x,y,z) !== block) world.setBlock(x,y,z,block,false,false,false,false)
+			var block = world.getBlock(x,y,z)
+			let target = setBlockState(block,this.blockStatesMap.lit,power)
+			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
 		},
 		onset:function(x,y,z,world){
 			this.onpowerupdate(x,y,z,null,null,null,null,world)
@@ -10788,13 +10248,12 @@ const blockData = [
 		name:"yellowRedstoneLamp",
 		Name:"Yellow Redstone Lamp",
 		textures:"redstoneLamp",
+		blockStates:"redstoneLamp",
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
-			var block = this.id
-			if(power){
-				block = this.id | SLAB
-			}
-			if(world.getBlock(x,y,z) !== block) world.setBlock(x,y,z,block,false,false,false,false)
+			var block = world.getBlock(x,y,z)
+			let target = setBlockState(block,this.blockStatesMap.lit,power)
+			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
 		},
 		onset:function(x,y,z,world){
 			this.onpowerupdate(x,y,z,null,null,null,null,world)
@@ -10806,13 +10265,12 @@ const blockData = [
 		name:"greenRedstoneLamp",
 		Name:"Green Redstone Lamp",
 		textures:"redstoneLamp",
+		blockStates:"redstoneLamp",
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
-			var block = this.id
-			if(power){
-				block = this.id | SLAB
-			}
-			if(world.getBlock(x,y,z) !== block) world.setBlock(x,y,z,block,false,false,false,false)
+			var block = world.getBlock(x,y,z)
+			let target = setBlockState(block,this.blockStatesMap.lit,power)
+			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
 		},
 		onset:function(x,y,z,world){
 			this.onpowerupdate(x,y,z,null,null,null,null,world)
@@ -10824,13 +10282,12 @@ const blockData = [
 		name:"blueRedstoneLamp",
 		Name:"Blue Redstone Lamp",
 		textures:"redstoneLamp",
+		blockStates:"redstoneLamp",
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
-			var block = this.id
-			if(power){
-				block = this.id | SLAB
-			}
-			if(world.getBlock(x,y,z) !== block) world.setBlock(x,y,z,block,false,false,false,false)
+			var block = world.getBlock(x,y,z)
+			let target = setBlockState(block,this.blockStatesMap.lit,power)
+			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
 		},
 		onset:function(x,y,z,world){
 			this.onpowerupdate(x,y,z,null,null,null,null,world)
@@ -10855,28 +10312,15 @@ const blockData = [
 		smoothLight:false,
 		hidden:true,
 		noHitbox:true,
+		blockStates:"fire",
 		getAttached:function(x,y,z,block,getBlockOnly,world){
 			var ax = x, ay = y, az = z
-			switch(block){
-				case this.id:
-					ay--
-					break
-				case this.id | STAIR:
-					ay++
-					break
-				case this.id | SLAB | NORTH:
-					az++
-					break
-				case this.id | SLAB | SOUTH:
-					az--
-					break
-				case this.id | SLAB | EAST:
-					ax++
-					break
-				case this.id | SLAB | WEST:
-					ax--
-					break
-			}
+			if(getBlockState(block,this.blockStatesMap.up)) ay++
+			else if(getBlockState(block,this.blockStatesMap.north)) az++
+			else if(getBlockState(block,this.blockStatesMap.south)) az--
+			else if(getBlockState(block,this.blockStatesMap.east)) ax++
+			else if(getBlockState(block,this.blockStatesMap.west)) ax--
+			else ay--
 			var attached = world.getBlock(ax,ay,az)
 			if(getBlockOnly) return attached
 			else return [attached,ax,ay,az]
@@ -10949,10 +10393,10 @@ const blockData = [
 		shadow: false,
 		smoothLight:false,
 		liquidBreakable:"drop",
-		onupdate:function(x,y,z,block,world,sx,sy,sz){
+		onupdate:function(x,y,z,block,world,sx,sy,sz){//todo n: stem
 			var me = blockIds.bigDripleaf
 			var top = world.getBlock(x,y+1,z)
-			var isIt = top === me || top === (me | CROSS)
+			var isIt = blockData[top].name === "bidDripleaf"
 			if(block === me && isIt){
 				world.setBlock(x,y,z,me | CROSS,false,false,false,false)
 			}else if(block === (me | CROSS) && !isIt){
@@ -11047,10 +10491,10 @@ const blockData = [
 		drop:"pointedDripstone",
 		pointing:function(x,y,z,world){
 			var b = world.getBlock(x,y,z)
-			if(blockData[b].name === this.name) return (b & FLIP) === FLIP ? -1 : 1
+			if(blockData[b].name === this.name) return getBlockState(b,this.blockStatesMap.vertical_direction) === "down" ? -1 : 1
 		},
 		onupdate:function(x,y,z,block,world,sx,sy,sz){
-			var down = (block & FLIP) === FLIP
+			var down = getBlockState(b,this.blockStatesMap.vertical_direction) === "down"
 			var pointing = down ? -1 : 1
 			if(down){
 				var attached = world.getBlock(x,y+1,z)
@@ -11063,22 +10507,24 @@ const blockData = [
 				if(needsSupportingBlocks(x,y,z, this.id,world)) return
 			}
 			
-			var target = down ? this.id | FLIP : this.id
-			if(this.pointing(x,y+pointing,z,world) === pointing && this.pointing(x,y+pointing*2,z,world) !== pointing) target |= CROSS //frustum
-			else if(this.pointing(x,y+pointing,z,world) === pointing && !this.pointing(x,y-pointing,z,world)) target |= SLAB //base
-			else if(this.pointing(x,y+pointing,z,world) === pointing) target |= STAIR //middle
-			else if(this.pointing(x,y+pointing,z,world) === -pointing) target |= TALLCROSS //tip merge
+			var target = setBlockState(block,this.blockStatesMap.vertical_direction, down?"up":"down")
+			if(this.pointing(x,y+pointing,z,world) === pointing && this.pointing(x,y+pointing*2,z,world) !== pointing) target = setBlockState(target,this.blockStatesMap.thickness,"frustum")
+			else if(this.pointing(x,y+pointing,z,world) === pointing && !this.pointing(x,y-pointing,z,world)) target = setBlockState(target,this.blockStatesMap.thickness,"base")
+			else if(this.pointing(x,y+pointing,z,world) === pointing) target = setBlockState(target,this.blockStatesMap.thickness,"middle")
+			else if(this.pointing(x,y+pointing,z,world) === -pointing) target = setBlockState(target,this.blockStatesMap.thickness,"tip_merge")
+			else target = setBlockState(target,this.blockStatesMap.thickness,"tip")
 			
 			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
 		},
 		spawnUpdate:function(x,y,z,block,world){
-			let down = (block & FLIP) === FLIP
-			let pointing = down ? -1 : 1
-			let target = down ? this.id | FLIP : this.id
-			if(this.pointing(x,y+pointing,z,world) === pointing && this.pointing(x,y+pointing*2,z,world) !== pointing) target |= CROSS //frustum
-			else if(this.pointing(x,y+pointing,z,world) === pointing && !this.pointing(x,y-pointing,z,world)) target |= SLAB //base
-			else if(this.pointing(x,y+pointing,z,world) === pointing) target |= STAIR //middle
-			else if(this.pointing(x,y+pointing,z,world) === -pointing) target |= TALLCROSS //tip merge
+			var down = getBlockState(b,this.blockStatesMap.vertical_direction) === "down"
+			var pointing = down ? -1 : 1
+			var target = setBlockState(block,this.blockStatesMap.vertical_direction, down?"up":"down")
+			if(this.pointing(x,y+pointing,z,world) === pointing && this.pointing(x,y+pointing*2,z,world) !== pointing) target = setBlockState(target,this.blockStatesMap.thickness,"frustum")
+			else if(this.pointing(x,y+pointing,z,world) === pointing && !this.pointing(x,y-pointing,z,world)) target = setBlockState(target,this.blockStatesMap.thickness,"base")
+			else if(this.pointing(x,y+pointing,z,world) === pointing) target = setBlockState(target,this.blockStatesMap.thickness,"middle")
+			else if(this.pointing(x,y+pointing,z,world) === -pointing) target = setBlockState(target,this.blockStatesMap.thickness,"tip_merge")
+			else target = setBlockState(target,this.blockStatesMap.thickness,"tip")
 			
 			if(block !== target) world.spawnBlock(x,y,z,target, true)
 		},
@@ -11245,57 +10691,18 @@ const blockData = [
 		woodSound:true,
 		type:"wood",
 		getLevel:function(block){
-			var id = this.id
-			switch(block){
-				case id:
-					return 0
-				case id | SLAB:
-					return 1
-				case id | STAIR:
-					return 2
-				case id | CROSS:
-					return 3
-				case id | TALLCROSS:
-					return 4
-				case id | DOOR:
-					return 5
-				case id | TORCH:
-					return 6
-				case id | LANTERN:
-					return 7
-			}
+			return +getBlockState(block,this.blockStatesMap.level)
 		},
 		onclick:function(x,y,z,world,p,holdObj){
 			if(!holdObj || !blockData[holdObj.id].compostChance) return true
 			let id = blockIds.composter
-			let target = id
 			let block = world.getBlock(x,y,z)
 			let add = rand() <= blockData[holdObj.id].compostChance
-			switch(block){
-				case id:
-					target |= SLAB
-					break
-				case id | SLAB:
-					target |= STAIR
-					break
-				case id | STAIR:
-					target |= CROSS
-					break
-				case id | CROSS:
-					target |= TALLCROSS
-					break
-				case id | TALLCROSS:
-					target |= DOOR
-					break
-				case id | DOOR:
-					target |= TORCH
-					break
-				case id | TORCH:
-					target |= LANTERN
-					break
-				case id | LANTERN:
-					if(add) world.addItems(x,y,z+0.5,0,0,0,blockIds.boneMeal,true, 1)
-			}
+			let level = +getBlockState(block,this.blockStatesMap.level)
+			let target = block
+			if(level === 8){
+				if(add) world.addItems(x,y,z+0.5,0,0,0,blockIds.boneMeal,true, 1)
+			}else target = setBlockState(block,this.blockStatesMap.level, level+1)
 			holdObj.amount--
 			if(add) world.setBlock(x,y,z,target)
 			world.glint(x,y,z)
@@ -11574,9 +10981,6 @@ const blockData = [
 			if(face === "top" && blockData[block].name === "farmland") return "potatoes"
 		},
 		category:"food",
-		growBonemeal:function(x,y,z,world){
-			world.setBlock(x,y,z, this.id|CROSS)
-		}
 	},
 	{
 		name:"bakedPotato",
@@ -11629,7 +11033,7 @@ const blockData = [
 		hidden:true,
 		liquidBreakable:"drop",
 		growBonemeal:function(x,y,z,world){
-			world.setBlock(x,y,z, this.id|CROSS)
+			world.setBlock(x,y,z, this.id+blockStateMaps.beetroots.age[3])
 		}
 	},
 	{
@@ -11646,7 +11050,10 @@ const blockData = [
 		crop: true,
 		drop:"potato",
 		hidden:true,
-		liquidBreakable:"drop"
+		liquidBreakable:"drop",
+		growBonemeal:function(x,y,z,world){
+			world.setBlock(x,y,z, this.id+blockStateMaps.beetroots.age[7])
+		}
 	},
 	{
 		name:"carrots",
@@ -11664,7 +11071,7 @@ const blockData = [
 		hidden:true,
 		liquidBreakable:"drop",
 		growBonemeal:function(x,y,z,world){
-			world.setBlock(x,y,z, this.id|CROSS)
+			world.setBlock(x,y,z, this.id+blockStateMaps.beetroots.age[7])
 		}
 	},
 	
@@ -12084,33 +11491,33 @@ const blockData = [
 						if(!items[idx]) return
 						idx = tags.contents.indexOf(items[idx]), items = tags.contents
 						var vx = 0, vy = 0, vz = 0, ix = x, iy = y, iz = z, tx = x, ty = y, tz = z
-						switch(block){
-							case me.id | NORTH:
+						switch(getBlockState(block,this.blockStatesMap.facing)){
+							case "north":
 								vz = -0.25
 								iz -= 0.75
 								tz--
 								break
-							case me.id | SOUTH:
+							case "south":
 								vz = 0.25
 								iz += 0.75
 								tz++
 								break
-							case me.id | EAST:
+							case "east":
 								vx = -0.25
 								ix -= 0.75
 								tx--
 								break
-							case me.id | WEST:
+							case "west":
 								vx = 0.25
 								ix += 0.75
 								tx++
 								break
-							case me.id | SLAB:
+							case "up":
 								vy = 0.25
 								iy += 0.75
 								ty++
 								break
-							case me.id | STAIR:
+							case "down":
 								vy = -0.25
 								iy -= 0.75
 								ty--
@@ -12177,30 +11584,30 @@ const blockData = [
 						if(!items[idx]) return
 						idx = tags.contents.indexOf(items[idx]), items = tags.contents
 						var vx = 0, vy = 0, vz = 0, ix = x, iy = y, iz = z
-						switch(block){
-							case me.id | NORTH:
+						switch(getBlockState(block,this.blockStatesMap.facing)){
+							case "north":
 								vz = -0.25
-								iz--
+								iz -= 0.75
 								break
-							case me.id | SOUTH:
+							case "south":
 								vz = 0.25
-								iz++
+								iz += 0.75
 								break
-							case me.id | EAST:
+							case "east":
 								vx = -0.25
-								ix--
+								ix -= 0.75
 								break
-							case me.id | WEST:
+							case "west":
 								vx = 0.25
-								ix++
+								ix += 0.75
 								break
-							case me.id | SLAB:
+							case "up":
 								vy = 0.25
-								iy++
+								iy += 0.75
 								break
-							case me.id | STAIR:
+							case "down":
 								vy = -0.25
-								iy--
+								iy -= 0.75
 								break
 						}
 						var front = world.getBlock(ix,iy,iz)
@@ -12270,25 +11677,25 @@ const blockData = [
 		},
 		pushItem:function(x,y,z,tags,world){
 			var tx = x, ty = y, tz = z, top, dx = 0, dy = 0, dz = 0
-			switch(world.getBlock(x,y,z)){
-				case this.id:
+			switch(getBlockState(world.getBlock(x,y,z),this.blockStatesMap.facing)){
+				case "down":
 					ty--
 					dy = -1
 					top = true
 					break
-				case this.id | SLAB | NORTH:
+				case "north":
 					tz++
 					dz = 1
 					break
-				case this.id | SLAB | SOUTH:
+				case "south":
 					tz--
 					dz = -1
 					break
-				case this.id | SLAB | EAST:
+				case "east":
 					tx++
 					dx = 1
 					break
-				case this.id | SLAB | WEST:
+				case "west":
 					tx--
 					dx = -1
 					break
@@ -12447,42 +11854,21 @@ const blockData = [
 		},
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var dx = 0, dy = 0, dz = 0 //direction
-			var side //side of block it's pointing to
+			var side = getBlockState(block,this.blockStatesMap.facing) //side of block it's pointing to
 			var block = world.getBlock(x,y,z)
-			var offCompare = this.id, onCompare = this.id | SLAB, offSubtract = this.id | STAIR, onSubtract = this.id | DOOR
-			var subtractMode
-			switch(block){
-				case offSubtract | NORTH:
-				case onSubtract | NORTH:
-					subtractMode = true
-				case offCompare | NORTH:
-				case onCompare | NORTH:
+			var subtractMode = getBlockState(block,this.blockStatesMap.mode) === "subtract"
+			switch(side){
+				case "north":
 					dz = 1
-					side = "south"
 					break
-				case offSubtract | SOUTH:
-				case onSubtract | SOUTH:
-					subtractMode = true
-				case offCompare | SOUTH:
-				case onCompare | SOUTH:
+				case "south":
 					dz = -1
-					side = "north"
 					break
-				case offSubtract | EAST:
-				case onSubtract | EAST:
-					subtractMode = true
-				case offCompare | EAST:
-				case onCompare | EAST:
+				case "east":
 					dx = 1
-					side = "east"
 					break
-				case offSubtract | WEST:
-				case onSubtract | WEST:
-					subtractMode = true
-				case offCompare | WEST:
-				case onCompare | WEST:
+				case "west":
 					dx = -1
-					side = "west"
 					break
 			}
 			if(!dx && !dy && !dz) return console.log("doesn't match up") //doesn't match up
@@ -12511,70 +11897,9 @@ const blockData = [
 				output = world.getTagByName(x,y,z,"output") || 0
 				if(power !== output) {
 					world.setTagByName(x,y,z,"output",power,false)
-					var on = false
-					switch(block){
-						case onSubtract | NORTH:
-						case onCompare | NORTH:
-						case onSubtract | SOUTH:
-						case onCompare | SOUTH:
-						case onSubtract | EAST:
-						case onCompare | EAST:
-						case onSubtract | WEST:
-						case onCompare | WEST:
-							on = true
-					}
+					var on = getBlockState(block,this.blockStatesMap.powered)
 					if((power ? true : false) !== on){
-						var target
-						switch(block){
-							case offCompare | NORTH:
-								target = onCompare | NORTH
-								break
-							case onCompare | NORTH:
-								target = offCompare | NORTH
-								break
-							case offSubtract | NORTH:
-								target = onSubtract | NORTH
-								break
-							case onSubtract | NORTH:
-								target = offSubtract | NORTH
-								break
-							case offCompare | SOUTH:
-								target = onCompare | SOUTH
-								break
-							case onCompare | SOUTH:
-								target = offCompare | SOUTH
-								break
-							case offSubtract | SOUTH:
-								target = onSubtract | SOUTH
-								break
-							case onSubtract | SOUTH:
-								target = offSubtract | SOUTH
-								break
-							case offCompare | EAST:
-								target = onCompare | EAST
-								break
-							case onCompare | EAST:
-								target = offCompare | EAST
-								break
-							case offSubtract | EAST:
-								target = onSubtract | EAST
-								break
-							case onSubtract | EAST:
-								target = offSubtract | EAST
-								break
-							case offCompare | WEST:
-								target = onCompare | WEST
-								break
-							case onCompare | WEST:
-								target = offCompare | WEST
-								break
-							case offSubtract | WEST:
-								target = onSubtract | WEST
-								break
-							case onSubtract | WEST:
-								target = offSubtract | WEST
-								break
-						}
+						var target = setBlockState(block,this.blockStatesMap.powered, power?true:false)
 						if(block !== target) world.setBlock(x,y,z,target,false,false,false,true)
 					}
 					
@@ -12601,119 +11926,28 @@ const blockData = [
 		onclick:function(x,y,z,world){
 			var me = blockData[blockIds.comparator]
 			var block = world.getBlock(x,y,z)
-			var off = me.id, on = me.id | SLAB, offSubtract = me.id | STAIR, onSubtract = me.id | DOOR
-			var target
-			switch(block){
-				case off | NORTH:
-					target = offSubtract | NORTH
-					break
-				case on | NORTH:
-					target = onSubtract | NORTH
-					break
-				case offSubtract | NORTH:
-					target = off | NORTH
-					break
-				case onSubtract | NORTH:
-					target = on | NORTH
-					break
-				case off | SOUTH:
-					target = offSubtract | SOUTH
-					break
-				case on | SOUTH:
-					target = onSubtract | SOUTH
-					break
-				case offSubtract | SOUTH:
-					target = off | SOUTH
-					break
-				case onSubtract | SOUTH:
-					target = on | SOUTH
-					break
-				case off | EAST:
-					target = offSubtract | EAST
-					break
-				case on | EAST:
-					target = onSubtract | EAST
-					break
-				case offSubtract | EAST:
-					target = off | EAST
-					break
-				case onSubtract | EAST:
-					target = on | EAST
-					break
-				case off | WEST:
-					target = offSubtract | WEST
-					break
-				case on | WEST:
-					target = onSubtract | WEST
-					break
-				case offSubtract | WEST:
-					target = off | WEST
-					break
-				case onSubtract | WEST:
-					target = on | WEST
-					break
-			}
+			var target = setBlockState(block,this.blockStatesMap.mode, getBlockState(block,this.blockStatesMap.mode) === "subtract" ? "compare" : "subtract")
 			world.setBlock(x,y,z,target,false,false,false,true)
 		},
 		getFacing:function(x,y,z,world){
 			var block = world.getBlock(x,y,z)
-			var off = this.id, on = this.id | SLAB, offSubtract = this.id | STAIR, onSubtract = this.id | DOOR
-			var f
-			switch(block){
-				case off | NORTH:
-				case on | NORTH:
-				case offSubtract | NORTH:
-				case onSubtract | NORTH:
-					f = "north"
-					break
-				case off | SOUTH:
-				case on | SOUTH:
-				case offSubtract | SOUTH:
-				case onSubtract | SOUTH:
-					f = "south"
-					break
-				case off | EAST:
-				case on | EAST:
-				case offSubtract | EAST:
-				case onSubtract | EAST:
-					f = "east"
-					break
-				case off | WEST:
-				case on | WEST:
-				case offSubtract | WEST:
-				case onSubtract | WEST:
-					f = "west"
-					break
-			}
+			var f = getBlockState(block,this.blockStatesMap.facing)
 			return f
 		},
 		canHavePower:function(/*this*/rx,ry,rz,/*other thing*/x,y,z,world){
 			var tx = rx, ty = ry, tz = rz
 			var block = world.getBlock(rx,ry,rz)
-			var off = this.id, on = this.id | SLAB, offSubtract = this.id | STAIR, onSubtract = this.id | DOOR
-			switch(block){
-				case offSubtract | NORTH:
-				case onSubtract | NORTH:
-				case off | NORTH:
-				case on | NORTH:
+			switch(getBlockState(block,this.blockStatesMap.facing)){
+				case "north":
 					tz++
 					break
-				case offSubtract | SOUTH:
-				case onSubtract | SOUTH:
-				case off | SOUTH:
-				case on | SOUTH:
+				case "south":
 					tz--
 					break
-				case offSubtract | EAST:
-				case onSubtract | EAST:
-				case off | EAST:
-				case on | EAST:
+				case "east":
 					tx++
 					break
-				case offSubtract | WEST:
-				case onSubtract | WEST:
-				case off | WEST:
-				case on | WEST:
+				case "west":
 					tx--
 					break
 			}
@@ -12968,13 +12202,12 @@ const blockData = [
 		onclick:function(x,y,z,world){
 			let block = world.getBlock(x,y,z)
 			let me = blockData[blockIds.daylightDetector]
-			if(block === (me.id | SLAB)) block = me.id
-			else block = me.id | SLAB
+			block = setBlockState(block,this.blockStatesMap.inverted, !getBlockState(block,this.blockStatesMap.inverted))
 			world.setBlock(x,y,z,block)
 		},
 		tick:function(block,x,y,z,world){
 			let power = round(world.getLight(x, y, z, 0)*world.world.skyLight)
-			if(block === (this.id | SLAB)) power = 15 - power
+			if(getBlockState(block,this.blockStatesMap.inverted)) power = 15 - power
 			let prev = world.getPower(x,y,z)
 			if(prev !== power){
 				world.setPower(x,y,z,power,false)
@@ -13014,7 +12247,7 @@ const blockData = [
 		hardness:-1,
 		commandBlock:true,
 		tagBits: null,
-		trigger:function(x,y,z,world){
+		trigger:function(x,y,z,world){//todo n: add error state
 			let data = world.getTagByName(x,y,z,"data")
 			let running = world.getTagByName(x,y,z,"running")
 			if(data && !running){
@@ -13189,7 +12422,7 @@ const blockData = [
 		nameMcd:"debug_stick",
 		item:true,
 		hidden:true,
-		serveronuse: function(x,y,z, block,world,face,item,p,blockMode){
+		serveronuse: function(x,y,z, block,world,face,item,p,blockMode){//todo n
 			if(blockMode === CUBE) this.useGetTags(x,y,z, block, world)
 			else if(blockMode === SLAB) this.useChangeBlockState(x,y,z, block, world)
 			else if(blockMode === STAIR) this.useChangeBlockRotation(x,y,z, block, world)
@@ -13663,7 +12896,7 @@ const blockData = [
 		Name:"Torchflower seeds",
 		item:true,
 		useAs:function(x,y,z,block,face){
-			return blockIds.torchflower|SLAB
+			return blockIds.torchflower
 		},
 		category:"items"
 	},
@@ -13739,20 +12972,9 @@ const blockData = [
 		category:"nature",
 		randomRotateOnSpawn:true,
 		onclick:function(x,y,z,world,p,holdObj){
-			if(holdObj && (holdObj.id&isCube) === this.id){
-				let block = world.getBlock(x,y,z), target, rot = block&ROTATION
-				switch(block & (~ROTATION)){
-					case this.id:
-						target = this.id | SLAB
-						break
-					case this.id|SLAB:
-						target = this.id | STAIR
-						break
-					case this.id|STAIR:
-						target = this.id | DOOR
-						break
-				}
-				if(target) world.setBlock(x,y,z,target|rot)
+			if(holdObj && blockData[holdObj.id].name === "pinkPetals"){
+				let block = world.getBlock(x,y,z), target = setBlockState(block,this.blockStatesMap.flower_amount, ""+(+getBlockState(block,this.blockStatesMap.flower_amount)+1))
+				if(target) world.setBlock(x,y,z,target)
 				else return true
 			}
 		},
@@ -14084,12 +13306,10 @@ const blockData = [
 		carryRedstone:true,
 		onupdate:function(x,y,z,b,world,sx,sy,sz){
 			let on = world.getTagByName(x,y,z,"power")
-			if(on && !(b&FLIP)){
-				b |= FLIP
-				world.setBlock(x,y,z,b,false,false,false,true)
-			}else if(!on && (b&FLIP)){
-				b &= ~FLIP
-				world.setBlock(x,y,z,b,false,false,false,true)
+			if(on && !getBlockState(b,this.blockStatesMap.powered)){
+				world.setBlock(x,y,z,setBlockState(b,this.blockStatesMap.powered,true),false,false,false,true)
+			}else if(!on && getBlockState(b,this.blockStatesMap.powered)){
+				world.setBlock(x,y,z,setBlockState(b,this.blockStatesMap.powered,false),false,false,false,true)
 			}
 			this.railonupdate(x,y,z,b,world)
 		},
@@ -14105,6 +13325,7 @@ const blockData = [
 		textures3:new Array(6).fill("cornStage3"),
 		textures4:new Array(6).fill("cornStage4"),
 		textures5:new Array(6).fill("cornStage5"),
+		blockStates:"wheat",
 		transparent: true,
 		shadow: false,
 		solid: false,
@@ -14112,7 +13333,7 @@ const blockData = [
 		hidden:true,
 		liquidBreakable:"drop",
 		growBonemeal:function(x,y,z,world){
-			world.setBlock(x,y,z, this.id|DOOR)
+			world.setBlock(x,y,z, this.id+this.blockStatesMap.age[5])
 		}
 	},
 	{
@@ -14508,7 +13729,7 @@ function initBlockData(){
 const handBreakable = [
 	"plant","wood","plant2","ground","wool"
 ]*/
-const crafts = {
+const crafts = {//todo n: change?
 	"oakLog": {name:"oakPlanks", amount:4, shapeless: true},
 	"acaciaLog": {name:"acaciaPlanks", amount:4, shapeless: true},
 	"birchLog": {name:"birchPlanks", amount:4, shapeless: true},
@@ -32871,7 +32092,7 @@ class World{ // aka trueWorld
 			this.spawnPoint.y = this.worldType === "superflat" ? 4 : round(this.noiseProfile.noise(this.spawnPoint.x * generator.smooth, this.spawnPoint.z * generator.smooth) * generator.height) + generator.extra
 		}
 	}
-	serverChangeBlock(x,y,z,place,p,face,shift,blockMode,rotate,flip){
+	serverChangeBlock(x,y,z,place,p,face,shift,blockMode,rotate,flip){//todo n: use new blockstates
 		let {dimension} = p
 		let holding = p.inventory.hotbar[p.inventory.hotbarSlot] ? p.inventory.hotbar[p.inventory.hotbarSlot].id : 0
 		let blockDat = blockData[holding], holdObj = p.inventory.hotbar[p.inventory.hotbarSlot]
