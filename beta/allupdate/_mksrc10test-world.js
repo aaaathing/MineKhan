@@ -2459,7 +2459,22 @@ const blockData = [
 		woodSound:true,
 		hardness:3,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onclick: function(x,y,z,world){
+			var b = world.getBlock(x,y,z)
+			var o = getBlockState(b,this.blockStatesMap.open)
+			world.setBlock(x,y,z,setBlockState(b,this.blockStatesMap.open, !o))
+			doorSound(x,y,z,this.name === "ironDoor"?"iron_door":"wooden_door",!o,world)
+		},
+		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z) ? true : false
+			var b = world.getBlock(x,y,z)
+			var o = getBlockState(b,this.blockStatesMap.open)
+			if(power !== o){
+				world.setBlock(x,y,z,setBlockState(b,this.blockStatesMap.open, power))
+				doorSound(x,y,z,this.name === "ironDoor"?"iron_door":"wooden_door",!o,world)
+			}
+		}
 	},
 	{
 		name: "spruceDoor",
@@ -2475,7 +2490,8 @@ const blockData = [
 		woodSound:true,
 		hardness:3,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakDoor"
 	},
 	{
 		name: "ironDoor",
@@ -2492,7 +2508,9 @@ const blockData = [
 		stoneSound:true,
 		hardness:5,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakDoor",
+		onclick: null
 	},
 	{
 		name: "darkOakDoor",
@@ -2508,7 +2526,8 @@ const blockData = [
 		woodSound:true,
 		hardness:3,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakDoor"
 	},
 	{
 		name: "birchDoor",
@@ -2524,7 +2543,8 @@ const blockData = [
 		woodSound:true,
 		hardness:3,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakDoor"
 	},
 	{
 		name: "jungleDoor",
@@ -2540,7 +2560,8 @@ const blockData = [
 		woodSound:true,
 		hardness:3,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakDoor"
 	},
 	{
 		name: "acaciaDoor",
@@ -2556,7 +2577,8 @@ const blockData = [
 		woodSound:true,
 		hardness:3,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakDoor"
 	},
 	{
 		name: "warpedDoor",
@@ -2572,7 +2594,8 @@ const blockData = [
 		woodSound:true,
 		hardness:3,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakDoor"
 	},
 	{
 		name: "crimsonDoor",
@@ -2588,7 +2611,8 @@ const blockData = [
 		woodSound:true,
 		hardness:3,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakDoor"
 	},
 	
 	{
@@ -3079,7 +3103,8 @@ const blockData = [
 		shadow: false,
 		trapdoor: true,
 		woodSound:true,
-		category:"build"
+		category:"build",
+		onFunctions:"oakTrapdoor"
 	},
 	{
 		name: "magma", Name:"Magma Block", lightLevel:15,hardness:0.5, type:"rock1",
@@ -3286,7 +3311,40 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onclick: function(x,y,z,world,p){
+			if(p.dimension !== "") return world.explode(x,y,z,5,false)
+			p.spawnPoint.x = x
+			p.spawnPoint.y = y+1
+			p.spawnPoint.z = z
+			p.connection.send({type:"message",data:"Respawn point set",fromServer:true})
+			if(world.world.skyLight < 0.5){
+				let block = world.getBlock(x,y,z)
+				y += 0.25
+				p.rx = Math.PI2
+				switch(block & ROTATION){
+					case NORTH:
+						z += 0.5
+						p.ry = Math.PI
+						break
+					case SOUTH:
+						z -= 0.5
+						p.ry = 0
+						break
+					case EAST:
+						x += 0.5
+						p.ry = Math.PI2
+						break
+					case WEST:
+						x -= 0.5
+						p.ry = -Math.PI2
+						break
+				}
+				p.setRot(p.rx,p.ry,p.ry,true)
+				p.tp(x,y,z)
+				p.connection.send({type:"sleep"})
+			}else p.connection.send({type:"message",data:"Too bright to sleep",fromServer:true})
+		}
 	},
 	
 	{
@@ -3378,7 +3436,8 @@ const blockData = [
 		transparent: true,
 		trapdoor: true,
 		woodSound: true,
-		category:"build"
+		category:"build",
+		onFunctions:"oakTrapdoor"
 	},
 	{ 
 		name: "oakTrapdoor",
@@ -3391,7 +3450,21 @@ const blockData = [
 		transparent: true,
 		trapdoor: true,
 		woodSound: true,
-		category:"build"
+		category:"build",
+		onclick: function(x,y,z,world){
+			let block = world.getBlock(x,y,z)
+			world.setBlock(x,y,z, setBlockState(block,this.blockStatesMap.open, !getBlockState(block,this.blockStatesMap.open)))
+			doorSound(x,y,z,this.name === "ironTrapdoor"?"iron_trapdoor":"wooden_trapdoor",true,world)
+		},
+		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,world){
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z) ? true : false
+			let block = world.getBlock(x,y,z)
+			var open = getBlockState(block,this.blockStatesMap.open)
+			if(power !== open){
+				world.setBlock(x,y,z, setBlockState(block,this.blockStatesMap.open, !open))
+				doorSound(x,y,z,this.name === "ironTrapdoor"?"iron_trapdoor":"wooden_trapdoor",true,world)
+			}
+		}
 	},
 	{ 
 		name: "spruceTrapdoor",
@@ -3404,7 +3477,8 @@ const blockData = [
 		transparent: true,
 		trapdoor: true,
 		woodSound: true,
-		category:"build"
+		category:"build",
+		onFunctions:"oakTrapdoor"
 	},
 	{ 
 		name: "darkOakTrapdoor",
@@ -3417,7 +3491,8 @@ const blockData = [
 		transparent: true,
 		trapdoor: true,
 		woodSound: true,
-		category:"build"
+		category:"build",
+		onFunctions:"oakTrapdoor"
 	},
 	{ 
 		name: "birchTrapdoor",
@@ -3430,7 +3505,8 @@ const blockData = [
 		transparent: true,
 		trapdoor: true,
 		woodSound: true,
-		category:"build"
+		category:"build",
+		onFunctions:"oakTrapdoor"
 	},
 	{ 
 		name: "jungleTrapdoor",
@@ -3443,7 +3519,8 @@ const blockData = [
 		transparent: true,
 		trapdoor: true,
 		woodSound: true,
-		category:"build"
+		category:"build",
+		onFunctions:"oakTrapdoor"
 	},
 	{ 
 		name: "acaciaTrapdoor",
@@ -3456,7 +3533,8 @@ const blockData = [
 		transparent: true,
 		trapdoor: true,
 		woodSound: true,
-		category:"build"
+		category:"build",
+		onFunctions:"oakTrapdoor"
 	},
 	{ 
 		name: "ironTrapdoor",
@@ -3470,7 +3548,9 @@ const blockData = [
 		transparent: true,
 		trapdoor: true,
 		stoneSound: true,
-		category:"build"
+		category:"build",
+		onFunctions:"oakTrapdoor",
+		onclick:null
 	},
 	
 	{ 
@@ -3879,6 +3959,9 @@ const blockData = [
 		textures: ["furnaceTop","furnaceTop","furnaceSide","furnaceFront","furnaceSide","furnaceSide"],
 		rotate: true,
 		tagBits: null,
+		init:function(){
+			blockData[this.id+this.blockStatesMap.lit.true].lightLevel = 13
+		},
 		hasContents:function(tags){return tags&&tags.furnace},
 		setContents: function(x,y,z,world){
 			var data = {furnace:true, input:0, fuel:0, output:0, smeltStart:0, burnStart:0, canBurn:false, smelting:false, xp:0}
@@ -4718,6 +4801,9 @@ const blockData = [
 		transparent:true,
 		shadow:true,
 		drop:"snowball",
+		dropAmount:function(block){
+			return +getBlockState(block,this.blockStatesMap.layers)
+		},
 		hardness: 0.1,
 		fallingDust:[248/255, 253/255, 253/255],
 		onupdate: function(x,y,z,b,world,sx,sy,sz){
@@ -6133,7 +6219,38 @@ const blockData = [
 		pressurePlate: true,
 		hardness:0.5,
 		type:"wood",
-		category:"redstone"
+		category:"redstone",
+		activate:function(x,y,z,block,ent,world){
+			if(this.heavyWeighted || this.lightWeighted) return //not going to do those yet
+			
+			let block = world.getBlock(x,y,z)
+			if(!getBlockState(block,this.blockStatesMap.powered) && pressurePlateHasPressure(x,y,z,world)){
+				world.setBlock(x,y,z, setBlockState(block,this.blockStatesMap.powered,true), false,false,false,false)
+			}
+		},
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var block = world.getBlock(x,y,z)
+			if(getBlockState(block,this.blockStatesMap.powered) && !world.getPower(x,y,z)){
+				world.setPower(x,y,z,16,false)
+				world.spreadPower(x,y,z,16)
+				world.setBlockPower(x,y-1,z,"strong","top")
+				world.playSound(x,y,z, "click",1,0.6)
+				
+				var me = this
+				var i = setInterval(function(){
+					if(pressurePlateHasPressure(x,y,z,world)) return
+					
+					clearInterval(i)
+					world.setTimeout(function(){
+						world.setBlock(x,y,z,setBlockState(block,this.blockStatesMap.powered,false), false,false,false,false)
+						world.setPower(x,y,z,0,false)
+						world.unspreadPower(x,y,z,16,false)
+						world.setBlockPower(x,y-1,z,null,"top")
+						world.playSound(x,y,z, "click",1,0.5)
+					}, tickTime*20, x,y,z)
+				}, tickTime*2)
+			}
+		}
 	},
 	{
 		name: "birchPressurePlate",
@@ -6148,7 +6265,8 @@ const blockData = [
 		pressurePlate: true,
 		hardness:0.5,
 		type:"wood",
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakPressurePlate"
 	},
 	{
 		name: "sprucePressurePlate",
@@ -6163,7 +6281,8 @@ const blockData = [
 		pressurePlate: true,
 		hardness:0.5,
 		type:"wood",
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakPressurePlate"
 	},
 	{
 		name: "junglePressurePlate",
@@ -6178,7 +6297,8 @@ const blockData = [
 		pressurePlate: true,
 		hardness:0.5,
 		type:"wood",
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakPressurePlate"
 	},
 	{
 		name: "acaciaPressurePlate",
@@ -6193,7 +6313,8 @@ const blockData = [
 		pressurePlate: true,
 		hardness:0.5,
 		type:"wood",
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakPressurePlate"
 	},
 	{
 		name:"darkOakPressurePlate",
@@ -6208,7 +6329,8 @@ const blockData = [
 		pressurePlate: true,
 		hardness:0.5,
 		type:"wood",
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakPressurePlate"
 	},
 	{
 		name: "warpedPressurePlate",
@@ -6223,7 +6345,8 @@ const blockData = [
 		pressurePlate: true,
 		hardness:0.5,
 		type:"wood",
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakPressurePlate"
 	},
 	{
 		name: "crimsonPressurePlate",
@@ -6238,7 +6361,8 @@ const blockData = [
 		pressurePlate: true,
 		hardness:0.5,
 		type:"wood",
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakPressurePlate"
 	},
 	{
 		name: "stonePressurePlate",
@@ -6254,7 +6378,8 @@ const blockData = [
 		pressurePlate: true,
 		type:"stone",
 		hardness:0.5,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakPressurePlate"
 	},
 	{
 		name: "polishedBlackstonePressurePlate",
@@ -6269,7 +6394,8 @@ const blockData = [
 		pressurePlate: true,
 		type:"stone",
 		hardness:0.5,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakPressurePlate"
 	},
 	{
 		name: "lightWeightedPressurePlate",
@@ -6285,7 +6411,8 @@ const blockData = [
 		type:"stone",
 		hardness:0.5,
 		lightWeighted:true,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakPressurePlate"
 	},
 	{
 		name: "heavyWeightedPressurePlate",
@@ -6301,7 +6428,8 @@ const blockData = [
 		type:"stone",
 		hardness:0.5,
 		heavyWeighted:true,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakPressurePlate"
 	},
 	{
 		name:"oakButton",
@@ -6316,7 +6444,56 @@ const blockData = [
 		button:true,
 		transparent: true,
 		shadow:false,
-		category:"redstone"
+		category:"redstone",
+		onclick:function(x,y,z,world){
+			let block = world.getBlock(x,y,z)
+			var target = setBlockState(block,this.blockStatesMap.powered, true)
+			if(block !== target){
+				world.setBlock(x,y,z,target)
+			}
+		},
+		projectileHit:function(x,y,z,ent){
+			this.onclick(x,y,z,ent.world)
+		},
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			var ax=x,ay=y,az=z, dir
+			var block = world.getBlock(x,y,z)
+			if(getBlockState(block,this.blockStatesMap.face) === "ceiling"){
+				ay --
+				dir = "top"
+			}else if(getBlockState(block,this.blockStatesMap.face) === "floor"){
+				ay ++
+				dir = "bottom"
+			}else if(getBlockState(block,this.blockStatesMap.facing) === "north"){
+				az++
+				dir = "south"
+			}else if(getBlockState(block,this.blockStatesMap.facing) === "south"){
+				az--
+				dir = "north"
+			}else if(getBlockState(block,this.blockStatesMap.facing) === "east"){
+				ax++
+				dir = "east"
+			}else if(getBlockState(block,this.blockStatesMap.facing) === "west"){
+				ax--
+				dir = "west"
+			}
+			var hasPower = getBlockState(block,this.blockStatesMap.powered)
+			if(hasPower && !world.getPower(x,y,z)){
+				let target = setBlockState(block,this.blockStatesMap.powered, false)
+				world.setPower(x,y,z,16,false)
+				world.spreadPower(x,y,z,16)
+				world.setBlockPower(ax,ay,az,"strong",dir)
+				world.playSound(x,y,z, "click",1,0.6)
+				
+				world.setTimeout(function(){
+					world.setBlock(x,y,z,target, false,false,false,false)
+					world.setPower(x,y,z,0,false)
+					world.unspreadPower(x,y,z,16,false)
+					world.setBlockPower(ax,ay,az,null,dir)
+					world.playSound(x,y,z, "click",1,0.5)
+				},this.stone ? tickTime*20 : tickTime*30, x,y,z)
+			}
+		}
 	},
 	{
 		name:"birchButton",
@@ -6331,7 +6508,8 @@ const blockData = [
 		button:true,
 		transparent: true,
 		shadow:false,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakButton"
 	},
 	{
 		name:"acaciaButton",
@@ -6346,7 +6524,8 @@ const blockData = [
 		button:true,
 		transparent: true,
 		shadow:false,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakButton"
 	},
 	{
 		name:"darkOakButton",
@@ -6361,7 +6540,8 @@ const blockData = [
 		button:true,
 		transparent: true,
 		shadow:false,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakButton"
 	},
 	{
 		name:"jungleButton",
@@ -6376,7 +6556,8 @@ const blockData = [
 		button:true,
 		transparent: true,
 		shadow:false,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakButton"
 	},
 	{
 		name:"spruceButton",
@@ -6391,7 +6572,8 @@ const blockData = [
 		button:true,
 		transparent: true,
 		shadow:false,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakButton"
 	},
 	{
 		name:"warpedButton",
@@ -6406,7 +6588,8 @@ const blockData = [
 		button:true,
 		transparent: true,
 		shadow:false,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakButton"
 	},
 	{
 		name:"crimsonButton",
@@ -6421,7 +6604,8 @@ const blockData = [
 		button:true,
 		transparent: true,
 		shadow:false,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakButton"
 	},
 	{
 		name:"polishedBlackstoneButton",
@@ -6437,7 +6621,8 @@ const blockData = [
 		transparent:true,
 		shadow:false,
 		stone:true,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakButton"
 	},
 	{
 		name:"copperBlock",
@@ -6731,7 +6916,19 @@ const blockData = [
 		itemFrame:true,
 		flatIcon:true,
 		iconTexture:"itemFrameIcon",
-		category:"items"
+		category:"items",
+		tagBits:null,
+		shapeName:"itemFrame",
+		onclick:function(x,y,z,world, p){
+			var prev = world.getTagByName(x,y,z,"block") || 0
+			if(!prev && p.holding) world.setTagByName(x,y,z, "block",p.holding)
+			else{
+				var rot = world.getTagByName(x,y,z,"rot") || 0
+				rot++
+				if(rot >= 8) rot = 0
+				world.setTagByName(x,y,z, "rot",rot)
+			}
+		}
 	},
 	
 	{
@@ -6865,6 +7062,9 @@ const blockData = [
 		},
 		onset:function(x,y,z,world){
 			this.onpowerupdate(x,y,z,null,null,null,null,world)
+		},
+		init:function(){
+			blockData[this.id+this.blockStatesMap.lit.true].lightLevel = 15
 		},
 		category:"redstone"
 	},
@@ -7896,7 +8096,15 @@ const blockData = [
 		hardness:2,
 		woodSound:true,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onclick:function(x,y,z,world){
+			var b = world.getBlock(x,y,z)
+			let o = getBlockState(b,this.blockStatesMap.open)
+			var set = setBlockState(b,this.blockStatesMap.open, !o)
+			var id = this.id
+			world.setBlock(x,y,z,set)
+			doorSound(x,y,z,"fence_gate",o,world)
+		}
 	},
 	{
 		name:"acaciaFenceGate",
@@ -7910,7 +8118,8 @@ const blockData = [
 		hardness:2,
 		woodSound:true,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakFenceGate"
 	},
 	{
 		name:"birchFenceGate",
@@ -7924,7 +8133,8 @@ const blockData = [
 		hardness:2,
 		woodSound:true,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakFenceGate"
 	},
 	{
 		name:"darkOakFenceGate",
@@ -7938,7 +8148,8 @@ const blockData = [
 		hardness:2,
 		woodSound:true,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakFenceGate"
 	},
 	{
 		name:"jungleFenceGate",
@@ -7952,7 +8163,8 @@ const blockData = [
 		hardness:2,
 		woodSound:true,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakFenceGate"
 	},
 	{
 		name:"spruceFenceGate",
@@ -7966,7 +8178,8 @@ const blockData = [
 		hardness:2,
 		woodSound:true,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakFenceGate"
 	},
 	{
 		name:"crimsonFenceGate",
@@ -7980,7 +8193,8 @@ const blockData = [
 		hardness:2,
 		woodSound:true,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakFenceGate"
 	},
 	{
 		name:"warpedFenceGate",
@@ -7994,7 +8208,8 @@ const blockData = [
 		hardness:2,
 		woodSound:true,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakFenceGate"
 	},
 	
 	{ 
@@ -8197,7 +8412,10 @@ const blockData = [
 		itemFrame:true,
 		flatIcon:true,
 		iconTexture:"glowItemFrameIcon",
-		category:"items"
+		category:"items",
+		tagBits:null,
+		shapeName:"itemFrame",
+		onFunctions:"itemFrame"
 	},
 	{
 		name:"glowLichen",
@@ -8542,6 +8760,17 @@ const blockData = [
 		liquidBreakable:"drop",
 		growBonemeal:function(x,y,z,world){
 			world.setBlock(x,y,z, this.id+this.blockStateMaps.age[4])
+		},
+		init:function(){//todo n
+			baseBlock.shape = shapes.cross
+			makeBlock(baseBlock.textures1, shapes.cross, slabBlock, baseBlock)
+			makeBlock(baseBlock.textures2, shapes.cross, stairBlock, baseBlock)
+			makeBlock(baseBlock.textures3, shapes.cross, crossBlock, baseBlock)
+			makeBlock(baseBlock.textures4, shapes.cross, tallcrossBlock, baseBlock)
+			crossBlock.drop = "tomato"
+			crossBlock.dropAmount = [4,8]
+			tallcrossBlock.drop = "tomato"
+			tallcrossBlock.dropAmount = [8,16]
 		}
 	},
 	{
@@ -8767,7 +8996,7 @@ const blockData = [
 		transparent: true,
 		shadow: false,
 		redstoneTorch: true,
-		lightLevel: 7,
+		lightLevel: 7,//todo n: can turn off
 		woodSound:true,
 		solid:false,
 		flatIcon:true,
@@ -10069,7 +10298,8 @@ const blockData = [
 		woodSound:true,
 		hardness:3,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakDoor"
 	},
 	{ 
 		name: "mangroveTrapdoor",
@@ -10082,7 +10312,8 @@ const blockData = [
 		transparent: true,
 		trapdoor: true,
 		woodSound: true,
-		category:"build"
+		category:"build",
+		onFunctions:"oakTrapdoor"
 	},
 	{
 		name:"mangroveButton",
@@ -10097,7 +10328,8 @@ const blockData = [
 		button:true,
 		transparent: true,
 		shadow:false,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakButton"
 	},
 	{
 		name: "mangrovePressurePlate",
@@ -10112,7 +10344,8 @@ const blockData = [
 		pressurePlate: true,
 		hardness:0.5,
 		type:"wood",
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakPressurePlate"
 	},
 	{
 		name:"mangroveFenceGate",
@@ -10126,7 +10359,8 @@ const blockData = [
 		hardness:2,
 		woodSound:true,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakFenceGate"
 	},
 	{
 		name:"mangroveRoots",
@@ -11127,7 +11361,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"lightBlueBed",
@@ -11143,7 +11378,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"magentaBed",
@@ -11159,7 +11395,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"yellowBed",
@@ -11175,7 +11412,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"purpleBed",
@@ -11191,7 +11429,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"orangeBed",
@@ -11207,7 +11446,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"whiteBed",
@@ -11223,7 +11463,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"greenBed",
@@ -11239,7 +11480,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"brownBed",
@@ -11255,7 +11497,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"blackBed",
@@ -11271,7 +11514,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"pinkBed",
@@ -11287,7 +11531,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"limeBed",
@@ -11303,7 +11548,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"grayBed",
@@ -11319,7 +11565,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"cyanBed",
@@ -11335,7 +11582,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"blueBed",
@@ -11351,7 +11599,8 @@ const blockData = [
 		transparent: true,
 		bed: true,
 		bounciness: 0.6,
-		category:"items"
+		category:"items",
+		onFunctions:"redBed"
 	},
 	{
 		name:"quicksand",
@@ -12582,7 +12831,8 @@ const blockData = [
 		button:true,
 		transparent: true,
 		shadow:false,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakButton"
 	},
 	{ 
 		name: "bambooDoor",
@@ -12598,7 +12848,8 @@ const blockData = [
 		woodSound:true,
 		hardness:3,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakDoor"
 	},
 	{
 		name:"bambooFenceGate",
@@ -12612,7 +12863,8 @@ const blockData = [
 		hardness:2,
 		woodSound:true,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakFenceGate"
 	},
 	{
 		name: "bambooPressurePlate",
@@ -12627,7 +12879,8 @@ const blockData = [
 		pressurePlate: true,
 		hardness:0.5,
 		type:"wood",
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakPressurePlate"
 	},
 	{
 		name:"bambooSign",
@@ -12661,7 +12914,8 @@ const blockData = [
 		transparent: true,
 		trapdoor: true,
 		woodSound: true,
-		category:"build"
+		category:"build",
+		onFunctions:"oakTrapdoor"
 	},
 	{
 		name:"strippedCherryLog",
@@ -12697,7 +12951,8 @@ const blockData = [
 		button:true,
 		transparent: true,
 		shadow:false,
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakButton"
 	},
 	{ 
 		name: "cherryDoor",
@@ -12713,7 +12968,8 @@ const blockData = [
 		woodSound:true,
 		hardness:3,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakDoor"
 	},
 	{
 		name:"cherryFenceGate",
@@ -12727,7 +12983,8 @@ const blockData = [
 		hardness:2,
 		woodSound:true,
 		type:"wood",
-		category:"build"
+		category:"build",
+		onFunctions:"oakFenceGate"
 	},
 	{
 		name: "cherryPressurePlate",
@@ -12742,7 +12999,8 @@ const blockData = [
 		pressurePlate: true,
 		hardness:0.5,
 		type:"wood",
-		category:"redstone"
+		category:"redstone",
+		onFunctions:"oakPressurePlate"
 	},
 	{
 		name:"cherrySign",
@@ -12776,7 +13034,8 @@ const blockData = [
 		transparent: true,
 		trapdoor: true,
 		woodSound: true,
-		category:"build"
+		category:"build",
+		onFunctions:"oakTrapdoor"
 	},
 	{
 		name:"cherryChair",
@@ -13614,6 +13873,17 @@ function initBlockData(){
 			}
 			data.blockStatesMap = obj
 			blockStateMaps[data.name] = obj
+		}
+		if(data.onFunctions){
+			let other = blockData[blockIds[data.onFunctions]]
+			if(other.onupdate && data.onupdate === undefined) data.onupdate = other.onupdate
+			if(other.onclick && data.onclick === undefined) data.onclick = other.onclick
+			if(other.onpowerupdate && fata.onpowerupdate === undefined) data.onpowerupdate = other.onpowerupdate
+			if(other.onset && data.onset === undefined) data.onset = other.onset
+			if(other.ondelete && data.ondelete === undefined) data.ondelete = other.ondelete
+			if(other.ontagsupdate && data.ontagsupdate === undefined) data.ontagsupdate = other.ontagsupdate
+			if(other.activate && data.activate === undefined) data.activate = other.activate
+			if(other.projectileHit && data.projectileHit === undefined) data.projectileHit = other.projectileHit
 		}
 	}
 	dataLoad.loadNamespace(dataLoad.data, "min"+"ecr"+"aft", {blockData,BLOCK_COUNT,shapes,textures:textures2,blockIds,compareArr,entityData})
@@ -20281,6 +20551,10 @@ function initBlockDataShapes(){
 	
 	for (let i = 0; i < BLOCK_COUNT; i++) {
 		let baseBlock = blockData[i]
+		if(baseBlock.init){
+			if(typeof baseBlock.init === "string") baseBlock.init = blockData[blockIds[baseBlock.init]]
+			baseBlock.init()
+		}
 		if(baseBlock.shape) continue//todo n
 
 		if ( !("textures" in baseBlock) ) {
@@ -20349,7 +20623,7 @@ function initBlockDataShapes(){
 		stairBlock.transparent = true
 		stairBlock.drop = d || (i | STAIR)
 		stairBlock.Name += " Stair"
-		crossBlock.shape = shapes.cross
+		crossBlock.shape = shapes.cross//todo n
 		crossBlock.drop = drop
 		tallcrossBlock.shape = shapes.tallCross
 		tallcrossBlock.drop = drop
@@ -20396,9 +20670,6 @@ function initBlockDataShapes(){
 		verticalSlabBlock.transparent = true
 		verticalSlabBlock.drop = d || (i | VERTICALSLAB)
 		verticalSlabBlock.Name += " Vertical Slab"
-		if(baseBlock.torch || baseBlock.chain){
-			slabBlock.drop = i
-		}
 		if(baseBlock.door){
 			var onclick = baseBlock.name === "ironDoor" ? emptyFunc : function(x,y,z,world){
 				this.toggle(x,y,z,world)
@@ -20488,7 +20759,7 @@ function initBlockDataShapes(){
 			doorBlock.shadow = false
 			doorBlock.dropAmount = 8
 		}
-		if(baseBlock.liquid){
+		if(baseBlock.liquid){//todo n: 2 types of water and lava (flowing, still)
 			Object.assign(baseBlock,liquidData)
 			baseBlock.shape = shapes.liquidLayer8
 			torchBlock.shape = shapes.liquidLayer1
@@ -20968,7 +21239,7 @@ function initBlockDataShapes(){
 			makeBlock(new Array(6).fill("pointedDripstoneDownTipMerge"), shapes.cross, flip, baseBlock)
 			blockData[i | TALLCROSS | FLIP] = flip
 		}
-		if(baseBlock.sign){
+		if(baseBlock.sign){//todo: continue moving things below
 			slabBlock.shape = shapes.sign
 			slabBlock.textures = baseBlock.textures
 			slabBlock.drop = i
@@ -32414,7 +32685,8 @@ class World{ // aka trueWorld
 			if(!blockData[prevBlock].type) canDrop = true
 			if(canDrop){
 				if(amount === undefined) amount = 1
-				if(amount.length === 2){
+				else if(typeof amount === "function") amount = amount(prevBlock)
+				else if(amount.length === 2){
 					amount = round(rand(amount[0], amount[1]))
 				}
 				if(holding && blockData[holding].shears && blockData[prevBlock].dropSelfWhenSheared){
