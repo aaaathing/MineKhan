@@ -21239,7 +21239,7 @@ function initBlockDataShapes(){
 			makeBlock(new Array(6).fill("pointedDripstoneDownTipMerge"), shapes.cross, flip, baseBlock)
 			blockData[i | TALLCROSS | FLIP] = flip
 		}
-		if(baseBlock.sign){//todo: continue moving things below
+		if(baseBlock.sign){//todo n: continue moving things below
 			slabBlock.shape = shapes.sign
 			slabBlock.textures = baseBlock.textures
 			slabBlock.drop = i
