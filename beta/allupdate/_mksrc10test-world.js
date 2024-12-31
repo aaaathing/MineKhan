@@ -113,6 +113,10 @@ const rand = function(a,b){
 	}else return Math.random()
 }
 win.rand = rand
+const randInt = function(a,b){
+	return floor((Math.random()*(b+1-a))+a)
+}
+win.randInt = randInt
 const avg = function(){
 	var res = 0, c = 0
 	for(var i=0; i<arguments.length; i++){
@@ -2491,7 +2495,7 @@ const blockData = [
 		hardness:3,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakDoor"
+		copyPropertiesHere:"oakDoor"
 	},
 	{
 		name: "ironDoor",
@@ -2509,7 +2513,7 @@ const blockData = [
 		hardness:5,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakDoor",
+		copyPropertiesHere:"oakDoor",
 		onclick: null
 	},
 	{
@@ -2527,7 +2531,7 @@ const blockData = [
 		hardness:3,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakDoor"
+		copyPropertiesHere:"oakDoor"
 	},
 	{
 		name: "birchDoor",
@@ -2544,7 +2548,7 @@ const blockData = [
 		hardness:3,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakDoor"
+		copyPropertiesHere:"oakDoor"
 	},
 	{
 		name: "jungleDoor",
@@ -2561,7 +2565,7 @@ const blockData = [
 		hardness:3,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakDoor"
+		copyPropertiesHere:"oakDoor"
 	},
 	{
 		name: "acaciaDoor",
@@ -2578,7 +2582,7 @@ const blockData = [
 		hardness:3,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakDoor"
+		copyPropertiesHere:"oakDoor"
 	},
 	{
 		name: "warpedDoor",
@@ -2595,7 +2599,7 @@ const blockData = [
 		hardness:3,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakDoor"
+		copyPropertiesHere:"oakDoor"
 	},
 	{
 		name: "crimsonDoor",
@@ -2612,7 +2616,7 @@ const blockData = [
 		hardness:3,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakDoor"
+		copyPropertiesHere:"oakDoor"
 	},
 	
 	{
@@ -3104,7 +3108,7 @@ const blockData = [
 		trapdoor: true,
 		woodSound:true,
 		category:"build",
-		onFunctions:"oakTrapdoor"
+		copyPropertiesHere:"oakTrapdoor"
 	},
 	{
 		name: "magma", Name:"Magma Block", lightLevel:15,hardness:0.5, type:"rock1",
@@ -3437,7 +3441,7 @@ const blockData = [
 		trapdoor: true,
 		woodSound: true,
 		category:"build",
-		onFunctions:"oakTrapdoor"
+		copyPropertiesHere:"oakTrapdoor"
 	},
 	{ 
 		name: "oakTrapdoor",
@@ -3478,7 +3482,7 @@ const blockData = [
 		trapdoor: true,
 		woodSound: true,
 		category:"build",
-		onFunctions:"oakTrapdoor"
+		copyPropertiesHere:"oakTrapdoor"
 	},
 	{ 
 		name: "darkOakTrapdoor",
@@ -3492,7 +3496,7 @@ const blockData = [
 		trapdoor: true,
 		woodSound: true,
 		category:"build",
-		onFunctions:"oakTrapdoor"
+		copyPropertiesHere:"oakTrapdoor"
 	},
 	{ 
 		name: "birchTrapdoor",
@@ -3506,7 +3510,7 @@ const blockData = [
 		trapdoor: true,
 		woodSound: true,
 		category:"build",
-		onFunctions:"oakTrapdoor"
+		copyPropertiesHere:"oakTrapdoor"
 	},
 	{ 
 		name: "jungleTrapdoor",
@@ -3520,7 +3524,7 @@ const blockData = [
 		trapdoor: true,
 		woodSound: true,
 		category:"build",
-		onFunctions:"oakTrapdoor"
+		copyPropertiesHere:"oakTrapdoor"
 	},
 	{ 
 		name: "acaciaTrapdoor",
@@ -3534,7 +3538,7 @@ const blockData = [
 		trapdoor: true,
 		woodSound: true,
 		category:"build",
-		onFunctions:"oakTrapdoor"
+		copyPropertiesHere:"oakTrapdoor"
 	},
 	{ 
 		name: "ironTrapdoor",
@@ -3549,7 +3553,7 @@ const blockData = [
 		trapdoor: true,
 		stoneSound: true,
 		category:"build",
-		onFunctions:"oakTrapdoor",
+		copyPropertiesHere:"oakTrapdoor",
 		onclick:null
 	},
 	
@@ -3721,7 +3725,7 @@ const blockData = [
 		hidden:true,
 		drop:"crimsonRoots",
 		liquidBreakable:"drop"
-	},
+	},//todo n: wall carpet
 	{ name: "whiteCarpet", nameMcd:"white_carpet", Name: "White Carpet", hardness: 0.1, blastResistance: 0.1, textures: "whiteWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
 	{ name: "orangeCarpet", nameMcd:"orange_carpet", Name: "Orange Carpet", hardness: 0.1, blastResistance: 0.1, textures: "orangeWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
 	{ name: "magentaCarpet", nameMcd:"magenta_carpet", Name: "Magenta Carpet", hardness: 0.1, blastResistance: 0.1, textures: "magentaWool", category:"decoration",carpet: true, clothSound:true, type:"wool"},
@@ -4582,6 +4586,7 @@ const blockData = [
 		smoothLight:false,
 		tint:grassTint,
 		purpleTint:{
+		//todo n: purple variant
 			default:[180/255,123/255,142/255],
 		},
 		biomeTintNorth:true,
@@ -6266,7 +6271,7 @@ const blockData = [
 		hardness:0.5,
 		type:"wood",
 		category:"redstone",
-		onFunctions:"oakPressurePlate"
+		copyPropertiesHere:"oakPressurePlate"
 	},
 	{
 		name: "sprucePressurePlate",
@@ -6282,7 +6287,7 @@ const blockData = [
 		hardness:0.5,
 		type:"wood",
 		category:"redstone",
-		onFunctions:"oakPressurePlate"
+		copyPropertiesHere:"oakPressurePlate"
 	},
 	{
 		name: "junglePressurePlate",
@@ -6298,7 +6303,7 @@ const blockData = [
 		hardness:0.5,
 		type:"wood",
 		category:"redstone",
-		onFunctions:"oakPressurePlate"
+		copyPropertiesHere:"oakPressurePlate"
 	},
 	{
 		name: "acaciaPressurePlate",
@@ -6314,7 +6319,7 @@ const blockData = [
 		hardness:0.5,
 		type:"wood",
 		category:"redstone",
-		onFunctions:"oakPressurePlate"
+		copyPropertiesHere:"oakPressurePlate"
 	},
 	{
 		name:"darkOakPressurePlate",
@@ -6330,7 +6335,7 @@ const blockData = [
 		hardness:0.5,
 		type:"wood",
 		category:"redstone",
-		onFunctions:"oakPressurePlate"
+		copyPropertiesHere:"oakPressurePlate"
 	},
 	{
 		name: "warpedPressurePlate",
@@ -6346,7 +6351,7 @@ const blockData = [
 		hardness:0.5,
 		type:"wood",
 		category:"redstone",
-		onFunctions:"oakPressurePlate"
+		copyPropertiesHere:"oakPressurePlate"
 	},
 	{
 		name: "crimsonPressurePlate",
@@ -6362,7 +6367,7 @@ const blockData = [
 		hardness:0.5,
 		type:"wood",
 		category:"redstone",
-		onFunctions:"oakPressurePlate"
+		copyPropertiesHere:"oakPressurePlate"
 	},
 	{
 		name: "stonePressurePlate",
@@ -6379,7 +6384,7 @@ const blockData = [
 		type:"stone",
 		hardness:0.5,
 		category:"redstone",
-		onFunctions:"oakPressurePlate"
+		copyPropertiesHere:"oakPressurePlate"
 	},
 	{
 		name: "polishedBlackstonePressurePlate",
@@ -6395,7 +6400,7 @@ const blockData = [
 		type:"stone",
 		hardness:0.5,
 		category:"redstone",
-		onFunctions:"oakPressurePlate"
+		copyPropertiesHere:"oakPressurePlate"
 	},
 	{
 		name: "lightWeightedPressurePlate",
@@ -6412,7 +6417,7 @@ const blockData = [
 		hardness:0.5,
 		lightWeighted:true,
 		category:"redstone",
-		onFunctions:"oakPressurePlate"
+		copyPropertiesHere:"oakPressurePlate"
 	},
 	{
 		name: "heavyWeightedPressurePlate",
@@ -6429,7 +6434,7 @@ const blockData = [
 		hardness:0.5,
 		heavyWeighted:true,
 		category:"redstone",
-		onFunctions:"oakPressurePlate"
+		copyPropertiesHere:"oakPressurePlate"
 	},
 	{
 		name:"oakButton",
@@ -6509,7 +6514,7 @@ const blockData = [
 		transparent: true,
 		shadow:false,
 		category:"redstone",
-		onFunctions:"oakButton"
+		copyPropertiesHere:"oakButton"
 	},
 	{
 		name:"acaciaButton",
@@ -6525,7 +6530,7 @@ const blockData = [
 		transparent: true,
 		shadow:false,
 		category:"redstone",
-		onFunctions:"oakButton"
+		copyPropertiesHere:"oakButton"
 	},
 	{
 		name:"darkOakButton",
@@ -6541,7 +6546,7 @@ const blockData = [
 		transparent: true,
 		shadow:false,
 		category:"redstone",
-		onFunctions:"oakButton"
+		copyPropertiesHere:"oakButton"
 	},
 	{
 		name:"jungleButton",
@@ -6557,7 +6562,7 @@ const blockData = [
 		transparent: true,
 		shadow:false,
 		category:"redstone",
-		onFunctions:"oakButton"
+		copyPropertiesHere:"oakButton"
 	},
 	{
 		name:"spruceButton",
@@ -6573,7 +6578,7 @@ const blockData = [
 		transparent: true,
 		shadow:false,
 		category:"redstone",
-		onFunctions:"oakButton"
+		copyPropertiesHere:"oakButton"
 	},
 	{
 		name:"warpedButton",
@@ -6589,7 +6594,7 @@ const blockData = [
 		transparent: true,
 		shadow:false,
 		category:"redstone",
-		onFunctions:"oakButton"
+		copyPropertiesHere:"oakButton"
 	},
 	{
 		name:"crimsonButton",
@@ -6605,7 +6610,7 @@ const blockData = [
 		transparent: true,
 		shadow:false,
 		category:"redstone",
-		onFunctions:"oakButton"
+		copyPropertiesHere:"oakButton"
 	},
 	{
 		name:"polishedBlackstoneButton",
@@ -6622,7 +6627,7 @@ const blockData = [
 		shadow:false,
 		stone:true,
 		category:"redstone",
-		onFunctions:"oakButton"
+		copyPropertiesHere:"oakButton"
 	},
 	{
 		name:"copperBlock",
@@ -7635,6 +7640,7 @@ const blockData = [
 		biomeTintEast:true,
 		biomeTintWest:true,
 		randomOffset:true,
+		//todo n: 'fern' shape
 	},
 	{
 		name: "largeFern",
@@ -8119,7 +8125,7 @@ const blockData = [
 		woodSound:true,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakFenceGate"
+		copyPropertiesHere:"oakFenceGate"
 	},
 	{
 		name:"birchFenceGate",
@@ -8134,7 +8140,7 @@ const blockData = [
 		woodSound:true,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakFenceGate"
+		copyPropertiesHere:"oakFenceGate"
 	},
 	{
 		name:"darkOakFenceGate",
@@ -8149,7 +8155,7 @@ const blockData = [
 		woodSound:true,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakFenceGate"
+		copyPropertiesHere:"oakFenceGate"
 	},
 	{
 		name:"jungleFenceGate",
@@ -8164,7 +8170,7 @@ const blockData = [
 		woodSound:true,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakFenceGate"
+		copyPropertiesHere:"oakFenceGate"
 	},
 	{
 		name:"spruceFenceGate",
@@ -8179,7 +8185,7 @@ const blockData = [
 		woodSound:true,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakFenceGate"
+		copyPropertiesHere:"oakFenceGate"
 	},
 	{
 		name:"crimsonFenceGate",
@@ -8194,7 +8200,7 @@ const blockData = [
 		woodSound:true,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakFenceGate"
+		copyPropertiesHere:"oakFenceGate"
 	},
 	{
 		name:"warpedFenceGate",
@@ -8209,7 +8215,7 @@ const blockData = [
 		woodSound:true,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakFenceGate"
+		copyPropertiesHere:"oakFenceGate"
 	},
 	
 	{ 
@@ -8415,7 +8421,7 @@ const blockData = [
 		category:"items",
 		tagBits:null,
 		shapeName:"itemFrame",
-		onFunctions:"itemFrame"
+		copyPropertiesHere:"itemFrame"
 	},
 	{
 		name:"glowLichen",
@@ -8996,10 +9002,13 @@ const blockData = [
 		transparent: true,
 		shadow: false,
 		redstoneTorch: true,
-		lightLevel: 7,//todo n: can turn off
+		lightLevel: 7,
 		woodSound:true,
 		solid:false,
 		flatIcon:true,
+		init: function(){
+			blockData[this.id + this.blockStatesMap.lit.false].lightLevel = 0
+		},
 		onupdate: function(x,y,z,b,world,sx,sy,sz){
 			this.onpowerupdate(x,y,z,null,null,null,null,world)
 			
@@ -10299,7 +10308,7 @@ const blockData = [
 		hardness:3,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakDoor"
+		copyPropertiesHere:"oakDoor"
 	},
 	{ 
 		name: "mangroveTrapdoor",
@@ -10313,7 +10322,7 @@ const blockData = [
 		trapdoor: true,
 		woodSound: true,
 		category:"build",
-		onFunctions:"oakTrapdoor"
+		copyPropertiesHere:"oakTrapdoor"
 	},
 	{
 		name:"mangroveButton",
@@ -10329,7 +10338,7 @@ const blockData = [
 		transparent: true,
 		shadow:false,
 		category:"redstone",
-		onFunctions:"oakButton"
+		copyPropertiesHere:"oakButton"
 	},
 	{
 		name: "mangrovePressurePlate",
@@ -10345,7 +10354,7 @@ const blockData = [
 		hardness:0.5,
 		type:"wood",
 		category:"redstone",
-		onFunctions:"oakPressurePlate"
+		copyPropertiesHere:"oakPressurePlate"
 	},
 	{
 		name:"mangroveFenceGate",
@@ -10360,7 +10369,7 @@ const blockData = [
 		woodSound:true,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakFenceGate"
+		copyPropertiesHere:"oakFenceGate"
 	},
 	{
 		name:"mangroveRoots",
@@ -10765,7 +10774,7 @@ const blockData = [
 		category:"nature",
 		randomOffset:true,
 	},
-	{
+	{//todo n: wall sign
 		name:"oakSign",
 		nameMcd:"oak_sign",
 		Name:"Oak sign",
@@ -10784,7 +10793,27 @@ const blockData = [
 		hardness:1,
 		woodSound:true,
 		type:"wood",
-		category:"decoration"
+		category:"decoration",
+		shadow:false,
+		shapeName:"none",
+		onplace:function(x,y,z, player,world){//todo n
+			var block = world.getBlock(x,y,z)
+			var tags = {sign:true}
+			var rot = round(player.ry*16/Math.PId)
+			if((block & STAIR) === STAIR) rot = round(rot/4)*4
+			tags.rot = rot
+			world.setTags(x,y,z,tags)
+		},
+		onclick:function(x,y,z,world,p){
+			if(p.holding && blockData[p.holding].dye){
+				world.setTagByName(x,y,z, "color",colors.dye[blockData[p.holding].dye].slice())
+			}else if(p.holding && p.holding === blockIds.glowInkSac){
+				let side = getSignSide(world.getTags(x,y,z),p) ? "glow2" : "glow"
+				world.setTagByName(x,y,z, side,true)
+			}else{
+				p.connection.send({type:"openContainer",data:"sign",x,y,z,dimension:world.dimension})
+			}
+		}
 	},
 	{
 		name:"birchSign",
@@ -10963,7 +10992,10 @@ const blockData = [
 		drop:"cocoaBeans",
 		woodSound:true,
 		hidden:true,
-		liquidBreakable:"drop"
+		liquidBreakable:"drop",
+		dropAmount:function(block){
+			return +getBlockState(block, this.blockStatesMap.age) === 2 ? randInt(2,3) : 1
+		}
 	},
 	{
 		name:"cookie",
@@ -11268,6 +11300,9 @@ const blockData = [
 		liquidBreakable:"drop",
 		growBonemeal:function(x,y,z,world){
 			world.setBlock(x,y,z, this.id+blockStateMaps.beetroots.age[3])
+		},
+		dropAmount:function(block){
+			return +getBlockState(block, this.blockStatesMap.age) === 3 ? randInt(1,4) : 1
 		}
 	},
 	{
@@ -11287,6 +11322,9 @@ const blockData = [
 		liquidBreakable:"drop",
 		growBonemeal:function(x,y,z,world){
 			world.setBlock(x,y,z, this.id+blockStateMaps.beetroots.age[7])
+		},
+		dropAmount:function(block){
+			return +getBlockState(block, this.blockStatesMap.age) === 7 ? randInt(1,5) : 1
 		}
 	},
 	{
@@ -11306,6 +11344,9 @@ const blockData = [
 		liquidBreakable:"drop",
 		growBonemeal:function(x,y,z,world){
 			world.setBlock(x,y,z, this.id+blockStateMaps.beetroots.age[7])
+		},
+		dropAmount:function(block){
+			return +getBlockState(block, this.blockStatesMap.age) === 7 ? randInt(2,5) : 1
 		}
 	},
 	
@@ -11362,7 +11403,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"lightBlueBed",
@@ -11379,7 +11420,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"magentaBed",
@@ -11396,7 +11437,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"yellowBed",
@@ -11413,7 +11454,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"purpleBed",
@@ -11430,7 +11471,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"orangeBed",
@@ -11447,7 +11488,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"whiteBed",
@@ -11464,7 +11505,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"greenBed",
@@ -11481,7 +11522,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"brownBed",
@@ -11498,7 +11539,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"blackBed",
@@ -11515,7 +11556,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"pinkBed",
@@ -11532,7 +11573,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"limeBed",
@@ -11549,7 +11590,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"grayBed",
@@ -11566,7 +11607,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"cyanBed",
@@ -11583,7 +11624,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"blueBed",
@@ -11600,7 +11641,7 @@ const blockData = [
 		bed: true,
 		bounciness: 0.6,
 		category:"items",
-		onFunctions:"redBed"
+		copyPropertiesHere:"redBed"
 	},
 	{
 		name:"quicksand",
@@ -11610,7 +11651,7 @@ const blockData = [
 		category:"nature"
 	},
 	{
-		name:"bow",
+		name:"bow",//todo n: animation
 		Name:"Bow",
 		pullTextures:["bow","bowPulling0","bowPulling1","bowPulling2"],
 		useAnywhere:true,
@@ -12509,36 +12550,10 @@ const blockData = [
 						outputHTML += Messages.format(output[i])
 					}
 					world.setTagByName(x,y,z,"output",outputHTML,false)
-					let target
+					/*let target
 					let block = world.getBlock(x,y,z)
-					switch(block){
-						case this.id:
-						case this.id | FLIP:
-							target = this.id
-							break
-						case this.id | SLAB | NORTH:
-						case this.id | SLAB | FLIP | NORTH:
-							target = this.id | SLAB | NORTH
-							break
-						case this.id | SLAB | SOUTH:
-						case this.id | SLAB | FLIP | SOUTH:
-							target = this.id | SLAB | SOUTH
-							break
-						case this.id | SLAB | EAST:
-						case this.id | SLAB | FLIP | EAST:
-							target = this.id | SLAB | EAST
-							break
-						case this.id | SLAB | WEST:
-						case this.id | SLAB | FLIP | WEST:
-							target = this.id | SLAB | WEST
-							break
-						case this.id | STAIR:
-						case this.id | STAIR | FLIP:
-							target = this.id | STAIR
-							break
-					}
 					if(output && output[output.length-1] === "error") target |= FLIP
-					if(block !== target) world.setBlock(x,y,z,target,false,false,false,true)
+					if(block !== target) world.setBlock(x,y,z,target,false,false,false,true)*/
 				}).then(() => world.setTagByName(x,y,z,"running",false,false))
 			}
 		},
@@ -12832,7 +12847,7 @@ const blockData = [
 		transparent: true,
 		shadow:false,
 		category:"redstone",
-		onFunctions:"oakButton"
+		copyPropertiesHere:"oakButton"
 	},
 	{ 
 		name: "bambooDoor",
@@ -12849,7 +12864,7 @@ const blockData = [
 		hardness:3,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakDoor"
+		copyPropertiesHere:"oakDoor"
 	},
 	{
 		name:"bambooFenceGate",
@@ -12864,7 +12879,7 @@ const blockData = [
 		woodSound:true,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakFenceGate"
+		copyPropertiesHere:"oakFenceGate"
 	},
 	{
 		name: "bambooPressurePlate",
@@ -12880,7 +12895,7 @@ const blockData = [
 		hardness:0.5,
 		type:"wood",
 		category:"redstone",
-		onFunctions:"oakPressurePlate"
+		copyPropertiesHere:"oakPressurePlate"
 	},
 	{
 		name:"bambooSign",
@@ -12915,7 +12930,7 @@ const blockData = [
 		trapdoor: true,
 		woodSound: true,
 		category:"build",
-		onFunctions:"oakTrapdoor"
+		copyPropertiesHere:"oakTrapdoor"
 	},
 	{
 		name:"strippedCherryLog",
@@ -12952,7 +12967,7 @@ const blockData = [
 		transparent: true,
 		shadow:false,
 		category:"redstone",
-		onFunctions:"oakButton"
+		copyPropertiesHere:"oakButton"
 	},
 	{ 
 		name: "cherryDoor",
@@ -12969,7 +12984,7 @@ const blockData = [
 		hardness:3,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakDoor"
+		copyPropertiesHere:"oakDoor"
 	},
 	{
 		name:"cherryFenceGate",
@@ -12984,7 +12999,7 @@ const blockData = [
 		woodSound:true,
 		type:"wood",
 		category:"build",
-		onFunctions:"oakFenceGate"
+		copyPropertiesHere:"oakFenceGate"
 	},
 	{
 		name: "cherryPressurePlate",
@@ -13000,7 +13015,7 @@ const blockData = [
 		hardness:0.5,
 		type:"wood",
 		category:"redstone",
-		onFunctions:"oakPressurePlate"
+		copyPropertiesHere:"oakPressurePlate"
 	},
 	{
 		name:"cherrySign",
@@ -13035,7 +13050,7 @@ const blockData = [
 		trapdoor: true,
 		woodSound: true,
 		category:"build",
-		onFunctions:"oakTrapdoor"
+		copyPropertiesHere:"oakTrapdoor"
 	},
 	{
 		name:"cherryChair",
@@ -13170,7 +13185,15 @@ const blockData = [
 		transparent:true,
 		shadow:false,
 		solid:false,
-		groundLeaves:true
+		groundLeaves:true,
+		blockStates:[{name:"thick",values:[1,0]}],
+		init:function(){//todo n
+			this.shape = shapes.flat
+			if(this.thickTexture){
+				let block = blockData[this.id + this.blockStatesMap.thick[1]]
+				block.textures = this.thickTexture
+			}
+		}
 	},
 	{
 		name:"driedBirchLeaves",
@@ -13182,7 +13205,8 @@ const blockData = [
 		transparent:true,
 		shadow:false,
 		solid:false,
-		groundLeaves:true
+		groundLeaves:true,
+		init:"driedOakLeaves"
 	},
 	{
 		name:"driedSpruceLeaves",
@@ -13198,6 +13222,7 @@ const blockData = [
 		randomRotate:true,
 		randomRotateTop:true,
 		randomRotateBottom:true,
+		init:"driedOakLeaves"
 	},
 	{
 		name:"strippedCherryWood",
@@ -13309,6 +13334,7 @@ const blockData = [
 		randomRotate:true,
 		randomRotateTop:true,
 		randomRotateBottom:true,
+		init:"driedOakLeaves"
 	},
 	{
 		name:"groundBerries",
@@ -13544,9 +13570,132 @@ const blockData = [
 		rail:true,
 		category:"redstone",
 		flatIcon:true,
+		lastConnectSides: {},
+		isFacing: function(x,y,z,side,setLastConnectSides,world){//are there sides of that rail facing in direction
+			let block = world.getBlock(x,y,z)
+			if(!blockData[block].rail) return false
+			let rot = getBlockState(block,this.blockStatesMap.shape)
+			switch(rot){
+				case "north_south":
+				case "ascending_north":
+				case "ascending_south":
+					if(side === "north" || side === "south") return this.lastConnectSides[setLastConnectSides] = true
+				case "east_west":
+				case "ascending_east":
+				case "ascending_west":
+					if(side === "east" || side === "west") return this.lastConnectSides[setLastConnectSides] = true
+				case "north_east":
+					if(side === "south" || side === "west") return this.lastConnectSides[setLastConnectSides] = true
+				case "south_west":
+					if(side === "north" || side === "east") return this.lastConnectSides[setLastConnectSides] = true
+				case "north_west":
+					if(side === "south" || side === "east") return this.lastConnectSides[setLastConnectSides] = true
+				case "south_east":
+					if(side === "north" || side === "west") return this.lastConnectSides[setLastConnectSides] = true
+			}
+			return false
+		},
+		isConnected: function(x,y,z,world){//returns number of sides connected
+			let block = world.getBlock(x,y,z)
+			if(!blockData[block].rail) return
+			let rot = getBlockState(block,this.blockStatesMap.shape)
+			switch(rot){
+				case "north_south": return this.isFacing(x,y,z+1,"south","north",world) + this.isFacing(x,y,z-1,"north","south",world)
+				case "east_west":  return this.isFacing(x+1,y,z,"west","east",world) + this.isFacing(x-1,y,z,"east","west",world)
+				case "ascending_north": return this.isFacing(x,y+1,z+1,"south","northUp",world) + this.isFacing(x,y,z-1,"north","south",world)
+				case "ascending_south": return this.isFacing(x,y+1,z-1,"north","southUp",world) + this.isFacing(x,y,z+1,"south","north",world)
+				case "ascending_east":  return this.isFacing(x+1,y+1,z,"west","eastUp",world) + this.isFacing(x-1,y,z,"east","west",world)
+				case "ascending_west":  return this.isFacing(x-1,y+1,z,"east","westUp",world) + this.isFacing(x+1,y,z,"west","east",world)
+				case "south_west":  return this.isFacing(x,y,z-1,"north","south",world)+this.isFacing(x-1,y,z,"east","west",world)
+				case "north_east":  return this.isFacing(x,y,z+1,"south","north",world)+this.isFacing(x+1,y,z,"west","east",world)
+				case "south_east":  return this.isFacing(x,y,z-1,"north","south",world)+this.isFacing(x+1,y,z,"west","east",world)
+				case "north_west":  return this.isFacing(x,y,z+1,"south","north",world)+this.isFacing(x-1,y,z,"east","west",world)
+			}
+		},
+		railonupdate: function(x,y,z,b,world){
+			this.lastConnectSides.north = this.lastConnectSides.south = this.lastConnectSides.east = this.lastConnectSides.west = this.lastConnectSides.northUp = this.lastConnectSides.southUp = this.lastConnectSides.eastUp = this.lastConnectSides.westUp = false
+			if(this.isConnected(x,y,z,world) === 2) return
+			let {north:curConnectNorth, south:curConnectSouth, east:curConnectEast, west:curConnectWest, northUp:curConnectNorthUp, southUp:curConnectSouthUp, eastUp:curConnectEastUp, westUp:curConnectWestUp} = this.lastConnectSides
+			//below: is the other rail available for connecting or already connected to this rail
+			let north = this.isConnected(x,y,z+1,world) < 2 || curConnectNorth,
+				south = this.isConnected(x,y,z-1,world) < 2 || curConnectSouth,
+				east = this.isConnected(x+1,y,z,world) < 2 || curConnectEast,
+				west = this.isConnected(x-1,y,z,world) < 2 || curConnectWest,
+				northUp = this.isConnected(x,y+1,z+1,world) < 2 || curConnectNorthUp,
+				southUp = this.isConnected(x,y+1,z-1,world) < 2 || curConnectSouthUp,
+				eastUp = this.isConnected(x+1,y+1,z,world) < 2 || curConnectEastUp,
+				westUp = this.isConnected(x-1,y+1,z,world) < 2 || curConnectWestUp
+			this.lastConnectSides.north = false
+			north = north || this.isConnected(x,y-1,z+1,world) < 2 || this.lastConnectSides.north
+			this.lastConnectSides.south = false
+			south = south || this.isConnected(x,y-1,z-1,world) < 2 || this.lastConnectSides.south
+			this.lastConnectSides.east = false
+			east = east || this.isConnected(x+1,y-1,z,world) < 2 || this.lastConnectSides.east
+			this.lastConnectSides.west = false
+			west = west || this.isConnected(x-1,y-1,z,world) < 2 || this.lastConnectSides.west
+
+			let rot
+			if(northUp){
+				rot = "ascending_north"
+			}else if(eastUp){
+				rot = "ascending_east"
+			}else if(southUp){
+				rot = "ascending_south"
+			}else if(westUp){
+				rot = "ascending_west"
+			}else if(this.name === "rail" && north && east){
+				rot = "north_east"
+			}else if(this.name === "rail" && east && south){
+				rot = "south_east"
+			}else if(this.name === "rail" && south && west){
+				rot = "south_west"
+			}else if(this.name === "rail" && west && north){
+				rot = "north_west"
+			}else if(north || south){
+				rot = "north_south"
+			}else if(east || west){
+				rot = "east_west"
+			}else return
+			target = setBlockState(b,this.blockStatesMap.shape,rot)
+			if(b !== target){
+				world.setBlock(x,y,z,target,false,false,false,true)
+			}
+		},
+		onset: function(x,y,z,world){
+			world.updateBlock(x,y+1,z+1,false,false,null,null,null)
+			world.updateBlock(x,y+1,z-1,false,false,null,null,null)
+			world.updateBlock(x+1,y+1,z,false,false,null,null,null)
+			world.updateBlock(x-1,y+1,z,false,false,null,null,null)
+			world.updateBlock(x,y-1,z+1,false,false,null,null,null)
+			world.updateBlock(x,y-1,z-1,false,false,null,null,null)
+			world.updateBlock(x+1,y-1,z,false,false,null,null,null)
+			world.updateBlock(x-1,y-1,z,false,false,null,null,null)
+			if(this.carryRedstone){
+				let power = world.getRedstoneWirePower(x,y,z)
+				let strong = world.getSurroundingBlockPower(x,y,z) === "strong"
+				if(strong) power = 15
+				world.setTagByName(x,y,z,"power",power)
+				if(power) world.spreadPower(x,y,z,power)
+			}
+		},
+		ondelete:function(x,y,z,prevTags,prev,world){
+			world.updateBlock(x,y+1,z+1)
+			world.updateBlock(x,y+1,z-1)
+			world.updateBlock(x+1,y+1,z)
+			world.updateBlock(x-1,y+1,z)
+			world.updateBlock(x,y-1,z+1)
+			world.updateBlock(x,y-1,z-1)
+			world.updateBlock(x+1,y-1,z)
+			world.updateBlock(x-1,y-1,z)
+			if(this.carryRedstone){
+				const power = getTagBits(prevTags,"power",this.id)
+				if(power) world.unspreadPower(x,y,z,power)
+			}
+		},
 		onupdate:function(x,y,z,b,world,sx,sy,sz){
 			this.railonupdate(x,y,z,b,world)
 		},
+		copyFromProperties:["isFacing,isConnected","railonupdate","onset","ondelete"]
 	},
 	{
 		name:"poweredRail",
@@ -13563,6 +13712,7 @@ const blockData = [
 		category:"redstone",
 		flatIcon:true,
 		carryRedstone:true,
+		copyPropertiesHere:"rail",
 		onupdate:function(x,y,z,b,world,sx,sy,sz){
 			let on = world.getTagByName(x,y,z,"power")
 			if(on && !getBlockState(b,this.blockStatesMap.powered)){
@@ -13593,6 +13743,9 @@ const blockData = [
 		liquidBreakable:"drop",
 		growBonemeal:function(x,y,z,world){
 			world.setBlock(x,y,z, this.id+this.blockStatesMap.age[5])
+		},
+		dropAmount:function(block){
+			return +getBlockState(block, this.blockStatesMap.age) === 5 ? randInt(2,3) : 1
 		}
 	},
 	{
@@ -13874,16 +14027,13 @@ function initBlockData(){
 			data.blockStatesMap = obj
 			blockStateMaps[data.name] = obj
 		}
-		if(data.onFunctions){
-			let other = blockData[blockIds[data.onFunctions]]
-			if(other.onupdate && data.onupdate === undefined) data.onupdate = other.onupdate
-			if(other.onclick && data.onclick === undefined) data.onclick = other.onclick
-			if(other.onpowerupdate && fata.onpowerupdate === undefined) data.onpowerupdate = other.onpowerupdate
-			if(other.onset && data.onset === undefined) data.onset = other.onset
-			if(other.ondelete && data.ondelete === undefined) data.ondelete = other.ondelete
-			if(other.ontagsupdate && data.ontagsupdate === undefined) data.ontagsupdate = other.ontagsupdate
-			if(other.activate && data.activate === undefined) data.activate = other.activate
-			if(other.projectileHit && data.projectileHit === undefined) data.projectileHit = other.projectileHit
+		if(data.copyPropertiesHere){
+			let other = blockData[blockIds[data.copyPropertiesHere]]
+			let arr = other.copyFromProperties || ["onupdate","onclick","onpowerupdate","onset","ondelete","ontagsupdate","activate","projectileHit"]
+			for(let c=0; c<arr.length; c++){
+				let prop = arr[c]
+				if(other[prop] && data[prop] === undefined) data[prop] = other[prop]
+			}
 		}
 	}
 	dataLoad.loadNamespace(dataLoad.data, "min"+"ecr"+"aft", {blockData,BLOCK_COUNT,shapes,textures:textures2,blockIds,compareArr,entityData})
@@ -20422,132 +20572,6 @@ function initBlockDataShapes(){
 			}
 		}
 	}
-
-	const railData = {
-		lastConnectSides: {},
-		isFacing: function(x,y,z,side,setLastConnectSides,world){//are there sides of that rail facing in direction
-			let block = world.getBlock(x,y,z)
-			if(!blockData[block].rail) return false
-			let rot = (block&ROTATION)
-			if((block&isState) === CUBE || (block&isState) === SLAB){
-				if(side === "north" || side === "south"){
-					if(rot === NORTH || rot === SOUTH) return this.lastConnectSides[setLastConnectSides] = true
-				}else{
-					if(rot === EAST || rot === WEST) return this.lastConnectSides[setLastConnectSides] = true
-				}
-			}else{//corner rail
-				if(rot === NORTH){
-					if(side === "south" || side === "west") return this.lastConnectSides[setLastConnectSides] = true
-				}else if(rot === SOUTH){
-					if(side === "north" || side === "east") return this.lastConnectSides[setLastConnectSides] = true
-				}else if(rot === WEST){
-					if(side === "south" || side === "east") return this.lastConnectSides[setLastConnectSides] = true
-				}else if(rot === EAST){
-					if(side === "north" || side === "west") return this.lastConnectSides[setLastConnectSides] = true
-				}
-			}
-			return false
-		},
-		isConnected: function(x,y,z,world){//returns number of sides connected
-			let block = world.getBlock(x,y,z)
-			if(!blockData[block].rail) return
-			let rot = (block&ROTATION)
-			if((block&isState) === CUBE){
-				if(rot === NORTH || rot === SOUTH) return this.isFacing(x,y,z+1,"south","north",world) + this.isFacing(x,y,z-1,"north","south",world)
-				else return this.isFacing(x+1,y,z,"west","east",world) + this.isFacing(x-1,y,z,"east","west",world)
-			}else if((block&isState) === SLAB){
-				if(rot === NORTH) return this.isFacing(x,y+1,z+1,"south","northUp",world) + this.isFacing(x,y,z-1,"north","south",world)
-				else if(rot === SOUTH) return this.isFacing(x,y+1,z-1,"north","southUp",world) + this.isFacing(x,y,z+1,"south","north",world)
-				else if(rot === EAST) return this.isFacing(x+1,y+1,z,"west","eastUp",world) + this.isFacing(x-1,y,z,"east","west",world)
-				else if(rot === WEST) return this.isFacing(x-1,y+1,z,"east","westUp",world) + this.isFacing(x+1,y,z,"west","east",world)
-			}else{//corner rail
-				if(rot === NORTH) return this.isFacing(x,y,z-1,"north","south",world)+this.isFacing(x-1,y,z,"east","west",world)
-				else if(rot === SOUTH) return this.isFacing(x,y,z+1,"south","north",world)+this.isFacing(x+1,y,z,"west","east",world)
-				else if(rot === WEST) return this.isFacing(x,y,z-1,"north","south",world)+this.isFacing(x+1,y,z,"west","east",world)
-				else if(rot === EAST) return this.isFacing(x,y,z+1,"south","north",world)+this.isFacing(x-1,y,z,"east","west",world)
-			}
-		},
-		railonupdate: function(x,y,z,b,world){
-			this.lastConnectSides.north = this.lastConnectSides.south = this.lastConnectSides.east = this.lastConnectSides.west = this.lastConnectSides.northUp = this.lastConnectSides.southUp = this.lastConnectSides.eastUp = this.lastConnectSides.westUp = false
-			if(this.isConnected(x,y,z,world) === 2) return
-			let {north:curConnectNorth, south:curConnectSouth, east:curConnectEast, west:curConnectWest, northUp:curConnectNorthUp, southUp:curConnectSouthUp, eastUp:curConnectEastUp, westUp:curConnectWestUp} = this.lastConnectSides
-			//below: is the other rail available for connecting or already connected to this rail
-			let north = this.isConnected(x,y,z+1,world) < 2 || curConnectNorth,
-				south = this.isConnected(x,y,z-1,world) < 2 || curConnectSouth,
-				east = this.isConnected(x+1,y,z,world) < 2 || curConnectEast,
-				west = this.isConnected(x-1,y,z,world) < 2 || curConnectWest,
-				northUp = this.isConnected(x,y+1,z+1,world) < 2 || curConnectNorthUp,
-				southUp = this.isConnected(x,y+1,z-1,world) < 2 || curConnectSouthUp,
-				eastUp = this.isConnected(x+1,y+1,z,world) < 2 || curConnectEastUp,
-				westUp = this.isConnected(x-1,y+1,z,world) < 2 || curConnectWestUp
-			this.lastConnectSides.north = false
-			north = north || this.isConnected(x,y-1,z+1,world) < 2 || this.lastConnectSides.north
-			this.lastConnectSides.south = false
-			south = south || this.isConnected(x,y-1,z-1,world) < 2 || this.lastConnectSides.south
-			this.lastConnectSides.east = false
-			east = east || this.isConnected(x+1,y-1,z,world) < 2 || this.lastConnectSides.east
-			this.lastConnectSides.west = false
-			west = west || this.isConnected(x-1,y-1,z,world) < 2 || this.lastConnectSides.west
-
-			let target = this.id
-			if(northUp){
-				target |= SLAB | NORTH
-			}else if(eastUp){
-				target |= SLAB | EAST
-			}else if(southUp){
-				target |= SLAB | SOUTH
-			}else if(westUp){
-				target |= SLAB | WEST
-			}else if(this.name === "rail" && north && east){
-				target |= STAIR | SOUTH
-			}else if(this.name === "rail" && east && south){
-				target |= STAIR | WEST
-			}else if(this.name === "rail" && south && west){
-				target |= STAIR | NORTH
-			}else if(this.name === "rail" && west && north){
-				target |= STAIR | EAST
-			}else if(north || south){
-				target |= NORTH
-			}else if(east || west){
-				target |= EAST
-			}else return
-			target |= (b&FLIP)
-			if(b !== target){
-				world.setBlock(x,y,z,target,false,false,false,true)
-			}
-		},
-		onset: function(x,y,z,world){
-			world.updateBlock(x,y+1,z+1,false,false,null,null,null)
-			world.updateBlock(x,y+1,z-1,false,false,null,null,null)
-			world.updateBlock(x+1,y+1,z,false,false,null,null,null)
-			world.updateBlock(x-1,y+1,z,false,false,null,null,null)
-			world.updateBlock(x,y-1,z+1,false,false,null,null,null)
-			world.updateBlock(x,y-1,z-1,false,false,null,null,null)
-			world.updateBlock(x+1,y-1,z,false,false,null,null,null)
-			world.updateBlock(x-1,y-1,z,false,false,null,null,null)
-			if(this.carryRedstone){
-				let power = world.getRedstoneWirePower(x,y,z)
-				let strong = world.getSurroundingBlockPower(x,y,z) === "strong"
-				if(strong) power = 15
-				world.setTagByName(x,y,z,"power",power,false)
-				if(power) world.spreadPower(x,y,z,power)
-			}
-		},
-		ondelete:function(x,y,z,prevTags,prev,world){
-			world.updateBlock(x,y+1,z+1)
-			world.updateBlock(x,y+1,z-1)
-			world.updateBlock(x+1,y+1,z)
-			world.updateBlock(x-1,y+1,z)
-			world.updateBlock(x,y-1,z+1)
-			world.updateBlock(x,y-1,z-1)
-			world.updateBlock(x+1,y-1,z)
-			world.updateBlock(x-1,y-1,z)
-			if(this.carryRedstone){
-				const power = getTagBits(prevTags,"power",this.id)
-				if(power) world.unspreadPower(x,y,z,power)
-			}
-		}
-	}
 	
 	for (let i = 0; i < BLOCK_COUNT; i++) {
 		let baseBlock = blockData[i]
@@ -21239,7 +21263,7 @@ function initBlockDataShapes(){
 			makeBlock(new Array(6).fill("pointedDripstoneDownTipMerge"), shapes.cross, flip, baseBlock)
 			blockData[i | TALLCROSS | FLIP] = flip
 		}
-		if(baseBlock.sign){//todo n: continue moving things below
+		if(baseBlock.sign){
 			slabBlock.shape = shapes.sign
 			slabBlock.textures = baseBlock.textures
 			slabBlock.drop = i
@@ -26365,7 +26389,7 @@ class Section {
 			}
 		}
 	}
-	tick() {
+	tick() {//todo n: move to blockData
 		var world = this.world
 		for (let i = 0; i < 40; i++) {
 			let rnd = Math.random() * this.blocks.length | 0
@@ -32687,7 +32711,7 @@ class World{ // aka trueWorld
 				if(amount === undefined) amount = 1
 				else if(typeof amount === "function") amount = amount(prevBlock)
 				else if(amount.length === 2){
-					amount = round(rand(amount[0], amount[1]))
+					amount = randInt(amount[0], amount[1])
 				}
 				if(holding && blockData[holding].shears && blockData[prevBlock].dropSelfWhenSheared){
 					if(blockData[prevBlock].shearDropAmount){
