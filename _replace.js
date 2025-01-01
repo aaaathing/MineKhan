@@ -54,8 +54,47 @@ sounds
 	}
 
 	console.log("doing")
-	let bid={}
-	for(let i=0;i<bd.length;i++)bid[getProp(bd[i],"nameMcd")||getProp(bd[i],"name")]=i
+	let suffixs={}
+	function addSuffix(s){
+		let o=suffixs
+		let a=s.split("_").reverse()
+		for(let i=0;i<a.length;i++){
+			if(!o[a[i]]) o[a[i]] = {}
+			o=o[a[i]]
+			if(i===a.length-1)o._this=s
+		}
+	}
+	function findSuffix(s){
+		let o=suffixs
+		let a=s.split("_").reverse()
+		for(let i=0;i<a.length;i++){
+			if(!o[a[i]]){
+				if(!i)return
+				break
+			}
+			o=o[a[i]]
+		}
+		return recurse(o).next().value
+	}
+	function* recurse(o){
+		for(let i in o){
+			if(typeof o[i]==="object")yield*recurse(o[i])
+			else yield o[i]
+		}
+	}
+	let bid={},bidn={},copiesProps={}
+	for(let i=0;i<bd.length;i++){
+		let n=getProp(bd[i],"name"), nm=getProp(bd[i],"nameMcd")||n
+		bid[nm]=i
+		bidn[n]=i
+		let copyProp=getProp(bd[i],"copyPropertiesHere")
+		if(copyProp)copiesProps[copyProp]=true
+	}
+	for(let i=0;i<bd.length;i++){
+		let n=getProp(bd[i],"name"), nm=getProp(bd[i],"nameMcd")||n
+		if(copiesProps[n])addSuffix(nm)
+	}
+
 	let bdBeforeEnd = bd[bd.length-1].range[1]
 	let prevBs={}/*prev block states*/, prevHto={}
 	let replace=[]
@@ -68,14 +107,14 @@ sounds
 		}
 		let pos = getPropValPos(o,key)
 		if(pos){
-			if(bstr.slice(pos[0],pos[1]) !== val) replace.push([pos[0],pos[1],val])
+			if(bstr.slice(pos[0],pos[1]) !== val) replace.push([pos[0],pos[1],val, o.addnewIdx||0])
 		}else{
 			let i
 			for(let a of after){
 				i=getPropValPos(o,a)
 				if(i)break
 			}
-			replace.push([i[1],i[1], ","+space+key+": "+val])
+			replace.push([i[1],i[1], ","+space+key+": "+val, o.addnewIdx||0])
 		}
 	}
 
@@ -90,11 +129,14 @@ sounds
 			isnew=true
 			let nameMcd = nb.name, name = camelCase(nameMcd)
 			b = {properties:[{key:{name:"name"},value:{value:name,range:[bdBeforeEnd,bdBeforeEnd]}}],range:[bdBeforeEnd,bdBeforeEnd]}
-			let str = ",\n\t{"
-			str += "\n\t\tname:"+JSON.stringify(name)+","
-			if(name !== nameMcd) str += "\n\t\tnameMcd:"+JSON.stringify(nameMcd)+","
-			str += "\n\t\tName:"+JSON.stringify(nb.displayName)
+			let str = ",\n\t{\n\t\tname:"+JSON.stringify(name)
+			if(name !== nameMcd) str += ",\n\t\tnameMcd:"+JSON.stringify(nameMcd)
+			str += ",\n\t\tName:"+JSON.stringify(nb.displayName)
+			let similar=bd[bid[findSuffix(nb.name)]] //,snext
+			if(similar) str += ",\n\t\tcopyPropertiesHere:"+JSON.stringify(getProp(similar,"name"))
 			replace.push([bdBeforeEnd,bdBeforeEnd, str, addnewIdx])
+			b.addnewIdx = addnewIdx
+			bid[nameMcd]=bd.length,bd.push(b)
 		}
 		const space = isnew || bstr.slice(...b.range).includes("\n") ? "\n\t\t":" "
 		b.space = space
@@ -129,11 +171,13 @@ sounds
 			isnew=true
 			let nameMcd = nb.name, name = camelCase(nameMcd)
 			b = {properties:[{key:{name:"name"},value:{value:name,range:[bdBeforeEnd,bdBeforeEnd]}}],range:[bdBeforeEnd,bdBeforeEnd]}
-			let str = ",\n{"
+			let str = ",\n\t{"
 			str += " name:"+JSON.stringify(name)+","
 			if(name !== nameMcd) str += " nameMcd:"+JSON.stringify(nameMcd)+","
 			str += " Name:"+JSON.stringify(nb.displayName)
 			replace.push([bdBeforeEnd,bdBeforeEnd, str, addnewIdx])
+			b.addnewIdx = addnewIdx
+			bid[nameMcd]=bd.length,bd.push(b)
 		}
 		const space = isnew ? " " : ("space" in b) ? b.space : bstr.slice(...b.range).includes("\n") ? "\n\t\t":" "
 		b.space = space
