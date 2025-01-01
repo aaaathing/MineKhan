@@ -8,20 +8,34 @@ async function update(){
 replace old blockStates
 add all blocks & items
 	item models
+models rotate (v.x, v.y, entity)
 add custom blockStates and shapes for them
 	fern, wall carpet, etc.
 craft
 add all entities
 	fix some textures (sheep)
+animated textures
+semi transparent textures
 new save format using block names and block state names
 sounds
 */
 	// CUBE|SLAB|STAIR|CROSS|TALLCROSS|DOOR|TORCH|LANTERN|LANTERNHANG|BEACON|CACTUS|PANE|PORTAL|WALLFLAT|TRAPDOOR|TRAPDOOROPEN|FENCE|WALLPOST|BUTTON|CHAIN|POT|POTCROSS|CORNERSTAIRIN|CORNERSTAIROUT|VERTICALSLAB|LAYER1|LAYER2|LAYER3|LAYER4|LAYER5|LAYER6|LAYER7|LAYER8|FLIP|NORTH|SOUTH|EAST|WEST|ROTATION|isCube|isState
 	var esprima = require('esprima')
 
+	const materialToCategory = { //see https://github.com/PrismarineJS/minecraft-data/blob/master/data/pc/1.21.3/materials.json
+		"mineable/pickaxe":"build",
+		"incorrect_for_wooden_tool":"build",
+		"mineable/shovel":"nature",
+		"ground":"nature",
+		"plant":"nature",
+		"leaves":"nature"
+	}
+	const materialToType = {}
+
 	let str=fs.readFileSync("public/minekhan/beta/allupdate/_mksrc10test-world.js","utf-8")
 	let nbd=await fetch("https://github.com/PrismarineJS/minecraft-data/raw/refs/heads/master/data/pc/1.21.3/blocks.json").then(r=>r.json())
 	let nitem=await fetch("https://github.com/PrismarineJS/minecraft-data/raw/refs/heads/master/data/pc/1.21.3/items.json").then(r=>r.json())
+	let nfd=await fetch("https://github.com/PrismarineJS/minecraft-data/raw/refs/heads/master/data/pc/1.21.3/foods.json").then(r=>r.json())
 	let start=str.indexOf('const blockData')
 	let end=str.indexOf('const BLOCK_COUNT')
 	let bstr=str.slice(start,end)
@@ -45,6 +59,7 @@ sounds
 	let bdBeforeEnd = bd[bd.length-1].range[1]
 	let prevBs={}/*prev block states*/, prevHto={}
 	let replace=[]
+	let notitem = {}
 	let it=0
 	function replaceProp(o,key,val,space, after, prevs=null){
 		if(prevs){
@@ -63,21 +78,26 @@ sounds
 			replace.push([i[1],i[1], ","+space+key+": "+val])
 		}
 	}
+
+	let addnewIdx = 0
+	// ----------------------------------
 	//todo: put loop for adding new ones before the loop below (so blockIds is correct)
 	for(let nb of nbd){//new block
 		let b=bd[bid[nb.name]] //block
-		let isnew
+		notitem[nb.name]=true
+		let isnew=false
 		if(!b){
 			isnew=true
-			b = {properties:[{key:{name:"name"},value:{value:"",range:[bdBeforeEnd,bdBeforeEnd]}}]}
-			let str = "\n\t{"
 			let nameMcd = nb.name, name = camelCase(nameMcd)
-			str += "\n\t\tname:"+JSON.stringify(name)
-			if(name !== nameMcd) str += "\n\t\tname:"+JSON.stringify(nameMcd)
+			b = {properties:[{key:{name:"name"},value:{value:name,range:[bdBeforeEnd,bdBeforeEnd]}}],range:[bdBeforeEnd,bdBeforeEnd]}
+			let str = ",\n\t{"
+			str += "\n\t\tname:"+JSON.stringify(name)+","
+			if(name !== nameMcd) str += "\n\t\tnameMcd:"+JSON.stringify(nameMcd)+","
 			str += "\n\t\tName:"+JSON.stringify(nb.displayName)
-			replace.push([bdBeforeEnd,bdBeforeEnd, str])
+			replace.push([bdBeforeEnd,bdBeforeEnd, str, addnewIdx])
 		}
-		const space=bstr.slice(...b.range).includes("\n")?"\n\t\t":" "
+		const space = isnew || bstr.slice(...b.range).includes("\n") ? "\n\t\t":" "
+		b.space = space
 		for(let s of nb.states){
 			if(s.type === "bool")s.values=[false,true]
 			delete s.num_values;delete s.type
@@ -90,15 +110,56 @@ sounds
 		if(nb.hardness) replaceProp(b,"hardness",nb.hardness===-1?"Infinity":nb.hardness,space,["Name","nameMcd","name"])
 		if(nb.resistance) replaceProp(b,"blastResistance",nb.resistance,space,["Name","nameMcd","name"])
 		if(nb.material !== "default") replaceProp(b,"material",JSON.stringify(nb.material),space,["Name","nameMcd","name"])
+		if(nb.material && !getProp(b,"category"))for(let m of nb.material.split(";")){
+			if(materialToCategory[m]) replaceProp(b,"category",JSON.stringify(materialToCategory[m]),space,["Name","nameMcd","name"])
+		}
 		if(nb.stackSize !== 64) replaceProp(b,"stackSize",nb.stackSize,space,["Name","nameMcd","name"])
 		if(nb.harvestTools) replaceProp(b,"harvestToolsNames",JSON.stringify(Object.keys(nb.harvestTools).map(r=>getProp(bd[bid[nitem[r].name]],"name"))),space,["Name","nameMcd","name"], prevHto)
 		//if(nbs){it++;if(it>5)break}
 		if(isnew){
-			replace.push([bdBeforeEnd,bdBeforeEnd,"\n\t},"])
+			replace.push([bdBeforeEnd,bdBeforeEnd, "\n\t}", addnewIdx+=100])
 		}
 	}
+	// ----------------------------------
+
+	for(let nb of nitem){
+		let b=bd[bid[nb.name]] //block
+		let isnew=false
+		if(!b){
+			isnew=true
+			let nameMcd = nb.name, name = camelCase(nameMcd)
+			b = {properties:[{key:{name:"name"},value:{value:name,range:[bdBeforeEnd,bdBeforeEnd]}}],range:[bdBeforeEnd,bdBeforeEnd]}
+			let str = ",\n{"
+			str += " name:"+JSON.stringify(name)+","
+			if(name !== nameMcd) str += " nameMcd:"+JSON.stringify(nameMcd)+","
+			str += " Name:"+JSON.stringify(nb.displayName)
+			replace.push([bdBeforeEnd,bdBeforeEnd, str, addnewIdx])
+		}
+		const space = isnew ? " " : ("space" in b) ? b.space : bstr.slice(...b.range).includes("\n") ? "\n\t\t":" "
+		b.space = space
+		//if(nb.texture) replaceProp(b,"textures",nb.texture,space,["Name","nameMcd","name"])
+		if(!notitem[nb.name]){
+			replaceProp(b,"item","true",space,["Name","nameMcd","name"])
+			if(nb.stackSize !== 64) replaceProp(b,"stackSize",nb.stackSize,space,["Name","nameMcd","name"])
+			if(nb.maxDurability) replaceProp(b,"durability",nb.maxDurability,space,["Name","nameMcd","name"])
+		}
+		if(isnew){
+			replace.push([bdBeforeEnd,bdBeforeEnd, " }", addnewIdx+=100])
+		}
+	}
+	// ----------------------------------
+	for(let nb of nfd){//food
+		let b=bd[bid[nb.name]] //block
+		if(!b)continue
+		const space = b.space
+		replaceProp(b,"edible","true",space,["Name","nameMcd","name"])
+		replaceProp(b,"food",nb.foodPoints,space,["Name","nameMcd","name"])
+		replaceProp(b,"saturation",nb.saturation,space,["Name","nameMcd","name"])
+	}
+	// ----------------------------------
+
 	console.log("replacing",replace.length)
-	replace.sort((a,b)=>a[0]-b[0])
+	replace.sort((a,b) => (a[0]-b[0])||(a[3]-b[3])||0)
 	let nbstr="",previ=0
 	for(let i of replace){
 		nbstr+=bstr.slice(previ,i[0])
@@ -111,6 +172,9 @@ sounds
 }
 function camelCase(s) {
 	return s.replace(/([-_][a-z])/ig, c => c.toUpperCase().replace(/-|_/, ''))
+}
+function titleCase(s) {
+	return s.replace(/(^[a-z]|[-_][a-z])/ig, c => c.toUpperCase().replace(/-|_/, ' '))
 }
 
 async function addName(){

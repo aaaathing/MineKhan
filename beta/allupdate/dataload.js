@@ -87,6 +87,8 @@ function loadNamespaceBlocks(allData, namespace, {
 	function getTexture(name, textureSelectors){
 		if(name.startsWith("#")){
 			return textureSelectors[name.substring(1)]
+		}else if(textureSelectors[name]){
+			return textureSelectors[name]
 		}else{
 			name = fixResourceLocation(name)
 			if(!textures[name]) textures[name] = getFromData(name, "textures/")

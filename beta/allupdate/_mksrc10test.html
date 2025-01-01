@@ -5501,7 +5501,7 @@ if time is 0, it will update every time
 				if(block.rarity === "epic") txt += "\n§dEpic"
 			}
 			if(block.category) txt += "\n§9"+blockCategories[block.category]
-			if(block.type) txt += "\n§c"+blockCategories[block.type]
+			//if(block.type) txt += "\n§c"+blockCategories[block.type]
 			if(blockInfoIds[block.id]){
 				txt += "\n§r"+blockInfo[blockInfoIds[block.id]].data
 			}
@@ -12003,21 +12003,22 @@ return//*/
 		let mode = adjholding < isCube && !blockData[adjholding].item ? blockMode : 0
 		let rotate = 0, flip = 0
 		let pi = Math.PI / 4
-		if (p.ry <= pi) {} // North; default
-		else if (p.ry < 3 * pi) {
-			rotate = WEST
+		if (p.ry <= pi) {
+			rotate = "north"
+		}else if (p.ry < 3 * pi) {
+			rotate = "west"
 		} else if (p.ry < 5 * pi) {
-			rotate = SOUTH
+			rotate = "south"
 		} else if (p.ry < 7 * pi) {
-			rotate = EAST
+			rotate = "east"
 		}
 		if (hitBox.face !== "top" && (hitBox.face === "bottom" || (p.direction.y * hitBox.closest + p.y+p.cOffsetY) % 1 < 0.5)) {
 			flip = FLIP
 		}
 		let predictBlock = adjholding|mode
 		let shape = adjholding && blockData[predictBlock].shape
-		if (shape && shape.rotate) predictBlock |= rotate
-		if (shape && shape.flip) predictBlock |= flip
+		//if (shape && shape.rotate) predictBlock |= rotate//todo n
+		//if (shape && shape.flip) predictBlock |= flip
     
 		if(hitBox.pos){
 			let onclick = blockData[cblock].onclientclick
@@ -12805,184 +12806,196 @@ r 11 y  n  n  n
 			let tint
 			let b = world.getBiome(x,y,z,dimension)
 			let t = block.tint
-			tint = t[b] || t.default
-			if(performFast){
-				ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
-				ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
-				ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
-				return ret
-			}
-			const north = t[world.getBiome(x,y,z-1,dimension)] || t.default
-			const south = t[world.getBiome(x,y,z+1,dimension)] || t.default
-			const east = t[world.getBiome(x-1,y,z,dimension)] || t.default
-			const west = t[world.getBiome(x+1,y,z,dimension)] || t.default
-			const northeast = t[world.getBiome(x-1,y,z-1,dimension)] || t.default
-			const southeast = t[world.getBiome(x-1,y,z+1,dimension)] || t.default
-			const northwest = t[world.getBiome(x+1,y,z-1,dimension)] || t.default
-			const southwest = t[world.getBiome(x+1,y,z+1,dimension)] || t.default
-			let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
-			if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
-				noisene = (tintNoise.noise2d((x-0.5)*0.1,(z-0.5)*0.1)>0)*3
-				noisese = (tintNoise.noise2d((x-0.5)*0.1,(z+0.5)*0.1)>0)*3
-				noisenw = (tintNoise.noise2d((x+0.5)*0.1,(z-0.5)*0.1)>0)*3
-				noisesw = (tintNoise.noise2d((x+0.5)*0.1,(z+0.5)*0.1)>0)*3
-			}
-			averageTint(ret,0,tint,north,east,northeast,noisene)
-			averageTint(ret,3,tint,north,west,northwest,noisenw)
-			averageTint(ret,6,tint,south,west,southwest,noisesw)
-			averageTint(ret,9,tint,south,east,southeast,noisese)
+			if(t){
+				tint = t[b] || t.default
+				if(performFast){
+					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
+					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
+					ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
+					return ret
+				}
+				const north = t[world.getBiome(x,y,z-1,dimension)] || t.default
+				const south = t[world.getBiome(x,y,z+1,dimension)] || t.default
+				const east = t[world.getBiome(x-1,y,z,dimension)] || t.default
+				const west = t[world.getBiome(x+1,y,z,dimension)] || t.default
+				const northeast = t[world.getBiome(x-1,y,z-1,dimension)] || t.default
+				const southeast = t[world.getBiome(x-1,y,z+1,dimension)] || t.default
+				const northwest = t[world.getBiome(x+1,y,z-1,dimension)] || t.default
+				const southwest = t[world.getBiome(x+1,y,z+1,dimension)] || t.default
+				let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
+				if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
+					noisene = (tintNoise.noise2d((x-0.5)*0.1,(z-0.5)*0.1)>0)*3
+					noisese = (tintNoise.noise2d((x-0.5)*0.1,(z+0.5)*0.1)>0)*3
+					noisenw = (tintNoise.noise2d((x+0.5)*0.1,(z-0.5)*0.1)>0)*3
+					noisesw = (tintNoise.noise2d((x+0.5)*0.1,(z+0.5)*0.1)>0)*3
+				}
+				averageTint(ret,0,tint,north,east,northeast,noisene)
+				averageTint(ret,3,tint,north,west,northwest,noisenw)
+				averageTint(ret,6,tint,south,west,southwest,noisesw)
+				averageTint(ret,9,tint,south,east,southeast,noisese)
+			}else this.none(ret)
 			return ret
     },
     top: function(x,y,z,ret,dimension,block,tags){
 			let tint
 			let b = world.getBiome(x,y,z,dimension)
 			let t = block.tint
-			tint = t[b] || t.default
-			if(performFast){
-				ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
-				ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
-				ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
-				return ret
-			}
-			const north = t[world.getBiome(x,y,z-1,dimension)] || t.default
-			const south = t[world.getBiome(x,y,z+1,dimension)] || t.default
-			const east = t[world.getBiome(x-1,y,z,dimension)] || t.default
-			const west = t[world.getBiome(x+1,y,z,dimension)] || t.default
-			const northeast = t[world.getBiome(x-1,y,z-1,dimension)] || t.default
-			const southeast = t[world.getBiome(x-1,y,z+1,dimension)] || t.default
-			const northwest = t[world.getBiome(x+1,y,z-1,dimension)] || t.default
-			const southwest = t[world.getBiome(x+1,y,z+1,dimension)] || t.default
-			let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
-			if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
-				noisene = (tintNoise.noise2d((x-0.5)*0.1,(z-0.5)*0.1)>0)*3
-				noisese = (tintNoise.noise2d((x-0.5)*0.1,(z+0.5)*0.1)>0)*3
-				noisenw = (tintNoise.noise2d((x+0.5)*0.1,(z-0.5)*0.1)>0)*3
-				noisesw = (tintNoise.noise2d((x+0.5)*0.1,(z+0.5)*0.1)>0)*3
-			}
-			averageTint(ret,0,tint,south,east,southeast,noisese)
-			averageTint(ret,3,tint,south,west,southwest,noisesw)
-			averageTint(ret,6,tint,north,west,northwest,noisenw)
-			averageTint(ret,9,tint,north,east,northeast,noisene)
+			if(t){
+				tint = t[b] || t.default
+				if(performFast){
+					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
+					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
+					ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
+					return ret
+				}
+				const north = t[world.getBiome(x,y,z-1,dimension)] || t.default
+				const south = t[world.getBiome(x,y,z+1,dimension)] || t.default
+				const east = t[world.getBiome(x-1,y,z,dimension)] || t.default
+				const west = t[world.getBiome(x+1,y,z,dimension)] || t.default
+				const northeast = t[world.getBiome(x-1,y,z-1,dimension)] || t.default
+				const southeast = t[world.getBiome(x-1,y,z+1,dimension)] || t.default
+				const northwest = t[world.getBiome(x+1,y,z-1,dimension)] || t.default
+				const southwest = t[world.getBiome(x+1,y,z+1,dimension)] || t.default
+				let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
+				if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
+					noisene = (tintNoise.noise2d((x-0.5)*0.1,(z-0.5)*0.1)>0)*3
+					noisese = (tintNoise.noise2d((x-0.5)*0.1,(z+0.5)*0.1)>0)*3
+					noisenw = (tintNoise.noise2d((x+0.5)*0.1,(z-0.5)*0.1)>0)*3
+					noisesw = (tintNoise.noise2d((x+0.5)*0.1,(z+0.5)*0.1)>0)*3
+				}
+				averageTint(ret,0,tint,south,east,southeast,noisese)
+				averageTint(ret,3,tint,south,west,southwest,noisesw)
+				averageTint(ret,6,tint,north,west,northwest,noisenw)
+				averageTint(ret,9,tint,north,east,northeast,noisene)
+			}else this.none(ret)
 			return ret
     },
     north: function(x,y,z,ret,dimension,block,tags){
 			let tint
 			let b = world.getBiome(x,y,z,dimension)
 			let t = block.tint
-			tint = t[b] || t.default
-			if(performFast){
-				ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
-				ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
-				ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
-				return ret
-			}
-			const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
-			const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
-			const east = t[world.getBiome(x+1,y,z,dimension)] || t.default
-			const west = t[world.getBiome(x-1,y,z,dimension)] || t.default
-			const northeast = t[world.getBiome(x+1,y+1,z,dimension)] || t.default
-			const southeast = t[world.getBiome(x+1,y-1,z,dimension)] || t.default
-			const northwest = t[world.getBiome(x-1,y+1,z,dimension)] || t.default
-			const southwest = t[world.getBiome(x-1,y-1,z,dimension)] || t.default
-			let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
-			if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
-				noisene = noisese = (tintNoise.noise2d((x+0.5)*0.1,z*0.1)>0)*3
-				noisenw = noisesw = (tintNoise.noise2d((x-0.5)*0.1,z*0.1)>0)*3
-			}
-			averageTint(ret,0,tint,north,east,northeast,noisene)
-			averageTint(ret,3,tint,north,west,northwest,noisenw)
-			averageTint(ret,6,tint,south,west,southwest,noisesw)
-			averageTint(ret,9,tint,south,east,southeast,noisese)
+			if(t){
+				tint = t[b] || t.default
+				if(performFast){
+					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
+					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
+					ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
+					return ret
+				}
+				const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
+				const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
+				const east = t[world.getBiome(x+1,y,z,dimension)] || t.default
+				const west = t[world.getBiome(x-1,y,z,dimension)] || t.default
+				const northeast = t[world.getBiome(x+1,y+1,z,dimension)] || t.default
+				const southeast = t[world.getBiome(x+1,y-1,z,dimension)] || t.default
+				const northwest = t[world.getBiome(x-1,y+1,z,dimension)] || t.default
+				const southwest = t[world.getBiome(x-1,y-1,z,dimension)] || t.default
+				let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
+				if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
+					noisene = noisese = (tintNoise.noise2d((x+0.5)*0.1,z*0.1)>0)*3
+					noisenw = noisesw = (tintNoise.noise2d((x-0.5)*0.1,z*0.1)>0)*3
+				}
+				averageTint(ret,0,tint,north,east,northeast,noisene)
+				averageTint(ret,3,tint,north,west,northwest,noisenw)
+				averageTint(ret,6,tint,south,west,southwest,noisesw)
+				averageTint(ret,9,tint,south,east,southeast,noisese)
+			}else this.none(ret)
 			return ret
     },
     south: function(x,y,z,ret,dimension,block,tags){
 			let tint
 			let b = world.getBiome(x,y,z,dimension)
 			let t = block.tint
-			tint = t[b] || t.default
-			if(performFast){
-				ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
-				ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
-				ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
-				return ret
-			}
-			const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
-			const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
-			const east = t[world.getBiome(x-1,y,z,dimension)] || t.default
-			const west = t[world.getBiome(x+1,y,z,dimension)] || t.default
-			const northeast = t[world.getBiome(x-1,y+1,z,dimension)] || t.default
-			const southeast = t[world.getBiome(x-1,y-1,z,dimension)] || t.default
-			const northwest = t[world.getBiome(x+1,y+1,z,dimension)] || t.default
-			const southwest = t[world.getBiome(x+1,y-1,z,dimension)] || t.default
-			let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
-			if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
-				noisene = noisese = (tintNoise.noise2d((x-0.5)*0.1,z*0.1)>0)*3
-				noisenw = noisesw = (tintNoise.noise2d((x+0.5)*0.1,z*0.1)>0)*3
-			}
-			averageTint(ret,0,tint,north,east,northeast,noisene)
-			averageTint(ret,3,tint,north,west,northwest,noisenw)
-			averageTint(ret,6,tint,south,west,southwest,noisesw)
-			averageTint(ret,9,tint,south,east,southeast,noisese)
+			if(t){
+				tint = t[b] || t.default
+				if(performFast){
+					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
+					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
+					ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
+					return ret
+				}
+				const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
+				const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
+				const east = t[world.getBiome(x-1,y,z,dimension)] || t.default
+				const west = t[world.getBiome(x+1,y,z,dimension)] || t.default
+				const northeast = t[world.getBiome(x-1,y+1,z,dimension)] || t.default
+				const southeast = t[world.getBiome(x-1,y-1,z,dimension)] || t.default
+				const northwest = t[world.getBiome(x+1,y+1,z,dimension)] || t.default
+				const southwest = t[world.getBiome(x+1,y-1,z,dimension)] || t.default
+				let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
+				if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
+					noisene = noisese = (tintNoise.noise2d((x-0.5)*0.1,z*0.1)>0)*3
+					noisenw = noisesw = (tintNoise.noise2d((x+0.5)*0.1,z*0.1)>0)*3
+				}
+				averageTint(ret,0,tint,north,east,northeast,noisene)
+				averageTint(ret,3,tint,north,west,northwest,noisenw)
+				averageTint(ret,6,tint,south,west,southwest,noisesw)
+				averageTint(ret,9,tint,south,east,southeast,noisese)
+			}else this.none(ret)
 			return ret
     },
     east: function(x,y,z,ret,dimension,block,tags){
 			let tint
 			let b = world.getBiome(x,y,z,dimension)
 			let t = block.tint
-			tint = t[b] || t.default
-			if(performFast){
-				ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
-				ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
-				ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
-				return ret
-			}
-			const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
-			const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
-			const east = t[world.getBiome(x,y,z-1,dimension)] || t.default
-			const west = t[world.getBiome(x,y,z+1,dimension)] || t.default
-			const northeast = t[world.getBiome(x,y+1,z-1,dimension)] || t.default
-			const southeast = t[world.getBiome(x,y-1,z-1,dimension)] || t.default
-			const northwest = t[world.getBiome(x,y+1,z+1,dimension)] || t.default
-			const southwest = t[world.getBiome(x,y-1,z+1,dimension)] || t.default
-			let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
-			if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
-				noisene = noisese = (tintNoise.noise2d(x*0.1,(z-0.5)*0.1)>0)*3
-				noisenw = noisesw = (tintNoise.noise2d(x*0.1,(z+0.5)*0.1)>0)*3
-			}
-			averageTint(ret,0,tint,north,east,northeast,noisene)
-			averageTint(ret,3,tint,north,west,northwest,noisenw)
-			averageTint(ret,6,tint,south,west,southwest,noisesw)
-			averageTint(ret,9,tint,south,east,southeast,noisese)
+			if(t){
+				tint = t[b] || t.default
+				if(performFast){
+					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
+					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
+					ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
+					return ret
+				}
+				const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
+				const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
+				const east = t[world.getBiome(x,y,z-1,dimension)] || t.default
+				const west = t[world.getBiome(x,y,z+1,dimension)] || t.default
+				const northeast = t[world.getBiome(x,y+1,z-1,dimension)] || t.default
+				const southeast = t[world.getBiome(x,y-1,z-1,dimension)] || t.default
+				const northwest = t[world.getBiome(x,y+1,z+1,dimension)] || t.default
+				const southwest = t[world.getBiome(x,y-1,z+1,dimension)] || t.default
+				let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
+				if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
+					noisene = noisese = (tintNoise.noise2d(x*0.1,(z-0.5)*0.1)>0)*3
+					noisenw = noisesw = (tintNoise.noise2d(x*0.1,(z+0.5)*0.1)>0)*3
+				}
+				averageTint(ret,0,tint,north,east,northeast,noisene)
+				averageTint(ret,3,tint,north,west,northwest,noisenw)
+				averageTint(ret,6,tint,south,west,southwest,noisesw)
+				averageTint(ret,9,tint,south,east,southeast,noisese)
+			}else this.none(ret)
 			return ret
     },
     west: function(x,y,z,ret,dimension,block,tags){
 			let tint
 			let b = world.getBiome(x,y,z,dimension)
 			let t = block.tint
-			tint = t[b] || t.default
-			if(performFast){
-				ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
-				ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
-				ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
-				return ret
-			}
-			const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
-			const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
-			const east = t[world.getBiome(x,y,z+1,dimension)] || t.default
-			const west = t[world.getBiome(x,y,z-1,dimension)] || t.default
-			const northeast = t[world.getBiome(x,y+1,z+1,dimension)] || t.default
-			const southeast = t[world.getBiome(x,y-1,z+1,dimension)] || t.default
-			const northwest = t[world.getBiome(x,y+1,z-1,dimension)] || t.default
-			const southwest = t[world.getBiome(x,y-1,z-1,dimension)] || t.default
-			let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
-			if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
-				noisene = noisese = (tintNoise.noise2d(x*0.1,(z+0.5)*0.1)>0)*3
-				noisenw = noisesw = (tintNoise.noise2d(x*0.1,(z-0.5)*0.1)>0)*3
-			}
-			averageTint(ret,0,tint,north,east,northeast,noisene)
-			averageTint(ret,3,tint,north,west,northwest,noisenw)
-			averageTint(ret,6,tint,south,west,southwest,noisesw)
-			averageTint(ret,9,tint,south,east,southeast,noisese)
+			if(t){
+				tint = t[b] || t.default
+				if(performFast){
+					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
+					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
+					ret[2] = ret[5] = ret[8] = ret[11] = tint[2]
+					return ret
+				}
+				const north = t[world.getBiome(x,y+1,z,dimension)] || t.default
+				const south = t[world.getBiome(x,y-1,z,dimension)] || t.default
+				const east = t[world.getBiome(x,y,z+1,dimension)] || t.default
+				const west = t[world.getBiome(x,y,z-1,dimension)] || t.default
+				const northeast = t[world.getBiome(x,y+1,z+1,dimension)] || t.default
+				const southeast = t[world.getBiome(x,y-1,z+1,dimension)] || t.default
+				const northwest = t[world.getBiome(x,y+1,z-1,dimension)] || t.default
+				const southwest = t[world.getBiome(x,y-1,z-1,dimension)] || t.default
+				let noisene = 0, noisese = 0, noisenw = 0, noisesw = 0
+				if(max(north.length,south.length,east.length,west.length,northeast.length,southeast.length,northwest.length,southwest.length)>3){
+					noisene = noisese = (tintNoise.noise2d(x*0.1,(z+0.5)*0.1)>0)*3
+					noisenw = noisesw = (tintNoise.noise2d(x*0.1,(z-0.5)*0.1)>0)*3
+				}
+				averageTint(ret,0,tint,north,east,northeast,noisene)
+				averageTint(ret,3,tint,north,west,northwest,noisenw)
+				averageTint(ret,6,tint,south,west,southwest,noisesw)
+				averageTint(ret,9,tint,south,east,southeast,noisese)
+			}else this.none(ret)
 			return ret
     },
   }
