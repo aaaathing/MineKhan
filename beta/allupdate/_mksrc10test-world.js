@@ -2619,7 +2619,7 @@ const blockData = [
 		copyPropertiesHere:"oakDoor"
 	},
 	
-	{
+	{//todo n: wall torch
 		name: "torch",
 		Name:"Torch",
 		transparent: true,
@@ -2658,7 +2658,11 @@ const blockData = [
 		lantern: true,
 		category:"decoration",
 		digSound: ["lantern.dig1", "lantern.dig2", "lantern.dig3", "lantern.dig4", "lantern.dig5", "lantern.dig6"],
-		placeSound: ["lantern.place1", "lantern.place2","lantern.place3","lantern.place4","lantern.place5","lantern.place6"]
+		placeSound: ["lantern.place1", "lantern.place2","lantern.place3","lantern.place4","lantern.place5","lantern.place6"],
+		useAs:function(x,y,z,block,face,world){
+			if(world.getBlock(x,y+1,z)) return this.id+this.blockStatesMap.hanging.true
+			else return this.id+this.blockStatesMap.hanging.false
+		}
 	},
 	{
 		name: "soulLantern",
@@ -2676,7 +2680,8 @@ const blockData = [
 		lantern: true,
 		category:"decoration",
 		digSound: ["lantern.dig1", "lantern.dig2", "lantern.dig3", "lantern.dig4", "lantern.dig5", "lantern.dig6"],
-		placeSound: ["lantern.place1", "lantern.place2","lantern.place3","lantern.place4","lantern.place5","lantern.place6"]
+		placeSound: ["lantern.place1", "lantern.place2","lantern.place3","lantern.place4","lantern.place5","lantern.place6"],
+		copyPropertiesHere:"lantern"
 	},
 	
 	{
@@ -2740,7 +2745,7 @@ const blockData = [
 		category:"nature"
 	},
 	
-	{
+	{//todo n: sideways pane, all color panes
 		name: "glassPane",
 		nameMcd:"glass_pane",
 		Name:"Glass Pane",
@@ -3092,6 +3097,7 @@ const blockData = [
 		hardness: 5,
 		blastResistance: 6,
 		material: "mineable/pickaxe", category:"build",transparent:true, shadow:false, chain:true, iconTexture:"chainIcon",
+		copyPropertiesHere:"oakLog",
 		digSound: ["chain.dig1", "chain.dig2", "chain.dig3", "chain.dig4"],
 		stepSound: ["chain.step1", "chain.step2","chain.step3","chain.step4","chain.step5","chain.step6"]},
 	{ name: "warpedPlanks", nameMcd:"warped_planks", Name:"Warped Planks", blastResistance: 3, material: "mineable/axe", hardness:2, type:"wood",category:"build", woodSound:true, craftSlabs:true, craftStairs:true},
@@ -3588,7 +3594,7 @@ const blockData = [
 		hardness:3,
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true
 	},
-	{
+	{//todo n: placing potted version of flowers
 		name: "flowerPot",
 		nameMcd:"flower_pot",
 		Name:"Flower Pot",
@@ -4957,7 +4963,17 @@ const blockData = [
 		durability: 59,
 		mineSpeed:2,
 		attackDamage: 2,
-		category:"tools"
+		category:"tools",
+		serveronuse:function(x,y,z, block,world,face,item,p){
+			if(block === blockIds.grass || block === blockIds.dirt || block === blockIds.rootedDirt || block === blockIds.mycelium || block === blockIds.podzol){
+				world.setBlock(x,y,z,blockIds.dirtPath)
+				item.durability --
+			}
+			if(blockData[block].campfire){
+				world.setBlock(x,y,z, setBlockState(block,blockData[block].blockStatesMap.lit, false))
+				item.durability --
+			}
+		}
 	},
 	{
 		name:"stoneShovel",
@@ -4969,7 +4985,8 @@ const blockData = [
 		mineSpeed:3.6,
 		attackDamage: 4,
 		repairMaterial:"cobblestone",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenShovel"
 	},
 	{
 		name:"ironShovel",
@@ -4981,7 +4998,8 @@ const blockData = [
 		mineSpeed:6,
 		attackDamage: 4,
 		repairMaterial:"ironIngot",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenShovel"
 	},
 	{
 		name:"goldenShovel",
@@ -4993,7 +5011,8 @@ const blockData = [
 		mineSpeed:12,
 		attackDamage: 2,
 		repairMaterial:"goldIngot",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenShovel"
 	},
 	{
 		name:"diamondShovel",
@@ -5005,7 +5024,8 @@ const blockData = [
 		mineSpeed:8,
 		attackDamage: 5,
 		repairMaterial:"diamond",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenShovel"
 	},
 	
 	{
@@ -5018,7 +5038,16 @@ const blockData = [
 		mineSpeed:2,
 		attackDamage: 7,
 		attackSpeed:0.8,
-		category:"tools"
+		category:"tools",
+		serveronuse:function(x,y,z, block,world,face,item,p){
+			var name = blockData[block].name
+			name = name[0].toUpperCase() + name.substring(1)
+			name = "stripped"+name
+			if(blockIds[name]){
+				world.setBlock(x,y,z,blockIds[name])
+				item.durability --
+			}
+		}
 	},
 	{
 		name:"stoneAxe",
@@ -5031,7 +5060,8 @@ const blockData = [
 		attackDamage: 9,
 		attackSpeed:0.8,
 		repairMaterial:"cobblestone",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenAxe"
 	},
 	{
 		name:"ironAxe",
@@ -5044,7 +5074,8 @@ const blockData = [
 		attackDamage: 9,
 		attackSpeed:0.9,
 		repairMaterial:"ironIngot",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenAxe"
 	},
 	{
 		name:"goldenAxe",
@@ -5057,7 +5088,8 @@ const blockData = [
 		attackDamage: 7,
 		attackSpeed:1,
 		repairMaterial:"goldIngot",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenAxe"
 	},
 	{
 		name:"diamondAxe",
@@ -5070,7 +5102,8 @@ const blockData = [
 		attackDamage: 9,
 		attackSpeed:1,
 		repairMaterial:"diamond",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenAxe"
 	},
 	
 	{
@@ -6671,7 +6704,18 @@ const blockData = [
 		mineSpeed:2,
 		attackDamage: 1,
 		attackSpeed:1,
-		category:"tools"
+		category:"tools",
+		serveronuse:function(x,y,z, block,world,face,item,p){
+			if((blockData[block].name === "grass" || block === blockIds.dirt) && !world.getBlock(x,y+1,z)){
+				world.setBlock(x,y,z,blockIds.farmland)
+				item.durability --
+			}
+			if(block === blockIds.rootedDirt){
+				world.setBlock(ox,oy,oz,blockIds.dirt)
+				world.addItems(ox, oy+0.5, oz, 0, 0, 0, blockIds.hangingRoots, true)
+				item.durability --
+			}
+		}
 	},
 	{
 		name:"stoneHoe",
@@ -6684,7 +6728,8 @@ const blockData = [
 		attackDamage: 1,
 		attackSpeed:2,
 		repairMaterial:"cobblestone",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenHoe"
 	},
 	{
 		name:"ironHoe",
@@ -6697,7 +6742,8 @@ const blockData = [
 		attackDamage: 1,
 		attackSpeed:3,
 		repairMaterial:"ironIngot",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenHoe"
 	},
 	{
 		name:"goldenHoe",
@@ -6710,7 +6756,8 @@ const blockData = [
 		attackDamage: 1,
 		attackSpeed:1,
 		repairMaterial:"goldIngot",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenHoe"
 	},
 	{
 		name:"diamondHoe",
@@ -6723,7 +6770,8 @@ const blockData = [
 		attackDamage: 1,
 		attackSpeed:4,
 		repairMaterial:"diamond",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenHoe"
 	},
 	
 	{
@@ -6834,7 +6882,8 @@ const blockData = [
 		attackDamage: 10,
 		attackSpeed:1,
 		repairMaterial:"netheriteIngot",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenAxe"
 	},
 	{
 		name:"netheriteShovel",
@@ -6846,7 +6895,8 @@ const blockData = [
 		mineSpeed:9,
 		attackDamage: 6,
 		repairMaterial:"netheriteIngot",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenShovel"
 	},
 	{
 		name:"netheriteHoe",
@@ -6859,7 +6909,8 @@ const blockData = [
 		attackDamage: 1,
 		attackSpeed:4,
 		repairMaterial:"netheriteIngot",
-		category:"tools"
+		category:"tools",
+		copyPropertiesHere:"woodenHoe"
 	},
 	
 	{
@@ -7007,7 +7058,14 @@ const blockData = [
 		Name:"Shears",
 		item:true,
 		shears:true,
-		category:"items"
+		category:"items",
+		serveronuse:function(x,y,z, block,world,face,item,p){
+			if(block === blockIds.pumpkin){
+				world.setBlock(x,y,z,blockIds.carvedPumpkin)
+				world.addItems(x, y+0.5, z, 0, 0, 0, blockIds.pumpkinSeeds, true, 4)
+				item.durability --
+			}
+		}
 	},
 	
 	{
@@ -7099,11 +7157,15 @@ const blockData = [
 		hardness:-1,
 		lightLevel:1,
 		glassSound: true,
-		eyeplace:function(x,y,z,world){
-			this.findFullFrame(x+1,y,z,world)
-			this.findFullFrame(x-1,y,z,world)
-			this.findFullFrame(x,y,z+1,world)
-			this.findFullFrame(x,y,z-1,world)
+		onclick:function(x,y,z,world,p,holdObj){
+			if(holdObj && blockData[holdObj.id].name === "eyeOfEnder"){
+				world.setBlock(x,y,z, setBlockState(world.getBlock(x,y,z),this.blockStatesMap.eye,true))
+				this.findFullFrame(x+1,y,z,world)
+				this.findFullFrame(x-1,y,z,world)
+				this.findFullFrame(x,y,z+1,world)
+				this.findFullFrame(x,y,z-1,world)
+				world.blockSound(holdObj.id, "place", x,y,z)
+			}else return true
 		},
 		findFullFrame:function(x,y,z,world){
 			if(blockData[world.getBlock(x,y,z)].solid) return
@@ -10773,8 +10835,12 @@ const blockData = [
 		},
 		category:"nature",
 		randomOffset:true,
+		useAs:function(x,y,z,block,face,world){
+			if(face === "bottom") return this.id+this.blockStatesMap.vertical_direction.down
+			else return this.id+this.blockStatesMap.vertical_direction.up
+		}
 	},
-	{//todo n: wall sign
+	{//todo n: wall sign & placing on wall
 		name:"oakSign",
 		nameMcd:"oak_sign",
 		Name:"Oak sign",
@@ -13480,7 +13546,7 @@ const blockData = [
 		potCross:true,
 		wetgrassSound:true
 	},
-	{
+	{//todo n: wall fan & placing on wall
 		name:"brainCoralFan",
 		nameMcd:"brain_coral_fan",
 		Name:"Sponge-like Coral Fan",
@@ -14029,7 +14095,7 @@ function initBlockData(){
 		}
 		if(data.copyPropertiesHere){
 			let other = blockData[blockIds[data.copyPropertiesHere]]
-			let arr = other.copyFromProperties || ["onupdate","onclick","onpowerupdate","onset","ondelete","ontagsupdate","activate","projectileHit"]
+			let arr = other.copyFromProperties || ["onupdate","onclick","onpowerupdate","onset","ondelete","ontagsupdate","activate","projectileHit","serveronuse","useAs"]
 			for(let c=0; c<arr.length; c++){
 				let prop = arr[c]
 				if(other[prop] && data[prop] === undefined) data[prop] = other[prop]
@@ -32449,48 +32515,6 @@ class World{ // aka trueWorld
 					if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
 					return
 				}
-			}else if(holding && blockData[holding].shovel){
-				if(cblock === blockIds.grass || cblock === blockIds.dirt || cblock === blockIds.rootedDirt || cblock === blockIds.mycelium || cblock === blockIds.podzol){
-					this[dimension].setBlock(ox,oy,oz,blockIds.dirtPath)
-					holdObj.durability --
-				}
-				if(blockData[cblock].campfire){
-					this[dimension].setBlock(ox,oy,oz,blockData[cblock].id | SLAB)
-					holdObj.durability --
-				}
-				return
-			}else if(holding && cblock && blockData[holding].axe){
-				var name = blockData[cblock].name
-				name = name[0].toUpperCase() + name.substring(1)
-				name = "stripped"+name
-				if(blockIds[name]){
-					this[dimension].setBlock(ox,oy,oz,blockIds[name])
-					holdObj.durability --
-				}
-				return
-			}else if(holding && cblock && blockData[holding].hoe){
-				if((blockData[cblock].name === "grass" || cblock === blockIds.dirt) && !this[dimension].getBlock(ox,oy+1,oz)){
-					this[dimension].setBlock(ox,oy,oz,blockIds.farmland)
-					holdObj.durability --
-				}
-				if(cblock === blockIds.rootedDirt){
-					this[dimension].setBlock(ox,oy,oz,blockIds.dirt)
-					this[dimension].addItems(ox, oy+0.5, oz, 0, 0, 0, blockIds.hangingRoots, true)
-					holdObj.durability --
-				}
-				return
-			}else if(holding && cblock && blockData[holding].shears){
-				if(cblock === blockIds.pumpkin){
-					this[dimension].setBlock(ox,oy,oz,blockIds.carvedPumpkin)
-					this[dimension].addItems(ox, oy+0.5, oz, 0, 0, 0, blockIds.pumpkinSeeds, true, 4)
-					holdObj.durability --
-				}
-				return
-			}else if(holding && cblock && blockData[holding].name === "eyeOfEnder" && blockData[cblock].name === "endPortalFrame"){
-				this[dimension].setBlock(ox,oy,oz,cblock | SLAB)
-				blockData[cblock].eyeplace(ox,oy,oz,this[dimension])
-				this[dimension].blockSound(holding, "place", ox,oy,oz)
-				return
 			}
 			if(blockDat.serveronuse && (blockDat.useAnywhere || cblock)){
 				let cont = blockDat.serveronuse(ox,oy,oz,cblock,this[dimension],face,holdObj,p, blockMode)
@@ -32501,7 +32525,7 @@ class World{ // aka trueWorld
 			if(holding && blockData[holding].useAs){
 	      let useAs = blockData[holding].useAs
 	      if(typeof useAs === "function"){
-	        useAs = useAs(x,y,z,cblock,face)
+	        useAs = useAs(x,y,z,cblock,face,this[dimension])
 	        if(typeof useAs === "string" && blockIds[useAs]){
 	          holding = blockIds[useAs]
 	        }else holding = useAs
@@ -32512,7 +32536,7 @@ class World{ // aka trueWorld
 			if(!holding || blockData[holding].item) return
 			if(!p.cheats) blockMode = 0
 			let under = this[dimension].getBlock(x,y-1,z)
-      let onPot = !side && blockData[under] && blockData[under].pot
+      /*let onPot = !side && blockData[under] && blockData[under].pot
       if(blockData[holding].potCross && onPot){
         blockMode = POTCROSS
       }else if(blockData[holding].crossShape){
@@ -32522,174 +32546,42 @@ class World{ // aka trueWorld
         }else{
           blockMode = CROSS
         }
-      }
-      if(blockData[holding].sideCross){
-        if(side){
-          blockMode = CUBE
-        }else if(face === "bottom"){
-          blockMode = SLAB
-        }else blockMode = CROSS
-      }
-      if(blockData[holding].tallcrossShape){
-        blockMode = TALLCROSS
-      }
-      if(blockData[holding].door && blockMode !== SLAB){
-        blockMode = DOOR
-      }
-      if(blockData[holding].torch){
-        blockMode = TORCH
-        if(side) blockMode = SLAB
-      }
-      if(blockData[holding].lantern){
-        if(this[dimension].getBlock(x,y+1,z)){
-          blockMode = LANTERNHANG
-        }else{
-          blockMode = LANTERN
-        }
-      }
-      if(blockData[holding].beacon){
-        blockMode = BEACON
-      }
-      if(blockData[holding].cactus && blockMode !== POTCROSS){
-        blockMode = CACTUS
-      }
-      if(blockData[holding].pane){
-        if(side) blockMode = SLAB
-        else blockMode = PANE
-      }
-      if(blockData[holding].portal){
-        blockMode = PORTAL
-      }
-      if(blockData[holding].wallFlat){
-        blockMode = WALLFLAT
-      }
-      if(blockData[holding].trapdoor){
-        if(side){
-          blockMode = TRAPDOOROPEN
-        }else{
-          blockMode = TRAPDOOR
-        }
-      }
-      if(blockData[holding].chain){
-        if(side)blockMode = SLAB
-        else blockMode = CHAIN
-      }
-      if(blockData[holding].button){
-        blockMode = BUTTON
-      }
-      if(blockData[holding].pot){
-        blockMode = POT
-      }
-      
-      if(blockData[holding].name === "endRod"){
-        if(side){
-          blockMode = SLAB
-        }else{
-          blockMode = CUBE
-        }
-      }
-      
-      if(blockData[holding].barrel || blockData[holding].commandBlock){
-        if(side) blockMode = SLAB
-        else if(face === "bottom") blockMode = STAIR
-        else blockMode = CUBE
-      }
-      
-      if(blockData[holding].redstoneTorch){
-        if(side) blockMode = SLAB
-        else blockMode = CUBE
-      }
-      
-      if(blockData[holding].lever){
-        if(side) blockMode = CUBE
-        else if(face === "top") blockMode = STAIR
-        else if(face === "bottom") blockMode = TALLCROSS
-      }
-      
-      if(blockData[holding].piston){
-        if(face === "top") blockMode = CUBE
-        else if(face === "bottom") blockMode = FLIP
-        else if(side) blockMode = SLAB
-      }
-      
-      if(blockData[holding].name === "observer"){
-        if(face === "top") blockMode = SLAB | FLIP
-        else if(face === "bottom") blockMode = SLAB
-        else blockMode = CUBE
-      }
-      
-      if(blockData[holding].name === "pointedDripstone"){
-        if(face === "top") blockMode = CUBE
-        else blockMode = FLIP
-      }
-      if(blockData[holding].sign){
-        if(side) blockMode = STAIR
-        else blockMode = CUBE
-      }
-      if(blockData[holding].name === "dropper" || blockData[holding].name === "dispenser"){
-        if(face === "top") blockMode = SLAB
-        else if(face === "bottom") blockMode = STAIR
-        else blockMode = CUBE
-      }
-      if(blockData[holding].name === "hopper"){
-        if(side) blockMode = SLAB
-        else blockMode = CUBE
-      }
-			if(blockData[holding].coralFan){
-				if(side) blockMode = STAIR
-        else blockMode = CUBE
+      }*/
+			let states = blockData[holding].blockStatesMap
+			if(states.facing){
+				let adjFace = face === "top" ? "up" : face === "bottom" ? "down" : face
+				if(adjFace in states.facing) holding = setBlockState(holding,states.facing,adjFace)
+			}
+			if(states.face){
+				let adjFace = face === "top" ? "ceiling" : face === "bottom" ? "floor" : "wall"
+				if(adjFace in states.face) holding = setBlockState(holding,states.face,adjFace)
+			}
+			if(states.axis){
+				switch(face){
+					case "north": case "south":
+						return setBlockState(holding,states.axis,"z")
+					case "east": case "west":
+						return setBlockState(holding,states.axis,"x")
+					default:
+						return setBlockState(holding,states.axis,"y")
+				}
 			}
       
-      if(side && blockData[holding].swId){
-        holding = blockData[holding].swId
-      }
-      if(blockData[holding].layers){
-        let b = this[dimension].getBlock(ox,oy,oz)
-        let layer = 0
-				let state = b&isState
-        if(state === LAYER1) layer = 1
-        if(state === LAYER2) layer = 2
-        if(state === LAYER3) layer = 3
-        if(state === LAYER4) layer = 4
-        if(state === LAYER5) layer = 5
-        if(state === LAYER6) layer = 6
-        if(state === LAYER7) layer = 7
-        if(state === LAYER8) layer = 8
-        if(((b & isCube) === (holding & isCube)) && layer > 0 && layer < 8){
+      if(states.layers){
+        let b = cblock
+        let layer = +getBlockState(cblock,states.layers)
+        if(blockData[cblock].id === blockData[holding].id && ((layer+1)+"" in states.layers)){
 					//p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:this[dimension].getBlock(x,y,z), dimension}})
           x = ox, y = oy, z = oz
           layer ++
-          switch(layer){
-            case 2:
-              blockMode = LAYER2
-              break
-            case 3:
-              blockMode = LAYER3
-              break
-            case 4:
-              blockMode = LAYER4
-              break
-            case 5:
-              blockMode = LAYER5
-              break
-            case 6:
-              blockMode = LAYER6
-              break
-            case 7:
-              blockMode = LAYER7
-              break
-            case 8:
-              blockMode = LAYER8
-              break
-          }
+          holding = setBlockState(cblock,states.layers, ""+layer)
         }else{
-          blockMode = LAYER1
+					holding = setBlockState(cblock,states.layers, "1")
         }
-				holding = holding&isCube
       }
-			if(!blockData[holding|blockMode]) throw new Error("no block holding: "+holding+"blockMode: "+blockMode)
+			if(!blockData[holding|blockMode]) throw new Error("no block holding: "+holding+" blockMode: "+blockMode)
 			let shape = holding && blockData[holding|blockMode].shape
-			if (shape && shape.rotate){
+			/*if (shape && shape.rotate){
 				if(rotate === SOUTH) blockMode |= SOUTH
 				if(rotate === EAST) blockMode |= EAST
 				if(rotate === WEST) blockMode |= WEST
@@ -32697,7 +32589,7 @@ class World{ // aka trueWorld
 			if (shape && shape.flip){
 				if(flip === FLIP) blockMode |= FLIP
 			}
-			holding |= blockMode
+			holding |= blockMode*/
 		}
 		let dropAmount, drop
 		if(p.survival && !place){
