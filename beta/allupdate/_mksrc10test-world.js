@@ -15290,6 +15290,15 @@ for(let jn in jigsaws){
 	s.newJigsawTries = s.nextJigsawPos.length ? (s.newJigsawTries === undefined ? 1 : s.newJigsawTries) : 0
 }
 
+const blockStateShapes = {//example
+	fern:{
+		"shape=fern": "fern"
+	},
+	redCarpet:{
+		"face=wall": "wallCarpet"
+	}
+}
+
 function objectify(x, y, z, width, height, textureX, textureY, texXFlip,texYFlip,rotateTex,texW,texH,textureName) {
 	return {
 		x: x,
@@ -15445,7 +15454,7 @@ function addStem1x1(verts,x,z,h){
 	verts[5].push(customFace(x,h,z+1, x+1,h,z, x+1,0,z, x,0,z+1, 0,4,1,h))
 	return verts
 }
-let shapes = {
+let shapes = {//todo n: remove unused shapes
 	/*
 		[
 			[(-x, -z), (+x, -z), (+x, +z), (-x, +z)], // minX = 0,  minZ = 2,  maxX = 6, maxZ = 8

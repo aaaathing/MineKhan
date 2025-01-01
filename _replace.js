@@ -4,6 +4,18 @@ const fs=require("fs")
 update()
 
 async function update(){
+/*
+replace old blockStates
+add all blocks & items
+	item models
+add custom blockStates and shapes for them
+	fern, wall carpet, etc.
+craft
+add all entities
+	fix some textures (sheep)
+new save format using block names and block state names
+sounds
+*/
 	// CUBE|SLAB|STAIR|CROSS|TALLCROSS|DOOR|TORCH|LANTERN|LANTERNHANG|BEACON|CACTUS|PANE|PORTAL|WALLFLAT|TRAPDOOR|TRAPDOOROPEN|FENCE|WALLPOST|BUTTON|CHAIN|POT|POTCROSS|CORNERSTAIRIN|CORNERSTAIROUT|VERTICALSLAB|LAYER1|LAYER2|LAYER3|LAYER4|LAYER5|LAYER6|LAYER7|LAYER8|FLIP|NORTH|SOUTH|EAST|WEST|ROTATION|isCube|isState
 	var esprima = require('esprima')
 
@@ -14,7 +26,8 @@ async function update(){
 	let end=str.indexOf('const BLOCK_COUNT')
 	let bstr=str.slice(start,end)
 
-	let bd=esprima.parseScript(bstr, {range:true}).body[0].declarations[0].init.elements
+	let bdstatement=esprima.parseScript(bstr, {range:true}).body[0]
+	let bd = bdstatement.declarations[0].init.elements
 	function getProp(o,n){
 		for(let i of o.properties)if(i.key.name===n)return i.value.value
 	}
@@ -29,6 +42,7 @@ async function update(){
 	console.log("doing")
 	let bid={}
 	for(let i=0;i<bd.length;i++)bid[getProp(bd[i],"nameMcd")||getProp(bd[i],"name")]=i
+	let bdBeforeEnd = bd[bd.length-1].range[1]
 	let prevBs={}/*prev block states*/, prevHto={}
 	let replace=[]
 	let it=0
@@ -52,7 +66,17 @@ async function update(){
 	//todo: put loop for adding new ones before the loop below (so blockIds is correct)
 	for(let nb of nbd){//new block
 		let b=bd[bid[nb.name]] //block
-		if(!b)continue
+		let isnew
+		if(!b){
+			isnew=true
+			b = {properties:[{key:{name:"name"},value:{value:"",range:[bdBeforeEnd,bdBeforeEnd]}}]}
+			let str = "\n\t{"
+			let nameMcd = nb.name, name = camelCase(nameMcd)
+			str += "\n\t\tname:"+JSON.stringify(name)
+			if(name !== nameMcd) str += "\n\t\tname:"+JSON.stringify(nameMcd)
+			str += "\n\t\tName:"+JSON.stringify(nb.displayName)
+			replace.push([bdBeforeEnd,bdBeforeEnd, str])
+		}
 		const space=bstr.slice(...b.range).includes("\n")?"\n\t\t":" "
 		for(let s of nb.states){
 			if(s.type === "bool")s.values=[false,true]
@@ -69,6 +93,9 @@ async function update(){
 		if(nb.stackSize !== 64) replaceProp(b,"stackSize",nb.stackSize,space,["Name","nameMcd","name"])
 		if(nb.harvestTools) replaceProp(b,"harvestToolsNames",JSON.stringify(Object.keys(nb.harvestTools).map(r=>getProp(bd[bid[nitem[r].name]],"name"))),space,["Name","nameMcd","name"], prevHto)
 		//if(nbs){it++;if(it>5)break}
+		if(isnew){
+			replace.push([bdBeforeEnd,bdBeforeEnd,"\n\t},"])
+		}
 	}
 	console.log("replacing",replace.length)
 	replace.sort((a,b)=>a[0]-b[0])
@@ -81,6 +108,9 @@ async function update(){
 	nbstr+=bstr.slice(previ)
 	str=str.slice(0,start)+nbstr+str.slice(end)
 	fs.writeFileSync("public/minekhan/beta/allupdate/_mksrc10test-world.js",str)
+}
+function camelCase(s) {
+	return s.replace(/([-_][a-z])/ig, c => c.toUpperCase().replace(/-|_/, ''))
 }
 
 async function addName(){
