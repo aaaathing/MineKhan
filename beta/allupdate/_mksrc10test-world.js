@@ -1045,12 +1045,14 @@ function setBlockStateValue(id, blockStateObj, newValue){
 function setBlockState(id, blockStateObj, newValue){
 	return (id % blockStateObj.minMult) + blockStateObj.values.indexOf(newValue) * blockStateObj.minMult + floor(id / blockStateObj.maxMult) * blockStateObj.maxMult
 }
+win.setBlockState = setBlockState
 function getBlockStateValue(id, blockStateObj){
 	return floor(id / blockStateObj.minMult) % blockStateObj.maxMult
 }
 function getBlockState(id, blockStateObj){
 	return blockStateObj.values[ floor(id / blockStateObj.minMult) % blockStateObj.maxMult ]
 }
+win.getBlockState = getBlockState
 
 //todo n: remove unused type & textures & shape specific textures, change those for mk only things
 const blockData = [
@@ -1097,6 +1099,26 @@ const blockData = [
 		randomRotate:true,
 		randomRotateTop:true,
 		randomRotateBottom:true,
+		grow:function(x,y,z,world,blockID){
+			// Spread grass
+			if (!blockData[world.getBlock(x, y + 1, z, this.type)].transparent) {
+				world.setBlock(x, y, z, blockIds.dirt, false,false,false,false, this.type)
+				return
+			}
+
+			let rnd2 = Math.random() * 27 | 0
+			let x2 = rnd2 % 3 - 1
+			rnd2 = (rnd2 - x2 - 1) / 3
+			let y2 = rnd2 % 3 - 1
+			rnd2 = (rnd2 - y2 - 1) / 3
+			z += rnd2 - 1
+			x += x2
+			y += y2
+
+			if (blockData[blockID].name === "dirt" && world.getBlock(x, y + 1, z, this.type) === blockIds.air) {
+				world.setBlock(x, y, z, blockID, false,false,false,false, this.type)
+			}
+		}
 	},
 	{ name: "dirt", Name:"Dirt",
 		material: "mineable/shovel", hardness:0.5, blastResistance:0.5, type:"ground",category:"nature",
@@ -2695,13 +2717,13 @@ const blockData = [
 			}
 			return minSize
 		},
-		update: function(x,y,z,world){
-			let minSize = this.getSize(x,y,z,world), block = world.getBlock(x,y,z)
+		tick: function(block,x,y,z,world){
+			let minSize = this.getSize(x,y,z,world)
 			world.setTagByName(x,y,z,"on",minSize)
 			return minSize
 		},
 		onplace: function(x,y,z, player,world){
-			this.update(x,y,z,world)
+			this.tick(world.getBlock(x,y,z), x,y,z,world)
 		}
 	},
 	
@@ -2721,7 +2743,23 @@ const blockData = [
 		},
 		compostChance:0.5,
 		liquidBreakable:"drop",
-		category:"nature"
+		category:"nature",
+		growSlow:function(x,y,z,world,block){
+			var tall = 0
+			var maxTall = 3
+			for(var t=0; t<maxTall; t++){
+				if(blockData[world.getBlock(x,y-t,z)].id === this.id) tall++
+				else break
+			}
+			if(tall >= maxTall) return
+			
+			var above = world.getBlock(x,y+1,z)
+			if(blockData[above].cactusFruit){
+				if(world.getBlock(x,y+2,z)) return //the cactus fruit can't replace blocks
+				world.setBlock(x,y+2,z, above, false,false,false,false, this.type) //move the cactus fruit up
+			}else if(above) return //there is a block so it can't grow
+			world.setBlock(x,y+1,z, blockIds.cactus, false,false,false,false, this.type)
+		},
 	},
 	
 	{//todo n: sideways pane, all color panes
@@ -2787,7 +2825,11 @@ const blockData = [
 				world.blockSound(b, "dig", x,y,z)
 			},tickTime,x,y,z)
 		},
-		
+		grow:function(x,y,z,world,blockID){
+			if(!world.getBlock(x,y-1,z)){
+				world.setBlock(x,y-1,z,blockID)
+			}
+		},
 		compostChance:0.5,
 		category:"nature",
 		tint:leafTint,
@@ -2871,7 +2913,7 @@ const blockData = [
 		inLiquid:2,
 		ambientSound:"liquid.lava",
 		getLevelDifference:function(level,dimension){return dimension === "nether" ? level-1 : level-2},
-		tick:function(x,y,z,world){
+		tick:function(block,x,y,z,world){
 			blockData[blockIds.fire].spread(x,y,z,world)
 		},
 		onupdate:function(x,y,z,b,world,sx,sy,sz){
@@ -2934,7 +2976,27 @@ const blockData = [
 		category:"nature",
 		hardness:0.4,
 		blastResistance:0.4,
-		randomRotate:true,randomRotateTop:true,randomRotateBottom:true
+		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,
+		grow:function(x,y,z,world,blockID){
+			// Spread nylium
+			if (!blockData[world.getBlock(x, y + 1, z, this.type)].transparent) {
+				world.setBlock(x, y, z, blockIds.netherrack, false,false,false,false, this.type)
+				return
+			}
+
+			let rnd2 = Math.random() * 27 | 0
+			let x2 = rnd2 % 3 - 1
+			rnd2 = (rnd2 - x2 - 1) / 3
+			let y2 = rnd2 % 3 - 1
+			rnd2 = (rnd2 - y2 - 1) / 3
+			z += rnd2 - 1
+			x += x2
+			y += y2
+
+			if (blockData[blockID].name === "netherrack" && world.getBlock(x, y + 1, z, this.type) === blockIds.air) {
+				world.setBlock(x, y, z, blockID, false,false,false,false, this.type)
+			}
+		}
 	},
 	{
 		name: "warpedNylium",
@@ -2947,7 +3009,8 @@ const blockData = [
 		category:"nature",
 		hardness:0.4,
 		blastResistance:0.4,
-		randomRotate:true,randomRotateTop:true,randomRotateBottom:true
+		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,
+		copyPropertiesHere:"crimsonNylium"
 	},
 	{
 		name: "crimsonStem",
@@ -3174,6 +3237,11 @@ const blockData = [
 				world.setBlock(x,y,z,blockIds.twistingVinesPlant,false,false,false,false)
 			}
 		},
+		grow:function(x,y,z,world,blockID){
+			if(!world.getBlock(x,y+1,z)){
+				world.setBlock(x,y+1,z,blockID)
+			}
+		},
 		hidden:true,
 		drop:"twistinVinesPlant"
 	},
@@ -3215,6 +3283,11 @@ const blockData = [
 				world.setBlock(x,y,z,blockIds.weepingVinesPlant,false,false,false,false)
 			}
 		},
+		grow:function(x,y,z,world,blockID){
+			if(!world.getBlock(x,y-1,z)){
+				world.setBlock(x,y-1,z,blockID)
+			}
+		},
 		hidden:true,
 		drop:"weepingVinesPlant"
 	},
@@ -3228,11 +3301,9 @@ const blockData = [
 		shadow: false,
 		crossShape: true,
 		ladder:true,
-		onupdate:function(x,y,z,b,world,sx,sy,sz){
-			var top = world.getBlock(x,y-1,z)
-			var isIt = blockData[top].name === "weepingVines" || blockData[top].name === "weepingVinesPlant"
-			if(!isIt){
-				world.setBlock(x,y,z,blockIds.weepingVines,false,false,false,false)
+		grow:function(x,y,z,world,blockID){
+			if(!world.getBlock(x,y-1,z)){
+				world.setBlock(x,y-1,z,blockID)
 			}
 		},
 		category:"nature"
@@ -3881,6 +3952,13 @@ const blockData = [
 		category:"nature",
 		growBonemeal:function(x,y,z,world){
 			world.setBlock(x,y,z, this.id+this.blockStatesMap.age[7])
+		},
+		growSlow:function(x,y,z,world,block){
+			let age = +getBlockState(block,this.blockStatesMap.age)
+			if(age !== 4) world.setBlock(x,y,z,setBlockState(block,this.blockStatesMap.age,(age+1)+""))
+		},
+		drop:function(block){
+			return +getBlockState(block, this.blockStatesMap.age) === 7 ? ["wheat","wheatSeeds"] : "wheat"
 		}
 	},
 	{
@@ -4594,7 +4672,20 @@ const blockData = [
 		biomeTintSouth:true,
 		biomeTintEast:true,
 		biomeTintWest:true,
-		randomOffset:true
+		randomOffset:true,
+		growSlow:function(x,y,z,world,block){
+			var tall = 0
+			var maxTall = 3
+			for(var t=0; t<maxTall; t++){
+				if(blockData[world.getBlock(x,y-t,z)].id === this.id) tall++
+				else break
+			}
+			if(tall >= maxTall) return
+			
+			var above = world.getBlock(x,y+1,z)
+			if(above) return //there is a block so it can't grow
+			world.setBlock(x,y+1,z, this.id)
+		}
 	},
 	
 	{
@@ -5355,6 +5446,7 @@ const blockData = [
 		blastResistance:0.6,
 		drop:"dirt",
 		grassSound: true,
+		copyPropertiesHere:"grass"
 	},
 	
 	{
@@ -6991,6 +7083,7 @@ const blockData = [
 		item: true,
 		transparent:true,
 		itemFrame:true,
+		copyFromProperties:["itemFrame"],
 		flatIcon:true,
 		iconTexture:"itemFrameIcon",
 		category:"items",
@@ -7142,7 +7235,7 @@ const blockData = [
 		blastResistance: 0.3,
 		//if you chang this, change colored lamps too
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
-			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z) ? true : false
 			var block = world.getBlock(x,y,z)
 			let target = setBlockState(block,this.blockStatesMap.lit,power)
 			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
@@ -7772,9 +7865,6 @@ const blockData = [
 		hidden:true,
 		liquidBreakable:true,
 		noHitbox:true,
-		tagBits:{
-			age:[0,8]
-		},
 		getAttached:function(x,y,z,block,getBlockOnly,world){
 			var ax = x, ay = y, az = z
 			if(getBlockState(block,this.blockStatesMap.up)) ay++
@@ -7791,14 +7881,12 @@ const blockData = [
 			var block = this.getAttached(x,y,z,b,true,world)
 			if(!block || !blockData[block].solid && !blockData[block].liquid) world.setBlock(x,y,z,0,false,false,false,false)
 		},
-		tick:function(x,y,z,world){
-			var block = world.getBlock(x,y,z)
+		tick:function(block,x,y,z,world){
 			var attached = this.getAttached(x,y,z,block,false,world)
 			var ax = attached[1], ay = attached[2], az = attached[3]
 			attached = attached[0]
-			var age = world.getTagByName(x,y,z,"age")
-			if(!age) age = 0
-			age += rand(10,11)
+			var age = +getBlockState(block,this.blockStatesMap.age)
+			age += randInt(10,11)
 			//finish burning
 			if(age >= 15 && (!attached || !blockData[attached].burnTime)){
 				return world.setBlock(x,y,z,0,false,false,false,false)
@@ -7809,7 +7897,7 @@ const blockData = [
 				return
 			}
 			if(age > 255) age = 255
-			world.setTagByName(x,y,z,"age",age,false)
+			world.setBlock(x,y,z, setBlockState(block,this.blockStatesMap.age, age+""), false,true)
 
 			if(world.weather === "rain" && world.weatherAmount > 0.5){
 				let top = world.getSolidTop(x,z)
@@ -8702,6 +8790,11 @@ const blockData = [
 		category:"nature",
 		potCross:true,
 		randomOffset:true,
+		growSlow:function(x,y,z,world,block){
+			if(world.getBlock(x,y+1,z)) return
+			world.setBlock(x, y, z, blockIds.bambooStalk + blockStateMaps.bambooStalk.leaves.small + blockStateMaps.bambooStalk.age[0])
+			world.setBlock(x, y+1, z, blockIds.bambooStalk + blockStateMaps.bambooStalk.leaves.large + blockStateMaps.bambooStalk.age[0])
+		}
 	},
 	{
 		name:"bambooStalk",
@@ -8723,7 +8816,37 @@ const blockData = [
 		},
 		liquidBreakable:"drop",
 		category:"nature",
-		randomOffset:true
+		randomOffset:true,
+		growSlow:function(x,y,z,world,block){
+			var tall = 0
+			var maxTall = 16
+			let blocks = []
+			for(let t=0; t<maxTall; t++){
+				let block = world.getBlock(x,y-t,z)
+				if(blockData[block].name === "bambooStalk"){
+					tall++
+					blocks.push(block)
+				}else break
+			}
+			if(tall >= maxTall) return
+			
+			var above = world.getBlock(x,y+1,z)
+			if(above) return //there is a block so it can't grow
+			world.setBlock(x,y+1,z, this.id + this.blockStatesMap.age[tall>3?1:0] + this.blockStatesMap.leaves.large)
+			if(tall > 3){
+				for(let t=0; t<tall; t++){
+					let block = blocks[t]
+					let target = setBlockState(setBlockState(block,this.blockStatesMap.age,"1"), this.blockStatesMap.leaves, t === 0 ? "small" : "none")
+					if(block !== target) world.setBlock(x,y-t,z,target)
+				}
+			}else{
+				for(let t=0; t<tall; t++){
+					let block = blocks[t]
+					let target = setBlockState(setBlockState(block,this.blockStatesMap.age,"0"), this.blockStatesMap.leaves, t === 0 ? "small" : "none")
+					if(block !== target) world.setBlock(x,y-t,z,target)
+				}
+			}
+		}
 	},
 	
 	{
@@ -8840,7 +8963,7 @@ const blockData = [
 	{
 		name:"tomatoPlant",
 		Name:"Tomato Plant",
-		blockStates:[{name:"age",values:[0,1,2,3,4]}],
+		blockStates:[{name:"age",values:["0","1","2","3","4"]}],
 		textures:new Array(6).fill("tomatoPlantStage0"),
 		textures1:new Array(6).fill("tomatoPlantStage1"),
 		textures2:new Array(6).fill("tomatoPlantStage2"),
@@ -8869,6 +8992,18 @@ const blockData = [
 			crossBlock.dropAmount = [4,8]
 			tallcrossBlock.drop = "tomato"
 			tallcrossBlock.dropAmount = [8,16]
+		},
+		dropAmount:function(block){
+			let age = +getBlockState(block, this.blockStatesMap.age)
+			return age === 3 ? randInt(4,7) : age === 4 ? randInt(8,16) : 1
+		},
+		drop:function(block){
+			let age = +getBlockState(block, this.blockStatesMap.age)
+			return age === 3 || age === 4 ? "tomato" : "tomatoSeeds"
+		},
+		growSlow:function(x,y,z,world,block){
+			let age = +getBlockState(block,this.blockStatesMap.age)
+			if(age !== 4) world.setBlock(x,y,z,setBlockState(block,this.blockStatesMap.age,(age+1)+""))
 		}
 	},
 	{
@@ -8897,7 +9032,10 @@ const blockData = [
 		},
 		compostChance:0.3,
 		liquidBreakable:true,
-		category:"nature"
+		category:"nature",
+		growSlow:function(x,y,z,world,block){
+			world.setBlock(x,y,z,blockIds.greenCactusFruit)
+		}
 	},
 	{
 		name:"greenCactusFruit",
@@ -8912,7 +9050,10 @@ const blockData = [
 		},
 		compostChance:0.4,
 		liquidBreakable:true,
-		category:"nature"
+		category:"nature",
+		growSlow:function(x,y,z,world,block){
+			world.setBlock(x,y,z,blockIds.redCactusFruit)
+		}
 	},
 	{
 		name:"redCactusFruit",
@@ -8931,7 +9072,10 @@ const blockData = [
 		},
 		compostChance:0.5,
 		liquidBreakable:true,
-		category:"food"
+		category:"food",
+		growSlow:function(x,y,z,world,block){
+			world.setBlock(x,y,z,blockIds.purpleCactusFruit)
+		}
 	},
 	{
 		name:"purpleCactusFruit",
@@ -9119,8 +9263,7 @@ const blockData = [
 			}
 		},
 		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,world){
-			var that = this
-			world.setTimeout(function(){
+			world.setTimeout(() => {
 				//find block it's attached to
 				var me = world.getBlock(x,y,z)
 				var ax=x,ay=y,az=z
@@ -9339,7 +9482,7 @@ const blockData = [
 			
 			var shouldBeOn = world.getRepeaterPower(x,y,z,fx,fy,fz) || world.getBlockPower(fx,fy,fz,null) ? true : false
 			if(on === shouldBeOn) return
-			var t = function(){
+			var t = () => {
 				block = world.getBlock(x,y,z)
 				var on = world.getRepeaterPower(x,y,z,fx,fy,fz) || world.getBlockPower(fx,fy,fz,null) ? true : false //should it be on?
 				var isOn = getBlockState(block,this.blockStatesMap.powered)
@@ -9415,7 +9558,8 @@ const blockData = [
 		headSideTexture:"pistonHeadSide",
 		frontOpenTexture:"pistonFrontOpen",
 		headBackTexture:"pistonFront",
-		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,world){//todo n
+		copyFromProperties:["extend","retract"],
+		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var block = world.getBlock(x,y,z)
 			var extended = false, attachedHead = false
 			if(extended){
@@ -9443,95 +9587,73 @@ const blockData = [
 			
 			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
 			if(power && !extended){
-				this.extend(x,y,z,facing,world)
+				this.extend(x,y,z,world,block)
 			}else if(!power && extended && attachedHead){
-				this.retract(x,y,z,facing,world)
+				this.retract(x,y,z,world,block)
 			}
-		},//todo n: continue below and piston head functions
+		},
 		onupdate:function(x,y,z,b,w,sx,sy,sz){ //onupdate is run when placed
 			this.onpowerupdate(x,y,z,null,null,null,null,w)
 		},
 		onbreak:function(x,y,z, prevBlock, prevTags,world){
-			//dissapear if it isn't connected (it = piston heads and piston open)
-			let tx = x, ty = y, tz = z
-			switch(prevBlock){
-				case this.id | TALLCROSS:
-				case this.id | STAIR | FLIP:
-					ty++
-					break
-				case this.id | TALLCROSS | FLIP:
-				case this.id | STAIR:
-					ty--
-					break
-				case this.id | PORTAL | NORTH:
-				case this.id | DOOR | SOUTH:
-					tz--
-					break
-				case this.id | PORTAL | SOUTH:
-				case this.id | DOOR | NORTH:
-					tz++
-					break
-				case this.id | PORTAL | EAST:
-				case this.id | DOOR | WEST:
-					tx--
-					break
-				case this.id | PORTAL | WEST:
-				case this.id | DOOR | EAST:
-					tx++
-					break
-				default:
-					return //unextended pistons
+			//dissapear if it isn't connected (it is piston heads and piston open)
+			if(getBlockState(prevBlock,this.blockStatesMap.extended)){
+				let tx = 0, ty = 0, tz = 0
+				switch(getBlockState(prevBlock,this.blockStatesMap.facing)){
+					case "up":
+						ty++
+						break
+					case "down":
+						ty--
+						break
+					case "north":
+						tz--
+						break
+					case "south":
+						tz++
+						break
+					case "east":
+						tx--
+						break
+					case "west":
+						tx++
+						break
+				}
+				world.setBlock(tx,ty,tz,0,false,false,false,false)
 			}
-			world.setBlock(tx,ty,tz,0,false,false,false,false)
 		},
-		extend:function(x,y,z, facing,world){
+		extend:function(x,y,z,world,block){
 			var tx = x, ty = y, tz = z, mx = 0, my = 0, mz = 0
-			var head, headCut, open
+			let type = this.name === "pistonSticky" ? "sticky" : "normal"
+			let facing = getBlockState(prevBlock,this.blockStatesMap.facing)
+			let head = blockIds.pistonHead + blockStateMaps.pistonHead.facing[facing] + blockStateMaps.pistonHead.type[type]
+			let headCut = blockIds.pistonHead + blockStateMaps.pistonHead.facing[facing] + blockStateMaps.pistonHead.type[type] + blockStateMaps.pistonHead.short.true
+			let open = setBlockState(block,this.blockStatesMap.extended,true)
 			switch(facing){
-				case "top":
-					open = this.id | TALLCROSS
-					head = this.id | STAIR
-					headCut = this.id | CROSS
+				case "up":
 					ty ++
 					my = 1
 					break
-				case "bottom":
-					open = this.id | TALLCROSS | FLIP
-					head = this.id | STAIR | FLIP
-					headCut = this.id | CROSS | FLIP
+				case "down":
 					ty --
 					my = -1
 					break
 				case "north":
-					open = this.id | PORTAL | NORTH
-					head = this.id | DOOR | NORTH
-					headCut = this.id | PANE | NORTH
 					tz --
 					mz = -1
 					break
 				case "south":
-					open = this.id | PORTAL | SOUTH
-					head = this.id | DOOR | SOUTH
-					headCut = this.id | PANE | SOUTH
 					tz ++
 					mz = 1
 					break
 				case "east":
-					open = this.id | PORTAL | EAST
-					head = this.id | DOOR | EAST
-					headCut = this.id | PANE | EAST
 					tx --
 					mx = -1
 					break
 				case "west":
-					open = this.id | PORTAL | WEST
-					head = this.id | DOOR | WEST
-					headCut = this.id | PANE | WEST
 					tx ++
 					mx = 1
 					break
-				default:
-					return console.log("oh no! piston isn't facing anywhere")
 			}
 			var push = getPistonPushedBlocks(x,y,z,mx,my,mz,world)
 			if(push === false) return
@@ -9550,48 +9672,32 @@ const blockData = [
 				world.addEntity(new entities[entityIds.MovingBlock](push[i+3],bx,by,bz,bx+mx,by+my,bz+mz, tickTime*2, true, tags),false)
 			}
 		},
-		retract:function(x,y,z, facing,world){
+		retract:function(x,y,z,world,block){
 			var tx = x, ty = y, tz = z
-			var head, headCut, body
+			let type = this.name === "pistonSticky" ? "sticky" : "normal"
+			let facing = getBlockState(prevBlock,this.blockStatesMap.facing)
+			let head = blockIds.pistonHead + blockStateMaps.pistonHead.facing[facing] + blockStateMaps.pistonHead.type[type]
+			let headCut = blockIds.pistonHead + blockStateMaps.pistonHead.facing[facing] + blockStateMaps.pistonHead.type[type] + blockStateMaps.pistonHead.short.true
+			let body = setBlockState(block,this.blockStatesMap.extended,false)
 			switch(facing){
 				case "top":
-					body = this.id
-					head = this.id | STAIR
-					headCut = this.id | CROSS
 					ty ++
 					break
 				case "bottom":
-					body = this.id | FLIP
-					head = this.id | STAIR | FLIP
-					headCut = this.id | CROSS | FLIP
 					ty --
 					break
 				case "north":
-					body = this.id | SLAB | NORTH
-					head = this.id | DOOR | NORTH
-					headCut = this.id | PANE | NORTH
 					tz --
 					break
 				case "south":
-					body = this.id | SLAB | SOUTH
-					head = this.id | DOOR | SOUTH
-					headCut = this.id | PANE | SOUTH
 					tz ++
 					break
 				case "east":
-					body = this.id | SLAB | EAST
-					head = this.id | DOOR | EAST
-					headCut = this.id | PANE | EAST
 					tx --
 					break
 				case "west":
-					body = this.id | SLAB | WEST
-					head = this.id | DOOR | WEST
-					headCut = this.id | PANE | WEST
 					tx ++
 					break
-				default:
-					return console.log("oh no! piston isn't facing anywhere")
 			}
 			world.setBlock(tx,ty,tz,0,false,false,false,false)
 			var e = new entities[entityIds.MovingBlock](head,tx,ty,tz,x,y,z, tickTime*2)
@@ -9602,6 +9708,18 @@ const blockData = [
 			world.setTimeout(function(){
 				world.setBlock(x,y,z,body,false,false,false,false)
 			}, tickTime*2)
+
+			if(this.name === "pistonSticky"){
+				var pull = getPistonPulledBlocks(x,y,z,mx,my,mz,world)
+				if(pull){
+					for(var i=0; i<pull.length; i+=4){
+						var bx = pull[i], by = pull[i+1], bz = pull[i+2]
+						var tags = world.getTags(bx,by,bz)
+						world.setBlock(bx,by,bz,0,false,false,false,false)
+						world.addEntity(new entities[entityIds.MovingBlock](pull[i+3],bx,by,bz,bx-mx,by-my,bz-mz, tickTime*2, true, tags),false)
+					}
+				}
+			}
 		},
 		category:"redstone"
 	},
@@ -9634,256 +9752,6 @@ const blockData = [
 		headBackTexture:"pistonFront",
 		category:"redstone",
 		copyPropertiesHere:"piston",
-		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,world){
-			var block = world.getBlock(x,y,z)
-			var extended = false, facing, attachedHead = false
-			switch(block){
-				case this.id:
-					facing = "top"
-					break
-				case this.id | FLIP:
-					facing = "bottom"
-					break
-				case this.id | SLAB | NORTH:
-					facing = "north"
-					break
-				case this.id | SLAB | SOUTH:
-					facing = "south"
-					break
-				case this.id | SLAB | EAST:
-					facing = "east"
-					break
-				case this.id | SLAB | WEST:
-					facing = "west"
-					break
-				case this.id | TALLCROSS:
-					facing = "top"
-					extended = true
-					break
-				case this.id | TALLCROSS | FLIP:
-					facing = "bottom"
-					extended = true
-					break
-				case this.id | PORTAL | NORTH:
-					facing = "north"
-					extended = true
-					break
-				case this.id | PORTAL | SOUTH:
-					facing = "south"
-					extended = true
-					break
-				case this.id | PORTAL | EAST:
-					facing = "east"
-					extended = true
-					break
-				case this.id | PORTAL | WEST:
-					facing = "west"
-					extended = true
-					break
-				default:
-					return //parts like piston heads shouldn't do the calculations when power changes
-			}
-			if(extended){
-				switch(facing){
-					case "top":
-						if(world.getBlock(x,y+1,z) === (this.id | STAIR)) attachedHead = true
-						break
-					case "bottom":
-						if(world.getBlock(x,y-1,z) === (this.id | STAIR | FLIP)) attachedHead = true
-						break
-					case "north":
-						if(world.getBlock(x,y,z-1) === (this.id | DOOR | NORTH)) attachedHead = true
-						break
-					case "south":
-						if(world.getBlock(x,y,z+1) === (this.id | DOOR | SOUTH)) attachedHead = true
-						break
-					case "east":
-						if(world.getBlock(x-1,y,z) === (this.id | DOOR | EAST)) attachedHead = true
-						break
-					case "west":
-						if(world.getBlock(x+1,y,z) === (this.id | DOOR | WEST)) attachedHead = true
-						break
-				}
-			}
-			
-			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
-			if(power && !extended){
-				this.extend(x,y,z,facing,world)
-			}else if(!power && extended && attachedHead){
-				this.retract(x,y,z,facing,world)
-			}
-		},
-		onupdate:function(x,y,z,b,w,sx,sy,sz){ //onupdate is run when placed
-			this.onpowerupdate(x,y,z,null,null,null,null,w)
-		},
-		onbreak:function(x,y,z, prevBlock, prevTags,world){
-			//dissapear if it isn't connected (it = piston heads and piston open)
-			let tx = x, ty = y, tz = z
-			switch(prevBlock){
-				case this.id | TALLCROSS:
-				case this.id | STAIR | FLIP:
-					ty++
-					break
-				case this.id | TALLCROSS | FLIP:
-				case this.id | STAIR:
-					ty--
-					break
-				case this.id | PORTAL | NORTH:
-				case this.id | DOOR | SOUTH:
-					tz--
-					break
-				case this.id | PORTAL | SOUTH:
-				case this.id | DOOR | NORTH:
-					tz++
-					break
-				case this.id | PORTAL | EAST:
-				case this.id | DOOR | WEST:
-					tx--
-					break
-				case this.id | PORTAL | WEST:
-				case this.id | DOOR | EAST:
-					tx++
-					break
-				default:
-					return //unextended pistons
-			}
-			world.setBlock(tx,ty,tz,0,false,false,false,false)
-		},
-		extend:function(x,y,z, facing,world){
-			var tx = x, ty = y, tz = z, mx = 0, my = 0, mz = 0
-			var head, headCut, open
-			switch(facing){
-				case "top":
-					open = this.id | TALLCROSS
-					head = this.id | STAIR
-					headCut = this.id | CROSS
-					ty ++
-					my = 1
-					break
-				case "bottom":
-					open = this.id | TALLCROSS | FLIP
-					head = this.id | STAIR | FLIP
-					headCut = this.id | CROSS | FLIP
-					ty --
-					my = -1
-					break
-				case "north":
-					open = this.id | PORTAL | NORTH
-					head = this.id | DOOR | NORTH
-					headCut = this.id | PANE | NORTH
-					tz --
-					mz = -1
-					break
-				case "south":
-					open = this.id | PORTAL | SOUTH
-					head = this.id | DOOR | SOUTH
-					headCut = this.id | PANE | SOUTH
-					tz ++
-					mz = 1
-					break
-				case "east":
-					open = this.id | PORTAL | EAST
-					head = this.id | DOOR | EAST
-					headCut = this.id | PANE | EAST
-					tx --
-					mx = -1
-					break
-				case "west":
-					open = this.id | PORTAL | WEST
-					head = this.id | DOOR | WEST
-					headCut = this.id | PANE | WEST
-					tx ++
-					mx = 1
-					break
-				default:
-					return console.log("oh no! piston isn't facing anywhere")
-			}
-			var push = getPistonPushedBlocks(x,y,z,mx,my,mz,world)
-			if(push === false) return
-			
-			world.setBlock(x,y,z,open,false,false,false,false)
-			var e = new entities[entityIds.MovingBlock](headCut,x,y,z,tx,ty,tz, tickTime*2, true)
-			for(var i=0; i<push.length; i+=4){
-				var bx = push[i], by = push[i+1], bz = push[i+2]
-				var tags = world.getTags(bx,by,bz)
-				world.setBlock(bx,by,bz,0,false,false,false,false)
-				world.addEntity(new entities[entityIds.MovingBlock](push[i+3],bx,by,bz,bx+mx,by+my,bz+mz, tickTime*2, true, tags),false)
-			}
-			e.endAs = head
-			world.addEntity(e,false)
-			//world.setTimeout(function(){
-			//	e.changeBlock(head)
-			//}, tickTime*1.5)
-		},
-		retract:function(x,y,z, facing,world){
-			var tx = x, ty = y, tz = z, mx = 0, my = 0, mz = 0
-			var head, headCut, body
-			switch(facing){
-				case "top":
-					body = this.id
-					head = this.id | STAIR
-					headCut = this.id | CROSS
-					ty ++
-					my = 1
-					break
-				case "bottom":
-					body = this.id | FLIP
-					head = this.id | STAIR | FLIP
-					headCut = this.id | CROSS | FLIP
-					ty --
-					my = -1
-					break
-				case "north":
-					body = this.id | SLAB | NORTH
-					head = this.id | DOOR | NORTH
-					headCut = this.id | PANE | NORTH
-					tz --
-					mz = -1
-					break
-				case "south":
-					body = this.id | SLAB | SOUTH
-					head = this.id | DOOR | SOUTH
-					headCut = this.id | PANE | SOUTH
-					tz ++
-					mz = 1
-					break
-				case "east":
-					body = this.id | SLAB | EAST
-					head = this.id | DOOR | EAST
-					headCut = this.id | PANE | EAST
-					tx --
-					mx = -1
-					break
-				case "west":
-					body = this.id | SLAB | WEST
-					head = this.id | DOOR | WEST
-					headCut = this.id | PANE | WEST
-					tx ++
-					mx = 1
-					break
-				default:
-					return console.log("oh no! piston isn't facing anywhere")
-			}
-			world.setBlock(tx,ty,tz,0,false,false,false,false)
-			var e = new entities[entityIds.MovingBlock](head,tx,ty,tz,x,y,z, tickTime*2)
-			world.addEntity(e,false)
-			//world.setTimeout(function(){
-			//	e.changeBlock(headCut)
-			//}, tickTime*0.5)
-			world.setTimeout(function(){
-				world.setBlock(x,y,z,body,false,false,false,false)
-			}, tickTime*2)
-			
-			var pull = getPistonPulledBlocks(x,y,z,mx,my,mz,world)
-			if(pull){
-				for(var i=0; i<pull.length; i+=4){
-					var bx = pull[i], by = pull[i+1], bz = pull[i+2]
-					var tags = world.getTags(bx,by,bz)
-					world.setBlock(bx,by,bz,0,false,false,false,false)
-					world.addEntity(new entities[entityIds.MovingBlock](pull[i+3],bx,by,bz,bx-mx,by-my,bz-mz, tickTime*2, true, tags),false)
-				}
-			}
-		}
 	},
 	
 	{
@@ -9933,7 +9801,7 @@ const blockData = [
 			
 			if(!(x+tx === sx && y+ty === sy && z+tz === sz) && !detected) return
 			
-			world.setTimeout(function(){
+			world.setTimeout(() => {
 				var curBlock = world.getBlock(x,y,z)
 				if(!(curBlock && blockData[curBlock].name === "observer")) return
 				
@@ -10478,15 +10346,7 @@ const blockData = [
 		Name:"Red Redstone Lamp",
 		textures:"redstoneLamp",
 		blockStates:"redstoneLamp",
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
-			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
-			var block = world.getBlock(x,y,z)
-			let target = setBlockState(block,this.blockStatesMap.lit,power)
-			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
-		},
-		onset:function(x,y,z,world){
-			this.onpowerupdate(x,y,z,null,null,null,null,world)
-		},
+		copyPropertiesHere:"redstoneLamp",
 		coloredRedstoneLamp:true,
 		category:"redstone"
 	},
@@ -10495,15 +10355,7 @@ const blockData = [
 		Name:"Yellow Redstone Lamp",
 		textures:"redstoneLamp",
 		blockStates:"redstoneLamp",
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
-			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
-			var block = world.getBlock(x,y,z)
-			let target = setBlockState(block,this.blockStatesMap.lit,power)
-			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
-		},
-		onset:function(x,y,z,world){
-			this.onpowerupdate(x,y,z,null,null,null,null,world)
-		},
+		copyPropertiesHere:"redstoneLamp",
 		coloredRedstoneLamp:true,
 		category:"redstone"
 	},
@@ -10512,15 +10364,7 @@ const blockData = [
 		Name:"Green Redstone Lamp",
 		textures:"redstoneLamp",
 		blockStates:"redstoneLamp",
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
-			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
-			var block = world.getBlock(x,y,z)
-			let target = setBlockState(block,this.blockStatesMap.lit,power)
-			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
-		},
-		onset:function(x,y,z,world){
-			this.onpowerupdate(x,y,z,null,null,null,null,world)
-		},
+		copyPropertiesHere:"redstoneLamp",
 		coloredRedstoneLamp:true,
 		category:"redstone"
 	},
@@ -10529,15 +10373,7 @@ const blockData = [
 		Name:"Blue Redstone Lamp",
 		textures:"redstoneLamp",
 		blockStates:"redstoneLamp",
-		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
-			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
-			var block = world.getBlock(x,y,z)
-			let target = setBlockState(block,this.blockStatesMap.lit,power)
-			if(block !== target) world.setBlock(x,y,z,target,false,false,false,false)
-		},
-		onset:function(x,y,z,world){
-			this.onpowerupdate(x,y,z,null,null,null,null,world)
-		},
+		copyPropertiesHere:"redstoneLamp",
 		coloredRedstoneLamp:true,
 		category:"redstone"
 	},
@@ -10607,7 +10443,11 @@ const blockData = [
 		hidden:true,
 		drop:"sweetBerries",
 		liquidBreakable:"drop",
-		category:"nature"
+		category:"nature",
+		growSlow:function(x,y,z,world,block){
+			let age = +getBlockState(block,this.blockStatesMap.age)
+			if(age !== 3) world.setBlock(x,y,z,setBlockState(block,this.blockStatesMap.age,(age+1)+""))
+		},
 	},
 	{
 		name:"smallDripleaf",
@@ -10639,14 +10479,11 @@ const blockData = [
 		shadow: false,
 		smoothLight:false,
 		liquidBreakable:"drop",
-		onupdate:function(x,y,z,block,world,sx,sy,sz){//todo n: stem
-			var me = blockIds.bigDripleaf
+		onupdate:function(x,y,z,block,world,sx,sy,sz){
 			var top = world.getBlock(x,y+1,z)
 			var isIt = blockData[top].name === "bidDripleaf"
-			if(block === me && isIt){
-				world.setBlock(x,y,z,me | CROSS,false,false,false,false)
-			}else if(block === (me | CROSS) && !isIt){
-				world.setBlock(x,y,z,me,false,false,false,false)
+			if(isIt){
+				world.setBlock(x,y,z, setBlockState(blockIds.bigDripleafStem,blockStateMaps.bigDripleafStem.facing,getBlockState(block,this.blockStatesMap.facing)), false,false,false,false)
 			}
 		},
 		category:"nature"
@@ -10664,7 +10501,8 @@ const blockData = [
 			return (world.getRepeaterPower(x,y,z,x-pz,y,z-px) || world.getBlockPower(x-pz,y,z-px,null)
 							|| world.getRepeaterPower(x,y,z,x+pz,y,z+px) || world.getBlockPower(x+pz,y,z+px,null)) ? true : false
 		},
-		category:"redstone"
+		category:"redstone",
+		//todo n: shape
 	},
 	{
 		name:"andGate",
@@ -10779,9 +10617,30 @@ const blockData = [
 		useAs:function(x,y,z,block,face,world){
 			if(face === "bottom") return this.id+this.blockStatesMap.vertical_direction.down
 			else return this.id+this.blockStatesMap.vertical_direction.up
+		},
+		growSlow:function(x,y,z,world,block){
+			let renjofdxnjlasfrsjln = world.getBlock(x,y+2,z), asoieuhisd
+			if(blockData[renjofdxnjlasfrsjln].liquid){
+				let y2
+				for(y2=y-1; y2>y-12; y2--){
+					asoieuhisd = world.getBlock(x,y2,z)
+					if(blockData[asoieuhisd].name !== "pointedDripstone") break
+				}
+				if(!blockData[asoieuhisd].solid){
+					world.setBlock(x,y2,z, blockIds.pointedDripstone + this.blockStatesMap.vertical_direction.down)
+					let y3
+					for(y3=y2-1; y3>y2-12; y3--){ // find ones pointing up underneath
+						asoieuhisd = world.getBlock(x,y3,z)
+						if(blockData[asoieuhisd].solid) break
+					}
+					if(blockData[asoieuhisd].solid){
+						world.setBlock(x,y3+1,z, blockIds.pointedDripstone + this.blockStatesMap.vertical_direction.up)
+					}
+				}
+			}
 		}
 	},
-	{//todo n: wall sign & placing on wall
+	{
 		name:"oakSign",
 		nameMcd:"oak_sign",
 		Name:"Oak sign",
@@ -10797,17 +10656,19 @@ const blockData = [
 		iconTexture:"oakSign",
 		flatIcon:true,
 		sign:true,
+		copyFromProperties:["sign"],
 		hardness:1,
 		woodSound:true,
 		type:"wood",
 		category:"decoration",
 		shadow:false,
 		shapeName:"none",
-		onplace:function(x,y,z, player,world){//todo n
+		useAsWall:"oakWallSign",
+		onplace:function(x,y,z, player,world){
 			var block = world.getBlock(x,y,z)
 			var tags = {sign:true}
 			var rot = round(player.ry*16/Math.PId)
-			if((block & STAIR) === STAIR) rot = round(rot/4)*4
+			if(!this.useAsWall) rot = round(rot/4)*4
 			tags.rot = rot
 			world.setTags(x,y,z,tags)
 		},
@@ -10841,7 +10702,9 @@ const blockData = [
 		hardness:1,
 		woodSound:true,
 		type:"wood",
-		category:"decoration"
+		category:"decoration",
+		useAsWall:"birchWallSign",
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"acaciaSign",
@@ -10862,7 +10725,9 @@ const blockData = [
 		hardness:1,
 		woodSound:true,
 		type:"wood",
-		category:"decoration"
+		category:"decoration",
+		useAsWall:"acaciaWallSign",
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"jungleSign",
@@ -10883,7 +10748,9 @@ const blockData = [
 		hardness:1,
 		woodSound:true,
 		type:"wood",
-		category:"decoration"
+		category:"decoration",
+		useAsWall:"jungleWallSign",
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"spruceSign",
@@ -10904,7 +10771,9 @@ const blockData = [
 		hardness:1,
 		woodSound:true,
 		type:"wood",
-		category:"decoration"
+		category:"decoration",
+		useAsWall:"spruceWallSign",
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"darkOakSign",
@@ -10926,7 +10795,9 @@ const blockData = [
 		woodSound:true,
 		type:"wood",
 		color:[0.85,0.7,0.2],
-		category:"decoration"
+		category:"decoration",
+		useAsWall:"darkOakWallSign",
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"mangroveSign",
@@ -10947,7 +10818,9 @@ const blockData = [
 		hardness:1,
 		woodSound:true,
 		type:"wood",
-		category:"decoration"
+		category:"decoration",
+		useAsWall:"mangroveWallSign",
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"composter",
@@ -11003,7 +10876,11 @@ const blockData = [
 		liquidBreakable:"drop",
 		dropAmount:function(block){
 			return +getBlockState(block, this.blockStatesMap.age) === 2 ? randInt(2,3) : 1
-		}
+		},
+		growSlow:function(x,y,z,world,block){
+			let age = +getBlockState(block,this.blockStatesMap.age)
+			if(age !== 2) world.setBlock(x,y,z,setBlockState(block,this.blockStatesMap.age,(age+1)+""))
+		},
 	},
 	{
 		name:"cookie",
@@ -11315,7 +11192,11 @@ const blockData = [
 		},
 		dropAmount:function(block){
 			return +getBlockState(block, this.blockStatesMap.age) === 3 ? randInt(1,4) : 1
-		}
+		},
+		growSlow:function(x,y,z,world,block){
+			let age = +getBlockState(block,this.blockStatesMap.age)
+			if(age !== 3) world.setBlock(x,y,z,setBlockState(block,this.blockStatesMap.age,(age+1)+""))
+		},
 	},
 	{
 		name:"potatoes",
@@ -11338,7 +11219,11 @@ const blockData = [
 		},
 		dropAmount:function(block){
 			return +getBlockState(block, this.blockStatesMap.age) === 7 ? randInt(1,5) : 1
-		}
+		},
+		growSlow:function(x,y,z,world,block){
+			let age = +getBlockState(block,this.blockStatesMap.age)
+			if(age !== 7) world.setBlock(x,y,z,setBlockState(block,this.blockStatesMap.age,(age+1)+""))
+		},
 	},
 	{
 		name:"carrots",
@@ -11361,7 +11246,11 @@ const blockData = [
 		},
 		dropAmount:function(block){
 			return +getBlockState(block, this.blockStatesMap.age) === 7 ? randInt(2,5) : 1
-		}
+		},
+		growSlow:function(x,y,z,world,block){
+			let age = +getBlockState(block,this.blockStatesMap.age)
+			if(age !== 7) world.setBlock(x,y,z,setBlockState(block,this.blockStatesMap.age,(age+1)+""))
+		},
 	},
 	
 	{
@@ -11727,7 +11616,9 @@ const blockData = [
 		hardness:1,
 		woodSound:true,
 		type:"wood",
-		category:"decoration"
+		category:"decoration",
+		useAsWall:"crimsonWallSign",
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"warpedSign",
@@ -11748,7 +11639,9 @@ const blockData = [
 		hardness:1,
 		woodSound:true,
 		type:"wood",
-		category:"decoration"
+		category:"decoration",
+		useAsWall:"warpedWallSign",
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"dropper",
@@ -11788,7 +11681,7 @@ const blockData = [
 				world.setTagByName(x,y,z,"on",power,false)
 				if(power){
 					var me = this
-					world.setTimeout(function(){
+					world.setTimeout(() => {
 						world.playSound(x,y,z, "click")
 						if(!tags || !tags.contents) return
 						var items = tags.contents.filter(r => r)
@@ -11881,7 +11774,7 @@ const blockData = [
 				world.setTagByName(x,y,z,"on",power,false)
 				if(power){
 					var me = this
-					world.setTimeout(function(){
+					world.setTimeout(() => {
 						world.playSound(x,y,z, "click")
 						if(!tags || !tags.contents) return
 						var items = tags.contents.filter(r => r)
@@ -12196,7 +12089,7 @@ const blockData = [
 			
 			if(power === output) return
 			var me = this
-			var t = function(){
+			var t = () => {
 				block = world.getBlock(x,y,z)
 				power = me.on(x,y,z,dx,dy,dz,subtractMode,world)
 				output = world.getTagByName(x,y,z,"output") || 0
@@ -12939,7 +12832,9 @@ const blockData = [
 		hardness:1,
 		woodSound:true,
 		type:"wood",
-		category:"decoration"
+		category:"decoration",
+		useAsWall:"bambooWallSign",
+		copyPropertiesHere:"oakSign"
 	},
 	{ 
 		name: "bambooTrapdoor",
@@ -13059,7 +12954,9 @@ const blockData = [
 		hardness:1,
 		woodSound:true,
 		type:"wood",
-		category:"decoration"
+		category:"decoration",
+		useAsWall:"cherryWallSign",
+		copyPropertiesHere:"oakSign"
 	},
 	{ 
 		name: "cherryTrapdoor",
@@ -13171,7 +13068,11 @@ const blockData = [
 		solid: false,
 		drop:"pitcherPod",
 		hidden:true,
-		liquidBreakable:"drop"
+		liquidBreakable:"drop",
+		growSlow:function(x,y,z,world,block){//todo n: make half work
+			let age = +getBlockState(block,this.blockStatesMap.age)
+			if(age !== 4) world.setBlock(x,y,z,setBlockState(block,this.blockStatesMap.age,(age+1)+""))
+		},
 	},
 	{
 		name: "torchflower",
@@ -13392,7 +13293,8 @@ const blockData = [
 		blastResistance: 6,
 		material: "mineable/pickaxe",
 		category:"nature",
-		coralBlock:true
+		coralBlock:true,
+		copyPropertiesHere:"bubbleCoralBlock"
 	},
 	{
 		name:"bubbleCoralBlock",
@@ -13403,7 +13305,22 @@ const blockData = [
 		blastResistance: 6,
 		material: "mineable/pickaxe",
 		category:"nature",
-		coralBlock:true
+		coralBlock:true,
+		growSlow:function(x,y,z,world,block){
+			let wet = (
+				blockData[world.getBlock(x,y+1,z)].wet ||
+				blockData[world.getBlock(x,y-1,z)].wet ||
+				blockData[world.getBlock(x+1,y,z)].wet ||
+				blockData[world.getBlock(x-1,y,z)].wet ||
+				blockData[world.getBlock(x,y,z+1)].wet ||
+				blockData[world.getBlock(x,y,z-1)].wet
+			)
+			if(!wet){
+				let name = this.name
+				name = "dead" + name[0].toUpperCase() + name.substring(1)
+				world.setBlock(x, y, z, blockIds[name])
+			}
+		}
 	},
 	{
 		name:"fireCoralBlock",
@@ -13414,7 +13331,8 @@ const blockData = [
 		blastResistance: 6,
 		material: "mineable/pickaxe",
 		category:"nature",
-		coralBlock:true
+		coralBlock:true,
+		copyPropertiesHere:"bubbleCoralBlock"
 	},
 	{
 		name:"hornCoralBlock",
@@ -13425,7 +13343,8 @@ const blockData = [
 		blastResistance: 6,
 		material: "mineable/pickaxe",
 		category:"nature",
-		coralBlock:true
+		coralBlock:true,
+		copyPropertiesHere:"bubbleCoralBlock"
 	},
 	{
 		name:"tubeCoralBlock",
@@ -13436,7 +13355,8 @@ const blockData = [
 		blastResistance: 6,
 		material: "mineable/pickaxe",
 		category:"nature",
-		coralBlock:true
+		coralBlock:true,
+		copyPropertiesHere:"bubbleCoralBlock"
 	},
 	{
 		name:"brainCoral",
@@ -13450,7 +13370,8 @@ const blockData = [
 		solid:false,
 		shadow:false,
 		potCross:true,
-		wetgrassSound:true
+		wetgrassSound:true,
+		copyPropertiesHere:"bubbleCoralBlock"
 	},
 	{
 		name:"bubbleCoral",
@@ -13464,7 +13385,8 @@ const blockData = [
 		solid:false,
 		shadow:false,
 		potCross:true,
-		wetgrassSound:true
+		wetgrassSound:true,
+		copyPropertiesHere:"bubbleCoralBlock"
 	},
 	{
 		name:"fireCoral",
@@ -13478,7 +13400,8 @@ const blockData = [
 		solid:false,
 		shadow:false,
 		potCross:true,
-		wetgrassSound:true
+		wetgrassSound:true,
+		copyPropertiesHere:"bubbleCoralBlock"
 	},
 	{
 		name:"hornCoral",
@@ -13492,7 +13415,8 @@ const blockData = [
 		solid:false,
 		shadow:false,
 		potCross:true,
-		wetgrassSound:true
+		wetgrassSound:true,
+		copyPropertiesHere:"bubbleCoralBlock"
 	},
 	{
 		name:"tubeCoral",
@@ -13506,9 +13430,10 @@ const blockData = [
 		solid:false,
 		shadow:false,
 		potCross:true,
-		wetgrassSound:true
+		wetgrassSound:true,
+		copyPropertiesHere:"bubbleCoralBlock"
 	},
-	{//todo n: wall fan & placing on wall
+	{
 		name:"brainCoralFan",
 		nameMcd:"brain_coral_fan",
 		Name:"Sponge-like Coral Fan",
@@ -13519,7 +13444,9 @@ const blockData = [
 		transparent:true,
 		solid:false,
 		shadow:false,
-		wetgrassSound:true
+		wetgrassSound:true,
+		useAsWall:"brainCoralWallFan",
+		copyPropertiesHere:"bubbleCoralBlock"
 	},
 	{
 		name:"bubbleCoralFan",
@@ -13532,7 +13459,9 @@ const blockData = [
 		transparent:true,
 		solid:false,
 		shadow:false,
-		wetgrassSound:true
+		wetgrassSound:true,
+		useAsWall:"bubbleCoralWallFan",
+		copyPropertiesHere:"bubbleCoralBlock"
 	},
 	{
 		name:"fireCoralFan",
@@ -13545,7 +13474,9 @@ const blockData = [
 		transparent:true,
 		solid:false,
 		shadow:false,
-		wetgrassSound:true
+		wetgrassSound:true,
+		useAsWall:"fireCoralWallFan",
+		copyPropertiesHere:"bubbleCoralBlock"
 	},
 	{
 		name:"hornCoralFan",
@@ -13558,7 +13489,9 @@ const blockData = [
 		transparent:true,
 		solid:false,
 		shadow:false,
-		wetgrassSound:true
+		wetgrassSound:true,
+		useAsWall:"hornCoralWallFan",
+		copyPropertiesHere:"bubbleCoralBlock"
 	},
 	{
 		name:"tubeCoralFan",
@@ -13571,7 +13504,9 @@ const blockData = [
 		transparent:true,
 		solid:false,
 		shadow:false,
-		wetgrassSound:true
+		wetgrassSound:true,
+		useAsWall:"tubeCoralWallFan",
+		copyPropertiesHere:"bubbleCoralBlock"
 	},
 	{
 		name:"minecart",
@@ -13763,7 +13698,7 @@ const blockData = [
 		textures3:new Array(6).fill("cornStage3"),
 		textures4:new Array(6).fill("cornStage4"),
 		textures5:new Array(6).fill("cornStage5"),
-		blockStates:"wheat",
+		blockStates:[{name:"age",values:["0","1","2","3","4","5"]}],
 		transparent: true,
 		shadow: false,
 		solid: false,
@@ -13775,7 +13710,11 @@ const blockData = [
 		},
 		dropAmount:function(block){
 			return +getBlockState(block, this.blockStatesMap.age) === 5 ? randInt(2,3) : 1
-		}
+		},//todo n: shape
+		growSlow:function(x,y,z,world,block){
+			let age = +getBlockState(block,this.blockStatesMap.age)
+			if(age !== 5) world.setBlock(x,y,z,setBlockState(block,this.blockStatesMap.age,(age+1)+""))
+		},
 	},
 	{
 		name:"corn",
@@ -14016,7 +13955,8 @@ const blockData = [
 		hardness: 1,
 		blastResistance: 1,
 		material: "mineable/axe",
-		stackSize: 16
+		stackSize: 16,
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"spruceWallSign",
@@ -14028,7 +13968,8 @@ const blockData = [
 		hardness: 1,
 		blastResistance: 1,
 		material: "mineable/axe",
-		stackSize: 16
+		stackSize: 16,
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"birchWallSign",
@@ -14040,7 +13981,8 @@ const blockData = [
 		hardness: 1,
 		blastResistance: 1,
 		material: "mineable/axe",
-		stackSize: 16
+		stackSize: 16,
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"acaciaWallSign",
@@ -14052,7 +13994,8 @@ const blockData = [
 		hardness: 1,
 		blastResistance: 1,
 		material: "mineable/axe",
-		stackSize: 16
+		stackSize: 16,
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"cherryWallSign",
@@ -14064,7 +14007,8 @@ const blockData = [
 		hardness: 1,
 		blastResistance: 1,
 		material: "mineable/axe",
-		stackSize: 16
+		stackSize: 16,
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"jungleWallSign",
@@ -14076,7 +14020,8 @@ const blockData = [
 		hardness: 1,
 		blastResistance: 1,
 		material: "mineable/axe",
-		stackSize: 16
+		stackSize: 16,
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"darkOakWallSign",
@@ -14088,7 +14033,8 @@ const blockData = [
 		hardness: 1,
 		blastResistance: 1,
 		material: "mineable/axe",
-		stackSize: 16
+		stackSize: 16,
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"paleOakWallSign",
@@ -14100,7 +14046,8 @@ const blockData = [
 		hardness: 1,
 		blastResistance: 1,
 		material: "mineable/axe",
-		stackSize: 16
+		stackSize: 16,
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"mangroveWallSign",
@@ -14112,7 +14059,8 @@ const blockData = [
 		hardness: 1,
 		blastResistance: 1,
 		material: "mineable/axe",
-		stackSize: 16
+		stackSize: 16,
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"bambooWallSign",
@@ -14124,7 +14072,8 @@ const blockData = [
 		hardness: 1,
 		blastResistance: 1,
 		material: "mineable/axe",
-		stackSize: 16
+		stackSize: 16,
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"oakHangingSign",
@@ -16508,7 +16457,8 @@ const blockData = [
 		blastResistance: 6,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadBrainCoralBlock",
@@ -16518,7 +16468,8 @@ const blockData = [
 		blastResistance: 6,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadBubbleCoralBlock",
@@ -16528,7 +16479,22 @@ const blockData = [
 		blastResistance: 6,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		growSlow:function(x,y,z,world,block){
+			let wet = (
+				blockData[world.getBlock(x,y+1,z)].wet ||
+				blockData[world.getBlock(x,y-1,z)].wet ||
+				blockData[world.getBlock(x+1,y,z)].wet ||
+				blockData[world.getBlock(x-1,y,z)].wet ||
+				blockData[world.getBlock(x,y,z+1)].wet ||
+				blockData[world.getBlock(x,y,z-1)].wet
+			)
+			if(wet){
+				let name = this.name
+				name = name[4].toLowerCase() + name.substring(5)
+				world.setBlock(x, y, z, blockIds[name])
+			}
+		}
 	},
 	{
 		name:"deadFireCoralBlock",
@@ -16538,7 +16504,8 @@ const blockData = [
 		blastResistance: 6,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadHornCoralBlock",
@@ -16548,7 +16515,8 @@ const blockData = [
 		blastResistance: 6,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadTubeCoral",
@@ -16560,7 +16528,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadBrainCoral",
@@ -16572,7 +16541,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadBubbleCoral",
@@ -16584,7 +16554,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadFireCoral",
@@ -16596,7 +16567,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadHornCoral",
@@ -16608,7 +16580,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadTubeCoralFan",
@@ -16620,7 +16593,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadBrainCoralFan",
@@ -16632,7 +16606,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadBubbleCoralFan",
@@ -16644,7 +16619,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadFireCoralFan",
@@ -16656,7 +16632,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadHornCoralFan",
@@ -16668,7 +16645,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadTubeCoralWallFan",
@@ -16680,7 +16658,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadBrainCoralWallFan",
@@ -16692,7 +16671,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadBubbleCoralWallFan",
@@ -16704,7 +16684,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadFireCoralWallFan",
@@ -16716,7 +16697,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"deadHornCoralWallFan",
@@ -16728,7 +16710,8 @@ const blockData = [
 		solid: false,
 		material: "mineable/pickaxe",
 		category: "build",
-		harvestToolsNames: "stone"
+		harvestToolsNames: "stone",
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"tubeCoralWallFan",
@@ -16737,7 +16720,8 @@ const blockData = [
 		blockStates: "ladder",
 		decreaseLight: 1,
 		transparent: true,
-		solid: false
+		solid: false,
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"brainCoralWallFan",
@@ -16746,7 +16730,8 @@ const blockData = [
 		blockStates: "ladder",
 		decreaseLight: 1,
 		transparent: true,
-		solid: false
+		solid: false,
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"bubbleCoralWallFan",
@@ -16755,7 +16740,8 @@ const blockData = [
 		blockStates: "ladder",
 		decreaseLight: 1,
 		transparent: true,
-		solid: false
+		solid: false,
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"fireCoralWallFan",
@@ -16764,7 +16750,8 @@ const blockData = [
 		blockStates: "ladder",
 		decreaseLight: 1,
 		transparent: true,
-		solid: false
+		solid: false,
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"hornCoralWallFan",
@@ -16773,7 +16760,8 @@ const blockData = [
 		blockStates: "ladder",
 		decreaseLight: 1,
 		transparent: true,
-		solid: false
+		solid: false,
+		copyPropertiesHere:"deadBubbleCoralBlock"
 	},
 	{
 		name:"seaPickle",
@@ -17372,7 +17360,8 @@ const blockData = [
 		hardness: 1,
 		blastResistance: 1,
 		material: "mineable/axe",
-		stackSize: 16
+		stackSize: 16,
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"warpedWallSign",
@@ -17384,7 +17373,8 @@ const blockData = [
 		hardness: 1,
 		blastResistance: 1,
 		material: "mineable/axe",
-		stackSize: 16
+		stackSize: 16,
+		copyPropertiesHere:"oakSign"
 	},
 	{
 		name:"structureBlock",
@@ -18761,7 +18751,15 @@ const blockData = [
 		hardness: 0.1,
 		blastResistance: 0.1,
 		material: "plant;mineable/axe",
-		category: "nature"
+		category: "nature",
+		liquidBreakable:"drop",
+		onupdate:function(x,y,z,block,world,sx,sy,sz){
+			var top = world.getBlock(x,y+1,z)
+			var isIt = blockData[top].name === "bidDripleaf"
+			if(!isIt){
+				world.setBlock(x,y,z, setBlockState(blockIds.bigDripleaf,blockStateMaps.bigDripleaf.facing,getBlockState(block,this.blockStatesMap.facing)), false,false,false,false)
+			}
+		},
 	},
 	{
 		name:"cobbledDeepslateStairs",
@@ -19524,10 +19522,12 @@ function initBlockData(){
 			}
 			data.blockStatesMap = obj
 			blockStateMaps[data.name] = obj
+		}else{
+			data.blockStatesMap = {}
 		}
 		if(data.copyPropertiesHere){
 			let other = blockData[blockIds[data.copyPropertiesHere]]
-			let arr = ["onupdate","onclick","onpowerupdate","onset","ondelete","ontagsupdate","activate","projectileHit","serveronuse","useAs"]
+			let arr = ["onupdate","onclick","onpowerupdate","onset","ondelete","ontagsupdate","activate","projectileHit","serveronuse","useAs","grow","tick"]
 			if(data.copyFromProperties) arr.push(...data.copyFromProperties)
 			for(let c=0; c<arr.length; c++){
 				let prop = arr[c]
@@ -25721,7 +25721,7 @@ function initBlockDataShapes(){
 			}
 		}
 		if(isOn !== shouldBeOn){
-			var t = function(){
+			var t = () => {
 				world.setBlock(x,y,z,target,false,false,false,false)
 				
 				var tblock = world.getBlock(tx,ty,tz)
@@ -31906,247 +31906,18 @@ class Section {
 			let y = (rnd >> 4 & 15) + this.y
 			let z = (rnd & 15) + this.z
 			if(i<18){
-				if ((blockID & isCube) === blockIds.grass || (blockID & isCube) === blockIds.mycelium) {
-					// Spread grass
-					if (!blockData[world.getBlock(x, y + 1, z, this.type)].transparent) {
-						world.setBlock(x, y, z, blockIds.dirt, false,false,false,false, this.type)
-						return
-					}
-
-					let rnd2 = Math.random() * 27 | 0
-					let x2 = rnd2 % 3 - 1
-					rnd2 = (rnd2 - x2 - 1) / 3
-					let y2 = rnd2 % 3 - 1
-					rnd2 = (rnd2 - y2 - 1) / 3
-					z += rnd2 - 1
-					x += x2
-					y += y2
-
-					let spreadTo = this.world.getBlock(x, y, z, this.type)
-					if ((spreadTo & isCube) === blockIds.dirt && this.world.getBlock(x, y + 1, z, this.type) === blockIds.air) {
-						this.world.setBlock(x, y, z, (blockID & isCube) | (spreadTo & (~isCube)), false,false,false,false, this.type)
-					}
-				} else if((blockID & isCube) === blockIds.crimsonNylium || (blockID & isCube) === blockIds.warpedNylium){
-					// Spread nylium
-					if (!blockData[world.getBlock(x, y + 1, z, this.type)].transparent) {
-						world.setBlock(x, y, z, blockIds.netherrack, false,false,false,false, this.type)
-						return
-					}
-
-					let rnd2 = Math.random() * 27 | 0
-					let x2 = rnd2 % 3 - 1
-					rnd2 = (rnd2 - x2 - 1) / 3
-					let y2 = rnd2 % 3 - 1
-					rnd2 = (rnd2 - y2 - 1) / 3
-					z += rnd2 - 1
-					x += x2
-					y += y2
-
-					let spreadTo = this.world.getBlock(x, y, z, this.type)
-					if ((spreadTo & isCube) === blockIds.netherrack && this.world.getBlock(x, y + 1, z, this.type) === blockIds.air) {
-						this.world.setBlock(x, y, z, (blockID & isCube) | (spreadTo & (~isCube)), false,false,false,false, this.type)
-					}
-				} else if (block.grow){
-					block.grow(x,y,z,this.world)
-				}else if(block.name === "vine" || block.name === "weepingVines"){
-					if(!this.world.getBlock(x,y-1,z)){
-						this.world.setBlock(x,y-1,z,blockID, false,false,false,false)
-					}
-				}else if(block.name === "twistingVines"){
-					let i = (rnd >> 8) + this.x
-					let j = (rnd >> 4 & 15) + this.y
-					let k = (rnd & 15) + this.z
-					if(!this.world.getBlock(x,y+1,z)){
-						this.world.setBlock(x,y+1,z,blockID, false,false,false,false)
-					}
+				if (block.grow){
+					block.grow(x,y,z,this.world,blockID)
 				}
 			}
 			if(i<8){
-				if(blockID === blockIds.tomatoPlant){
-					world.setBlock(x, y, z, blockIds.tomatoPlant|SLAB, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.tomatoPlant|SLAB)){
-					world.setBlock(x, y, z, blockIds.tomatoPlant|STAIR, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.tomatoPlant|STAIR)){
-					world.setBlock(x, y, z, blockIds.tomatoPlant|CROSS, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.tomatoPlant|CROSS)){
-					world.setBlock(x, y, z, blockIds.tomatoPlant|TALLCROSS, false,false,false,false, this.type)
-				}/*wheat*/else if(blockID === (blockIds.wheat)){
-					world.setBlock(x, y, z, blockIds.wheat|SLAB, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.wheat|SLAB)){
-					world.setBlock(x, y, z, blockIds.wheat|STAIR, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.wheat|STAIR)){
-					world.setBlock(x, y, z, blockIds.wheat|CROSS, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.wheat|CROSS)){
-					world.setBlock(x, y, z, blockIds.wheat|TALLCROSS, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.wheat|TALLCROSS)){
-					world.setBlock(x, y, z, blockIds.wheat|DOOR, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.wheat|DOOR)){
-					world.setBlock(x, y, z, blockIds.wheat|TORCH, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.wheat|TORCH)){
-					world.setBlock(x, y, z, blockIds.wheat|LANTERN, false,false,false,false, this.type)
-				}/*cactus fruit*/else if(blockID === (blockIds.newCactusFruit|CROSS)){
-					world.setBlock(x, y, z, blockIds.greenCactusFruit|CROSS, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.greenCactusFruit|CROSS)){
-					world.setBlock(x, y, z, blockIds.redCactusFruit|CROSS, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.redCactusFruit|CROSS)){
-					world.setBlock(x, y, z, blockIds.purpleCactusFruit|CROSS, false,false,false,false, this.type)
-				}/*cactus*/else if(blockID === (blockIds.cactus|CACTUS)){
-					var tall = 0
-					var maxTall = 3
-					for(var t=0; t<maxTall; t++){
-						if(world.getBlock(x,y-t,z) === (blockIds.cactus|CACTUS)) tall++
-						else break
-					}
-					if(tall >= maxTall) return
-					
-					var above = world.getBlock(x,y+1,z)
-					if(blockData[above].cactusFruit){
-						if(world.getBlock(x,y+2,z)) return //the cactus fruit can't replace blocks
-						world.setBlock(x,y+2,z, above, false,false,false,false, this.type) //move the cactus fruit up
-					}else if(above) return //there is a block so it can't grow
-					world.setBlock(x,y+1,z, blockIds.cactus|CACTUS, false,false,false,false, this.type)
-				}else if(blockID === blockIds.sweetBerryBush){
-					world.setBlock(x, y, z, blockIds.sweetBerryBush|SLAB, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.sweetBerryBush | SLAB)){
-					world.setBlock(x, y, z, blockIds.sweetBerryBush|STAIR, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.sweetBerryBush | STAIR)){
-					world.setBlock(x, y, z, blockIds.sweetBerryBush|CROSS, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.cocoa | (blockID & ROTATION))){
-					world.setBlock(x, y, z, blockIds.cocoa|SLAB|(blockID&ROTATION), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.cocoa | SLAB | (blockID & ROTATION))){
-					world.setBlock(x, y, z, blockIds.cocoa|STAIR|(blockID&ROTATION), false,false,false,false, this.type)
-				}else if(blockID === blockIds.beetroots){//beetroot
-					world.setBlock(x, y, z, (blockIds.beetroots|SLAB), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.beetroots | SLAB)){
-					world.setBlock(x, y, z, (blockIds.beetroots|STAIR), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.beetroots | STAIR)){
-					world.setBlock(x, y, z, (blockIds.beetroots|CROSS), false,false,false,false, this.type)
-				}else if(blockID === blockIds.potatoes){//potato
-					world.setBlock(x, y, z, (blockIds.potatoes|SLAB), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.potatoes | SLAB)){
-					world.setBlock(x, y, z, (blockIds.potatoes|STAIR), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.potatoes | STAIR)){
-					world.setBlock(x, y, z, (blockIds.potatoes|CROSS), false,false,false,false, this.type)
-				}else if(blockID === blockIds.carrots){//carrot
-					world.setBlock(x, y, z, (blockIds.carrots|SLAB), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.carrots | SLAB)){
-					world.setBlock(x, y, z, (blockIds.carrots|STAIR), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.carrots | STAIR)){
-					world.setBlock(x, y, z, (blockIds.carrots|CROSS), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.bambooStalk | STAIR) || blockID === (blockIds.bambooStalk | SLAB) || blockID === blockIds.bambooStalk || blockID === (blockIds.bambooStalk | CROSS) || blockID === (blockIds.bambooStalk | TALLCROSS)){
-					var tall = 0
-					var maxTall = 16
-					let blocks = []
-					for(let t=0; t<maxTall; t++){
-						let block = world.getBlock(x,y-t,z)
-						if(blockData[block].name === "bambooStalk"){
-							tall++
-							blocks.push(block)
-						}else break
-					}
-					if(tall >= maxTall) return
-					
-					var above = world.getBlock(x,y+1,z)
-					if(above) return //there is a block so it can't grow
-					world.setBlock(x,y+1,z, blockIds.bambooStalk | (tall > 3 ? STAIR : TALLCROSS), false,false,false,false, this.type)
-					if(tall > 3){
-						for(let t=0; t<tall; t++){
-							let block = blocks[t]
-							if(t === 0 && block !== (blockIds.bambooStalk | SLAB)) world.setBlock(x,y-t,z,blockIds.bambooStalk | SLAB,false,false,false,false)
-							else if(block !== blockIds.bambooStalk) world.setBlock(x,y-t,z,blockIds.bambooStalk,false,false,false,false)
-						}
-					}else{
-						for(let t=0; t<tall; t++){
-							let block = blocks[t]
-							if(t === 0 && block !== (blockIds.bambooStalk | CROSS)) world.setBlock(x,y-t,z,blockIds.bambooStalk | CROSS,false,false,false,false)
-						}
-					}
-				}else if(blockID === (blockIds.bambooShoot | CROSS)){
-					if(world.getBlock(x,y+1,z)) return
-					world.setBlock(x, y, z, blockIds.bambooStalk|CROSS, false,false,false,false, this.type)
-					world.setBlock(x, y+1, z, blockIds.bambooStalk|TALLCROSS, false,false,false,false, this.type)
-				}else if(block.name === "sugarCane"){
-					let b = blockID
-					var tall = 0
-					var maxTall = 3
-					for(var t=0; t<maxTall; t++){
-						if(world.getBlock(x,y-t,z) === b) tall++
-						else break
-					}
-					if(tall >= maxTall) return
-					
-					var above = world.getBlock(x,y+1,z)
-					if(above) return //there is a block so it can't grow
-					world.setBlock(x,y+1,z, b, false,false,false,false, this.type)
-				}else if(blockID === blockIds.pitcherCrop){
-					world.setBlock(x, y, z, (blockIds.pitcherCrop|SLAB), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.pitcherCrop | SLAB)){
-					world.setBlock(x, y, z, (blockIds.pitcherCrop|STAIR), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.pitcherCrop | STAIR)){
-					world.setBlock(x, y, z, (blockIds.pitcherCrop|CROSS), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.pitcherCrop | CROSS)){
-					world.setBlock(x, y, z, (blockIds.pitcherCrop|TALLCROSS), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.torchflower | SLAB)){
-					world.setBlock(x, y, z, (blockIds.torchflower|STAIR), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.torchflower | STAIR)){
-					world.setBlock(x, y, z, (blockIds.torchflower|CROSS), false,false,false,false, this.type)
-				}else if(block.name === "pointedDripstone"){
-					let renjofdxnjlasfrsjln = world.getBlock(x,y+2,z, this.type), asoieuhisd
-					if(blockData[renjofdxnjlasfrsjln].liquid){
-						let y2
-						for(y2=y-1; y2>y-12; y2--){
-							asoieuhisd = world.getBlock(x,y2,z)
-							if(blockData[asoieuhisd].name !== "pointedDripstone") break
-						}
-						if(!blockData[asoieuhisd].solid){
-							world.setBlock(x,y2,z,blockIds.pointedDripstone|FLIP,false,false,false,false)
-							let y3
-							for(y3=y2-1; y3>y2-12; y3--){
-								asoieuhisd = world.getBlock(x,y3,z)
-								if(blockData[asoieuhisd].solid) break
-							}
-							if(blockData[asoieuhisd].solid){
-								world.setBlock(x,y3+1,z,blockIds.pointedDripstone,false,false,false,false)
-							}
-						}
-					}
-				}else if(block.coralBlock || block.coral || block.coralFan){
-					let state = blockID&isState
-					if(state === CUBE || state === SLAB || state === STAIR || state === VERTICALSLAB){
-						let wall = state === STAIR || state === VERTICALSLAB
-						let wet = (
-							blockData[world.getBlock(x,y+1,z)].wet ||
-							blockData[world.getBlock(x,y-1,z)].wet ||
-							blockData[world.getBlock(x+1,y,z)].wet ||
-							blockData[world.getBlock(x-1,y,z)].wet ||
-							blockData[world.getBlock(x,y,z+1)].wet ||
-							blockData[world.getBlock(x,y,z-1)].wet
-						)
-						let newState = wall?(wet?STAIR:VERTICALSLAB):(wet?CUBE:SLAB)
-						if(newState !== state){
-							world.setBlock(x, y, z, (blockID&(~isState))|newState, false,false,false,false, this.type)
-						}
-					}
-				}else if(blockID === blockIds.cornPlant){
-					world.setBlock(x, y, z, (blockIds.cornPlant|SLAB), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.cornPlant|SLAB)){
-					world.setBlock(x, y, z, (blockIds.cornPlant|STAIR), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.cornPlant|STAIR)){
-					world.setBlock(x, y, z, (blockIds.cornPlant|CROSS), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.cornPlant|CROSS)){
-					world.setBlock(x, y, z, (blockIds.cornPlant|TALLCROSS), false,false,false,false, this.type)
-				}else if(blockID === (blockIds.cornPlant|TALLCROSS)){
-					world.setBlock(x, y, z, (blockIds.cornPlant|DOOR), false,false,false,false, this.type)
+				if(block.growSlow){
+					world.growSlow(x,y,z,this.world,blockID)
 				}
 			}
 			if(i<40){
-				if(block.name === "fire" || block.name === "Lava"){
-					if(this.world.world.settings.fireSpreads) block.tick(x,y,z,this.world)
-				}else if(block.tick){
+				if(block.tick){
 					block.tick(block,x,y,z,this.world)
-				}
-				if(block.beacon){
-					block.update(x,y,z,this.world)
 				}
 			}
 		}
@@ -37992,7 +37763,7 @@ class World{ // aka trueWorld
 			if(side && blockData[holding].useAsWall) holding = blockIds[blockData[holding].useAsWall]
 			let states = blockData[holding].blockStatesMap
 			
-			if(states && states.facing){
+			if(states.facing){
 				if(face === "top" && ("up" in states.facing)) holding = setBlockState(holding,states.facing,"up")
 				if(face === "bottom" && ("down" in states.facing)) holding = setBlockState(holding,states.facing,"down")
 				else{
@@ -38000,11 +37771,11 @@ class World{ // aka trueWorld
 					if(adjFace in states.facing) holding = setBlockState(holding,states.facing,adjFace)
 				}
 			}
-			if(states && states.face){
+			if(states.face){
 				let adjFace = face === "top" ? "ceiling" : face === "bottom" ? "floor" : "wall"
 				if(adjFace in states.face) holding = setBlockState(holding,states.face,adjFace)
 			}
-			if(states && states.axis){
+			if(states.axis){
 				switch(face){
 					case "north": case "south":
 						return setBlockState(holding,states.axis,"z")
@@ -38015,7 +37786,7 @@ class World{ // aka trueWorld
 				}
 			}
       
-      if(states && states.layers){
+      if(states.layers){
         let b = cblock
         let layer = +getBlockState(cblock,states.layers)
         if(blockData[cblock].id === blockData[holding].id && ((layer+1)+"" in states.layers)){
@@ -38059,10 +37830,11 @@ class World{ // aka trueWorld
 						amount = blockData[prevBlock].shearDropAmount
 					}
 				}else{
+					if(typeof theDrop === "function"){
+						block = theDrop(prevBlock)
+					}
 					if(typeof theDrop === "number") block = theDrop
-					else if(typeof theDrop === "function"){
-						block = blockIds[theDrop()]
-					}else if(Array.isArray(theDrop)){
+					else if(Array.isArray(theDrop)){
 						block = theDrop
 					}else if(theDrop) block = blockIds[theDrop]
 				}

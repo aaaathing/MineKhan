@@ -8283,6 +8283,7 @@ Division: //
     return true
   }
 
+	const {setBlockState,getBlockState} = win
 	function initBlockEntities(){
 		crack.entity = new crackEntity("crack1",0,0,0)
     for(var i=0; i<crack.length; i++) crack.entity.cacheTexture(crack[i])
@@ -8302,31 +8303,14 @@ Division: //
 		}
 		win.initServerBlockData()
 const blockDataAdditional = {
-	grass:{
-		/*customTexture:function(x,y,z,dimension,block,side){
-			if(block !== this.id || side === "bottom" || side === "top") return //Skip snow variant
-			if(side === "north" && world.getBlock(x,y-1,z+1,dimension) !== this.id) return
-			if(side === "south" && world.getBlock(x,y-1,z-1,dimension) !== this.id) return
-			if(side === "east" && world.getBlock(x+1,y-1,z,dimension) !== this.id) return
-			if(side === "west" && world.getBlock(x-1,y-1,z,dimension) !== this.id) return
-			return "grassSideGrass"
-		}*/
-	},
 	redstoneDust:{
 		clientTick:function(block,x,y,z,dimension,world){
-			if(!performFast && world.getPower(x,y,z,dimension)) world.addParticle(new entities[entityIds.RedstoneParticle](x,y-0.49,z,null,(block&FLIP)===FLIP),dimension)
-		},
-		alwaysCustomTexture:true,
-		customTexture:function(x,y,z,dimension,block,side,originalShapeVerts,tags){
-			const up = getTagBits(tags,"up",this.id), down = getTagBits(tags,"down",this.id)
-			if(originalShapeVerts.t) side = originalShapeVerts.t
-			else return (side === "top" || side === "bottom") && up && down && false
-			let tex
-			if(side === "west") tex = tags && (getTagBits(tags,"westUp",this.id) || up)
-			else if(side === "east") tex = tags && (getTagBits(tags,"eastUp",this.id) || up)
-			else if(side === "south") tex = tags && (getTagBits(tags,"northUp",this.id) || up)
-			else if(side === "north") tex = tags && (getTagBits(tags,"southUp",this.id) || up)
-			return tex ? "redstoneDustLine" : false
+			if(!performFast && world.getPower(x,y,z,dimension)) world.addParticle(new entities[entityIds.RedstoneParticle](x,y-0.49,z,null,false),dimension)
+		}
+	},
+	blueRedstoneDust:{
+		clientTick:function(block,x,y,z,dimension,world){
+			if(!performFast && world.getPower(x,y,z,dimension)) world.addParticle(new entities[entityIds.RedstoneParticle](x,y-0.49,z,null,true),dimension)
 		}
 	},
 	torch:{
@@ -8334,70 +8318,72 @@ const blockDataAdditional = {
 			if(performFast) return
 			let wall = this.id | SLAB
 			let pix = 1/16
-			switch(block){
-				case wall | NORTH:
+			y += pix*2
+			world.addParticle(new entities[entityIds.FlameParticle](x,y,z),dimension)
+		},
+	},
+	wallTorch:{
+		clientTick:function(block,x,y,z,dimension){
+			if(performFast) return
+			let wall = this.id | SLAB
+			let pix = 1/16
+			switch(getBlockState(block,this.blockStatesMap.facing)){
+				case "north":
 					z += pix*5
 					y += pix*6
 					break
-				case wall | SOUTH:
+				case "south":
 					z -= pix*5
 					y += pix*6
 					break
-				case wall | EAST:
+				case "east":
 					x += pix*5
 					y += pix*6
 					break
-				case wall | WEST:
+				case "west":
 					x -= pix*5
 					y += pix*6
 					break
-				default:
-					y += pix*2
 			}
 			world.addParticle(new entities[entityIds.FlameParticle](x,y,z),dimension)
 		},
 	},
 	soulTorch:{
-		 clientTick:function(block,x,y,z,dimension){
+		clientTick:function(block,x,y,z,dimension){
 			if(performFast) return
 			let wall = this.id | SLAB
 			let pix = 1/16
-			switch(block){
-				case wall | NORTH:
+			y += pix*2
+			world.addParticle(new entities[entityIds.FlameParticle](x,y,z,"soul"),dimension)
+		},
+	},
+	soulWallTorch:{
+		clientTick:function(block,x,y,z,dimension){
+			if(performFast) return
+			let wall = this.id | SLAB
+			let pix = 1/16
+			switch(getBlockState(block,this.blockStatesMap.facing)){
+				case "north":
 					z += pix*5
 					y += pix*6
 					break
-				case wall | SOUTH:
+				case "south":
 					z -= pix*5
 					y += pix*6
 					break
-				case wall | EAST:
+				case "east":
 					x += pix*5
 					y += pix*6
 					break
-				case wall | WEST:
+				case "west":
 					x -= pix*5
 					y += pix*6
 					break
-				default:
-					y += pix*2
 			}
 			world.addParticle(new entities[entityIds.FlameParticle](x,y,z,"soul"),dimension)
 		},
 	},
-	sandstone:{
-		customTexture:function(x,y,z,dimension,block,side){
-			if(world.getBlock(x,y+1,z,dimension) === block) return "sandstoneBottom"
-		},
-	},
-	redSandstone:{
-		customTexture:function(x,y,z,dimension,block,side){
-			if(world.getBlock(x,y+1,z,dimension) === block) return "redSandstoneBottom"
-		}
-	},
 	dropper:{
-		upTextures:fillTextureArray(["furnaceTop","dropperFrontVertical","furnaceTop"]),
-		downTextures:fillTextureArray(["dropperFrontVertical","furnaceTop","furnaceTop"]),
 		onclientclick:function(x,y,z,dimension){
 			containerData.x = x
 			containerData.y = y
@@ -8408,8 +8394,6 @@ const blockDataAdditional = {
 		},
 	},
 	dispenser:{
-		upTextures:fillTextureArray(["furnaceTop","dispenserFrontVertical","furnaceTop"]),
-		downTextures:fillTextureArray(["dispenserFrontVertical","furnaceTop","furnaceTop"]),
 		onclientclick:function(x,y,z,dimension){
 			containerData.x = x
 			containerData.y = y
@@ -8481,25 +8465,23 @@ const blockDataAdditional = {
 			let pix = 1/16
 			let on = this.id | SLAB
 			y -= rand(4,8)*pix
-			switch(block){
-				case on | NORTH:
+			switch(getBlockState(block,this.blockStatesMap.facing)){
+				case "north":
 					z -= 0.51
 					x += rand(-5,5)*pix
 					break
-				case on | SOUTH:
+				case "south":
 					z += 0.51
 					x += rand(-5,5)*pix
 					break
-				case on | EAST:
+				case "east":
 					x -= 0.51
 					z += rand(-5,5)*pix
 					break
-				case on | WEST:
+				case "west":
 					x += 0.51
 					z += rand(-5,5)*pix
 					break
-				default:
-					return
 			}
 			world.addParticle(new entities[entityIds.FlameParticle](x,y,z),dimension)
 		}
@@ -8555,31 +8537,38 @@ const blockDataAdditional = {
 			if(performFast || !world.getPower(x,y,z,dimension)) return
 			let wall = this.id | SLAB
 			let pix = 1/16
-			switch(block){
-				case wall | NORTH:
+			y += pix*2
+			world.addParticle(new entities[entityIds.RedstoneParticle](x,y,z),dimension)
+		},
+	},
+	redstoneWallTorch:{
+		clientTick:function(block,x,y,z,dimension,world){
+			if(performFast || !world.getPower(x,y,z,dimension)) return
+			let wall = this.id | SLAB
+			let pix = 1/16
+			switch(getBlockState(block,this.blockStatesMap.facing)){
+				case "north":
 					z += pix*5
 					y += pix*6
 					break
-				case wall | SOUTH:
+				case "south":
 					z -= pix*5
 					y += pix*6
 					break
-				case wall | EAST:
+				case "east":
 					x += pix*5
 					y += pix*6
 					break
-				case wall | WEST:
+				case "west":
 					x -= pix*5
 					y += pix*6
 					break
-				default:
-					y += pix*2
 			}
 			world.addParticle(new entities[entityIds.RedstoneParticle](x,y,z),dimension)
 		},
 	},
 	debugStick:{
-		Name:function(){
+		Name:function(){//todo n
 			let str
 			if(blockMode === CUBE) str = "Get Tags"
 			else if(blockMode === SLAB) str = "Change Block State"
@@ -8864,7 +8853,7 @@ otherwise
 				if(ent.type === "Sign" && ent.x === x && ent.y === y && ent.z === z && ent.dimension === dimension) return
 			}
 			block = block || world.getBlock(x,y,z,dimension)
-			world.addEntity(new entities[entityIds.Sign](x,y,z,this.id,block),false,dimension)
+			world.addEntity(new entities[entityIds.Sign](x,y,z,block),false,dimension)
 		}
     
 		if(0/*todo n*/)for (let i = 0; i < BLOCK_COUNT; i++) {
@@ -8875,7 +8864,7 @@ otherwise
           break
         }
       }
-      if(baseBlock.liquid){
+      if(baseBlock.liquid){//todo n
 				Object.assign(baseBlock,liquidData)
       }
       if(baseBlock.sign){
@@ -16191,13 +16180,12 @@ r 11 y  n  n  n
   entities[entities.length] = class Sign extends Entity{
 		static name2 = "Sign"
     constructor(x,y,z,base,block){
-			let signBlock = (block & STAIR) === STAIR ? (base | CROSS) : (base | SLAB)
-      const v = generateBlockVAO(signBlock, {poleSide:blockData[block].poleSide,poleTop:blockData[block].poleTop})
+      const v = generateBlockVAO(block, {poleSide:blockData[block].poleSide,poleTop:blockData[block].poleTop})
 			super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, null,null, v.size, Infinity, v.vao)
       this.width = this.height = this.depth = 16/24
+			this.block = block
       this.offsetY = -0.15
       this.from = p.id
-      this.baseBlock = base
       this.noHitbox = true
       this.textEnt = null, this.textEnt2 = null
       this.prevText = null, this.prevText2 = null
@@ -16208,10 +16196,9 @@ r 11 y  n  n  n
     update() {
 			let block = this.world.getBlock(this.x,this.y,this.z,this.dimension)
 			if(block != this.baseBlock){
-      	if((block&isCube) !== this.baseBlock) this.canDespawn = true
+      	if(block !== this.block) this.canDespawn = true
 				else{
-					let base = this.baseBlock
-					let signBlock = (block & STAIR) === STAIR ? (base | CROSS) : (base | SLAB)
+					let signBlock = this.block
 					let v = generateBlockVAO(signBlock)
 		      this.faces = v.size
 					this.vao = v.vao
@@ -16253,7 +16240,7 @@ r 11 y  n  n  n
             this.textEnt.setText(tags.text)
           }else{
             this.textEnt = this.world.generateTextForEntity(tags.text,this,1/8,[0,0,0],null)
-            if((block & isState) === STAIR){
+            if(!blockData[block].useAsWall){
               this.textEnt.offsetZ = -5.5/16
             }else{
               this.textEnt.offsetZ = 1/16
@@ -16267,7 +16254,7 @@ r 11 y  n  n  n
             this.textEnt2.setText(tags.text2)
           }else{
             this.textEnt2 = this.world.generateTextForEntity(tags.text2,this,1/8,[0,0,0],null)
-            if((block & isState) === STAIR){
+            if(!blockData[block].useAsWall){
               this.textEnt2.offsetZ = 7.25/16
             }else{
               this.textEnt2.offsetZ = 1.25/16
