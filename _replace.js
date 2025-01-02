@@ -25,6 +25,7 @@ sounds
 
 	async function getMCData(path){
 		//return await fs.promises.readFile(require.resolve("minecraft-data/minecraft-data/data/"+path))
+		return await fetch("https://raw.githack.com/PrismarineJS/minecraft-data/master/data/"+path).then(r=>r.json())
 		return await fetch("https://github.com/PrismarineJS/minecraft-data/raw/refs/heads/master/data/"+path).then(r=>r.json())
 	}
 
@@ -38,9 +39,9 @@ sounds
 	}
 
 	let str=fs.readFileSync("public/minekhan/beta/allupdate/_mksrc10test-world.js","utf-8")
-	let nbd=await getMCData("pc/1.21.3/blocks.json").then(r=>r.json())
-	let nitem=await getMCData("pc/1.21.3/items.json").then(r=>r.json())
-	let nfd=await getMCData("pc/1.21.3/foods.json").then(r=>r.json())
+	let nbd=await getMCData("pc/1.21.3/blocks.json")
+	let nitem=await getMCData("pc/1.21.3/items.json")
+	let nfd=await getMCData("pc/1.21.3/foods.json")
 	let start=str.indexOf('const blockData')
 	let end=str.indexOf('const BLOCK_COUNT')
 	let bstr=str.slice(start,end)
@@ -223,7 +224,7 @@ sounds
 	// ----------------------------------
 	// entity
 	console.log("doing")
-	let ned=await getMCData("1.20.5/entities.json").then(r=>r.json())
+	let ned=await getMCData("pc/1.20.5/entities.json")
 	start=str.indexOf('const entityData')
 	end=str.indexOf('win.entityData = entityData')
 	bstr=str.slice(start,end)
@@ -248,22 +249,22 @@ sounds
 			let nameMcd = ne.name, name = camelCase(nameMcd)
 			b = {properties:[{key:{name:"name"},value:{value:name,range:[edBeforeEnd,edBeforeEnd]}}],range:[edBeforeEnd,edBeforeEnd]}
 			let str = ",\n\t{"
-			str += " name:"+JSON.stringify(name)+","
-			if(name !== nameMcd) str += " nameMcd:"+JSON.stringify(nameMcd)+","
-			str += " Name:"+JSON.stringify(ne.displayName)
+			str += "\n\t\tname:"+JSON.stringify(name)+","
+			if(name !== nameMcd) str += "\n\t\tnameMcd:"+JSON.stringify(nameMcd)+","
+			str += "\n\t\tName:"+JSON.stringify(ne.displayName)
 			replace.push([edBeforeEnd,edBeforeEnd, str, addnewIdx])
 			b.addnewIdx = addnewIdx
 			bid[nameMcd]=bd.length,bd.push(b)
 		}
 		const space = "\n\t\t"
 		b.space = space
-		replaceProp(b,"type",ne.type,space,["Name","nameMcd","name"])
+		replaceProp(b,"type",JSON.stringify(ne.type),space,["Name","nameMcd","name"])
 		replaceProp(b,"width",ne.width,space,["Name","nameMcd","name"])
 		replaceProp(b,"height",ne.height,space,["Name","nameMcd","name"])
 		replaceProp(b,"depth",ne.length??ne.width,space,["Name","nameMcd","name"])
 		replaceProp(b,"metadata",JSON.stringify(ne.metadataKeys),space,["Name","nameMcd","name"], prevMd)
 		if(isnew){
-			replace.push([edBeforeEnd,edBeforeEnd, " }", addnewIdx+=100])
+			replace.push([edBeforeEnd,edBeforeEnd, "\n\t}", addnewIdx+=100])
 		}
 	}
 

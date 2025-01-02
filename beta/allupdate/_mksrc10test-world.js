@@ -30761,34 +30761,104 @@ class Mob extends Entity{
 }
 const entityData = [//todo n: do after initialize blockIds
 	{
+		name:"item",
+		Name:"Item",
+		type: "other",
+		width: 0.25,
+		height: 0.25,
+		depth: 0.25,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","item"]
+	},
+	{
+		name:"BlockEntity"//todo n
+	},
+	{
+		name:"tnt",
+		Name:"Primed TNT",
+		type: "other",
+		width: 0.98,
+		height: 0.98,
+		depth: 0.98,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","fuse","block_state"]
+	},
+	{},{},{},//todo n: other variants
+	{
+		name:"MovingBlock"
+	},
+	{
+		name:"enderPearl",
+		nameMcd:"ender_pearl",
+		Name:"Thrown Ender Pearl",
+		type: "projectile",
+		width: 0.25,
+		height: 0.25,
+		depth: 0.25,
+		metadata: "egg"
+	},
+	{
+		name:"snowball",
+		Name:"Snowball",
+		type: "projectile",
+		width: 0.25,
+		height: 0.25,
+		depth: 0.25,
+		metadata: "egg"
+	},
+	{
+		name:"egg",
+		Name:"Thrown Egg",
+		type: "projectile",
+		width: 0.25,
+		height: 0.25,
+		depth: 0.25,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","item_stack"]
+	},
+	{
+		name:"SlingshotShot"//todo n
+	},
+	{
+		name:"arrow",
+		Name:"Arrow",
+		type: "projectile",
+		width: 0.5,
+		height: 0.5,
+		depth: 0.5,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","flags","pierce_level","effect_color"]
+	},
+	{
+		name:"Sign"//todo n
+	},
+	{
+		nameMcd:"itemFrame",
+		nameMcd:"item_frame",
+		Name:"Item Frame",
+		type: "other",
+		width: 0.5,
+		height: 0.5,
+		depth: 0.5,
+		metadata: "glowItemFrame"
+	},
+	{
+		name:"experienceOrb",
+		nameMcd:"experience_orb",
+		Name:"Experience Orb",
+		type: "other",
+		width: 0.5,
+		height: 0.5,
+		depth: 0.5,
+		metadata: "breezeWindCharge"
+	},
+	{
 		name:"cow",
 		Name: "Cow",
 		type:"animal",
-		metadata: [
-      "shared_flags",
-      "air_supply",
-      "custom_name",
-      "custom_name_visible",
-      "silent",
-      "no_gravity",
-      "pose",
-      "ticks_frozen",
-      "living_entity_flags",
-      "health",
-      "effect_particles",
-      "effect_ambience",
-      "arrow_count",
-      "stinger_count",
-      "sleeping_pos",
-      "mob_flags",
-      "baby"
-    ],
+		metadata: "chicken",
 		drop: [blockIds.rawBeef],
 		dropAmount: [1,3],
 		saySound: ["cow.say1","cow.say2","cow.say3","cow.say4"],
 		stepSound: ["cow.step1","cow.step2","cow.step3","cow.step4"],
 		hurtSound: ["cow.hurt1","cow.hurt2","cow.hurt3"],
-		width:1, height:21/16, depth:1,
+		width:0.9, height:1.4, depth:0.9,
 		health: 10,
 		attracts: [blockIds.wheat],
 		onclick(holding){
@@ -30798,24 +30868,28 @@ const entityData = [//todo n: do after initialize blockIds
 	{
 		name:"pig",
 		Name: "Pig",
+		type: "animal",
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","saddle","boost_time"],
 		drop: [blockIds.rawPorkchop],
 		dropAmount: [1,3],
 		saySound: ["pig.say1","pig.say2","pig.say3"],
 		stepSound: ["pig.step1","pig.step2","pig.step3","pig.step4","pig.step5"],
 		deathSound: "pig.death",
-		width:1, height:1, depth:1,
+		width:0.9, height:0.9, depth:0.9,
 		health: 10,
 		attracts: [blockIds.carrot, blockIds.potato],
 	},
 	{
 		name:"creeper",
 		Name: "Creeper",
+		type: "hostile",
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","swell_dir","is_powered","is_ignited"],
 		drop: [blockIds.gunpowder],
 		dropAmount: [0,2],
 		experience: 5,
 		hurtSound: ["creeper.say1","creeper.say2","creeper.say3","creeper.say4"],
 		deathSound: "creeper.death",
-		width:0.5, height:25/16, depth:0.5,
+		width:0.6, height:1.7, depth:0.6,
 		health: 10,
 		hostile: true,
 		minFollowDist: 3,
@@ -30868,12 +30942,14 @@ const entityData = [//todo n: do after initialize blockIds
 	{
 		name:"sheep",
 		Name: "Sheep",
+		type: "animal",
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","wool"],
 		drop: [blockIds.rawMutton],
 		dropAmount: [1,2],
 		saySound: ["sheep.say1","sheep.say2","sheep.say3"],
 		hurtSound: ["sheep.say1","sheep.say2","sheep.say3"],
 		stepSound: ["sheep.step1","sheep.step2","sheep.step3","sheep.step4","sheep.step5"],
-		width:1, height:1, depth:1,
+		width:0.9, height:1.3, depth:0.9,
 		attracts: [blockIds.wheat],
 		health: 10,
 		onspawn(){
@@ -30930,11 +31006,13 @@ const entityData = [//todo n: do after initialize blockIds
 	{
 		name:"chicken",
 		Name: "Chicken",
+		type: "animal",
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby"],
 		drop: [blockIds.rawChicken,blockIds.feather],
 		saySound: ["chicken.say1","chicken.say2","chicken.say3"],
 		stepSound: ["chicken.step1","chicken.step2"],
 		hurtSound: ["chicken.hurt1","chicken.hurt2"],
-		width:0.5, height:11/16, depth:0.5,
+		width:0.4, height:0.7, depth:0.4,
 		health: 4,
 		attracts: [blockIds.beetrootSeeds, blockIds.tomatoSeeds, blockIds.pumpkinSeeds, blockIds.melonSeeds, blockIds.wheatSeeds],
 		additionalAI(){
@@ -30953,6 +31031,8 @@ const entityData = [//todo n: do after initialize blockIds
 	{
 		name:"zombie",
 		Name: "Zombie",
+		type: "hostile",
+		metadata: "drowned",
 		drop: [blockIds.rottenFlesh],
 		dropAmount: [0,3],
 		experience: 5,
@@ -30960,7 +31040,7 @@ const entityData = [//todo n: do after initialize blockIds
 		stepSound: ["zombie.step1","zombie.step2","zombie.step3","zombie.step4","zombie.step5"],
 		hurtSound: ["zombie.hurt1","zombie.hurt2"],
 		deathSound: "zombie.death",
-		width:1, height:2, depth:1,
+		width:0.6, height:1.95, depth:0.6,
 		health: 20,
 		hostile: true,
 		minFollowDist: 1,
@@ -30978,6 +31058,8 @@ const entityData = [//todo n: do after initialize blockIds
 	{
 		name:"skeleton",
 		Name: "Skeleton",
+		type: "hostile",
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","stray_conversion"],
 		drop: [blockIds.bone,blockIds.arrow],
 		dropAmount: [1,2],
 		experience: 5,
@@ -30985,7 +31067,7 @@ const entityData = [//todo n: do after initialize blockIds
 		stepSound: ["skeleton.step1","skeleton.step2","skeleton.step3","skeleton.step4"],
 		hurtSound: ["skeleton.hurt1","skeleton.hurt2","skeleton.hurt3","skeleton.hurt4"],
 		deathSound: "skeleton.death",
-		width:0.75, height:2, depth:0.75,
+		width:0.6, height:1.99, depth:0.6,
 		health: 20,
 		hostile: true,
 		minFollowDist: 8,
@@ -31011,14 +31093,16 @@ const entityData = [//todo n: do after initialize blockIds
 		}
 	},
 	{
-		name:"spider",//todo n: cave seperate
+		name:"spider",
+		type: "hostile",
+		metadata: "bat",//todo n: cave seperate
 		saySound: ["spider.say1","spider.say2","spider.say3","spider.say4"],
 		stepSound: ["spider.step1","spider.step2","spider.step3","spider.step4"],
 		deathSound: "spider.death",
 		drop: [blockIds.string,blockIds.spiderEye],
 		dropAmount: [0,2],
 		experience: 5,
-		width:1, height:1, depth:1,
+		width:1.4, height:0.9, depth:1.4,
 		health: 16,
 		canClimb: true,
 		hostile: true,
@@ -31043,9 +31127,32 @@ const entityData = [//todo n: do after initialize blockIds
 		}
 	},
 	{
+		name:"enderDragon",
+		nameMcd:"ender_dragon",
+		Name:"Ender Dragon",
+		type: "mob",
+		width: 16,
+		height: 8,
+		depth: 16,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","phase"]
+	},
+	null,null,null,null,null,null,null,null,null,null,null,null,null,
+	{
+		name:"textDisplay",
+		nameMcd:"text_display",
+		Name:"Text Display",
+		type: "other",
+		width: 0,
+		height: 0,
+		depth: 0,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","transformation_interpolation_start_delta_ticks","transformation_interpolation_duration","pos_rot_interpolation_duration","translation","scale","left_rotation","right_rotation","billboard_render_constraints","brightness_override","view_range","shadow_radius","shadow_strength","width","height","glow_color_override","text","line_width","background_color","text_opacity","style_flags"]
+	},
+	{
 		name:"wolf",
 		Name: "Wolf",
-		width:0.6, height:0.8, depth:0.6,
+		type: "animal",
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","flags","owneruuid","interested","collar_color","remaining_anger_time","variant"],
+		width:0.6, height:0.85, depth:0.6,
 		health: 8,
 		hostile: true,
 		minFollowDist: 1.5,
@@ -31161,16 +31268,19 @@ const entityData = [//todo n: do after initialize blockIds
 			}
 		}
 	},
+	null,
 	{
 		name:"blaze",
 		Name: "Blaze",
+		type: "hostile",
+		metadata: "bat",
 		drop: [blockIds.blazeRod],
 		dropAmount: [0,1],
 		experience: 10,
 		saySound: ["blaze.breathe1","blaze.breathe2","blaze.breathe3","blaze.breathe4"],
 		hurtSound: ["blaze.hit1","blaze.hit2","blaze.hit3","blaze.hit4"],
 		deathSound: "blaze.death",
-		width:1, height:22/16, depth:1,
+		width:0.6, height:1.8, depth:0.6,
 		health: 20,
 		hostile: true,
 		minFollowDist: 1,
@@ -31201,9 +31311,32 @@ const entityData = [//todo n: do after initialize blockIds
 		}
 	},
 	{
+		name:"smallFireball",
+		nameMcd:"small_fireball",
+		Name:"Small Fireball",
+		type: "projectile",
+		width: 0.3125,
+		height: 0.3125,
+		depth: 0.3125,
+		metadata: "egg"
+	},
+	{
+		name:"blockDisplay",
+		nameMcd:"block_display",
+		Name:"Block Display",
+		type: "other",
+		width: 0,
+		height: 0,
+		depth: 0,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","transformation_interpolation_start_delta_ticks","transformation_interpolation_duration","pos_rot_interpolation_duration","translation","scale","left_rotation","right_rotation","billboard_render_constraints","brightness_override","view_range","shadow_radius","shadow_strength","width","height","glow_color_override","block_state"]
+	},
+	null,
+	{
 		name:"enderman",
 		Name: "Enderman",
-		width:0.75, height:3, depth:0.75,
+		type: "hostile",
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","carry_state","creepy","stared_at"],
+		width:0.6, height:2.9, depth:0.6,
 		health: 40,
 		hostile: true,
 		minFollowDist: 1,
@@ -31220,6 +31353,1013 @@ const entityData = [//todo n: do after initialize blockIds
 				}
 			}
 		}
+	},
+	{
+		name:"minecart",
+		Name:"Minecart",
+		type: "other",
+		width: 0.98,
+		height: 0.7,
+		depth: 0.98,
+		metadata: "chestMinecart"
+	},
+	{
+		name:"allay",
+		Name:"Allay",
+		type: "mob",
+		width: 0.35,
+		height: 0.6,
+		depth: 0.35,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","dancing","can_duplicate"]
+	},
+	{
+		name:"areaEffectCloud",
+		nameMcd:"area_effect_cloud",
+		Name:"Area Effect Cloud",
+		type: "other",
+		width: 6,
+		height: 0.5,
+		depth: 6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","radius","waiting","particle"]
+	},
+	{
+		name:"armadillo",
+		Name:"Armadillo",
+		type: "animal",
+		width: 0.7,
+		height: 0.65,
+		depth: 0.7,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","armadillo_state"]
+	},
+	{
+		name:"armorStand",
+		nameMcd:"armor_stand",
+		Name:"Armor Stand",
+		type: "living",
+		width: 0.5,
+		height: 1.975,
+		depth: 0.5,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","client_flags","head_pose","body_pose","left_arm_pose","right_arm_pose","left_leg_pose","right_leg_pose"]
+	},
+	{
+		name:"axolotl",
+		Name:"Axolotl",
+		type: "animal",
+		width: 0.75,
+		height: 0.42,
+		depth: 0.75,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","variant","playing_dead","from_bucket"]
+	},
+	{
+		name:"bat",
+		Name:"Bat",
+		type: "ambient",
+		width: 0.5,
+		height: 0.9,
+		depth: 0.5,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","flags"]
+	},
+	{
+		name:"bee",
+		Name:"Bee",
+		type: "animal",
+		width: 0.7,
+		height: 0.6,
+		depth: 0.7,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","flags","remaining_anger_time"]
+	},
+	{
+		name:"boat",
+		Name:"Boat",
+		type: "other",
+		width: 1.375,
+		height: 0.5625,
+		depth: 1.375,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","hurt","hurtdir","damage","type","paddle_left","paddle_right","bubble_time"]
+	},
+	{
+		name:"bogged",
+		Name:"Bogged",
+		type: "hostile",
+		width: 0.6,
+		height: 1.99,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","sheared"]
+	},
+	{
+		name:"breeze",
+		Name:"Breeze",
+		type: "hostile",
+		width: 0.6,
+		height: 1.77,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags"]
+	},
+	{
+		name:"breezeWindCharge",
+		nameMcd:"breeze_wind_charge",
+		Name:"Wind Charge",
+		type: "projectile",
+		width: 0.3125,
+		height: 0.3125,
+		depth: 0.3125,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen"]
+	},
+	{
+		name:"camel",
+		Name:"Camel",
+		type: "animal",
+		width: 1.7,
+		height: 2.375,
+		depth: 1.7,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","flags","dash","last_pose_change_tick"]
+	},
+	{
+		name:"cat",
+		Name:"Cat",
+		type: "animal",
+		width: 0.6,
+		height: 0.7,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","flags","owneruuid","variant","is_lying","relax_state_one","collar_color"]
+	},
+	{
+		name:"caveSpider",
+		nameMcd:"cave_spider",
+		Name:"Cave Spider",
+		type: "hostile",
+		width: 0.7,
+		height: 0.5,
+		depth: 0.7,
+		metadata: "bat"
+	},
+	{
+		name:"chestBoat",
+		nameMcd:"chest_boat",
+		Name:"Boat with Chest",
+		type: "other",
+		width: 1.375,
+		height: 0.5625,
+		depth: 1.375,
+		metadata: "boat"
+	},
+	{
+		name:"chestMinecart",
+		nameMcd:"chest_minecart",
+		Name:"Minecart with Chest",
+		type: "other",
+		width: 0.98,
+		height: 0.7,
+		depth: 0.98,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","hurt","hurtdir","damage","display_block","display_offset","custom_display"]
+	},
+	{
+		name:"cod",
+		Name:"Cod",
+		type: "water_creature",
+		width: 0.5,
+		height: 0.3,
+		depth: 0.5,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","from_bucket"]
+	},
+	{
+		name:"commandBlockMinecart",
+		nameMcd:"command_block_minecart",
+		Name:"Minecart with Command Block",
+		type: "other",
+		width: 0.98,
+		height: 0.7,
+		depth: 0.98,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","hurt","hurtdir","damage","display_block","display_offset","custom_display","command_name","last_output"]
+	},
+	{
+		name:"dolphin",
+		Name:"Dolphin",
+		type: "water_creature",
+		width: 0.9,
+		height: 0.6,
+		depth: 0.9,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","treasure_pos","got_fish","moistness_level"]
+	},
+	{
+		name:"donkey",
+		Name:"Donkey",
+		type: "animal",
+		width: 1.3964844,
+		height: 1.5,
+		depth: 1.3964844,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","flags","chest"]
+	},
+	{
+		name:"dragonFireball",
+		nameMcd:"dragon_fireball",
+		Name:"Dragon Fireball",
+		type: "projectile",
+		width: 1,
+		height: 1,
+		depth: 1,
+		metadata: "breezeWindCharge"
+	},
+	{
+		name:"drowned",
+		Name:"Drowned",
+		type: "hostile",
+		width: 0.6,
+		height: 1.95,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","special_type","drowned_conversion"]
+	},
+	{
+		name:"elderGuardian",
+		nameMcd:"elder_guardian",
+		Name:"Elder Guardian",
+		type: "hostile",
+		width: 1.9975,
+		height: 1.9975,
+		depth: 1.9975,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","moving","attack_target"]
+	},
+	{
+		name:"endCrystal",
+		nameMcd:"end_crystal",
+		Name:"End Crystal",
+		type: "other",
+		width: 2,
+		height: 2,
+		depth: 2,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","beam_target","show_bottom"]
+	},
+	{
+		name:"endermite",
+		Name:"Endermite",
+		type: "hostile",
+		width: 0.4,
+		height: 0.3,
+		depth: 0.4,
+		metadata: "breeze"
+	},
+	{
+		name:"evoker",
+		Name:"Evoker",
+		type: "hostile",
+		width: 0.6,
+		height: 1.95,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","is_celebrating","spell_casting"]
+	},
+	{
+		name:"evokerFangs",
+		nameMcd:"evoker_fangs",
+		Name:"Evoker Fangs",
+		type: "other",
+		width: 0.5,
+		height: 0.8,
+		depth: 0.5,
+		metadata: "breezeWindCharge"
+	},
+	{
+		name:"experienceBottle",
+		nameMcd:"experience_bottle",
+		Name:"Thrown Bottle o' Enchanting",
+		type: "projectile",
+		width: 0.25,
+		height: 0.25,
+		depth: 0.25,
+		metadata: "egg"
+	},
+	{
+		name:"eyeOfEnder",
+		nameMcd:"eye_of_ender",
+		Name:"Eye of Ender",
+		type: "other",
+		width: 0.25,
+		height: 0.25,
+		depth: 0.25,
+		metadata: "egg"
+	},
+	{
+		name:"fallingBlock",
+		nameMcd:"falling_block",
+		Name:"Falling Block",
+		type: "other",
+		width: 0.98,
+		height: 0.98,
+		depth: 0.98,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","start_pos"]
+	},
+	{
+		name:"fireworkRocket",
+		nameMcd:"firework_rocket",
+		Name:"Firework Rocket",
+		type: "projectile",
+		width: 0.25,
+		height: 0.25,
+		depth: 0.25,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","fireworks_item","attached_to_target","shot_at_angle"]
+	},
+	{
+		name:"fox",
+		Name:"Fox",
+		type: "animal",
+		width: 0.6,
+		height: 0.7,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","type","flags","trusted_0","trusted_1"]
+	},
+	{
+		name:"frog",
+		Name:"Frog",
+		type: "animal",
+		width: 0.5,
+		height: 0.5,
+		depth: 0.5,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","variant","tongue_target"]
+	},
+	{
+		name:"furnaceMinecart",
+		nameMcd:"furnace_minecart",
+		Name:"Minecart with Furnace",
+		type: "other",
+		width: 0.98,
+		height: 0.7,
+		depth: 0.98,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","hurt","hurtdir","damage","display_block","display_offset","custom_display","fuel"]
+	},
+	{
+		name:"ghast",
+		Name:"Ghast",
+		type: "mob",
+		width: 4,
+		height: 4,
+		depth: 4,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","is_charging"]
+	},
+	{
+		name:"giant",
+		Name:"Giant",
+		type: "hostile",
+		width: 3.6,
+		height: 12,
+		depth: 3.6,
+		metadata: "breeze"
+	},
+	{
+		name:"glowItemFrame",
+		nameMcd:"glow_item_frame",
+		Name:"Glow Item Frame",
+		type: "other",
+		width: 0.5,
+		height: 0.5,
+		depth: 0.5,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","item","rotation"]
+	},
+	{
+		name:"glowSquid",
+		nameMcd:"glow_squid",
+		Name:"Glow Squid",
+		type: "water_creature",
+		width: 0.8,
+		height: 0.8,
+		depth: 0.8,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","dark_ticks_remaining"]
+	},
+	{
+		name:"goat",
+		Name:"Goat",
+		type: "animal",
+		width: 0.9,
+		height: 1.3,
+		depth: 0.9,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","is_screaming_goat","has_left_horn","has_right_horn"]
+	},
+	{
+		name:"guardian",
+		Name:"Guardian",
+		type: "hostile",
+		width: 0.85,
+		height: 0.85,
+		depth: 0.85,
+		metadata: "elderGuardian"
+	},
+	{
+		name:"hoglin",
+		Name:"Hoglin",
+		type: "animal",
+		width: 1.3964844,
+		height: 1.4,
+		depth: 1.3964844,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","immune_to_zombification"]
+	},
+	{
+		name:"hopperMinecart",
+		nameMcd:"hopper_minecart",
+		Name:"Minecart with Hopper",
+		type: "other",
+		width: 0.98,
+		height: 0.7,
+		depth: 0.98,
+		metadata: "chestMinecart"
+	},
+	{
+		name:"horse",
+		Name:"Horse",
+		type: "animal",
+		width: 1.3964844,
+		height: 1.6,
+		depth: 1.3964844,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","flags","type_variant"]
+	},
+	{
+		name:"husk",
+		Name:"Husk",
+		type: "hostile",
+		width: 0.6,
+		height: 1.95,
+		depth: 0.6,
+		metadata: "drowned"
+	},
+	{
+		name:"illusioner",
+		Name:"Illusioner",
+		type: "hostile",
+		width: 0.6,
+		height: 1.95,
+		depth: 0.6,
+		metadata: "evoker"
+	},
+	{
+		name:"interaction",
+		Name:"Interaction",
+		type: "other",
+		width: 0,
+		height: 0,
+		depth: 0,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","width","height","response"]
+	},
+	{
+		name:"ironGolem",
+		nameMcd:"iron_golem",
+		Name:"Iron Golem",
+		type: "mob",
+		width: 1.4,
+		height: 2.7,
+		depth: 1.4,
+		metadata: "bat"
+	},
+	{
+		name:"itemDisplay",
+		nameMcd:"item_display",
+		Name:"Item Display",
+		type: "other",
+		width: 0,
+		height: 0,
+		depth: 0,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","transformation_interpolation_start_delta_ticks","transformation_interpolation_duration","pos_rot_interpolation_duration","translation","scale","left_rotation","right_rotation","billboard_render_constraints","brightness_override","view_range","shadow_radius","shadow_strength","width","height","glow_color_override","item_stack","item_display"]
+	},
+	{
+		name:"ominousItemSpawner",
+		nameMcd:"ominous_item_spawner",
+		Name:"Ominous Item Spawner",
+		type: "other",
+		width: 0.25,
+		height: 0.25,
+		depth: 0.25,
+		metadata: "item"
+	},
+	{
+		name:"fireball",
+		Name:"Fireball",
+		type: "projectile",
+		width: 1,
+		height: 1,
+		depth: 1,
+		metadata: "egg"
+	},
+	{
+		name:"leashKnot",
+		nameMcd:"leash_knot",
+		Name:"Leash Knot",
+		type: "other",
+		width: 0.375,
+		height: 0.5,
+		depth: 0.375,
+		metadata: "breezeWindCharge"
+	},
+	{
+		name:"lightningBolt",
+		nameMcd:"lightning_bolt",
+		Name:"Lightning Bolt",
+		type: "other",
+		width: 0,
+		height: 0,
+		depth: 0,
+		metadata: "breezeWindCharge"
+	},
+	{
+		name:"llama",
+		Name:"Llama",
+		type: "animal",
+		width: 0.9,
+		height: 1.87,
+		depth: 0.9,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","flags","chest","strength","variant"]
+	},
+	{
+		name:"llamaSpit",
+		nameMcd:"llama_spit",
+		Name:"Llama Spit",
+		type: "projectile",
+		width: 0.25,
+		height: 0.25,
+		depth: 0.25,
+		metadata: "breezeWindCharge"
+	},
+	{
+		name:"magmaCube",
+		nameMcd:"magma_cube",
+		Name:"Magma Cube",
+		type: "mob",
+		width: 0.52,
+		height: 0.52,
+		depth: 0.52,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","size"]
+	},
+	{
+		name:"marker",
+		Name:"Marker",
+		type: "other",
+		width: 0,
+		height: 0,
+		depth: 0,
+		metadata: "breezeWindCharge"
+	},
+	{
+		name:"mooshroom",
+		Name:"Mooshroom",
+		type: "animal",
+		width: 0.9,
+		height: 1.4,
+		depth: 0.9,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","type"]
+	},
+	{
+		name:"mule",
+		Name:"Mule",
+		type: "animal",
+		width: 1.3964844,
+		height: 1.6,
+		depth: 1.3964844,
+		metadata: "donkey"
+	},
+	{
+		name:"ocelot",
+		Name:"Ocelot",
+		type: "animal",
+		width: 0.6,
+		height: 0.7,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","trusting"]
+	},
+	{
+		name:"painting",
+		Name:"Painting",
+		type: "other",
+		width: 0.5,
+		height: 0.5,
+		depth: 0.5,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","painting_variant"]
+	},
+	{
+		name:"panda",
+		Name:"Panda",
+		type: "animal",
+		width: 1.3,
+		height: 1.25,
+		depth: 1.3,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","unhappy_counter","sneeze_counter","eat_counter","main_gene","hidden_gene","flags"]
+	},
+	{
+		name:"parrot",
+		Name:"Parrot",
+		type: "animal",
+		width: 0.5,
+		height: 0.9,
+		depth: 0.5,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","flags","owneruuid","variant"]
+	},
+	{
+		name:"phantom",
+		Name:"Phantom",
+		type: "mob",
+		width: 0.9,
+		height: 0.5,
+		depth: 0.9,
+		metadata: "magmaCube"
+	},
+	{
+		name:"piglin",
+		Name:"Piglin",
+		type: "hostile",
+		width: 0.6,
+		height: 1.95,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","immune_to_zombification","baby","is_charging_crossbow","is_dancing"]
+	},
+	{
+		name:"piglinBrute",
+		nameMcd:"piglin_brute",
+		Name:"Piglin Brute",
+		type: "hostile",
+		width: 0.6,
+		height: 1.95,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","immune_to_zombification"]
+	},
+	{
+		name:"pillager",
+		Name:"Pillager",
+		type: "hostile",
+		width: 0.6,
+		height: 1.95,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","is_celebrating","is_charging_crossbow"]
+	},
+	{
+		name:"polarBear",
+		nameMcd:"polar_bear",
+		Name:"Polar Bear",
+		type: "animal",
+		width: 1.4,
+		height: 1.4,
+		depth: 1.4,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","standing"]
+	},
+	{
+		name:"potion",
+		Name:"Potion",
+		type: "projectile",
+		width: 0.25,
+		height: 0.25,
+		depth: 0.25,
+		metadata: "egg"
+	},
+	{
+		name:"pufferfish",
+		Name:"Pufferfish",
+		type: "water_creature",
+		width: 0.7,
+		height: 0.7,
+		depth: 0.7,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","from_bucket","puff_state"]
+	},
+	{
+		name:"rabbit",
+		Name:"Rabbit",
+		type: "animal",
+		width: 0.4,
+		height: 0.5,
+		depth: 0.4,
+		metadata: "mooshroom"
+	},
+	{
+		name:"ravager",
+		Name:"Ravager",
+		type: "hostile",
+		width: 1.95,
+		height: 2.2,
+		depth: 1.95,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","is_celebrating"]
+	},
+	{
+		name:"salmon",
+		Name:"Salmon",
+		type: "water_creature",
+		width: 0.7,
+		height: 0.4,
+		depth: 0.7,
+		metadata: "cod"
+	},
+	{
+		name:"shulker",
+		Name:"Shulker",
+		type: "mob",
+		width: 1,
+		height: 1,
+		depth: 1,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","attach_face","peek","color"]
+	},
+	{
+		name:"shulkerBullet",
+		nameMcd:"shulker_bullet",
+		Name:"Shulker Bullet",
+		type: "projectile",
+		width: 0.3125,
+		height: 0.3125,
+		depth: 0.3125,
+		metadata: "breezeWindCharge"
+	},
+	{
+		name:"silverfish",
+		Name:"Silverfish",
+		type: "hostile",
+		width: 0.4,
+		height: 0.3,
+		depth: 0.4,
+		metadata: "breeze"
+	},
+	{
+		name:"skeletonHorse",
+		nameMcd:"skeleton_horse",
+		Name:"Skeleton Horse",
+		type: "animal",
+		width: 1.3964844,
+		height: 1.6,
+		depth: 1.3964844,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","flags"]
+	},
+	{
+		name:"slime",
+		Name:"Slime",
+		type: "mob",
+		width: 0.52,
+		height: 0.52,
+		depth: 0.52,
+		metadata: "magmaCube"
+	},
+	{
+		name:"sniffer",
+		Name:"Sniffer",
+		type: "animal",
+		width: 1.9,
+		height: 1.75,
+		depth: 1.9,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","state","drop_seed_at_tick"]
+	},
+	{
+		name:"snowGolem",
+		nameMcd:"snow_golem",
+		Name:"Snow Golem",
+		type: "mob",
+		width: 0.7,
+		height: 1.9,
+		depth: 0.7,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","pumpkin"]
+	},
+	{
+		name:"spawnerMinecart",
+		nameMcd:"spawner_minecart",
+		Name:"Minecart with Monster Spawner",
+		type: "other",
+		width: 0.98,
+		height: 0.7,
+		depth: 0.98,
+		metadata: "chestMinecart"
+	},
+	{
+		name:"spectralArrow",
+		nameMcd:"spectral_arrow",
+		Name:"Spectral Arrow",
+		type: "projectile",
+		width: 0.5,
+		height: 0.5,
+		depth: 0.5,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","flags","pierce_level"]
+	},
+	{
+		name:"squid",
+		Name:"Squid",
+		type: "water_creature",
+		width: 0.8,
+		height: 0.8,
+		depth: 0.8,
+		metadata: "breeze"
+	},
+	{
+		name:"stray",
+		Name:"Stray",
+		type: "hostile",
+		width: 0.6,
+		height: 1.99,
+		depth: 0.6,
+		metadata: "breeze"
+	},
+	{
+		name:"strider",
+		Name:"Strider",
+		type: "animal",
+		width: 0.9,
+		height: 1.7,
+		depth: 0.9,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","boost_time","suffocating","saddle"]
+	},
+	{
+		name:"tadpole",
+		Name:"Tadpole",
+		type: "water_creature",
+		width: 0.4,
+		height: 0.3,
+		depth: 0.4,
+		metadata: "cod"
+	},
+	{
+		name:"tntMinecart",
+		nameMcd:"tnt_minecart",
+		Name:"Minecart with TNT",
+		type: "other",
+		width: 0.98,
+		height: 0.7,
+		depth: 0.98,
+		metadata: "chestMinecart"
+	},
+	{
+		name:"traderLlama",
+		nameMcd:"trader_llama",
+		Name:"Trader Llama",
+		type: "animal",
+		width: 0.9,
+		height: 1.87,
+		depth: 0.9,
+		metadata: "llama"
+	},
+	{
+		name:"trident",
+		Name:"Trident",
+		type: "projectile",
+		width: 0.5,
+		height: 0.5,
+		depth: 0.5,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","flags","pierce_level","loyalty","foil"]
+	},
+	{
+		name:"tropicalFish",
+		nameMcd:"tropical_fish",
+		Name:"Tropical Fish",
+		type: "water_creature",
+		width: 0.5,
+		height: 0.4,
+		depth: 0.5,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","from_bucket","type_variant"]
+	},
+	{
+		name:"turtle",
+		Name:"Turtle",
+		type: "animal",
+		width: 1.2,
+		height: 0.4,
+		depth: 1.2,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","home_pos","has_egg","laying_egg","travel_pos","going_home","travelling"]
+	},
+	{
+		name:"vex",
+		Name:"Vex",
+		type: "hostile",
+		width: 0.4,
+		height: 0.8,
+		depth: 0.4,
+		metadata: "bat"
+	},
+	{
+		name:"villager",
+		Name:"Villager",
+		type: "passive",
+		width: 0.6,
+		height: 1.95,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","unhappy_counter","villager_data"]
+	},
+	{
+		name:"vindicator",
+		Name:"Vindicator",
+		type: "hostile",
+		width: 0.6,
+		height: 1.95,
+		depth: 0.6,
+		metadata: "ravager"
+	},
+	{
+		name:"wanderingTrader",
+		nameMcd:"wandering_trader",
+		Name:"Wandering Trader",
+		type: "passive",
+		width: 0.6,
+		height: 1.95,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","unhappy_counter"]
+	},
+	{
+		name:"warden",
+		Name:"Warden",
+		type: "hostile",
+		width: 0.9,
+		height: 2.9,
+		depth: 0.9,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","client_anger_level"]
+	},
+	{
+		name:"windCharge",
+		nameMcd:"wind_charge",
+		Name:"Wind Charge",
+		type: "projectile",
+		width: 0.3125,
+		height: 0.3125,
+		depth: 0.3125,
+		metadata: "breezeWindCharge"
+	},
+	{
+		name:"witch",
+		Name:"Witch",
+		type: "hostile",
+		width: 0.6,
+		height: 1.95,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","is_celebrating","using_item"]
+	},
+	{
+		name:"wither",
+		Name:"Wither",
+		type: "hostile",
+		width: 0.9,
+		height: 3.5,
+		depth: 0.9,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","target_a","target_b","target_c","inv"]
+	},
+	{
+		name:"witherSkeleton",
+		nameMcd:"wither_skeleton",
+		Name:"Wither Skeleton",
+		type: "hostile",
+		width: 0.7,
+		height: 2.4,
+		depth: 0.7,
+		metadata: "breeze"
+	},
+	{
+		name:"witherSkull",
+		nameMcd:"wither_skull",
+		Name:"Wither Skull",
+		type: "projectile",
+		width: 0.3125,
+		height: 0.3125,
+		depth: 0.3125,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","dangerous"]
+	},
+	{
+		name:"zoglin",
+		Name:"Zoglin",
+		type: "hostile",
+		width: 1.3964844,
+		height: 1.4,
+		depth: 1.3964844,
+		metadata: "chicken"
+	},
+	{
+		name:"zombieHorse",
+		nameMcd:"zombie_horse",
+		Name:"Zombie Horse",
+		type: "animal",
+		width: 1.3964844,
+		height: 1.6,
+		depth: 1.3964844,
+		metadata: "skeletonHorse"
+	},
+	{
+		name:"zombieVillager",
+		nameMcd:"zombie_villager",
+		Name:"Zombie Villager",
+		type: "hostile",
+		width: 0.6,
+		height: 1.95,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","mob_flags","baby","special_type","drowned_conversion","converting","villager_data"]
+	},
+	{
+		name:"zombifiedPiglin",
+		nameMcd:"zombified_piglin",
+		Name:"Zombified Piglin",
+		type: "hostile",
+		width: 0.6,
+		height: 1.95,
+		depth: 0.6,
+		metadata: "drowned"
+	},
+	{
+		name:"player",
+		Name:"Player",
+		type: "player",
+		width: 0.6,
+		height: 1.8,
+		depth: 0.6,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","living_entity_flags","health","effect_particles","effect_ambience","arrow_count","stinger_count","sleeping_pos","player_absorption","score","player_mode_customisation","player_main_hand","shoulder_left","shoulder_right"]
+	},
+	{
+		name:"fishingBobber",
+		nameMcd:"fishing_bobber",
+		Name:"Fishing Bobber",
+		type: "projectile",
+		width: 0.25,
+		height: 0.25,
+		depth: 0.25,
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","hooked_entity","biting"]
 	}
 ]
 win.entityData = entityData
@@ -31237,7 +32377,7 @@ for(let i=0; i<entityData.length; i++){
 	}
 	Object.assign(ent.prototype, data)
 	if(data.type === "hostile") ent.prototype.hostile = true
-	entities[entities.length] = ent
+	entities.push(ent)
 }
 
 entities[entities.length] = class TextDisplay extends Entity{
@@ -31255,24 +32395,24 @@ entities[entities.length] = class TextDisplay extends Entity{
 	setText(t){this.text = t}
 }
 
-let entityOrder = ['Item','BlockEntity', 'PrimedTNT', 'PrimedSuperTNT', 'PrimedUltraTNT', 'PrimedUnTNT', 'MovingBlock', 'EnderPearl', 'Snowball', 'Egg', 'SlingshotShot', 'Arrow', 'Sign', 'ItemFrame', 'ExperienceOrb', 'cow', 'pig', 'creeper', 'sheep', 'chicken', 'zombie', 'skeleton', 'spider', 'EnderDragon', 'BlockParticle', 'PoofParticle', 'FallingDustParticle', 'RedstoneParticle', 'ShockwaveParticle', 'SmokeParticle', 'NoteParticle', 'GlintParticle', 'FlameParticle', 'LavaParticle', 'DripParticle', 'SplashParticle', 'Spark', 'TextDisplay','Wolf','HeartParticle',"Blaze","SmallFireball","BlockDisplay","BeaconBeam","Enderman","Minecart"]
+//let entityOrder = ['Item','BlockEntity', 'PrimedTNT', 'PrimedSuperTNT', 'PrimedUltraTNT', 'PrimedUnTNT', 'MovingBlock', 'EnderPearl', 'Snowball', 'Egg', 'SlingshotShot', 'Arrow', 'Sign', 'ItemFrame', 'ExperienceOrb', 'cow', 'pig', 'creeper', 'sheep', 'chicken', 'zombie', 'skeleton', 'spider', 'EnderDragon', 'BlockParticle', 'PoofParticle', 'FallingDustParticle', 'RedstoneParticle', 'ShockwaveParticle', 'SmokeParticle', 'NoteParticle', 'GlintParticle', 'FlameParticle', 'LavaParticle', 'DripParticle', 'SplashParticle', 'Spark', 'TextDisplay','Wolf','HeartParticle',"Blaze","SmallFireball","BlockDisplay","BeaconBeam","Enderman","Minecart"]
 for(let i=0; i<entities.length; i++){
 	entityIds[entities[i].name2] = i
 }
-let unorderedEntities = entities
-entities = []
+/*let unorderedEntities = entities
+entities = []*/
 for(let i=0; i<entityOrder.length; i++){
-	let prevI = entityIds[entityOrder[i]]
+	/*let prevI = entityIds[entityOrder[i]]
 	entityIds[entityOrder[i]] = i
 	if(prevI === undefined){
 		continue
 	}
-	entities[i] = unorderedEntities[prevI]
+	entities[i] = unorderedEntities[prevI]*/
 	entities[i].prototype.entId = i
 	entities[i].prototype.type = entities[i].name2
 }
 win.serverEntities = entities, win.entityIds = entityIds
-win.entityOrder = entityOrder
+//win.entityOrder = entityOrder
 console.log(entities.length,'entities and particles on server side')
 
 //islandgenerator from https://www.khanacademy.org/computer-programming/minekhan-island-world-type/5771215095939072
