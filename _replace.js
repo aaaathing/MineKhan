@@ -9,7 +9,6 @@ replace old blockStates
 add all blocks & items
 	item models
 craft
-world.tick
 models rotate (v.x, v.y, entity)
 add custom blockStates and shapes for them
 	fern, wall carpet, etc.

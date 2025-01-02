@@ -19376,7 +19376,7 @@ function initBlockData(){
 	- it stores it in specific bits in a number
 	*/
 	// Set defaults on blockData
-	for (let i = 1; i < BLOCK_COUNT; ++i) {
+	for (let i = 0; i < BLOCK_COUNT; ++i) {
 		const data = blockData[i];
 
 		data.transparent = data.transparent || false
@@ -19512,7 +19512,8 @@ function initBlockData(){
 			if(typeof data.blockStates === "string"){
 				data.blockStates = blockData[blockIds[data.blockStates]].blockStates
 			}
-			let obj = {}, mult = 0x10000 //16th bit
+			const blockStateMinMult = 0x10000
+			let obj = {}, mult = blockStateMinMult //16th bit
 			for(let s=0; s<data.blockStates.length; s++){
 				let bs = data.blockStates[s]
 				bs.minMult = mult
@@ -19527,6 +19528,10 @@ function initBlockData(){
 			}
 			data.blockStatesMap = obj
 			blockStateMaps[data.name] = obj
+
+			for(let s=i+blockStateMinMult; s<mult; s+=blockStateMinMult){
+				blockData[s] = Object.create(data)
+			}
 		}else{
 			data.blockStatesMap = {}
 		}

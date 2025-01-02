@@ -54,11 +54,13 @@ function loadNamespaceBlocks(allData, namespace, {
 		if(bstates.variants){
 			for(let v in bstates.variants){
 				let id = blockId
+				let ignoredBlockStates = Object.keys(baseBlock.blockStatesMap)
 				if(v){
 					let a = v.split(",")
 					findIdLoop:for(let i=0; i<a.length; i++){
 						let [statename,statevalue] = a[i].split("=")
 						let bs = baseBlock.blockStatesMap[statename]
+						ignoredBlockStates.splice(ignoredBlockStates.indexOf(statename),1) // it was used, not ignored
 						for(let v=0; v<bs.values.length; v++){
 							if(bs.values[v]+"" === statevalue){
 								id += v * bs.minMult
@@ -69,7 +71,7 @@ function loadNamespaceBlocks(allData, namespace, {
 						// id |= blockstateValues[statename].indexOf(statevalue) << blockstatePos[statename]
 					}
 				}
-				let block = Object.create(baseBlock)
+				let block = blockData[id]
 				let variant = bstates.variants[v]
 				if(Array.isArray(variant)){
 					block.shapeArray = []
@@ -77,10 +79,30 @@ function loadNamespaceBlocks(allData, namespace, {
 					block.shape = block.shapeArray[0]
 				}else{
 					block.shape = getShapeFromVariant(variant)
+					block.shapeArray = null
 				}
-				blockData[id] = block
+				if(ignoredBlockStates.length){
+					fillBlockStates(ignoredBlockStates,0, block,blockData, id)
+				}
 			}
 		}
+	}
+	function fillBlockStates(arr,arri,block,blockData, id){
+		let {values, minMult} = block.blockStatesMap[arr[arri]]
+		for(let i=0; i<values.length; i++){
+			if(arri === arr.length-1){ // deepest loop, fill in blocks
+				let finalId = id + i*minMult
+				if(!blockData[finalId].hasOwnProperty("shape")){
+					blockData[finalId].shape = block.shape
+					blockData[finalId].shapeArray = block.shapeArray
+				}
+			}else{ // go to deeper loop
+				fillBlockStates(arr,arri+1,block,blockData, id + i*minMult)
+			}
+		}
+	}
+	const getShapeFunc = function(x,y,z,world,block){
+
 	}
 	//return {blockData, shapes, textures, blockIds}
 
