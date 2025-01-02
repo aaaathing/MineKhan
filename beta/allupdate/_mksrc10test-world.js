@@ -30759,15 +30759,35 @@ class Mob extends Entity{
 		this.effects[name] = {level, time, showParticles}
 	}
 }
-let entityData = [//todo n: do after initialize blockIds
+const entityData = [//todo n: do after initialize blockIds
 	{
 		name:"cow",
+		Name: "Cow",
+		type:"animal",
+		metadata: [
+      "shared_flags",
+      "air_supply",
+      "custom_name",
+      "custom_name_visible",
+      "silent",
+      "no_gravity",
+      "pose",
+      "ticks_frozen",
+      "living_entity_flags",
+      "health",
+      "effect_particles",
+      "effect_ambience",
+      "arrow_count",
+      "stinger_count",
+      "sleeping_pos",
+      "mob_flags",
+      "baby"
+    ],
 		drop: [blockIds.rawBeef],
 		dropAmount: [1,3],
 		saySound: ["cow.say1","cow.say2","cow.say3","cow.say4"],
 		stepSound: ["cow.step1","cow.step2","cow.step3","cow.step4"],
 		hurtSound: ["cow.hurt1","cow.hurt2","cow.hurt3"],
-		defaultName: "Cow",
 		width:1, height:21/16, depth:1,
 		health: 10,
 		attracts: [blockIds.wheat],
@@ -30777,24 +30797,24 @@ let entityData = [//todo n: do after initialize blockIds
 	},
 	{
 		name:"pig",
+		Name: "Pig",
 		drop: [blockIds.rawPorkchop],
 		dropAmount: [1,3],
 		saySound: ["pig.say1","pig.say2","pig.say3"],
 		stepSound: ["pig.step1","pig.step2","pig.step3","pig.step4","pig.step5"],
 		deathSound: "pig.death",
-		defaultName: "Pig",
 		width:1, height:1, depth:1,
 		health: 10,
 		attracts: [blockIds.carrot, blockIds.potato],
 	},
 	{
 		name:"creeper",
+		Name: "Creeper",
 		drop: [blockIds.gunpowder],
 		dropAmount: [0,2],
 		experience: 5,
 		hurtSound: ["creeper.say1","creeper.say2","creeper.say3","creeper.say4"],
 		deathSound: "creeper.death",
-		defaultName: "Creeper",
 		width:0.5, height:25/16, depth:0.5,
 		health: 10,
 		hostile: true,
@@ -30847,12 +30867,12 @@ let entityData = [//todo n: do after initialize blockIds
 	},
 	{
 		name:"sheep",
+		Name: "Sheep",
 		drop: [blockIds.rawMutton],
 		dropAmount: [1,2],
 		saySound: ["sheep.say1","sheep.say2","sheep.say3"],
 		hurtSound: ["sheep.say1","sheep.say2","sheep.say3"],
 		stepSound: ["sheep.step1","sheep.step2","sheep.step3","sheep.step4","sheep.step5"],
-		defaultName: "Sheep",
 		width:1, height:1, depth:1,
 		attracts: [blockIds.wheat],
 		health: 10,
@@ -30909,11 +30929,11 @@ let entityData = [//todo n: do after initialize blockIds
 	},
 	{
 		name:"chicken",
+		Name: "Chicken",
 		drop: [blockIds.rawChicken,blockIds.feather],
 		saySound: ["chicken.say1","chicken.say2","chicken.say3"],
 		stepSound: ["chicken.step1","chicken.step2"],
 		hurtSound: ["chicken.hurt1","chicken.hurt2"],
-		defaultName: "Chicken",
 		width:0.5, height:11/16, depth:0.5,
 		health: 4,
 		attracts: [blockIds.beetrootSeeds, blockIds.tomatoSeeds, blockIds.pumpkinSeeds, blockIds.melonSeeds, blockIds.wheatSeeds],
@@ -30932,6 +30952,7 @@ let entityData = [//todo n: do after initialize blockIds
 	},
 	{
 		name:"zombie",
+		Name: "Zombie",
 		drop: [blockIds.rottenFlesh],
 		dropAmount: [0,3],
 		experience: 5,
@@ -30939,7 +30960,6 @@ let entityData = [//todo n: do after initialize blockIds
 		stepSound: ["zombie.step1","zombie.step2","zombie.step3","zombie.step4","zombie.step5"],
 		hurtSound: ["zombie.hurt1","zombie.hurt2"],
 		deathSound: "zombie.death",
-		defaultName: "Zombie",
 		width:1, height:2, depth:1,
 		health: 20,
 		hostile: true,
@@ -30957,6 +30977,7 @@ let entityData = [//todo n: do after initialize blockIds
 	},
 	{
 		name:"skeleton",
+		Name: "Skeleton",
 		drop: [blockIds.bone,blockIds.arrow],
 		dropAmount: [1,2],
 		experience: 5,
@@ -30964,7 +30985,6 @@ let entityData = [//todo n: do after initialize blockIds
 		stepSound: ["skeleton.step1","skeleton.step2","skeleton.step3","skeleton.step4"],
 		hurtSound: ["skeleton.hurt1","skeleton.hurt2","skeleton.hurt3","skeleton.hurt4"],
 		deathSound: "skeleton.death",
-		defaultName: "Skeleton",
 		width:0.75, height:2, depth:0.75,
 		health: 20,
 		hostile: true,
@@ -30991,7 +31011,7 @@ let entityData = [//todo n: do after initialize blockIds
 		}
 	},
 	{
-		name:"spider",
+		name:"spider",//todo n: cave seperate
 		saySound: ["spider.say1","spider.say2","spider.say3","spider.say4"],
 		stepSound: ["spider.step1","spider.step2","spider.step3","spider.step4"],
 		deathSound: "spider.death",
@@ -31009,7 +31029,7 @@ let entityData = [//todo n: do after initialize blockIds
 		maxAttackCooldown: 20,
 		onspawn(){
 			this.fur = !!this.cave
-			this.defaultName = this.cave ? "Cave Spider" : "Spider"
+			this.Name = this.cave ? "Cave Spider" : "Spider"
 			if(this.cave){
 				this.width = this.height = this.depth = 0.7
 			}
@@ -31024,7 +31044,7 @@ let entityData = [//todo n: do after initialize blockIds
 	},
 	{
 		name:"wolf",
-		defaultName: "Wolf",
+		Name: "Wolf",
 		width:0.6, height:0.8, depth:0.6,
 		health: 8,
 		hostile: true,
@@ -31143,13 +31163,13 @@ let entityData = [//todo n: do after initialize blockIds
 	},
 	{
 		name:"blaze",
+		Name: "Blaze",
 		drop: [blockIds.blazeRod],
 		dropAmount: [0,1],
 		experience: 10,
 		saySound: ["blaze.breathe1","blaze.breathe2","blaze.breathe3","blaze.breathe4"],
 		hurtSound: ["blaze.hit1","blaze.hit2","blaze.hit3","blaze.hit4"],
 		deathSound: "blaze.death",
-		defaultName: "Blaze",
 		width:1, height:22/16, depth:1,
 		health: 20,
 		hostile: true,
@@ -31182,7 +31202,7 @@ let entityData = [//todo n: do after initialize blockIds
 	},
 	{
 		name:"enderman",
-		defaultName: "Enderman",
+		Name: "Enderman",
 		width:0.75, height:3, depth:0.75,
 		health: 40,
 		hostile: true,
@@ -31201,13 +31221,14 @@ let entityData = [//todo n: do after initialize blockIds
 			}
 		}
 	}
-]//todo n: extra used variables (like color) in posEntity
+]
+win.entityData = entityData
+//todo n: extra used variables (like color) in posEntity
 //find: \t+(this.)*(\w*?) = (.*?)\n
 //replace: \t\t$2: $3,\n
-win.entityData = entityData
 for(let i=0; i<entityData.length; i++){
 	let data = entityData[i]
-	let ent = class extends Mob {
+	let ent = class extends (data.type === "animal" || data.type === "hostile" ? Mob : Entity) {
 		static name2 = data.name
 		constructor(x,y,z){
 			super(x,y,z,0,0,0,0,0, data.width,data.height,data.depth, null,null,null, 300000)
@@ -31215,6 +31236,7 @@ for(let i=0; i<entityData.length; i++){
 		}
 	}
 	Object.assign(ent.prototype, data)
+	if(data.type === "hostile") ent.prototype.hostile = true
 	entities[entities.length] = ent
 }
 

@@ -25894,7 +25894,7 @@ p.camera.transformation.elements.set(matrix)//*/
           let distance = sqrt((ent.x - p.x)*(ent.x - p.x) + (ent.y - p.y)*(ent.y - p.y) + (ent.z - p.z)*(ent.z - p.z))
           if (distance < closest) {
             closest = distance
-            cname = ent.name || ent.defaultName
+            cname = ent.name || ent.Name
           }
 					if(ent.target === p.id){
 						closestHostile = min(closestHostile, distance)

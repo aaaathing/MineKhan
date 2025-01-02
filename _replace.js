@@ -23,6 +23,11 @@ sounds
 	// name:.*?wall
 	var esprima = require('esprima')
 
+	async function getMCData(path){
+		//return await fs.promises.readFile(require.resolve("minecraft-data/minecraft-data/data/"+path))
+		return await fetch("https://github.com/PrismarineJS/minecraft-data/raw/refs/heads/master/data/"+path).then(r=>r.json())
+	}
+
 	const materialToCategory = { //see https://github.com/PrismarineJS/minecraft-data/blob/master/data/pc/1.21.3/materials.json
 		"mineable/pickaxe":"build",
 		"incorrect_for_wooden_tool":"build",
@@ -31,12 +36,11 @@ sounds
 		"plant":"nature",
 		"leaves":"nature"
 	}
-	const materialToType = {}
 
 	let str=fs.readFileSync("public/minekhan/beta/allupdate/_mksrc10test-world.js","utf-8")
-	let nbd=await fetch("https://github.com/PrismarineJS/minecraft-data/raw/refs/heads/master/data/pc/1.21.3/blocks.json").then(r=>r.json())
-	let nitem=await fetch("https://github.com/PrismarineJS/minecraft-data/raw/refs/heads/master/data/pc/1.21.3/items.json").then(r=>r.json())
-	let nfd=await fetch("https://github.com/PrismarineJS/minecraft-data/raw/refs/heads/master/data/pc/1.21.3/foods.json").then(r=>r.json())
+	let nbd=await getMCData("pc/1.21.3/blocks.json").then(r=>r.json())
+	let nitem=await getMCData("pc/1.21.3/items.json").then(r=>r.json())
+	let nfd=await getMCData("pc/1.21.3/foods.json").then(r=>r.json())
 	let start=str.indexOf('const blockData')
 	let end=str.indexOf('const BLOCK_COUNT')
 	let bstr=str.slice(start,end)
@@ -215,6 +219,66 @@ sounds
 	}
 	nbstr+=bstr.slice(previ)
 	str=str.slice(0,start)+nbstr+str.slice(end)
+
+	// ----------------------------------
+	// entity
+	console.log("doing")
+	let ned=await getMCData("1.20.5/entities.json").then(r=>r.json())
+	start=str.indexOf('const entityData')
+	end=str.indexOf('win.entityData = entityData')
+	bstr=str.slice(start,end)
+	let edstatement=esprima.parseScript(bstr, {range:true}).body[0]
+	let ed = edstatement.declarations[0].init.elements
+
+	let eid={}
+	for(let i=0;i<ed.length;i++){
+		let n=getProp(ed[i],"name"), nm=getProp(ed[i],"nameMcd")||n
+		if(nm in eid) return console.error("duplicate nameMcd", nm)
+		eid[nm]=i
+	}
+	let edBeforeEnd = ed[ed.length-1].range[1]
+	let prevMd={}/*prev metadata*/
+	replace=[]
+
+	for(let ne of ned){
+		let b=ed[eid[ne.name]]
+		let isnew=false
+		if(!b){
+			isnew=true
+			let nameMcd = ne.name, name = camelCase(nameMcd)
+			b = {properties:[{key:{name:"name"},value:{value:name,range:[edBeforeEnd,edBeforeEnd]}}],range:[edBeforeEnd,edBeforeEnd]}
+			let str = ",\n\t{"
+			str += " name:"+JSON.stringify(name)+","
+			if(name !== nameMcd) str += " nameMcd:"+JSON.stringify(nameMcd)+","
+			str += " Name:"+JSON.stringify(ne.displayName)
+			replace.push([edBeforeEnd,edBeforeEnd, str, addnewIdx])
+			b.addnewIdx = addnewIdx
+			bid[nameMcd]=bd.length,bd.push(b)
+		}
+		const space = "\n\t\t"
+		b.space = space
+		replaceProp(b,"type",ne.type,space,["Name","nameMcd","name"])
+		replaceProp(b,"width",ne.width,space,["Name","nameMcd","name"])
+		replaceProp(b,"height",ne.height,space,["Name","nameMcd","name"])
+		replaceProp(b,"depth",ne.length??ne.width,space,["Name","nameMcd","name"])
+		replaceProp(b,"metadata",JSON.stringify(ne.metadataKeys),space,["Name","nameMcd","name"], prevMd)
+		if(isnew){
+			replace.push([edBeforeEnd,edBeforeEnd, " }", addnewIdx+=100])
+		}
+	}
+
+
+	console.log("replacing",replace.length)
+	replace.sort((a,b) => (a[0]-b[0])||(a[3]-b[3])||0)
+	nbstr="",previ=0
+	for(let i of replace){
+		nbstr+=bstr.slice(previ,i[0])
+		nbstr+=i[2]
+		previ=i[1]
+	}
+	nbstr+=bstr.slice(previ)
+	str=str.slice(0,start)+nbstr+str.slice(end)
+
 	fs.writeFileSync("public/minekhan/beta/allupdate/_mksrc10test-world.js",str)
 }
 function camelCase(s) {
