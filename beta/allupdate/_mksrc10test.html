@@ -8461,9 +8461,8 @@ const blockDataAdditional = {
 		},
 		clientTick:function(block,x,y,z,dimension,world){
 			if(performFast) return
-			let tags = world.getTags(x,y,z,dimension)
+			if(!getBlockState(block,this.blockStatesMap.lit)) return
 			let pix = 1/16
-			let on = this.id | SLAB
 			y -= rand(4,8)*pix
 			switch(getBlockState(block,this.blockStatesMap.facing)){
 				case "north":

@@ -870,6 +870,11 @@ let textures = {
 	"foodHalf": "0909b000ĘÎYŒqHĻĊYĽÅYĢlYąĜWKŘYåRZŊÈYZńZ000000g000zg000>À001m0007ë0000ù0000Ĉ00000",
 	"witherHalfHeart": "09098000-TWĲ$YEĊY$(ZE(ZwíWAJH0000i00kį08ł01GK05ĳ00n000À00000",
 	"witherHeart": "0909b000-TWĲ$YEĊY$(ZAJHsÞZE(ZwíW-ÞZQÞZ000001gh01zjM0>OÃK7ïOò07îò007ó000a0000000",
+	
+	flame: "08085000ţ0WŤĈWZKWZŃH0g00y00)00)01+01ĭë1įħ1+ë",
+	glint: "080850002ÁW2ĩY3AZ3āH0g00w00Ě0FĭI0Ě00w00g0000",
+	lavaParticle: "08085000ŤĈWZKWţ0WZŃH0000000Čħ1QS1]ë0ČS000000",
+	soulFireFlame: "080850002.W2ĂZÐņYZZZ0g00y00)00)01+01ĭë1įħ1+ë",
 }
 win.textures = textures
 
@@ -1047,10 +1052,10 @@ function setBlockState(id, blockStateObj, newValue){
 }
 win.setBlockState = setBlockState
 function getBlockStateValue(id, blockStateObj){
-	return floor(id / blockStateObj.minMult) % blockStateObj.maxMult
+	return floor((id % blockStateObj.maxMult) / blockStateObj.minMult)
 }
 function getBlockState(id, blockStateObj){
-	return blockStateObj.values[ floor(id / blockStateObj.minMult) % blockStateObj.maxMult ]
+	return blockStateObj.values[ floor((id % blockStateObj.maxMult) / blockStateObj.minMult) ]
 }
 win.getBlockState = getBlockState
 

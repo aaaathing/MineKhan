@@ -5,7 +5,7 @@ update()
 
 async function update(){
 /*
-replace old blockStates (client side)
+replace old blockStates
 add all blocks & items
 	item models
 craft
