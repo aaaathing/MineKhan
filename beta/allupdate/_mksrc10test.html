@@ -12804,10 +12804,10 @@ r 11 y  n  n  n
 		},
     bottom: function(x,y,z,ret,dimension,block,tags){
 			let tint
-			let b = world.getBiome(x,y,z,dimension)
+			let b = block.tagTint ? getTag(tags,block.tagTint,block) : world.getBiome(x,y,z,dimension)
 			let t = block.tint
 			if(t){
-				tint = t[b] || t.default
+				tint = t[b] || t[0] || t.default
 				if(performFast){
 					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
 					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
@@ -12838,10 +12838,10 @@ r 11 y  n  n  n
     },
     top: function(x,y,z,ret,dimension,block,tags){
 			let tint
-			let b = world.getBiome(x,y,z,dimension)
+			let b = block.tagTint ? getTag(tags,block.tagTint,block) : world.getBiome(x,y,z,dimension)
 			let t = block.tint
 			if(t){
-				tint = t[b] || t.default
+				tint = t[b] || t[0] || t.default
 				if(performFast){
 					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
 					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
@@ -12872,10 +12872,10 @@ r 11 y  n  n  n
     },
     north: function(x,y,z,ret,dimension,block,tags){
 			let tint
-			let b = world.getBiome(x,y,z,dimension)
+			let b = block.tagTint ? getTag(tags,block.tagTint,block) : world.getBiome(x,y,z,dimension)
 			let t = block.tint
 			if(t){
-				tint = t[b] || t.default
+				tint = t[b] || t[0] || t.default
 				if(performFast){
 					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
 					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
@@ -12904,10 +12904,10 @@ r 11 y  n  n  n
     },
     south: function(x,y,z,ret,dimension,block,tags){
 			let tint
-			let b = world.getBiome(x,y,z,dimension)
+			let b = block.tagTint ? getTag(tags,block.tagTint,block) : world.getBiome(x,y,z,dimension)
 			let t = block.tint
 			if(t){
-				tint = t[b] || t.default
+				tint = t[b] || t[0] || t.default
 				if(performFast){
 					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
 					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
@@ -12936,10 +12936,10 @@ r 11 y  n  n  n
     },
     east: function(x,y,z,ret,dimension,block,tags){
 			let tint
-			let b = world.getBiome(x,y,z,dimension)
+			let b = block.tagTint ? getTag(tags,block.tagTint,block) : world.getBiome(x,y,z,dimension)
 			let t = block.tint
 			if(t){
-				tint = t[b] || t.default
+				tint = t[b] || t[0] || t.default
 				if(performFast){
 					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
 					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
@@ -12968,10 +12968,10 @@ r 11 y  n  n  n
     },
     west: function(x,y,z,ret,dimension,block,tags){
 			let tint
-			let b = world.getBiome(x,y,z,dimension)
+			let b = block.tagTint ? getTag(tags,block.tagTint,block) : world.getBiome(x,y,z,dimension)
 			let t = block.tint
 			if(t){
-				tint = t[b] || t.default
+				tint = t[b] || t[0] || t.default
 				if(performFast){
 					ret[0] = ret[3] = ret[6] = ret[9] = tint[0]
 					ret[1] = ret[4] = ret[7] = ret[10] = tint[1]
@@ -13572,7 +13572,6 @@ r 11 y  n  n  n
 			this.weatherVAO = glExtensions.vertex_array_object.createVertexArrayOES()
 			this.updateWeather = false
 			this.entities = {}
-			this.columnHashs = new Uint8Array(16 * 16)//used to detect when column changes
 		}
 		getBlock(x, y, z) {
 			y -= minHeight
@@ -13598,7 +13597,6 @@ r 11 y  n  n  n
       }
 			this.sections[y >> 4].setBlock(x, y & 15, z, blockID)
 			this.updateSolidTop(x,py,z,blockID)
-			this.columnHashs[z*16+x]++
 		}
 		updateSolidTop(x,y,z,blockID){
 			if(blockID && (blockData[blockID].solid || blockData[blockID].liquid)){
@@ -13627,7 +13625,6 @@ r 11 y  n  n  n
 			this.minY = py < this.minY ? py : this.minY
 			this.maxY = py > this.maxY ? py : this.maxY
 			this.updateSolidTop(x,py,z,0)
-			this.columnHashs[z*16+x]++
 		}
     getTags(x, y, z){
 			y -= minHeight
@@ -16638,8 +16635,7 @@ r 11 y  n  n  n
 			}
 		}
 		update() {
-			let chunk = world.getChunk(this.chunkX*16,this.chunkZ*16,this.dimension)
-			let h = chunk.columnHashs[(this.z&15)*16+(this.x&15)]
+			let h = world.getSolidTop(round(this.x),round(this.y),round(this.z),this.dimension)
 			if(h !== this.prevColumn){
 				this.prevColumn = h
 				this.willUpdateShape = true
@@ -16655,8 +16651,7 @@ r 11 y  n  n  n
         this.previousYaw -= Math.PId
       }
 			this.lastUpdate = now
-			let block = this.world.getBlock(this.x,this.actualY,this.z,this.dimension)
-			if(block !== (blockIds.beacon | BEACON)) this.canDespawn = true
+			this.hidden = !world.getTagByName(round(this.x),round(this.y),round(this.z),"on",this.dimension)
 		}
 	}
 

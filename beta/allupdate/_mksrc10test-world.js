@@ -1702,7 +1702,9 @@ const blockData = [
 		category:"redstone",
 	},
 	{
-		name:"redstoneDust",//todo n
+		name:"redstoneDust",
+		nameMcd:"redstone_wire",
+		blockStates: [{"name":"east","values":["up","side","none"]},{"name":"north","values":["up","side","none"]},{"name":"power","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"]},{"name":"south","values":["up","side","none"]},{"name":"west","values":["up","side","none"]}],
 		textures:"redstoneDustDot",
 		shadow:false,
 		transparent:true,
@@ -1730,13 +1732,8 @@ const blockData = [
 			down:[13,1]
 		},
 		tint:[[75,0,0],[111,0,0],[121,0,0],[130,0,0],[140,0,0],[151,0,0],[161,0,0],[171,0,0],[181,0,0],[191,0,0],[202,0,0],[211,0,0],[221,0,0],[231,6,0],[241,27,0],[252,49,0]].map(v => {v[0]/=255;v[1]/=255;v[2]/=255;return v}),
-		blueTint:[[0,75,75],[0,111,111],[0,121,121],[0,130,130],[0,140,140],[0,151,151],[0,161,161],[0,171,171],[0,181,181],[0,191,191],[0,202,202],[0,211,211],[0,221,221],[6,231,231],[27,241,241],[49,252,252]].map(v => {v[0]/=255;v[1]/=255;v[2]/=255;return v}),
-		tagTintPropertyTop: "power",
-		tagTintPropertyBottom: "power",
-		tagTintPropertyNorth: "power",
-		tagTintPropertySouth: "power",
-		tagTintPropertyEast: "power",
-		tagTintPropertyWest: "power",
+		tagTint: "power",
+		copyFromProperties:["tagBits","damage","dieMessage","connectable","connectables"],
 		onupdate: function(x,y,z,b,world,sx,sy,sz){
 			let tags = world.getTags(x,y,z)
 			let north, south, east, west
@@ -1794,28 +1791,12 @@ const blockData = [
 			world.setTagByName(x,y,z,"down",down,false,false)//notice last one not lazy and not remote
 			
 			//set texture and stuff
-			let sum = north + south + east + west
-			let block = this.id //dot
-			if(sum === 2){
-				if(north && west) block = this.id | STAIR | EAST
-				else if(west && south) block = this.id | STAIR | SOUTH
-				else if(south && east) block = this.id | STAIR | WEST
-				else if(east && north) block = this.id | STAIR | NORTH
-				else{
-					if(north || south) block = this.id | SLAB | NORTH
-					if(east || west) block = this.id | SLAB | EAST
-				}
-			}else if(sum === 3){
-				if(east && west){
-					if(north) block = this.id | DOOR | NORTH
-					else block = this.id | DOOR | SOUTH
-				}else if(north && south){
-					if(east) block = this.id | DOOR | WEST
-					else block = this.id | DOOR | EAST
-				}
-			}else if(sum === 4) block = this.id | PANE
-			if((b & FLIP) === FLIP) block |= FLIP //blue redstone
-			if(world.getBlock(x,y,z) !== block){
+			let block = b
+			block = setBlockState(block,this.blockStatesMap.north, northUp?"up":north?"side":"none")
+			block = setBlockState(block,this.blockStatesMap.south, southUp?"up":south?"side":"none")
+			block = setBlockState(block,this.blockStatesMap.east, eastUp?"up":east?"side":"none")
+			block = setBlockState(block,this.blockStatesMap.west, westUp?"up":west?"side":"none")
+			if(b !== block){
 				world.setBlock(x,y,z,block,false,false,false,true)
 				//world.updateBlock(x,y,z,false,false,null,null,null,dimension)
 			}
@@ -1981,11 +1962,11 @@ const blockData = [
 				var block = world.getBlock(x,y+1,z)
 				if(block && !blockData[block].transparent) return false
 			}
-			if(up || down) return blockData[id].name === "redstoneDust" && (id & FLIP) === (b & FLIP)
+			if(up || down) return blockData[id].id === this.id
 			
-			if(blockData[id].name === "redstoneDust" && (id & FLIP) === (b & FLIP)) return true
-			if(this.connectables.includes(blockData[id].name)) return true
+			if(blockData[id].id === this.id) return true
 			for(var i of this.connectables){
+				if(i === blockData[id].name) return true
 				if(i.startsWith("is:")){
 					if(blockData[id][i.replace("is:","")]) return true
 				}
@@ -2069,10 +2050,10 @@ const blockData = [
 		}
 	},*/
 	{
-		name:"blueRedstone",
+		name:"blueRedstone",//todo n: maybe convert from old block states
 		Name:"Blue Redstone Dust",
 		item:true,
-		useAs:() => blockIds.redstoneDust | FLIP,//todo n
+		useAs:() => blockIds.blueRedstoneDust,
 		category:"redstone",
 	},
 	{ name: "soup",category:"food"},
@@ -2619,7 +2600,7 @@ const blockData = [
 		copyPropertiesHere:"oakDoor"
 	},
 	
-	{//todo n: wall torch
+	{
 		name: "torch",
 		Name:"Torch",
 		transparent: true,
@@ -2628,7 +2609,8 @@ const blockData = [
 		lightLevel: 14,
 		woodSound:true,
 		solid:false,
-		category:"decoration"
+		category:"decoration",
+		useAsWall:"wallTorch"
 	},
 	{
 		name: "soulTorch",
@@ -2640,7 +2622,8 @@ const blockData = [
 		lightLevel: 10,
 		woodSound:true,
 		solid:false,
-		category:"decoration"
+		category:"decoration",
+		useAsWall:"soulWallTorch"
 	},
 	
 	{
@@ -2712,13 +2695,9 @@ const blockData = [
 			}
 			return minSize
 		},
-		update: function(x,y,z,world){//todo n
+		update: function(x,y,z,world){
 			let minSize = this.getSize(x,y,z,world), block = world.getBlock(x,y,z)
-			if(minSize){
-				if(block !== (this.id | BEACON)){
-					world.setBlock(x,y,z,this.id|BEACON,false,false,false,true)
-				}
-			}else if(block !== this.id) world.setBlock(x,y,z,this.id,false,false,false,true)
+			world.setTagByName(x,y,z,"on",minSize)
 			return minSize
 		},
 		onplace: function(x,y,z, player,world){
@@ -3304,7 +3283,7 @@ const blockData = [
 		hidden: true
 	},
 	{ 
-		name: "RespawnAnchor",
+		name: "RespawnAnchor?",
 		textures: ["respawnAnchorBottom", "respawnAnchorTop", "respawnAnchorSide4"],
 		hidden: true
 	},
@@ -3596,7 +3575,7 @@ const blockData = [
 		hardness:3,
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true
 	},
-	{//todo n: placing potted version of flowers
+	{
 		name: "flowerPot",
 		nameMcd:"flower_pot",
 		Name:"Flower Pot",
@@ -3606,7 +3585,14 @@ const blockData = [
 		iconTexture:"flowerPotIcon",
 		flatIcon:true,
 		category:"decoration",
-		liquidBreakable:"drop"
+		liquidBreakable:"drop",
+		onclick:function(x,y,z,world,p,holdObj){
+			if(!holdObj) return true
+			let name = blockData[holdObj.id].name
+			name = "potted" + name[0].toUpperCase() + name.substring(1)
+			if(blockIds[name]) world.setBlock(x,y,z,blockIds[name])
+			else return true
+		}
 	},
 	{
 		name: "acaciaSapling",
@@ -8854,7 +8840,7 @@ const blockData = [
 	{
 		name:"tomatoPlant",
 		Name:"Tomato Plant",
-		blockStates:[{name:"age",values:[0,1,2,3,4]}],//todo n
+		blockStates:[{name:"age",values:[0,1,2,3,4]}],
 		textures:new Array(6).fill("tomatoPlantStage0"),
 		textures1:new Array(6).fill("tomatoPlantStage1"),
 		textures2:new Array(6).fill("tomatoPlantStage2"),
@@ -9112,6 +9098,7 @@ const blockData = [
 		woodSound:true,
 		solid:false,
 		flatIcon:true,
+		useAsWall:"redstoneWallTorch",
 		init: function(){
 			blockData[this.id + this.blockStatesMap.lit.false].lightLevel = 0
 		},
@@ -9137,67 +9124,17 @@ const blockData = [
 				//find block it's attached to
 				var me = world.getBlock(x,y,z)
 				var ax=x,ay=y,az=z
-				var wall = that.id | SLAB//todo n (wall torch)
-				var wallOff = that.id | STAIR
-				switch(me){
-					case wall | NORTH:
-					case wallOff | NORTH:
-						az++
-						break
-					case wall | SOUTH:
-					case wallOff | SOUTH:
-						az--
-						break
-					case wall | EAST:
-					case wallOff | EAST:
-						ax++
-						break
-					case wall | WEST:
-					case wallOff | WEST:
-						ax--
-						break
-					default:
-						ay--
-				}
-				var block = world.getBlock(ax,ay,az)
+				if(this.blockStatesMap.facing){
+					switch(getBlockState(me,this.blockStatesMap.facing)){
+						case "north": az++; break
+						case "south": az--; break
+						case "east": ax++; break
+						case "west": ax--; break
+					}
+				}else ay--
 				//see if the torch should be on of off
 				var on = world.getPower(ax,ay,az) || world.getBlockPower(ax,ay,az,null) ? false : true
-				var target = me
-				if(on){
-					switch(me){
-						case wallOff | NORTH:
-							target = wall | NORTH
-							break
-						case wallOff | SOUTH:
-							target = wall | SOUTH
-							break
-						case wallOff | EAST:
-							target = wall | EAST
-							break
-						case wallOff | WEST:
-							target = wall | WEST
-							break
-						case that.id | CROSS:
-							target = that.id
-					}
-				}else{
-					switch(me){
-						case wall | NORTH:
-							target = wallOff | NORTH
-							break
-						case wall | SOUTH:
-							target = wallOff | SOUTH
-							break
-						case wall | EAST:
-							target = wallOff | EAST
-							break
-						case wall | WEST:
-							target = wallOff | WEST
-							break
-						case that.id:
-							target = that.id | CROSS
-					}
-				}
+				var target = setBlockState(me,this.blockStatesMap.lit,on)
 
 				//set it
 				if(me !== target) {
@@ -9469,7 +9406,7 @@ const blockData = [
 	{
 		name:"piston",
 		Name:"Piston",
-		blockStates: "stickyPiston",
+		blockStates: "pistonSticky",
 		hardness: 1.5,
 		blastResistance: 1.5,
 		material: "mineable/pickaxe",
@@ -9480,72 +9417,26 @@ const blockData = [
 		headBackTexture:"pistonFront",
 		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,world){//todo n
 			var block = world.getBlock(x,y,z)
-			var extended = false, facing, attachedHead = false
-			switch(block){
-				case this.id:
-					facing = "top"
-					break
-				case this.id | FLIP:
-					facing = "bottom"
-					break
-				case this.id | SLAB | NORTH:
-					facing = "north"
-					break
-				case this.id | SLAB | SOUTH:
-					facing = "south"
-					break
-				case this.id | SLAB | EAST:
-					facing = "east"
-					break
-				case this.id | SLAB | WEST:
-					facing = "west"
-					break
-				case this.id | TALLCROSS:
-					facing = "top"
-					extended = true
-					break
-				case this.id | TALLCROSS | FLIP:
-					facing = "bottom"
-					extended = true
-					break
-				case this.id | PORTAL | NORTH:
-					facing = "north"
-					extended = true
-					break
-				case this.id | PORTAL | SOUTH:
-					facing = "south"
-					extended = true
-					break
-				case this.id | PORTAL | EAST:
-					facing = "east"
-					extended = true
-					break
-				case this.id | PORTAL | WEST:
-					facing = "west"
-					extended = true
-					break
-				default:
-					return //parts like piston heads shouldn't do the calculations when power changes
-			}
+			var extended = false, attachedHead = false
 			if(extended){
-				switch(facing){
-					case "top":
-						if(world.getBlock(x,y+1,z) === (this.id | STAIR)) attachedHead = true
+				switch(getBlockState(block,this.blockStatesMap.facing)){
+					case "up":
+						if(blockData[world.getBlock(x,y+1,z)].name === "pistonHead") attachedHead = true
 						break
-					case "bottom":
-						if(world.getBlock(x,y-1,z) === (this.id | STAIR | FLIP)) attachedHead = true
+					case "down":
+						if(blockData[world.getBlock(x,y-1,z)].name === "pistonHead") attachedHead = true
 						break
 					case "north":
-						if(world.getBlock(x,y,z-1) === (this.id | DOOR | NORTH)) attachedHead = true
+						if(blockData[world.getBlock(x,y,z-1)].name === "pistonHead") attachedHead = true
 						break
 					case "south":
-						if(world.getBlock(x,y,z+1) === (this.id | DOOR | SOUTH)) attachedHead = true
+						if(blockData[world.getBlock(x,y,z+1)].name === "pistonHead") attachedHead = true
 						break
 					case "east":
-						if(world.getBlock(x-1,y,z) === (this.id | DOOR | EAST)) attachedHead = true
+						if(blockData[world.getBlock(x-1,y,z)].name === "pistonHead") attachedHead = true
 						break
 					case "west":
-						if(world.getBlock(x+1,y,z) === (this.id | DOOR | WEST)) attachedHead = true
+						if(blockData[world.getBlock(x+1,y,z)].name === "pistonHead") attachedHead = true
 						break
 				}
 			}
@@ -9556,7 +9447,7 @@ const blockData = [
 			}else if(!power && extended && attachedHead){
 				this.retract(x,y,z,facing,world)
 			}
-		},
+		},//todo n: continue below and piston head functions
 		onupdate:function(x,y,z,b,w,sx,sy,sz){ //onupdate is run when placed
 			this.onpowerupdate(x,y,z,null,null,null,null,w)
 		},
@@ -9730,13 +9621,19 @@ const blockData = [
 	
 	{
 		name:"pistonSticky",
+		nameMcd:"sticky_piston",
 		Name:"Sticky Piston",
+		blockStates: [{"name":"extended","values":[false,true]},{"name":"facing","values":["north","east","south","west","up","down"]}],
+		hardness: 1.5,
+		blastResistance: 1.5,
+		material: "mineable/pickaxe",
 		textures:["pistonBack","pistonFrontSticky","pistonSide"],
 		piston:true,
 		headSideTexture:"pistonHeadSide",
 		frontOpenTexture:"pistonFrontOpen",
 		headBackTexture:"pistonFront",
 		category:"redstone",
+		copyPropertiesHere:"piston",
 		onpowerupdate: function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var block = world.getBlock(x,y,z)
 			var extended = false, facing, attachedHead = false
@@ -13918,6 +13815,21 @@ const blockData = [
 		cullFace: "same",
 	},
 	{
+		name:"blueRedstoneDust",
+		blockStates: "redstoneDust",
+		shadow:false,
+		transparent:true,
+		solid:false,
+		hidden:true,
+		smoothLight:false,
+		drop: "blueRedstone",
+		carryRedstone:true,
+		copyPropertiesHere:"redstoneDust",
+		tint:[[0,75,75],[0,111,111],[0,121,121],[0,130,130],[0,140,140],[0,151,151],[0,161,161],[0,171,171],[0,181,181],[0,191,191],[0,202,202],[0,211,211],[0,221,221],[6,231,231],[27,241,241],[49,252,252]].map(v => {v[0]/=255;v[1]/=255;v[2]/=255;return v}),
+		tagTint: "power",
+		redstoneDust:true
+	},
+	{
 		name:"paleOakWood",
 		nameMcd:"pale_oak_wood",
 		Name:"Pale Oak Wood",
@@ -14017,16 +13929,6 @@ const blockData = [
 		category: "build"
 	},
 	{
-		name:"stickyPiston",
-		nameMcd:"sticky_piston",
-		Name:"Sticky Piston",
-		blockStates: [{"name":"extended","values":[false,true]},{"name":"facing","values":["north","east","south","west","up","down"]}],
-		hardness: 1.5,
-		blastResistance: 1.5,
-		material: "mineable/pickaxe",
-		category: "build"
-	},
-	{
 		name:"pistonHead",
 		nameMcd:"piston_head",
 		Name:"Piston Head",
@@ -14080,14 +13982,6 @@ const blockData = [
 		hardness: 2,
 		blastResistance: 3,
 		material: "mineable/axe"
-	},
-	{
-		name:"redstoneWire",
-		nameMcd:"redstone_wire",
-		Name:"Redstone Wire",
-		blockStates: [{"name":"east","values":["up","side","none"]},{"name":"north","values":["up","side","none"]},{"name":"power","values":["0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"]},{"name":"south","values":["up","side","none"]},{"name":"west","values":["up","side","none"]}],
-		transparent: true,
-		solid: false
 	},
 	{
 		name:"paleOakSign",
@@ -14527,7 +14421,9 @@ const blockData = [
 		blockStates: "furnace",
 		lightLevel: 7,
 		transparent: true,
-		solid: false
+		solid: false,
+		copyPropertiesHere:"redstoneTorch",
+		init:"redstoneTorch"
 	},
 	{
 		name:"oakFence",
@@ -19631,7 +19527,8 @@ function initBlockData(){
 		}
 		if(data.copyPropertiesHere){
 			let other = blockData[blockIds[data.copyPropertiesHere]]
-			let arr = other.copyFromProperties || ["onupdate","onclick","onpowerupdate","onset","ondelete","ontagsupdate","activate","projectileHit","serveronuse","useAs"]
+			let arr = ["onupdate","onclick","onpowerupdate","onset","ondelete","ontagsupdate","activate","projectileHit","serveronuse","useAs"]
+			if(data.copyFromProperties) arr.push(...data.copyFromProperties)
 			for(let c=0; c<arr.length; c++){
 				let prop = arr[c]
 				if(other[prop] && data[prop] === undefined) data[prop] = other[prop]
@@ -38092,7 +37989,9 @@ class World{ // aka trueWorld
           blockMode = CROSS
         }
       }*/
+			if(side && blockData[holding].useAsWall) holding = blockIds[blockData[holding].useAsWall]
 			let states = blockData[holding].blockStatesMap
+			
 			if(states && states.facing){
 				if(face === "top" && ("up" in states.facing)) holding = setBlockState(holding,states.facing,"up")
 				if(face === "bottom" && ("down" in states.facing)) holding = setBlockState(holding,states.facing,"down")
@@ -38128,6 +38027,7 @@ class World{ // aka trueWorld
 					holding = setBlockState(cblock,states.layers, "1")
         }
       }
+
 			if(!blockData[holding|blockMode]) throw new Error("no block holding: "+holding+" blockMode: "+blockMode)
 			let shape = holding && blockData[holding|blockMode].shape
 			/*if (shape && shape.rotate){
@@ -41380,7 +41280,7 @@ class WorldDimension{
 				if(!xyArrayHas(spreaded,spreadAt,x,y-1,z) && blockData[this.getBlock(x,y-1,z)].carryRedstone) spreadAt.push(x,y-1,z,i+1)
 				
 				let tags = this.getTags(x,y,z), block = this.getBlock(x,y,z)
-				if(blockData[block].name === "redstoneDust"){
+				if(blockData[block].redstoneDust){
 					if(getTagBits(tags,"westUp",block) && !xyArrayHas(spreaded,spreadAt,x+1,y+1,z)) spreadAt.push(x+1,y+1,z,i+1)
 					if(getTagBits(tags,"eastUp",block) && !xyArrayHas(spreaded,spreadAt,x-1,y+1,z)) spreadAt.push(x-1,y+1,z,i+1)
 					if(getTagBits(tags,"northUp",block) && !xyArrayHas(spreaded,spreadAt,x,y+1,z+1)) spreadAt.push(x,y+1,z+1,i+1)
@@ -41455,7 +41355,7 @@ class WorldDimension{
 	}
 	getPowerForWire(x,y,z,blue=0,rail=false){
 		let block = this.getBlock(x,y,z)
-		if(blockData[block].name === "redstoneDust" && blue !== (block & FLIP)) return 0
+		if(blockData[block].redstoneDust && blue !== (block & FLIP)) return 0
 		if(rail && !blockData[block].rail) return 0
 		return this.getPower(x,y,z)
 	}
@@ -41469,7 +41369,7 @@ class WorldDimension{
 		let top = this.getPowerForWire(x,y+1,z,blue)
 		let bottom = this.getPowerForWire(x,y-1,z,blue)
 		let westUp = 0, eastUp = 0, northUp = 0, southUp = 0, westDown = 0, eastDown = 0, northDown = 0, southDown = 0
-		if(tags && blockData[block].name === "redstoneDust"){
+		if(tags && blockData[block].redstoneDust){
 			westUp = getTagBits(tags,"westUp",block) ? this.getPowerForWire(x+1,y+1,z,blue) : 0
 			eastUp = getTagBits(tags,"eastUp",block) ? this.getPowerForWire(x-1,y+1,z,blue) : 0
 			northUp = getTagBits(tags,"northUp",block) ? this.getPowerForWire(x,y+1,z+1,blue) : 0

@@ -8,10 +8,11 @@ async function update(){
 replace old blockStates
 add all blocks & items
 	item models
+craft
+world.tick
 models rotate (v.x, v.y, entity)
 add custom blockStates and shapes for them
 	fern, wall carpet, etc.
-craft
 add all entities
 	fix some textures (sheep)
 animated textures
@@ -20,6 +21,7 @@ new save format using block names and block state names
 sounds
 */
 	// CUBE|SLAB|STAIR|CROSS|TALLCROSS|DOOR|TORCH|LANTERN|LANTERNHANG|BEACON|CACTUS|PANE|PORTAL|WALLFLAT|TRAPDOOR|TRAPDOOROPEN|FENCE|WALLPOST|BUTTON|CHAIN|POT|POTCROSS|CORNERSTAIRIN|CORNERSTAIROUT|VERTICALSLAB|LAYER1|LAYER2|LAYER3|LAYER4|LAYER5|LAYER6|LAYER7|LAYER8|FLIP|NORTH|SOUTH|EAST|WEST|ROTATION|isCube|isState
+	// name:.*?wall
 	var esprima = require('esprima')
 
 	const materialToCategory = { //see https://github.com/PrismarineJS/minecraft-data/blob/master/data/pc/1.21.3/materials.json
@@ -85,6 +87,8 @@ sounds
 	let bid={},bidn={},copiesProps={}
 	for(let i=0;i<bd.length;i++){
 		let n=getProp(bd[i],"name"), nm=getProp(bd[i],"nameMcd")||n
+		if(nm in bid) return console.error("duplicate nameMcd", nm)
+		if(n in bidn) return console.error("duplicate name", n)
 		bid[nm]=i
 		bidn[n]=i
 		let copyProp=getProp(bd[i],"copyPropertiesHere")
@@ -107,7 +111,7 @@ sounds
 		}
 		let pos = getPropValPos(o,key)
 		if(pos){
-			if(bstr.slice(pos[0],pos[1]) !== val) replace.push([pos[0],pos[1],val, o.addnewIdx||0])
+			if(bstr.slice(pos[0],pos[1]) !== val+"") replace.push([pos[0],pos[1],val, o.addnewIdx||0])
 		}else{
 			let i
 			for(let a of after){
