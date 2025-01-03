@@ -302,14 +302,16 @@ export function loadNamespaceEntityBe(allData, namespace, {
 	function dot (a, b) {
 		return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 	}
-	function addFace(cube, shape, side, faceMult, texture, texWidth=16, texHeight=16){
+	function addFace(cube, shape, sideName, side, faceMult, texture, texWidth=16, texHeight=16){
+		let uv = cube.uv && cube.uv[sideName] ? cube.uv[sideName].uv : cube.uv
+		if(!uv) return
 		let pos = [], tex = []
 		const { dir, corners, u0, v0, u1, v1 } = faceMult
 		let normal = [-dir[0],-dir[1],-dir[2]]
 		// loop from https://github.com/PrismarineJS/prismarine-viewer/blob/master/viewer/lib/entity/Entity.js
 		for (const cpos of corners) {
-      const u = (cube.uv[0] + dot(cpos[3] ? u1 : u0, cube.size)) / texWidth
-      const v = (cube.uv[1] + dot(cpos[4] ? v1 : v0, cube.size)) / texHeight
+      const u = (uv[0] + dot(cpos[3] ? u1 : u0, cube.size)) / texWidth
+      const v = (uv[1] + dot(cpos[4] ? v1 : v0, cube.size)) / texHeight
 			tex.push(u,v)
 
       const inflate = cube.inflate ? cube.inflate : 0
@@ -343,13 +345,12 @@ export function loadNamespaceEntityBe(allData, namespace, {
 			let boneRotation = rot ? [rot[0]*Math.PI/180, rot[1]*Math.PI/180, rot[2]*Math.PI/180] : [0,0,0]
 			if(bone.cubes) for(let i=0; i<bone.cubes.length; i++){
 				let cube = bone.cubes[i]
-				if(!cube.uv) cube.uv = [0,0, model.texturewidth||16, model.textureheight||16]
-				addFace(cube, shape, 0, elemFaces.down, texture, model.texturewidth, model.textureheight)
-				addFace(cube, shape, 1, elemFaces.up, texture, model.texturewidth, model.textureheight)
-				addFace(cube, shape, 2, elemFaces.north, texture, model.texturewidth, model.textureheight)
-				addFace(cube, shape, 3, elemFaces.south, texture, model.texturewidth, model.textureheight)
-				addFace(cube, shape, 4, elemFaces.east, texture, model.texturewidth, model.textureheight)
-				addFace(cube, shape, 5, elemFaces.west, texture, model.texturewidth, model.textureheight)
+				addFace(cube, shape, "down", 0, elemFaces.down, texture, model.texturewidth, model.textureheight)
+				addFace(cube, shape, "up", 1, elemFaces.up, texture, model.texturewidth, model.textureheight)
+				addFace(cube, shape, "north", 2, elemFaces.north, texture, model.texturewidth, model.textureheight)
+				addFace(cube, shape, "south", 3, elemFaces.south, texture, model.texturewidth, model.textureheight)
+				addFace(cube, shape, "east", 4, elemFaces.east, texture, model.texturewidth, model.textureheight)
+				addFace(cube, shape, "west", 5, elemFaces.west, texture, model.texturewidth, model.textureheight)
 			}
 			for(let i=0; i<6; i++) shape.size += shape.verts[i].length
 			bones[bone.name] = shape

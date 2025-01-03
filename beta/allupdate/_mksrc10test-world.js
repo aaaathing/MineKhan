@@ -11679,7 +11679,7 @@ const blockData = [
 		},
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var block = world.getBlock(x,y,z)
-			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z) ? true : false
 			var tags = world.getTags(x,y,z)
 			var on = tags && tags.on || false
 			if(power !== on) {
@@ -11772,7 +11772,7 @@ const blockData = [
 		},
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var block = world.getBlock(x,y,z)
-			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
+			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z) ? true : false
 			var tags = world.getTags(x,y,z)
 			var on = tags && tags.on || false
 			if(power !== on) {
@@ -11790,27 +11790,27 @@ const blockData = [
 						switch(getBlockState(block,this.blockStatesMap.facing)){
 							case "north":
 								vz = -0.25
-								iz -= 0.75
+								iz -= 1
 								break
 							case "south":
 								vz = 0.25
-								iz += 0.75
+								iz += 1
 								break
 							case "east":
 								vx = -0.25
-								ix -= 0.75
+								ix -= 1
 								break
 							case "west":
 								vx = 0.25
-								ix += 0.75
+								ix += 1
 								break
 							case "up":
 								vy = 0.25
-								iy += 0.75
+								iy += 1
 								break
 							case "down":
 								vy = -0.25
-								iy -= 0.75
+								iy -= 1
 								break
 						}
 						var front = world.getBlock(ix,iy,iz)
@@ -11983,7 +11983,7 @@ const blockData = [
 			this.onupdate(x,y,z,null,world,null,null,null,world)
 		},
 		isLocked:function(x,y,z,world){
-			return world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
+			return world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z) ? true : false
 		},
 		itemOnTop(x,y,z,ent){
 			let world = ent.world
@@ -30223,6 +30223,7 @@ const entityData = [//todo n: do after initialize blockIds
 		width: 0.25,
 		height: 0.25,
 		depth: 0.25,
+		rotSwapOrder:true,
 		metadata: "egg",
 		class: ({BlockEntity}) => class extends BlockEntity{
 			constructor(x,y,z,velx,vely,velz,from){
@@ -30256,6 +30257,7 @@ const entityData = [//todo n: do after initialize blockIds
 		width: 0.25,
 		height: 0.25,
 		depth: 0.25,
+		rotSwapOrder:true,
 		metadata: "egg",
 		class: ({BlockEntity}) => class extends BlockEntity{
 			constructor(x,y,z,velx,vely,velz,from){
@@ -30299,6 +30301,7 @@ const entityData = [//todo n: do after initialize blockIds
 		width: 0.25,
 		height: 0.25,
 		depth: 0.25,
+		rotSwapOrder:true,
 		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","item_stack"],
 		class: ({BlockEntity}) => class extends BlockEntity{
 			constructor(x,y,z,velx,vely,velz,from){
@@ -30334,6 +30337,7 @@ const entityData = [//todo n: do after initialize blockIds
 	},
 	{
 		name:"SlingshotShot",
+		rotSwapOrder:true,
 		class: ({BlockEntity}) => class extends BlockEntity{
 			constructor(x,y,z,velx,vely,velz){
 				super(blockIds.ironNugget, x,y,z)
@@ -30466,6 +30470,7 @@ const entityData = [//todo n: do after initialize blockIds
 		width: 0.5,
 		height: 0.5,
 		depth: 0.5,
+		rotSwapOrder:true,
 		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","flags","pierce_level","effect_color"],
 		class: ({Entity}) => class extends Entity{
 			constructor(x,y,z,dx,dy,dz, from){

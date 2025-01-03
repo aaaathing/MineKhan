@@ -14917,8 +14917,21 @@ r 11 y  n  n  n
 			this.updateChunk()
 			this.lastUpdate = now
 		}
+		updateChunk(){
+			let chunkX = this.x >> 4, chunkZ = this.z >> 4
+			if(this.chunkX !== chunkX || this.chunkZ !== chunkZ || this.dimension !== this.chunkDimension){
+				let oldChunk = this.world.getChunk(this.chunkX<<4,this.chunkZ<<4,this.chunkDimension)
+				let chunk = this.world.getChunk(chunkX<<4,chunkZ<<4,this.dimension)
+				this.chunkX = chunkX
+				this.chunkZ = chunkZ
+				this.chunkDimension = this.dimension
+				if(oldChunk && oldChunk.entities[this.id]) delete oldChunk.entities[this.id]
+				if(chunk) chunk.entities[this.id] = this
+			}
+		}
 		update(){
-			super.update()
+			this.updateVelocity(now)
+			this.move(now)
 			if(this.facesPlayer) this.canFacePlayer = true
 		}
 		setPos(x,y,z,vx,vy,vz){
@@ -14960,8 +14973,13 @@ r 11 y  n  n  n
 			const modelMatrix = entityMatrices.modelMatrix;
 			modelMatrix.identity()
 			modelMatrix.translate(renderx, rendery, renderz)
-			modelMatrix.rotX(lerp(diff,this.previousPitch,this.pitch))
-			modelMatrix.rotY(lerp(diff,prevYaw,this.yaw)+this.offsetry)
+			if(this.rotSwapOrder){
+				modelMatrix.rotY(lerp(diff,prevYaw,this.yaw)+this.offsetry)
+				modelMatrix.rotX(lerp(diff,this.previousPitch,this.pitch))
+			}else{
+				modelMatrix.rotX(lerp(diff,this.previousPitch,this.pitch))
+				modelMatrix.rotY(lerp(diff,prevYaw,this.yaw)+this.offsetry)
+			}
 			if(this.pitch2 || this.previousPitch2) modelMatrix.rotX(lerp(diff,this.previousPitch2,this.pitch2))
 			if(this.roll || this.previousRoll) modelMatrix.rotZ(lerp(diff,this.previousRoll,this.roll))
 			if(this.dieRotate){
@@ -16410,10 +16428,8 @@ r 11 y  n  n  n
 		Arrow: Arrow => class extends Arrow{
 			noScale = true
 			constructor(x,y,z,dx,dy,dz, from){
-				let t = textureCoords[textureMap.arrow]
-				let v = generateVAO(shapes.arrow, t[0],t[1],t[2]-t[0],t[5]-t[1])
-				this.faces = v.size, this.vao = v.vao
 				super(...arguments)
+				this.setPartShapes(this.variantsBones.default)
 				this.noHitbox = true
 				this.from = from
 			}

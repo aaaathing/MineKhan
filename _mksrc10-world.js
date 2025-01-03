@@ -31431,7 +31431,7 @@ class World{ // aka trueWorld
 			let block = prevBlock
 			let theDrop = blockData[prevBlock].drop
 			let amount = blockData[prevBlock].dropAmount
-			let canDrop = holding && blockData[prevBlock].harvestTools && (blockData[prevBlock].harvestTools === true || blockData[prevBlock].harvestTools.includes(holding))
+			let canDrop = blockData[prevBlock].harvestTools && (blockData[prevBlock].harvestTools === true || blockData[prevBlock].harvestTools.includes(holding))
 			if(!blockData[prevBlock].type) canDrop = true
 			if(canDrop){
 				if(amount === undefined) amount = 1
