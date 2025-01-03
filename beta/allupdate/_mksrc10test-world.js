@@ -834,49 +834,8 @@ for(let i in biomeData){
 	}*/
 }
 
-let textures = {
-	dirt: "0g0g7ĢlZýĜYåÃYÆřYðoHÚĞZâÑH4Č9PČg?ČÐSĈÉ9(J9Cĩ)yķBkaEðÂ%UÈ{üÉÖ)ù9Eù84Á]2Â$üòFkÃQČĂ?ČŁPwh?0ìKNÏFihČĎÃ{ĊRPAë?$ò{)9FXĺ1kòEiĊByÃ",
-	hitbox: "0g0g100W",
-	netherrack: "0g0g7ÀÁHUíWÀÎYÑĊYÝĪWSÁHï4W4CČÛğp%ýÃIÄķ÷ORÒ6ĄĸĭõßgĺĂ)ōĵ?phú+úĎŊe#sö7)XUŊ2)ŝÖĭùÛ@s}ÕőÞį2MįőĂ?×Ö@ïÁóóe*o][oMİĈ]ġĈ}{ĸVĮrPįĄ*.r",
-	endStone: "0g0g6ņĂHľÖHŖłHĭşYĶoYŞŒZ4XI}iĉAEÂùíg9n8?wRÝĊňa^üXĻTÁûÉ(!IÀħĉxoV]XIPİaĉnhČĠTÏNR]Rjïo]&wÁA2RÑüĐ9ħhB4Ï}gSS#zwíýòÂŀwAb(yT5ħĄ",
-	error: "0g0g2ŗf=00=0Z0Z0Z0Z0Z0Z0Z0ZZ0Z0Z0Z0Z0Z0Z0Z0",
-	crack1: "0g0g3ZZħ;ŚZĂÖY0000000000000000000000000000010002S000ë0000000000000000000000000",
-	crack2: "0g0g3ZZħ;ŚZĂÖY000000000000000000000400040009g002K000S000ë000000000000000000000",
-	crack3: "0g0g3ZZħ;ŚZĂÖY000000000000000004000400045009q002K000S000S001ë00200000000000000",
-	crack4: "0g0g3ZZħ;ŚZĂÖY0000000000000100060004gS0kBë0Fq002K000S000S005ë00a00000000000000",
-	crack5: "0g0g3ZZħ;ŚZĂÖY0000000000S001ë006gg04gK0UBë1đq022K000S000S00lë00!S000ë000000000",
-	crack6: "0g0g3ZZħ;ŚZĂÖY0000000004À009Ĉ006gk0QgÕ0UBë1đq062K080S00gS00lë00×S00ëù000w00000",
-	crack7: "0g0g3ZZħ;ŚZĂÖY00000g000AÀ009Ĉ00@gk0QgÕ0UBë1đp062Ï04SS08ùÀ00lĈ00×S01ëý020!00000",
-	crack8: "0g0g3ZZħ;ŚZĂÖY00000À000ČÀ059Ĉga@kk0QoÖ0UBí1đp06iÎ04KRS8ùÀë0lč0g×^0Bëý0aS×S0ëëë",
-	crack9: "0g0g3ZZħ;ŚZĂÖY04ë81Æ4SiČÆùB9Ĉgq@kkwQoÖ0UBí1đp06iÎ04KRQ]ùÀĀùlčgg×^wBëý06À×À8ĈSČ",
-	crack10: "0g0g3ZZħ;ŚZĂÖY44X]9Æ4SiČÆùB9ĈgÈ@kkĈQoÖ0UBíÁđp0ĎiÎ14KR@]ùÀĀùlčgg×^BBëýa6À×À4ĈSČ",
-	fire: "0g0g2ŗf=00=0Z0Z0Z0Z0Z0Z0Z0ZZ0Z0Z0Z0Z0Z0Z0Z0",
-	"onceFreezeHalfHeart": "09099000Äėħ}ŔY×ÇZîĆZÓoZēņZ2ZWŊZZ00000iw002NS00B+006?w007]0007S00070000000",
-	"onceFreezeHeart": "09099000Äėħ}ŔY×ÇZîĆZÓoZēņZ2ZWŊZZ00000iwy02NRÂ0B+*w6?B@07][007[00070000000",
-	"onceHalfHeart": "09094000ţTWKgHĠTW001S1ü0Ö0+S3À0)030000",
-	"onceHeart": "09094000ţTWKgHĠTW001?1ýùÖČ+Ô3Å0,030000",
-	"onceWitherHalfHeart": "09099000-TWĲ$YEĊY$(ZĆåZĞłHE(ZwíW000001g001zg00?Ð007ï(007î0007ë00070000000",
-	"onceWitherHeart": "09099000-TWĲ$YEĊYĆåZ$(ZĞłHE(ZwíW000001gh01zjT0UÐÑÀ7X)ñ07îñ007ñ00070000000",
-	"xbubble": "0909500000W2ÍZĺėZÄŖZ0iS0kú0k0Qkr2iî0RÀ08TS8S6]S0iS0",
-	"xbubblePop": "090930002ÍZ00W0SggP8Këw00g0ÆSEKgw80",
-	"freezeHalfHeart": "09098000Äėħ}ŔYďņZîĆZēņZŊZZ2ZW0000Č00CĈ04č01ÓS07Ā00u000Ý00000",
-	"freezeHeart": "09098000Äėħ}ŔYďņZîĆZēņZŊZZ2ZW0000Či0CĊĐ4čò1ÓÄÀ7ĂÝ0uÝ00Ý00000",
-	"halfHeart": "09094000ţTWZ$YĠTW001S1ü0V0*S3À0)030000",
-	"heartBackground": "0909300000WEĊY5k6Ă@ĒčĒđ×Ē@ĒS×S6S0S0",
-	"heartBlink": "09093000ZZZEĊY5k6Ă@ĒčĒđ×Ē@ĒS×S6S0S0",
-	"heart": "09094000ţTWZ$YĠTW001?1ýÀVU*Å3Å0,030000",
-	"foodBackground": "0909300000WEĊY506ù6đ1ĒùqČ1đ0lü0p050",
-	"foodFull": "0909a000ĻĊYĘÎYŅįZĢlYąĜWKŘYåRZŊÈYZńZ000001w001MS00x?S00ÔV000ÔÝ0000ë0000ù00000",
-	"foodHalf": "0909b000ĘÎYŒqHĻĊYĽÅYĢlYąĜWKŘYåRZŊÈYZńZ000000g000zg000>À001m0007ë0000ù0000Ĉ00000",
-	"witherHalfHeart": "09098000-TWĲ$YEĊY$(ZE(ZwíWAJH0000i00kį08ł01GK05ĳ00n000À00000",
-	"witherHeart": "0909b000-TWĲ$YEĊY$(ZAJHsÞZE(ZwíW-ÞZQÞZ000001gh01zjM0>OÃK7ïOò07îò007ó000a0000000",
-	
-	flame: "08085000ţ0WŤĈWZKWZŃH0g00y00)00)01+01ĭë1įħ1+ë",
-	glint: "080850002ÁW2ĩY3AZ3āH0g00w00Ě0FĭI0Ě00w00g0000",
-	lavaParticle: "08085000ŤĈWZKWţ0WZŃH0000000Čħ1QS1]ë0ČS000000",
-	soulFireFlame: "080850002.W2ĂZÐņYZZZ0g00y00)00)01+01ĭë1įħ1+ë",
-}
-win.textures = textures
+let textures = {}
+win.serverTextures = textures
 
 let sit
 let generator = {
@@ -7094,16 +7053,14 @@ const blockData = [
 		category:"items",
 		tagBits:null,
 		shapeName:"itemFrame",
-		onclick:function(x,y,z,world, p){
-			var prev = world.getTagByName(x,y,z,"block") || 0
-			if(!prev && p.holding) world.setTagByName(x,y,z, "block",p.holding)
-			else{
-				var rot = world.getTagByName(x,y,z,"rot") || 0
-				rot++
-				if(rot >= 8) rot = 0
-				world.setTagByName(x,y,z, "rot",rot)
-			}
-		}
+		serveronuse: (x,y,z, block,world,face,item,p) => {
+			item.amount--
+			var rot = round(p.ry*4/Math.PId)
+			let pos = getPosition([x,y,z],face)
+			let ent = new entities[entityIds.itemFrame](pos[0],pos[1],pos[2])
+			ent.rot(rot)
+			world.addEntity(ent)
+		},
 	},
 	
 	{
@@ -7117,7 +7074,7 @@ const blockData = [
 			world.addEntity(new entities[entityIds.EnderPearl](p.x,p.y,p.z, p.direction.x, p.direction.y, p.direction.z, p.id))
 		},
 		useAnywhere:true,
-		category:"items"
+		category:"items",
 	},
 	
 	{
@@ -8604,7 +8561,15 @@ const blockData = [
 		category:"items",
 		tagBits:null,
 		shapeName:"itemFrame",
-		copyPropertiesHere:"itemFrame"
+		copyPropertiesHere:"itemFrame",
+		serveronuse: (x,y,z, block,world,face,item,p) => {
+			item.amount--
+			var rot = round(p.ry*4/Math.PId)
+			let pos = getPosition([x,y,z],face)
+			let ent = new entities[entityIds.glowItemFrame](pos[0],pos[1],pos[2])
+			ent.rot(rot)
+			world.addEntity(ent)
+		},
 	},
 	{
 		name:"glowLichen",
@@ -10660,8 +10625,10 @@ const blockData = [
 		poleSide:"logSide",
 		iconTexture:"oakSign",
 		flatIcon:true,
+		hitbox:"cube",
 		sign:true,
-		copyFromProperties:["sign"],
+		tagBits:null,
+		copyFromProperties:["sign","hitbox","tagBits","shadow"],
 		hardness:1,
 		woodSound:true,
 		type:"wood",
@@ -19379,6 +19346,16 @@ function initBlockData(){
 	for (let i = 0; i < BLOCK_COUNT; ++i) {
 		const data = blockData[i];
 
+		if(data.copyPropertiesHere){
+			let other = blockData[blockIds[data.copyPropertiesHere]]
+			let arr = ["onupdate","onclick","onpowerupdate","onset","ondelete","ontagsupdate","activate","projectileHit","serveronuse","useAs","grow","tick","onbreak","onplace"]
+			if(other.copyFromProperties) arr.push(...other.copyFromProperties)
+			for(let c=0; c<arr.length; c++){
+				let prop = arr[c]
+				if(other[prop] !== undefined && data[prop] === undefined) data[prop] = other[prop]
+			}
+		}
+
 		data.transparent = data.transparent || false
 		
 		data.shadow = data.shadow !== undefined ? data.shadow : true
@@ -19534,15 +19511,6 @@ function initBlockData(){
 			}
 		}else{
 			data.blockStatesMap = {}
-		}
-		if(data.copyPropertiesHere){
-			let other = blockData[blockIds[data.copyPropertiesHere]]
-			let arr = ["onupdate","onclick","onpowerupdate","onset","ondelete","ontagsupdate","activate","projectileHit","serveronuse","useAs","grow","tick"]
-			if(data.copyFromProperties) arr.push(...data.copyFromProperties)
-			for(let c=0; c<arr.length; c++){
-				let prop = arr[c]
-				if(other[prop] && data[prop] === undefined) data[prop] = other[prop]
-			}
 		}
 	}
 	dataLoad.loadNamespace(dataLoad.data, "min"+"ecr"+"aft", {blockData,BLOCK_COUNT,shapes,textures:textures2,blockIds,compareArr,entityData})
@@ -20756,7 +20724,7 @@ function objectify(x, y, z, width, height, textureX, textureY, texXFlip,texYFlip
 		rt:rotateTex,
 		tw:texW || width,
 		th:texH || height,
-		t:textureName
+		texture:textureName
 	}
 }
 win.objectify = objectify
@@ -25207,6 +25175,7 @@ function initShapes() {//todo n: only do required shapes
 			tex[5] = th-(tex[5]-ty)+ty
 			tex[7] = th-(tex[7]-ty)+ty
 		}
+		if(rect.texture) tex.texture = rect.texture
 		let pos = null, normal = null
 		switch(face) {
 			case 0: // Bottom
@@ -28087,7 +28056,9 @@ class Entity {
 		this.vely += (this.vely * drag - this.vely)
 	}
 	collided(x, y, z, vx, vy, vz, block) {
-		let verts = blockData[block].shape.verts
+		let shape = blockData[block].shape
+    if(shape.hitbox) shape = shape.hitbox
+		let verts = shape.verts
 		let px = this.x - this.width / 2 - x
 		let py = this.y - this.height / 2 - y
 		let pz = this.z - this.depth / 2 - z
@@ -29908,7 +29879,7 @@ const entityData = [//todo n: do after initialize blockIds
 		height: 0.25,
 		depth: 0.25,
 		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","item"],
-		class: ({Entity}) => class extends Entity {
+		class: ({Entity}) => class Item extends Entity {
 			constructor(x, y, z, velx, vely, velz, blockID, autoSetVel, amount, durability = null, name = null, from) {
 				super(x, y, z, 0, 0, velx, vely, velz, 0.25, 0.25, 0.25, null, null, 0, 300000/*1500000*/)
 				this.block = blockID
@@ -30279,7 +30250,7 @@ const entityData = [//todo n: do after initialize blockIds
 						if(entPlayerCollided){
 							collided.damage(1,from+" killed "+collided.username+" with snowballs.",false,null,this.previousX,this.previousY,this.previousZ)
 						}else{
-							if(collided.damage) collided.onhit(1,false, 0,0, this.from)
+							if(collided.onhit) collided.onhit(1,false, 0,0, this.from)
 						}
 						this.canDespawn = true
 					}
@@ -30288,8 +30259,6 @@ const entityData = [//todo n: do after initialize blockIds
 					this.canDespawn = true
 				}
 				if(this.canDespawn) this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break")
-				
-				this.canFacePlayer = true
 			}
 		}
 	},
@@ -30320,7 +30289,7 @@ const entityData = [//todo n: do after initialize blockIds
 				from = from && (from.username || from.name)
 				if(collided && collided !== this){
 					if(entPlayerCollided) collided.damage(1,from+" killed "+collided.username+" with eggs.",false,null,this.previousX,this.previousY,this.previousZ)
-					else if(collided.damage) collided.onhit(1,false, 0,0, this.from)
+					else if(collided.onhit) collided.onhit(1,false, 0,0, this.from)
 					this.canDespawn = true
 				}
 				if (this.hasCollided) {
@@ -30330,8 +30299,6 @@ const entityData = [//todo n: do after initialize blockIds
 					this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break")
 					if(rand() > 0.9) this.world.addEntity(new entities[entityIds.Chicken](this.x,this.y,this.z))
 				}
-				
-				this.canFacePlayer = true
 			}
 		}
 	},
@@ -30357,11 +30324,9 @@ const entityData = [//todo n: do after initialize blockIds
 				var collided = entCollided(this)
 				if(collided){
 					if(entPlayerCollided) collided.damage(5,collided.username+" got killed by a slingshot.",false,null,this.previousX,this.previousY,this.previousZ)
-					else if(collided.damage) collided.damage(5)
+					else if(collided.onhit) collided.damage(5)
 					this.canDespawn = true
 				}
-				
-				this.canFacePlayer = true
 			}
 			move(now) {
 				let pminX = floor(this.x - this.width / 2)
@@ -30472,8 +30437,8 @@ const entityData = [//todo n: do after initialize blockIds
 		depth: 0.5,
 		rotSwapOrder:true,
 		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","flags","pierce_level","effect_color"],
-		class: ({Entity}) => class extends Entity{
-			constructor(x,y,z,dx,dy,dz, from){
+		class: ({Entity}) => class Arrow extends Entity{
+			constructor(x,y,z,dx=0,dy=0,dz=0, from){
 				super(x, y, z, 0, 0, dx, dy, dz, 0.25, 0.25, 0.25, null, null, null, 60000)
 				this.direction = new PVector(dx,dy,dz)
 				this.stopStart = this.spawn
@@ -30544,18 +30509,38 @@ const entityData = [//todo n: do after initialize blockIds
 			}
 		}
 	},
+	null,//unused, sign
 	{
-		name:"Sign"//todo n
-	},
-	{
-		name:"itemFrame",//todo n
+		name:"itemFrame",
 		nameMcd:"item_frame",
 		Name:"Item Frame",
 		type: "other",
 		width: 0.5,
 		height: 0.5,
 		depth: 0.5,
-		metadata: "glowItemFrame"
+		metadata: "glowItemFrame",
+		class: ({Entity}) => class itemFrame extends Entity{
+			constructor(x,y,z){
+				super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, null, null, null, Infinity)
+				this.block = 0
+				this.amount = 0
+			}
+			rot(dir){
+				this.yaw = -dir*Math.PI/2
+			}
+			update(){}
+			onclick(holdObj,p){
+				var prev = this.block
+				if(!prev && p.holding) this.block = p.holding
+				else{
+					var rot = this.amount
+					rot++
+					if(rot >= 8) rot = 0
+					this.amount = rot
+				}
+			}
+			onhit(){this.canDespawn=true}
+		}
 	},
 	{
 		name:"ExperienceOrb",
@@ -30565,8 +30550,9 @@ const entityData = [//todo n: do after initialize blockIds
 		width: 0.5,
 		height: 0.5,
 		depth: 0.5,
+		rotSwapOrder:true,
 		metadata: "breezeWindCharge",
-		class: ({Entity}) => class extends Entity{
+		class: ({Entity}) => class ExperienceOrb extends Entity{
 			constructor(x,y,z,value){
 				super(x, y, z, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, null, null, null, 300000)
 				this.amount = value
@@ -30900,7 +30886,7 @@ const entityData = [//todo n: do after initialize blockIds
 		height: 0,
 		depth: 0,
 		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","transformation_interpolation_start_delta_ticks","transformation_interpolation_duration","pos_rot_interpolation_duration","translation","scale","left_rotation","right_rotation","billboard_render_constraints","brightness_override","view_range","shadow_radius","shadow_strength","width","height","glow_color_override","text","line_width","background_color","text_opacity","style_flags"],
-		class: ({Entity}) => class extends Entity{
+		class: ({Entity}) => class TextDisplay extends Entity{
 			constructor(x,y,z,text,size,color,background,glow) {
 				size = size || 1/2
 				super(x, y, z, 0, 0, 0, 0, 0, size, size, size, null,null, 0, 0)
@@ -31109,7 +31095,7 @@ const entityData = [//todo n: do after initialize blockIds
 							collided.burnTimer += 8
 							collided.damage(5,collided.username+" was shot by fireballs from "+from+".",false,null,this.previousX,this.previousY,this.previousZ)
 						}else{
-							if(collided.damage) collided.onhit(5,false, 0,0, this.from), collided.burnTimer += 8
+							if(collided.onhit) collided.onhit(5,false, 0,0, this.from), collided.burnTimer += 8
 						}
 						this.canDespawn = true
 					}
@@ -31119,8 +31105,6 @@ const entityData = [//todo n: do after initialize blockIds
 					if(this.hasCollided) this.world.setBlock(round(this.x),round(this.y),round(this.z),blockIds.fire,false,false,false,false,this.dimension)
 				}
 				if(this.canDespawn) this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break")
-				
-				this.canFacePlayer = true
 			}
 		}
 	},
@@ -31702,7 +31686,8 @@ const entityData = [//todo n: do after initialize blockIds
 		width: 0.5,
 		height: 0.5,
 		depth: 0.5,
-		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","item","rotation"]
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","item","rotation"],
+		class: ({itemFrame}) => class extends itemFrame{}
 	},
 	{
 		name:"glowSquid",
@@ -32362,36 +32347,27 @@ for(let i=0; i<entityData.length; i++){
 	let data = entityData[i]
 	if(!data) continue
 	if(!data.name) throw new Error("missing name at "+i)
-	let mob = data.type === "animal" || data.type === "hostile"
-	if(mob) data.hostile = data.type === "hostile"
+	let mob = data.type === "animal" || data.type === "hostile" || data.type === "passive"
+	if(mob) {
+		data.hostile = data.type === "hostile"
+		data.mob = true
+	}
 	let ent = data.class ? data.class(entityClassMap) : (class extends (mob ? Mob : Entity) {
 		constructor(x,y,z){
 			super(x,y,z,0,0,0,0,0, data.width,data.height,data.depth, null,null,null)
 			if(this.onspawn) this.onspawn()
 		}
 	})
-	ent.name2 = data.name
 	Object.assign(ent.prototype, data)
+	ent.name2 = data.name
+	ent.prototype.type = data.name
+	ent.prototype.entId = i
+	entityIds[data.name] = i
 	entityClassMap[data.name] = ent
-	entities.push(ent)
+	entities[i] = ent
 }
 
 //let entityOrder = ['Item','BlockEntity', 'PrimedTNT', 'PrimedSuperTNT', 'PrimedUltraTNT', 'PrimedUnTNT', 'MovingBlock', 'EnderPearl', 'Snowball', 'Egg', 'SlingshotShot', 'Arrow', 'Sign', 'ItemFrame', 'ExperienceOrb', 'cow', 'pig', 'creeper', 'sheep', 'chicken', 'zombie', 'skeleton', 'spider', 'EnderDragon', 'BlockParticle', 'PoofParticle', 'FallingDustParticle', 'RedstoneParticle', 'ShockwaveParticle', 'SmokeParticle', 'NoteParticle', 'GlintParticle', 'FlameParticle', 'LavaParticle', 'DripParticle', 'SplashParticle', 'Spark', 'TextDisplay','Wolf','HeartParticle',"Blaze","SmallFireball","BlockDisplay","BeaconBeam","Enderman","Minecart"]
-for(let i=0; i<entities.length; i++){
-	entityIds[entities[i].name2] = i
-}
-/*let unorderedEntities = entities
-entities = []*/
-for(let i=0; i<entities.length; i++){
-	/*let prevI = entityIds[entityOrder[i]]
-	entityIds[entityOrder[i]] = i
-	if(prevI === undefined){
-		continue
-	}
-	entities[i] = unorderedEntities[prevI]*/
-	entities[i].prototype.entId = i
-	entities[i].prototype.type = entities[i].name2
-}
 win.serverEntities = entities, win.entityIds = entityIds
 //win.entityOrder = entityOrder
 console.log(entities.length,'entities and particles on server side')
@@ -37718,6 +37694,39 @@ let onBoxEnt = function(x, y, z, w, h, d, ent) {
 	return ent.x > ix && ent.y > iy && ent.z > iz && ent.x < ix + iw && ent.y <= iy + ih && ent.z < iz + id
 }
 
+function getPosition(pos,face){
+	let x = pos[0], y = pos[1], z = pos[2]
+	let side = false
+	switch(face) {
+		case "top":
+			y += 1
+			break
+		case "bottom":
+			y -= 1
+			break
+		case "south":
+			z -= 1
+			side = true
+			break
+		case "north":
+			z += 1
+			side = true
+			break
+		case "west":
+			x -= 1
+			side = true
+			break
+		case "east":
+			x += 1
+			side = true
+			break
+	}
+	pos[0] = x
+	pos[1] = y
+	pos[2] = z
+	return pos
+}
+
 function hitSound(p){
 	var i = Math.ceil(Math.random()*3)
 	p.world.playSound(p.x,p.y,p.z,"damage.hit"+i)
@@ -39048,7 +39057,7 @@ class World{ // aka trueWorld
 		let holdObj = p.inventory.hotbar[p.inventory.hotbarSlot]
 		let block = blockData[holdObj ? holdObj.id : 0]
 		if(hit){
-			if(!ent.damage) return
+			if(!ent.onhit && ent.type !== "Player") return
 			let atime = (typeof block.attackTime === "number") ? block.attackTime : 5
 			let attackDamage = (block && block.attackDamage) || 1
 			let damage, critical
@@ -39064,7 +39073,7 @@ class World{ // aka trueWorld
 				}
 			}else{
 				let pd = p.direction
-				ent.damage(damage,pd.x/2,0.5,pd.z/2)
+				ent.onhit(damage,false,pd.x/2,0.5,pd.z/2,p.id)
 			}
 			if(block.pickaxe){
 				holdObj.durability -= 2
@@ -39100,8 +39109,8 @@ class World{ // aka trueWorld
 	static entityPacketType = [
 		["version","constant",0],["id","basicString"],["entId","byte"],["x","double"],["y","double"],["z","double"],packetDimension,
 		["pitch","double"],["yaw","double"],["velx","double"],["vely","double"],["velz","double"],["spawnRelative","double"],
-		[ent=>ent.type==="Item"||ent.type==="ExperienceOrb","includeIf",[["amount","double"]]],
-		[ent=>ent.type==="Item"||(ent.blockEntity),"includeIf",[["block","uint"]]],
+		[ent=>"amount" in ent,"includeIf",[["amount","double"]]],
+		[ent=>"block" in ent,"includeIf",[["block","uint"]]],
 		[ent=>ent.type==="Item","includeIf",[["from","basicString"],["durability","int"],["name","string"]]],
 		[ent=>ent.type==="BlockEntity","includeIf",[["solidOnGround","boolean"]]],
 		[ent=>ent.type==="MovingBlock","includeIf",[["sx","int"],["sy","int"],["sz","int"],["mx","int"],["my","int"],["mz","int"],["despawns","int"],["solidWhenDone","boolean"]]],
@@ -39216,11 +39225,10 @@ class World{ // aka trueWorld
 		if(p.data[0] !== 0 || preBetaVersion) return this.posEntityOldBab(p, m, preBetaVersion)
 		let now = performance.now()
 		p = bitArrayToPacket(p,this.constructor.entityPacketType)
-		const entType = entityOrder[p.entId]
+		const entType = entities[p.entId].name2
 		let ent = this.entities[this.getEntity(p.id)]
 		if(ent){
 			if(entType === "TextDisplay" && ent.text !== p.text) ent.setText(p.text)
-			if(entType === "Item" && ent.amount !== p.amount) ent.amount = p.amount, ent.willUpdateShape = true
 		}else{
 			ent = entities[p.entId]
 			if(ent.mob){
@@ -39319,6 +39327,8 @@ class World{ // aka trueWorld
 			ent.harmEffect = p.harmEffect
 			ent.health = p.health
 		}
+		if("amount" in ent) ent.amount = p.amount
+		if("block" in ent) ent.block = p.block
 		ent.updateChunk()
 		return ent
 	}
@@ -40959,12 +40969,12 @@ window.parent.postMessage({ready:true}, "*")
 				world.loadedUpdate = true
 			}else if(data.type === "mySkin" || data.type === "particles" || data.type === "achievment" || data.type === "harmEffect" || data.type === "playSound" || data.type === "title" || data.type === "joined"){
 				sendOthers(data)
-			}else if(data.type === "hit"){
+			}else /*if(data.type === "hit"){
 				if(data.isEntity){
 					let ent = world.entities[world[p.dimension].getEntity(data.TO)]
 					if(ent) ent.onhit(data.damage,false, data.velx,data.velz, data.id)
 				}else world.sendPlayer(data,data.TO)
-			}else if(data.type === "message"){
+			}else*/ if(data.type === "message"){
 				data.fromServer = false
 				data.username = username
 				sendOthers(data)
@@ -41794,6 +41804,8 @@ class WorldDimension{
 			}
 		}
 		
+		if(!remote) this.sendAllInChunk({type:"setBlock", data:{x:x, y:y, z:z, block:blockID, dimension:this.dimension, keepTags:keepTags}},x>>4,z>>4)
+		
 		let nameChanged = blockData[prev].name !== blockData[blockID || 0].name
 		if(!noOnupdate && prev && blockData[prev].ondelete && nameChanged){
 			blockData[prev].ondelete(x,y,z, prevTags, prev,this)
@@ -41801,8 +41813,6 @@ class WorldDimension{
 		if(!noOnupdate && blockID && blockData[blockID].onset && nameChanged){
 			blockData[blockID].onset(x,y,z,this)
 		}
-		
-		if(!remote) this.sendAllInChunk({type:"setBlock", data:{x:x, y:y, z:z, block:blockID, dimension:this.dimension, keepTags:keepTags}},x>>4,z>>4)
 
 		//Update the 6 adjacent blocks and 1 changed block
 		if (xm && xm !== 15 && zm && zm !== 15) {

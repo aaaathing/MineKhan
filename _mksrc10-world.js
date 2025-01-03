@@ -34269,6 +34269,8 @@ class WorldDimension{
 			}
 		}
 		
+		if(!remote) this.sendAllInChunk({type:"setBlock", data:{x:x, y:y, z:z, block:blockID, dimension:this.dimension, keepTags:keepTags}},x>>4,z>>4)
+		
 		let nameChanged = blockData[prev].name !== blockData[blockID || 0].name
 		if(!noOnupdate && prev && blockData[prev].ondelete && nameChanged){
 			blockData[prev].ondelete(x,y,z, prevTags, prev,this)
@@ -34276,8 +34278,6 @@ class WorldDimension{
 		if(!noOnupdate && blockID && blockData[blockID].onset && nameChanged){
 			blockData[blockID].onset(x,y,z,this)
 		}
-		
-		if(!remote) this.sendAllInChunk({type:"setBlock", data:{x:x, y:y, z:z, block:blockID, dimension:this.dimension, keepTags:keepTags}},x>>4,z>>4)
 
 		//Update the 6 adjacent blocks and 1 changed block
 		if (xm && xm !== 15 && zm && zm !== 15) {

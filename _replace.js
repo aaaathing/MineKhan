@@ -18,6 +18,8 @@ add all entities
 	particle don't use entityIds
 animated textures
 semi transparent textures
+remove unused textures & shapes
+	not particles,sign,menus,itemframe
 new save format using block names and block state names
 sounds
 */
