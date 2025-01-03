@@ -276,19 +276,27 @@ export function loadNamespaceEntityBe(allData, namespace, {
 	
 	let data = allData.assetsBe[namespace]
 	for(let i=0; i<entityData.length; i++){
+		if(!entityData[i]) continue
 		let name = entityData[i].nameMcd || entityData[i].name
 		let entity = data.entity[name]
 		if(!entity) continue
 		let variantsBones = {}
-		for(let v in entity.geometry){
-			variantsBones[v] = getShapeForVariant(shapes, fixResourceLocation(name)+":"+v, entity.geometry[v], entity.textures[v])
+		for(let v in entity.textures){
+			let g = entity.geometry[v] || entity.geometry.default
+			if(g) variantsBones[v] = getShapeForVariant(shapes, fixResourceLocation(name)+":"+v, g, entity.textures[v])
 		}
 		entityData[i].variantsBones = variantsBones
 	}
 
 	function getTexture(name){
 		name = fixResourceLocation(name)
-		if(!textures[name]) textures[name] = getFromData(name, "")
+		if(!textures[name]){
+			try{
+				textures[name] = getFromData(name, "")
+			}catch(e){
+				return "error"
+			}
+		}
 		return name
 	}
 	function dot (a, b) {
@@ -335,6 +343,7 @@ export function loadNamespaceEntityBe(allData, namespace, {
 			let boneRotation = rot ? [rot[0]*Math.PI/180, rot[1]*Math.PI/180, rot[2]*Math.PI/180] : [0,0,0]
 			if(bone.cubes) for(let i=0; i<bone.cubes.length; i++){
 				let cube = bone.cubes[i]
+				if(!cube.uv) cube.uv = [0,0, model.texturewidth||16, model.textureheight||16]
 				addFace(cube, shape, 0, elemFaces.down, texture, model.texturewidth, model.textureheight)
 				addFace(cube, shape, 1, elemFaces.up, texture, model.texturewidth, model.textureheight)
 				addFace(cube, shape, 2, elemFaces.north, texture, model.texturewidth, model.textureheight)

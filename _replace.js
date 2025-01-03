@@ -14,6 +14,8 @@ add custom blockStates and shapes for them
 	fern, wall carpet, etc.
 add all entities
 	fix some textures (sheep)
+	posEntity
+	particle don't use entityIds
 animated textures
 semi transparent textures
 new save format using block names and block state names

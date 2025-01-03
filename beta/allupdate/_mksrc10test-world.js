@@ -28433,6 +28433,7 @@ class Entity {
 		this.y = y
 		this.z = z
 	}
+	serverUpdate(){}
 	update() {
 		this.updateVelocity(now)
 		this.move(now)
@@ -28506,6 +28507,7 @@ class Entity {
 		}
 	}
 }
+win.serverEntity = Entity
 
 const
 	pW = 0.3,
@@ -29295,873 +29297,7 @@ class Player extends Entity{
 		if(this.connection) this.connection.send({type:"damage",x,y,z,lastHealth:prevHealth,velx,vely,velz})
   }
 }
-entities[entities.length] = class Item extends Entity {
-	static name2 = "Item"
-	constructor(x, y, z, velx, vely, velz, blockID, autoSetVel, amount, durability = null, name = null, from) {
-		super(x, y, z, 0, 0, velx, vely, velz, 0.25, 0.25, 0.25, null, null, 0, 300000/*1500000*/)
-		this.block = blockID
-		this.from = from || undefined
-		this.durability = durability
-		this.name = name
-		this.amount = amount || 1
-		this.gravityStength = -0.07
-		this.noHitbox = true
-		this.canFloat = true
-		this.cullFace = true
-		
-		if(autoSetVel){
-			this.velx = (Math.random()-0.5) * 0.2
-			this.vely = Math.random() * 0.2
-			this.velz = (Math.random()-0.5) * 0.2
-		}
-	}
-	goCloserToPlayer(e){
-		let xDist = this.x - e.x
-		let yDist = this.y - (e.y - e.height/2)
-		let zDist = this.z - e.z
-		var hRange = 1.425
-		let comeCloser = xDist > -hRange && xDist < hRange && yDist > -0.75 && yDist < 2.3 && zDist > -hRange && zDist < hRange
-		if(comeCloser){
-			this.moveTowards(e.x, Math.min(Math.max(this.y, e.y - e.height*0.5),e.y+e.height*0.5), e.z, hRange,2.3,hRange, 3)
-		}
-		/*if(pickup){
-			var dist = dist3(this.x, this.y, this.z, p.x, p.y, p.z)
-			var dist2 = dist3(this.x, this.y, this.z, p.x, p.y-1, p.z)
-			pickup = ((1 >= dist) && (dist >= -1)) || ((1 >= dist2) && (dist2 >= -1))
-		}*/
-		let w = e.width*0.5
-		return xDist > -w && xDist < w && yDist > 0 && yDist < e.height && zDist > -w && zDist < w
-	}
-	update() {
-		this.updateVelocity(now)
-		this.move(now)
-		
-		if(this.amount <= 0){
-			return this.canDespawn = true
-		}
-		this.yaw += 0.05;
-		if(this.yaw > Math.PId){
-			this.yaw -= Math.PId
-			this.previousYaw -= Math.PId
-		}
-		
-		let pickup
-		if(now - this.spawn > 1000){
-			for(var P of this.world.world.players){
-				if(!P.hidden && !P.die && P.dimension === this.dimension){
-					if(this.goCloserToPlayer(P)) pickup = P
-				}
-			}
-		}
-		
-		let d = 3/4
-		var stackSize = blockData[this.block].stackSize
-		var c = false
-		this.world.getEntitiesNear(this.x,this.y,this.z, 1, nearEntityArray)
-		for(var e of nearEntityArray){
-			if(e.type === "Item" && e !== this && e.block === this.block && (!e.name && !this.name || e.name === this.name) && e.amount + this.amount <= stackSize){
-				var xDist = this.x - e.x
-				var yDist = this.y - e.y
-				var zDist = this.z - e.z
-				let stack = xDist > -d && xDist < d && yDist > -d && yDist < d && zDist > -d && zDist < d
-				if(stack){
-					this.amount += e.amount
-					e.amount = 0
-					this.velx = (this.velx+e.velx)/2
-					this.vely = (this.vely+e.vely)/2
-					this.velz = (this.velz+e.velz)/2
-					this.x = (this.x+e.x)/2
-					this.y = (this.y+e.y)/2
-					this.z = (this.z+e.z)/2
-					c = true
-				}
-			}
-		}
-		//if(c) this.world.sendAll({type:"entEvent",event:"itemAmount",data:this.amount,id:this.id})
-		if(c) this.world.sendEntityPos(this)
-		
-		if(pickup){
-			let pickuped = false
-			while(this.amount > 0 && newInvItem(pickup, this.block, this.durability, this.name)){
-				this.amount--
-				pickuped = true
-			}
-			if(pickuped){
-				if(blockData[this.block].log){
-					pickup.addAchievment("Getting Wood")
-				}else if(this.block === blockIds.diamond){
-					pickup.addAchievment("DIAMONDS!")
-				}else if(this.block === blockIds.ancientDebris){
-					pickup.addAchievment("Hidden In The Depths")
-				}else if(this.block === blockIds.diamond && this.from !== p.id){
-					//that achivement
-					let from = getPlayerById(this.from)
-					if(from) from.addAchievment("Diamonds to you!")
-				}else if(this.block === blockIds.tomatoSeeds){
-					pickup.addAchievment("Time to plant tomatoes!")
-				}
-				pickup.addDiscovery(this.block)
-				let pitch = rand(0.6, 1.5)
-				this.world.playSound(this.x,this.y,this.z,"random.plop",1,pitch)
-				this.world.sendEntityPos(this)//send({type:"entEvent",event:"itemAmount",data:this.amount,id:this.id})
-			}
-		}
-		if (now - this.spawn > this.despawns) {
-			this.canDespawn = true
-		}
-		if(!this.amount){
-			this.canDespawn = true
-		}
-		if(this.insideBlock && blockData[this.insideBlock].itemOnTop || this.standingOn && blockData[this.standingOn].itemOnTop){
-			var inside = this.insideBlock && blockData[this.insideBlock].itemOnTop
-			var block = inside ? this.insideBlock : this.standingOn
-			var y = inside ? round(this.y) : ceil(this.y-this.height/2)-1
-			var amount = blockData[block].itemOnTop(round(this.x),y,round(this.z),this)
-			if(amount){
-				this.amount = amount
-				this.willUpdateShape = true
-				//this.world.sendAll({type:"entEvent",event:"itemAmount",data:this.amount,id:this.id})
-				this.world.sendEntityPos(this)
-			}else if(amount === 0) this.canDespawn = true
-		}
-	}
-}
-let BlockEntity = entities[entities.length] = class BlockEntity extends Entity{
-	static name2 = "BlockEntity"
-	constructor(blockID, x,y,z, solidOnGround){
-		super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, null, null, null, 1500000)
-		this.block = blockID
-		this.solidOnGround = solidOnGround
-		this.lastY = y
-		this.noHitbox = true
-		this.cullFace = true
-	}
-	changeBlock(blockID){
-		if(this.block === blockID) return
-		this.block = blockID
-	}
-	update() {
-		this.updateVelocity(now)
-		this.move(now)
-		if (now - this.spawn > this.despawns) {
-			this.canDespawn = true
-		}
-		
-		if(this.onGround && this.solidOnGround){
-			var x = round(this.x), y = round(this.y), z = round(this.z)
-			var b = this.world.getBlock(x, y, z, this.dimension)
-			if(b && !blockData[b].liquid){
-				// non cube block breaks falling blocks
-				this.world.addItems(x,y,z, 0,0,0, this.block)
-			}else{
-				this.world.setBlock(x,y,z, this.block,false,false,false,false,this.dimension)
-				this.world.blockSound(this.block, "land", x,y,z)
-			}
-			this.canDespawn = true
-		}
-		
-		if(blockData[this.block].name === "anvil" || blockData[this.block].name === "pointedDripstone"){
-			var ent = entCollided(this)
-			var d
-			if(blockData[this.block].name === "pointedDripstone") d = min(max((this.lastY - this.y - 2) * 2, 0), 40)
-			else if(blockData[this.block].name === "anvil") d = min(max((this.lastY - this.y - 1) * 2, 0), 40)
-			if(entPlayerCollided){
-				var reason
-				if(blockData[this.block].name === "pointedDripstone") reason = ent.username+" got poked to death by a falling pointed dripstone"
-				else if(blockData[this.block].name === "anvil") reason = ent.username+" got hit by an anvil and stuff"
-				ent.damage(d,reason,false,null,this.previousX,this.previousY,this.previousZ)
-			}else if(ent && ent.damage){
-				ent.damage(d)
-			}
-			if(blockData[this.block].name === "pointedDripstone" && this.onGround){
-				var b = blockIds.pointedDripstone
-				this.world.addItems(this.x,this.y,this.z,0,0,0,b,true)
-				this.world.blockParticles(b,this.x,this.y,this.z,30, "break")
-				this.canDespawn = true
-			}
-		}
-	}
-}
 
-let PrimedTNT = entities[entities.length] = class PrimedTNT extends BlockEntity{
-	static name2 = "PrimedTNT"
-	constructor(x,y,z, timerStart, tntBlockId = blockIds.tnt){
-		super(tntBlockId, x,y,z)
-		this.velx = (Math.random() * 0.1) - 0.05
-		this.vely = Math.random() * 0.1
-		this.velz = (Math.random() * 0.1) - 0.05
-		
-		this.timerStart = timerStart || this.spawn
-		this.lastCollidedY = this.timerStart
-		this.timeLimit = 80
-		
-		this.tntBlockId = tntBlockId
-	}
-	explode(){
-		var x = round(this.x), y = round(this.y), z = round(this.z)
-		this.world.explode(x,y,z,4, this.liquid || !this.world.world.settings.tntExplode, this.dimension)
-	}
-	update() {
-		this.updateVelocity(now)
-		this.move(now)
-		
-		if(this.onGround){
-			this.lastCollidedY = this.y
-		}
-		var h = this.y - this.lastCollidedY
-		if(h > 19.75){
-			this.lastCollidedY = this.y
-			this.timerStart -= 1000
-		}
-		
-		if((now - this.spawn) / tickTime >= this.timeLimit){
-			this.canDespawn = true
-			this.explode()
-		}
-	}
-}
-entities[entities.length] = class PrimedSuperTNT extends PrimedTNT{
-	static name2 = "PrimedSuperTNT"
-	constructor(x,y,z, timerStart){
-		super(x,y,z, timerStart, blockIds.tnt | SLAB)
-	}
-	explode(){
-		var x = round(this.x), y = round(this.y), z = round(this.z)
-		this.world.explode(x,y,z,8, blockData[this.world.getBlock(x,y,z)].liquid || !this.world.world.settings.tntExplode, this.dimension)
-	}
-}
-entities[entities.length] = class PrimedUltraTNT extends PrimedTNT{
-	static name2 = "PrimedUltraTNT"
-	constructor(x,y,z, timerStart){
-		super(x,y,z, timerStart, blockIds.tnt | STAIR)
-	}
-	explode(){
-		var x = round(this.x), y = round(this.y), z = round(this.z)
-		this.world.explode(x,y,z,24, blockData[this.world.getBlock(x,y,z)].liquid || !this.world.world.settings.tntExplode, this.dimension)
-	}
-}
-entities[entities.length] = class PrimedUnTNT extends PrimedTNT{
-	static name2 = "PrimedUnTNT"
-	constructor(x,y,z, timerStart){
-		super(x,y,z, timerStart, blockIds.untnt)
-	}
-	explode(){
-		var x = round(this.x), y = round(this.y), z = round(this.z)
-		this.world.explode(x,y,z,5, blockData[this.world.getBlock(x,y,z)].liquid || !this.world.world.settings.tntExplode || "original", this.dimension)
-	}
-}
-entities[entities.length] = class MovingBlock extends BlockEntity{
-	static name2 = "MovingBlock"
-	noRemoteDelete = true
-	constructor(block,x,y,z,mx,my,mz,despawns, solidWhenDone = false, tags = null){
-		super(block, x,y,z)
-		this.sx = x //s stands for start
-		this.sy = y
-		this.sz = z
-		this.mx = mx //m stands for end
-		this.my = my
-		this.mz = mz
-		this.despawns = despawns //also tells how much time for it to move
-		this.solidWhenDone = solidWhenDone
-		this.tags = tags
-		this.canStandOn = true
-		this.endAs = null
-	}
-	update() {
-		if (this.lastUpdate - this.spawn >= this.despawns) {
-			this.canDespawn = true
-			if(this.solidWhenDone){
-				this.x = this.mx
-				this.y = this.my
-				this.z = this.mz
-				this.world.setBlock(round(this.x),round(this.y),round(this.z),this.endAs || this.block, false,false,false,false, this.dimension)
-				if(this.tags) this.world.setTags(round(this.x),round(this.y),round(this.z), this.tags)
-			}
-		}
-		
-		this.previousX = this.x
-		this.previousY = this.y
-		this.previousZ = this.z
-		this.lastUpdate = now
-		
-		var prog = min((now - this.spawn) / this.despawns, 1)
-		this.x = lerp(prog, this.sx, this.mx)
-		this.y = lerp(prog, this.sy, this.my)
-		this.z = lerp(prog, this.sz, this.mz)
-		
-		this.velx = this.x - this.previousX
-		this.vely = this.y - this.previousY
-		this.velz = this.z - this.previousZ
-	}
-}
-entities[entities.length] = class BlockDisplay extends BlockEntity{
-	static name2 = "BlockDisplay"
-	constructor(block,x,y,z,w,h,d){
-		super(block, x,y,z, w,h,d)
-		this.width = w
-		this.height = h
-		this.depth = d
-	}
-	update() {}
-}
-entities[entities.length] = class EnderPearl extends BlockEntity{
-	static name2 = "EnderPearl"
-	constructor(x,y,z,velx,vely,velz,from){
-		super(blockIds.enderPearl, x,y,z)
-		this.velx = velx
-		this.vely = vely
-		this.velz = velz
-		this.from = from
-		this.facesPlayer = true
-		
-		this.gravityStength = -0.04
-	}
-	update() {
-		this.updateVelocity(now)
-		this.move(now)
-		if (now - this.spawn > this.despawns) {
-			this.canDespawn = true
-		}
-		if(this.hasCollided){
-			if(this.from){
-				let p = getPlayerById(this.from,this.world)
-				if(p){
-					p.tp(this.x,this.y+1,this.z,this.dimension)
-					this.canDespawn = true
-				}
-			}else this.canDespawn = true
-		}
-		
-		this.canFacePlayer = true
-	}
-}
-
-entities[entities.length] = class Snowball extends BlockEntity{
-	static name2 = "Snowball"
-	constructor(x,y,z,velx,vely,velz,from){
-		super(blockIds.snowball, x,y,z)
-		this.velx = velx
-		this.vely = vely
-		this.velz = velz
-		this.from = from
-		this.facesPlayer = true
-		
-		this.gravityStength = -0.04
-	}
-	update() {
-		this.updateVelocity(now)
-		this.move(now)
-		if(now - this.spawn > 250){
-			var collided = entCollided(this)
-			let from = getEntityOrPlayer(this.from,this.world)
-			from = from && (from.username || from.name)
-			if(collided && collided !== this){
-				if(entPlayerCollided){
-					collided.damage(1,from+" killed "+collided.username+" with snowballs.",false,null,this.previousX,this.previousY,this.previousZ)
-				}else{
-					if(collided.damage) collided.onhit(1,false, 0,0, this.from)
-				}
-				this.canDespawn = true
-			}
-		}
-		if (now - this.spawn > this.despawns || this.hasCollided) {
-			this.canDespawn = true
-		}
-		if(this.canDespawn) this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break")
-		
-		this.canFacePlayer = true
-	}
-}
-entities[entities.length] = class SmallFireball extends BlockEntity{
-	static name2 = "SmallFireball"
-	constructor(x,y,z,velx,vely,velz,from){
-		super(blockIds.fireCharge, x,y,z)
-		this.width = this.height = this.depth = 0.3125
-		this.velx = velx
-		this.vely = vely
-		this.velz = velz
-		this.from = from
-		this.facesPlayer = true
-		
-		this.gravityStength = -0.07
-	}
-	update() {
-		this.updateVelocity(now)
-		this.move(now)
-		if(now - this.spawn > 250){
-			var collided = entCollided(this)
-			let from = getEntityOrPlayer(this.from,this.world)
-			from = from && (from.username || from.name)
-			if(collided && collided !== this){
-				if(entPlayerCollided){
-					collided.burnTimer += 8
-					collided.damage(5,collided.username+" was shot by fireballs from "+from+".",false,null,this.previousX,this.previousY,this.previousZ)
-				}else{
-					if(collided.damage) collided.onhit(5,false, 0,0, this.from), collided.burnTimer += 8
-				}
-				this.canDespawn = true
-			}
-		}
-		if (now - this.spawn > this.despawns || this.hasCollided) {
-			this.canDespawn = true
-			if(this.hasCollided) this.world.setBlock(round(this.x),round(this.y),round(this.z),blockIds.fire,false,false,false,false,this.dimension)
-		}
-		if(this.canDespawn) this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break")
-		
-		this.canFacePlayer = true
-	}
-}
-
-entities[entities.length] = class Egg extends BlockEntity{
-	static name2 = "Egg"
-	constructor(x,y,z,velx,vely,velz,from){
-		super(blockIds.egg, x,y,z)
-		this.velx = velx
-		this.vely = vely
-		this.velz = velz
-		this.from = from
-		this.facesPlayer = true
-		
-		this.gravityStength = -0.07
-	}
-	update() {
-		this.updateVelocity(now)
-		this.move(now)
-		var collided = entCollided(this)
-		let from = getEntityOrPlayer(this.from,this.world)
-		from = from && (from.username || from.name)
-		if(collided && collided !== this){
-			if(entPlayerCollided) collided.damage(1,from+" killed "+collided.username+" with eggs.",false,null,this.previousX,this.previousY,this.previousZ)
-			else if(collided.damage) collided.onhit(1,false, 0,0, this.from)
-			this.canDespawn = true
-		}
-		if (now - this.spawn > this.despawns || this.hasCollided) {
-			this.canDespawn = true
-		}
-		if(this.canDespawn){
-			this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break")
-			if(rand() > 0.9) this.world.addEntity(new entities[entityIds.Chicken](this.x,this.y,this.z))
-		}
-		
-		this.canFacePlayer = true
-	}
-}
-entities[entities.length] = class SlingshotShot extends BlockEntity{
-	static name2 = "SlingshotShot"
-	constructor(x,y,z,velx,vely,velz){
-		super(blockIds.ironNugget, x,y,z)
-		this.velx = velx
-		this.vely = vely
-		this.velz = velz
-		this.despawns = 10000
-		this.facesPlayer = true
-		this.gravityStength = -0.02
-	}
-	update() {
-		this.updateVelocity(now)
-		this.move(now)
-		if (now - this.spawn > this.despawns && this.onGround) {
-			this.canDespawn = true
-			//world.addEntity(new Item(this.x,this.y,this.z,0,0,0,blockIds.ironNugget))
-		}
-		
-		var collided = entCollided(this)
-		if(collided){
-			if(entPlayerCollided) collided.damage(5,collided.username+" got killed by a slingshot.",false,null,this.previousX,this.previousY,this.previousZ)
-			else if(collided.damage) collided.damage(5)
-			this.canDespawn = true
-		}
-		
-		this.canFacePlayer = true
-	}
-	move(now) {
-		let pminX = floor(this.x - this.width / 2)
-		let pmaxX = ceil(this.x + this.width / 2)
-		let pminY = floor(this.y - this.height / 2)
-		let pmaxY = ceil(this.y + this.height / 2)
-		let pminZ = floor(this.z - this.depth / 2)
-		let pmaxZ = ceil(this.z + this.depth / 2)
-		let block = null
-
-		this.liquid = false
-		for (let x = pminX; x <= pmaxX; x++) {
-			for (let y = pminY; y <= pmaxY; y++) {
-				for (let z = pminZ; z <= pmaxZ; z++) {
-					let block = this.world.getBlock(x, y, z, this.dimension)
-					if (block && blockData[block].solid) {
-						this.contacts.add(x, y, z, block)
-					}
-					if(x === round(this.x) && z === round(this.z) && blockData[block].liquid){
-						this.liquid = true
-					}
-				}
-			}
-		}
-
-		this.previousX = this.x
-		this.previousY = this.y
-		this.previousZ = this.z
-
-		var xBounce, yBounce, zBounce, pvelx = this.velx, pvely = this.vely, pvelz = this.velz
-		
-		this.canStepX = false
-		this.canStepY = false
-		this.onGround = false
-		this.hasCollided = false
-		//Check collisions in the Y direction
-		this.y += this.vely
-		for (let i = 0; i < this.contacts.size; i++) {
-			block = this.contacts.array[i]
-			if (this.collided(block[0], block[1], block[2], null, this.vely, null, block[3])) {
-				this.y = this.previousY
-				this.vely = 0
-				this.hasCollided = true
-				yBounce = true
-				break
-			}
-		}
-
-		if (this.y === this.previousY) {
-			this.canStepX = true
-			this.canStepZ = true
-		}
-
-		//Check collisions in the X direction
-		this.x += this.velx
-		for (let i = 0; i < this.contacts.size; i++) {
-			block = this.contacts.array[i]
-			if (this.collided(block[0], block[1], block[2], this.velx, null, null, block[3])) {
-				if (this.canStepX && !this.world.getBlock(block[0], block[1] + 1, block[2], this.dimension) && !this.world.getBlock(block[0], block[1] + 2, block[2], this.dimension)) {
-					continue
-				}
-				this.x = this.previousX
-				this.velx = 0
-				this.hasCollided = true
-				xBounce = true
-				break
-			}
-		}
-
-		//Check collisions in the Z direction
-		this.z += this.velz
-		for (let i = 0; i < this.contacts.size; i++) {
-			block = this.contacts.array[i]
-			if (this.collided(block[0], block[1], block[2], null, null, this.velz, block[3])) {
-				if (this.canStepZ && !this.world.getBlock(block[0], block[1] + 1, block[2], this.dimension) && !this.world.getBlock(block[0], block[1] + 2, block[2]), this.dimension) {
-					continue
-				}
-				this.z = this.previousZ
-				this.velz = 0
-				this.hasCollided = true
-				zBounce = true
-				break
-			}
-		}
-		
-		if(this.onGround){
-			this.hasCollided = true
-		}
-		
-		if(xBounce) this.velx = -pvelx
-		if(yBounce) this.vely = -pvely
-		if(zBounce) this.velz = -pvelz
-
-		this.updateChunk()
-
-		this.lastUpdate = now
-		this.contacts.clear()
-	}
-}
-
-entities[entities.length] = class Arrow extends Entity{
-	static name2 = "Arrow"
-	constructor(x,y,z,dx,dy,dz, from){
-		super(x, y, z, 0, 0, dx, dy, dz, 0.25, 0.25, 0.25, null, null, null, 60000)
-		this.direction = new PVector(dx,dy,dz)
-		this.stopStart = this.spawn
-		this.hasStopped = false
-		this.noHitbox = true
-		this.from = from
-	}
-	updateVelocity(now) {
-		this.vely += -0.005
-		let drag = this.liquid ? 0.7 : 0.99
-		if(blockData[this.standingOn].slide) drag = blockData[this.standingOn].slide
-		this.velz += (this.velz * drag - this.velz)
-		this.velx += (this.velx * drag - this.velx)
-		this.vely += (this.vely * drag - this.vely)
-	}
-	update(){
-		let pvelx = this.velx
-		let pvely = this.vely
-		let pvelz = this.velz
-		this.updateVelocity(now)
-		this.move(now)
-		if(this.hasCollided){
-			this.x = this.previousX
-			this.y = this.previousY
-			this.z = this.previousZ
-			this.velx = pvelx
-			this.vely = pvely
-			this.velz = pvelz
-		}
-		if(this.hasCollided && !this.hasStopped){
-			this.hasStopped = true
-			this.stopStart = now
-			this.direction.x = this.velx
-			this.direction.y = this.vely
-			this.direction.z = this.velz
-			this.direction.normalize()
-			var x = round(this.x+this.direction.x)
-			var y = round(this.y+this.direction.y)
-			var z = round(this.z+this.direction.z)
-			var block = this.world.getBlock(x,y,z,this.dimension)
-			if(block && blockData[block].projectileHit){
-				blockData[block].projectileHit(x,y,z,this)
-			}
-		}
-		if (now - this.stopStart > this.despawns) {
-			this.canDespawn = true
-		}
-		if(!this.hasCollided){
-			let collided = entCollided(this)
-			let from = getEntityOrPlayer(this.from,this.world)
-			from = from && (from.username || from.name)
-			let d = dist3(this.velx,this.vely,this.velz,0,0,0)*4
-			if(collided && collided !== this){
-				this.canDespawn = true
-				if(entPlayerCollided) collided.damage(d,collided.username+" got killed by an arrow"+(from ? " from "+from+"." : "."),false,null,this.previousX,this.previousY,this.previousZ,null, this.velx/2, undefined,this.velz/2)
-				else if(collided.onhit) collided.onhit(d,false, this.velx/2,this.velz/2, this.from)
-				else this.canDespawn = false
-			}
-		}else{
-			let collided = entCollided(this)
-			if(entPlayerCollided && !collided.spectator && newInvItem(collided,blockIds.arrow)) this.canDespawn = true
-		}
-		
-		this.yaw = Math.PId - (atan2(this.velz, this.velx) + Math.PI2 + Math.PI)
-		var adjacent = sqrt(this.velx*this.velx+this.velz*this.velz)
-		this.pitch = Math.PId - atan2(this.vely, adjacent)
-	}
-}
-entities[entities.length] = class ExperienceOrb extends Entity{
-	static name2 = "ExperienceOrb"
-	constructor(x,y,z,value){
-		super(x, y, z, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, null, null, null, 300000)
-		this.amount = value
-		this.noHitbox = true
-		this.facesPlayer = true
-	}
-	goToPlayer(e){
-		var dist = dist3(this.x,this.y,this.z,e.x,e.y-e.height*0.5,e.z)
-		if(dist < 7.25){
-			////var speed = (7.25 - dist) / 10
-			//var aDist = abs(dist)
-			//var xd = this.x - p.x, zd = this.z - p.z;
-			//var x = xd/*/abs(zd)*/; this.velx = (x-(Math.sign(x)*7.25)) / 150//; this.velx = -this.velx
-			//if(this.onGround) {var y = this.y - (p.y-p.bottomH); this.vely = (y-(Math.sign(y)*7.25)) / 40/*; this.vely = -this.vely*/}
-			//var z = zd/*/abs(xd)*/; this.velz = (z-(Math.sign(z)*7.25)) / 150//; this.velx = -this.velx
-			this.moveTowards(e.x, e.y-e.height*0.5, e.z, 7.25,7.25,7.25, 5, true)
-		}
-		return dist < 0.5
-	}
-	update(){
-		let pickup
-		for(let p of this.world.world.players){
-			if(!p.hidden && !p.die && p.dimension === this.dimension){
-				if(this.goToPlayer(p)) pickup = p
-			}
-		}
-		
-		this.updateVelocity(now)
-		this.move(now)
-		if(pickup){
-			if(now - pickup.lastXP >= 100){
-				pickup.addXP(this.amount)
-				this.canDespawn = true
-			}
-		}
-		if (now - this.spawn > this.despawns) {
-			this.canDespawn = true
-		}
-	}
-}
-entities[entities.length] = class Minecart extends Entity{
-	static name2 = "Minecart"
-	pushes = true
-	constructor(x,y,z){
-		super(x, y, z, 0, 0, 0, 0, 0, 0.98, 1, 0.98, null, null, 0, Infinity)
-		this.heightOnDiagonal = 1-this.width
-		this.defaultHeight = this.height
-		this.health = 6
-		this.prevOnTrack = false
-		this.rideOffsetY = -6/16
-		this.canRide = true
-	}
-	onclick(holding,p){
-		p.riding = this.id
-		p.connection.send({type:"sit",riding:p.riding})
-		return true
-	}
-	updateVelocity(now) {
-		this.standingOn = this.world.getBlock(round(this.x), floor(this.y-this.height/2), round(this.z), this.dimension)
-		if(this.prevLiquid !== this.liquid){
-			this.prevLiquid = this.liquid
-			if(this.liquid && this.wet){
-				let pitch = (1/abs(this.y-this.previousY)*0.05+Math.random()*0.2)/((this.width+this.depth)*0.25/*0.25=average&correct width*/)
-				if(isFinite(pitch)) this.world.playSound(this.x,this.y-this.height/2,this.z,"liquid.splash",1,pitch)
-				this.world.sendAll({
-          type:"particles", particleType:"SplashParticle",
-          x:this.x, y:this.y-this.height/2, z:this.z, dimension:this.dimension, amount: 10
-        })
-			}
-		}
-		this.vely += this.gravityStength
-		let drag = this.liquid ? 0.7 : 0.95
-		let yDrag = this.liquid ? 0.7 : 0.95
-		if(blockData[this.standingOn].slide) drag = blockData[this.standingOn].slide
-		this.velz += (this.velz * drag - this.velz)
-		this.velx += (this.velx * drag - this.velx)
-		this.vely += (this.vely * yDrag - this.vely)
-	}
-	update() {
-		let railX = round(this.x), railY = round(this.y), railZ = round(this.z)
-		let onBlock = this.world.getBlock(railX,railY,railZ,this.dimension)
-		if(!blockData[onBlock].rail){
-			let under = this.world.getBlock(railX,railY-1,railZ,this.dimension)//to allow diagonals
-			if(blockData[under].rail) onBlock = under, railY--
-		}
-
-		this.updateVelocity(now)
-		for(let P of this.world.world.players){
-			if(!P.hidden && !P.die && P.dimension === this.dimension && P.riding !== this.id) this.pushByMob(P)
-		}
-		this.world.getEntitiesNear(this.x,this.y,this.z, 16, nearEntityArray)
-		for(let ent of nearEntityArray){
-			if(ent.pushes && ent !== this && ent.dimension === this.dimension && ent.riding !== this.id) this.pushByMob(ent)
-		}
-		let {velx, vely, velz} = this
-		let speed = sqrt(velx*velx+velz*velz+vely*vely)*2
-		if(speed>1){
-			this.velx /= speed, this.vely /= speed, this.velz /= speed
-		}
-		this.move(now)
-
-		this.height = this.defaultHeight
-		this.pitch = 0
-		this.offsetY = 0
-		if(onBlock && blockData[onBlock].rail){
-			let rot = onBlock&ROTATION
-			let {prevOnTrack} = this
-			if((onBlock & isState) === CUBE){
-				let velMag = sqrt(velx*velx+velz*velz)
-				if(rot === NORTH || rot === SOUTH) this.velz = prevOnTrack ? velMag*Math.sign(velz) : velz, this.velx = 0, this.x = railX, this.yaw = round(this.yaw/Math.PI)*Math.PI
-				else if(rot === EAST || rot === WEST) this.velx = prevOnTrack ? velMag*Math.sign(velx) : velx, this.velz = 0, this.z = railZ, this.yaw = round((this.yaw-Math.PI2)/Math.PI)*Math.PI+Math.PI2
-				this.vely = 0, this.y = railY
-				this.prevOnTrack = true
-			}else if((onBlock & isState) === STAIR){//corner rail
-				let originX, originZ
-				if(rot === NORTH) originX = railX-0.5, originZ = railZ-0.5
-				else if(rot === WEST) originX = railX+0.5, originZ = railZ-0.5
-				else if(rot === SOUTH) originX = railX+0.5, originZ = railZ+0.5
-				else if(rot === EAST) originX = railX-0.5, originZ = railZ+0.5
-				let dx = this.x-originX, dz = this.z-originZ
-				let mag = sqrt(dx*dx+dz*dz)*2
-				dx /= mag, dz /= mag
-				this.x = originX+dx
-				this.z = originZ+dz
-				let targetYaw = atan2(dx,dz)+Math.PI2
-				this.yaw = round((this.yaw-targetYaw)/Math.PI)*Math.PI+targetYaw
-				//below: calculate new velocity
-				let velMag = sqrt(velx*velx+velz*velz)
-				let prevDir = velx*dz + velz*-dx//more accurate if use previous dx and dz
-				let s = dz*2, c = -dx*2
-				if(prevOnTrack){
-					prevDir = Math.sign(prevDir)
-					this.velx = velMag*s*prevDir
-					this.velz = velMag*c*prevDir
-				}else{
-					this.velx = prevDir*s
-					this.velz = prevDir*c
-				}
-				this.vely = 0, this.y = railY
-				//this.world.blockParticles(4,this.x+Math.sign(velMag)*sin(this.yaw),7,this.z+Math.sign(velMag)*cos(this.yaw),1,'','')
-				/*//stop velocity in certain direction
-				let dot = this.velx*dx + this.velz*dz
-				this.velx = this.velx - dx * dot
-				this.velz = this.velz - dz * dot*/
-				this.prevOnTrack = true
-			}else if((onBlock & isState) === SLAB){//raised
-				let diagonal = sqrt(0.5)
-				let originX = railX, originY = railY, originZ = railZ, dx = 0, dy = diagonal, dz = 0
-				if(rot === NORTH) originZ -= 0.5, dz = diagonal, this.yaw = round(this.yaw/Math.PI)*Math.PI
-				else if(rot === SOUTH) originZ += 0.5, dz = -diagonal, this.yaw = round(this.yaw/Math.PI)*Math.PI
-				else if(rot === EAST) originX -= 0.5, dx = diagonal, this.yaw = round((this.yaw-Math.PI2)/Math.PI)*Math.PI+Math.PI2
-				else if(rot === WEST) originX += 0.5, dx = -diagonal, this.yaw = round((this.yaw-Math.PI2)/Math.PI)*Math.PI+Math.PI2
-				let dot = (this.x-originX)*dx + (this.z-originZ)*dz + (this.y-originY)*dy
-				this.x = originX+dx*dot
-				this.y = originY+dy*dot
-				this.z = originZ+dz*dot
-				let velMag = sqrt(velx*velx+velz*velz+vely*vely)
-				let prevDir = velx*dx + velz*dz + vely*dy//more accurate if use previous dx and dz
-				if(prevOnTrack){
-					prevDir = Math.sign(prevDir)
-					this.velx = velMag*dx*prevDir
-					this.velz = velMag*dz*prevDir
-					this.vely = velMag*dy*prevDir
-				}else{
-					this.velx = prevDir*dx
-					this.velz = prevDir*dz
-					this.vely = prevDir*dy
-				}
-				this.prevOnTrack = true
-				this.height = this.heightOnDiagonal//to allow fitting
-				this.pitch = -Math.PI4*Math.sign(sin(this.yaw)*dx+cos(this.yaw)*dz)
-				this.offsetY = 0.25
-			}else this.prevOnTrack = false
-			if(this.yaw > Math.PId) this.yaw -= Math.PId, this.previousYaw -= Math.PId
-			if(this.yaw < 0) this.yaw += Math.PId, this.previousYaw += Math.PId
-			if(blockData[onBlock].name === "poweredRail"){
-				let velMag = sqrt(velx*velx+velz*velz+vely*vely)
-				if(onBlock&FLIP){
-					if(velMag > 0.01 && velMag<8){
-						let extraSpeed = (8-velMag)*0.06
-						this.velx += this.velx/velMag*extraSpeed
-						this.velz += this.velz/velMag*extraSpeed
-						this.vely += this.vely/velMag*extraSpeed
-						if((onBlock&isState) === CUBE){
-							if(rot === NORTH || rot === SOUTH){
-								if(blockData[this.world.getBlock(railX,railY,railZ+1)].solid) this.velz = min(this.velz,-0.1)
-								else if(blockData[this.world.getBlock(railX,railY,railZ-1)].solid) this.velz = max(this.velz,0.1)
-							}else if(rot === EAST || rot === WEST){
-								if(blockData[this.world.getBlock(railX+1,railY,railZ)].solid) this.velx = min(this.velx,-0.1)
-								else if(blockData[this.world.getBlock(railX-1,railY,railZ)].solid) this.velx = max(this.velx,0.1)
-							}
-						}
-					}
-				}else{
-					this.velx *= 0.65
-					this.velz *= 0.65
-					this.vely *= 0.65
-				}
-			}
-		}else this.prevOnTrack = false
-		
-		if(this.harmEffect > 0){
-			this.harmEffect--
-		}
-		if(this.health <= 0){
-			this.canDespawn = true
-			this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds.minecart,true,1,null,null,this.id)
-		}
-	}
-	onhit(damage,remote, vx,vz, from){
-		this.health -= damage
-		if(this.harmEffect>0) this.harmEffect += 7-floor(this.health)
-		else this.harmEffect = 7-floor(this.health)
-		if(!remote) this.world.sendEntityPos(this)
-	}
-}
 class Mob extends Entity{
 	static mob = true
 	static{
@@ -30176,6 +29312,7 @@ class Mob extends Entity{
 		this.prototype.canFly = false
 		this.prototype.attacks = null
 		this.prototype.attracts = null
+		this.prototype.despawns = 300000
 	}
 	constructor(){
 		super(...arguments)
@@ -30759,77 +29896,654 @@ class Mob extends Entity{
 		this.effects[name] = {level, time, showParticles}
 	}
 }
+win.serverMob = Mob
+
 const entityData = [//todo n: do after initialize blockIds
 	{
-		name:"item",
+		name:"Item",
+		nameMcd:"item",
 		Name:"Item",
 		type: "other",
 		width: 0.25,
 		height: 0.25,
 		depth: 0.25,
-		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","item"]
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","item"],
+		class: ({Entity}) => class extends Entity {
+			constructor(x, y, z, velx, vely, velz, blockID, autoSetVel, amount, durability = null, name = null, from) {
+				super(x, y, z, 0, 0, velx, vely, velz, 0.25, 0.25, 0.25, null, null, 0, 300000/*1500000*/)
+				this.block = blockID
+				this.from = from || undefined
+				this.durability = durability
+				this.name = name
+				this.amount = amount || 1
+				this.gravityStength = -0.07
+				this.noHitbox = true
+				this.canFloat = true
+				this.cullFace = true
+				
+				if(autoSetVel){
+					this.velx = (Math.random()-0.5) * 0.2
+					this.vely = Math.random() * 0.2
+					this.velz = (Math.random()-0.5) * 0.2
+				}
+			}
+			goCloserToPlayer(e){
+				let xDist = this.x - e.x
+				let yDist = this.y - (e.y - e.height/2)
+				let zDist = this.z - e.z
+				var hRange = 1.425
+				let comeCloser = xDist > -hRange && xDist < hRange && yDist > -0.75 && yDist < 2.3 && zDist > -hRange && zDist < hRange
+				if(comeCloser){
+					this.moveTowards(e.x, Math.min(Math.max(this.y, e.y - e.height*0.5),e.y+e.height*0.5), e.z, hRange,2.3,hRange, 3)
+				}
+				/*if(pickup){
+					var dist = dist3(this.x, this.y, this.z, p.x, p.y, p.z)
+					var dist2 = dist3(this.x, this.y, this.z, p.x, p.y-1, p.z)
+					pickup = ((1 >= dist) && (dist >= -1)) || ((1 >= dist2) && (dist2 >= -1))
+				}*/
+				let w = e.width*0.5
+				return xDist > -w && xDist < w && yDist > 0 && yDist < e.height && zDist > -w && zDist < w
+			}
+			serverUpdate(){
+				if(this.amount <= 0){
+					return this.canDespawn = true
+				}
+				
+				let pickup
+				if(now - this.spawn > 1000){
+					for(var P of this.world.world.players){
+						if(!P.hidden && !P.die && P.dimension === this.dimension){
+							if(this.goCloserToPlayer(P)) pickup = P
+						}
+					}
+				}
+				
+				let d = 3/4
+				var stackSize = blockData[this.block].stackSize
+				var c = false
+				this.world.getEntitiesNear(this.x,this.y,this.z, 1, nearEntityArray)
+				for(var e of nearEntityArray){
+					if(e.type === "Item" && e !== this && e.block === this.block && (!e.name && !this.name || e.name === this.name) && e.amount + this.amount <= stackSize){
+						var xDist = this.x - e.x
+						var yDist = this.y - e.y
+						var zDist = this.z - e.z
+						let stack = xDist > -d && xDist < d && yDist > -d && yDist < d && zDist > -d && zDist < d
+						if(stack){
+							this.amount += e.amount
+							e.amount = 0
+							this.velx = (this.velx+e.velx)/2
+							this.vely = (this.vely+e.vely)/2
+							this.velz = (this.velz+e.velz)/2
+							this.x = (this.x+e.x)/2
+							this.y = (this.y+e.y)/2
+							this.z = (this.z+e.z)/2
+							c = true
+						}
+					}
+				}
+				//if(c) this.world.sendAll({type:"entEvent",event:"itemAmount",data:this.amount,id:this.id})
+				if(c) this.world.sendEntityPos(this)
+				
+				if(pickup){
+					let pickuped = false
+					while(this.amount > 0 && newInvItem(pickup, this.block, this.durability, this.name)){
+						this.amount--
+						pickuped = true
+					}
+					if(pickuped){
+						if(blockData[this.block].log){
+							pickup.addAchievment("Getting Wood")
+						}else if(this.block === blockIds.diamond){
+							pickup.addAchievment("DIAMONDS!")
+						}else if(this.block === blockIds.ancientDebris){
+							pickup.addAchievment("Hidden In The Depths")
+						}else if(this.block === blockIds.diamond && this.from !== p.id){
+							//that achivement
+							let from = getPlayerById(this.from)
+							if(from) from.addAchievment("Diamonds to you!")
+						}else if(this.block === blockIds.tomatoSeeds){
+							pickup.addAchievment("Time to plant tomatoes!")
+						}
+						pickup.addDiscovery(this.block)
+						let pitch = rand(0.6, 1.5)
+						this.world.playSound(this.x,this.y,this.z,"random.plop",1,pitch)
+						this.world.sendEntityPos(this)//send({type:"entEvent",event:"itemAmount",data:this.amount,id:this.id})
+					}
+				}
+				if(!this.amount){
+					this.canDespawn = true
+				}
+				if(this.insideBlock && blockData[this.insideBlock].itemOnTop || this.standingOn && blockData[this.standingOn].itemOnTop){
+					var inside = this.insideBlock && blockData[this.insideBlock].itemOnTop
+					var block = inside ? this.insideBlock : this.standingOn
+					var y = inside ? round(this.y) : ceil(this.y-this.height/2)-1
+					var amount = blockData[block].itemOnTop(round(this.x),y,round(this.z),this)
+					if(amount){
+						this.amount = amount
+						this.willUpdateShape = true
+						//this.world.sendAll({type:"entEvent",event:"itemAmount",data:this.amount,id:this.id})
+						this.world.sendEntityPos(this)
+					}else if(amount === 0) this.canDespawn = true
+				}
+			}
+			update() {
+				super.update()
+				this.yaw += 0.05;
+				if(this.yaw > Math.PId){
+					this.yaw -= Math.PId
+					this.previousYaw -= Math.PId
+				}
+			}
+		}
 	},
 	{
-		name:"BlockEntity"//todo n
+		name:"BlockEntity",
+		blockEntity:true,
+		class: ({Entity}) => class BlockEntity extends Entity{
+			constructor(blockID, x,y,z, solidOnGround){
+				super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, null, null, null, Infinity)
+				this.block = blockID
+				this.solidOnGround = solidOnGround
+				this.lastY = y
+				this.noHitbox = true
+				this.cullFace = true
+			}
+			changeBlock(blockID){
+				if(this.block === blockID) return
+				this.block = blockID
+			}
+			serverUpdate(){
+				if(this.onGround && this.solidOnGround){
+					var x = round(this.x), y = round(this.y), z = round(this.z)
+					var b = this.world.getBlock(x, y, z, this.dimension)
+					if(b && !blockData[b].liquid){
+						// non cube block breaks falling blocks
+						this.world.addItems(x,y,z, 0,0,0, this.block)
+					}else{
+						this.world.setBlock(x,y,z, this.block,false,false,false,false,this.dimension)
+						this.world.blockSound(this.block, "land", x,y,z)
+					}
+					this.canDespawn = true
+				}
+				
+				if(blockData[this.block].name === "anvil" || blockData[this.block].name === "pointedDripstone"){
+					var ent = entCollided(this)
+					var d
+					if(blockData[this.block].name === "pointedDripstone") d = min(max((this.lastY - this.y - 2) * 2, 0), 40)
+					else if(blockData[this.block].name === "anvil") d = min(max((this.lastY - this.y - 1) * 2, 0), 40)
+					if(entPlayerCollided){
+						var reason
+						if(blockData[this.block].name === "pointedDripstone") reason = ent.username+" got poked to death by a falling pointed dripstone"
+						else if(blockData[this.block].name === "anvil") reason = ent.username+" got hit by an anvil and stuff"
+						ent.damage(d,reason,false,null,this.previousX,this.previousY,this.previousZ)
+					}else if(ent && ent.damage){
+						ent.damage(d)
+					}
+					if(blockData[this.block].name === "pointedDripstone" && this.onGround){
+						var b = blockIds.pointedDripstone
+						this.world.addItems(this.x,this.y,this.z,0,0,0,b,true)
+						this.world.blockParticles(b,this.x,this.y,this.z,30, "break")
+						this.canDespawn = true
+					}
+				}
+			}
+		}
 	},
 	{
-		name:"tnt",
+		name:"PrimedTNT",
+		nameMcd:"tnt",
 		Name:"Primed TNT",
 		type: "other",
 		width: 0.98,
 		height: 0.98,
 		depth: 0.98,
-		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","fuse","block_state"]
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","fuse","block_state"],
+		class: ({BlockEntity}) => class PrimedTNT extends BlockEntity{
+			constructor(x,y,z, timerStart, tntBlockId = blockIds.tnt){
+				super(tntBlockId, x,y,z)
+				this.velx = (Math.random() * 0.1) - 0.05
+				this.vely = Math.random() * 0.1
+				this.velz = (Math.random() * 0.1) - 0.05
+				
+				this.timerStart = timerStart || this.spawn
+				this.lastCollidedY = this.timerStart
+				this.timeLimit = 80
+				
+				this.tntBlockId = tntBlockId
+			}
+			explode(){
+				var x = round(this.x), y = round(this.y), z = round(this.z)
+				this.world.explode(x,y,z,4, this.liquid || !this.world.world.settings.tntExplode, this.dimension)
+			}
+			serverUpdate(){
+				if(this.onGround){
+					this.lastCollidedY = this.y
+				}
+				var h = this.y - this.lastCollidedY
+				if(h > 19.75){
+					this.lastCollidedY = this.y
+					this.timerStart -= 1000
+				}
+				
+				if((now - this.spawn) / tickTime >= this.timeLimit){
+					this.canDespawn = true
+					this.explode()
+				}
+			}
+		}
 	},
-	{},{},{},//todo n: other variants
-	{
-		name:"MovingBlock"
+	{//todo n: shape
+		name:"PrimedSuperTNT",
+		class: ({PrimedTNT}) => class extends PrimedTNT{
+			constructor(x,y,z, timerStart){
+				super(x,y,z, timerStart, blockIds.tnt | SLAB)
+			}
+			explode(){
+				var x = round(this.x), y = round(this.y), z = round(this.z)
+				this.world.explode(x,y,z,8, blockData[this.world.getBlock(x,y,z)].liquid || !this.world.world.settings.tntExplode, this.dimension)
+			}
+		}
 	},
 	{
-		name:"enderPearl",
+		name:"PrimedUltraTNT",
+		class: ({PrimedTNT}) => class extends PrimedTNT{
+			constructor(x,y,z, timerStart){
+				super(x,y,z, timerStart, blockIds.tnt | STAIR)
+			}
+			explode(){
+				var x = round(this.x), y = round(this.y), z = round(this.z)
+				this.world.explode(x,y,z,24, blockData[this.world.getBlock(x,y,z)].liquid || !this.world.world.settings.tntExplode, this.dimension)
+			}
+		}
+	},
+	{
+		name:"PrimedUnTNT",
+		class: ({PrimedTNT}) => class extends PrimedTNT{
+			constructor(x,y,z, timerStart){
+				super(x,y,z, timerStart, blockIds.untnt)
+			}
+			explode(){
+				var x = round(this.x), y = round(this.y), z = round(this.z)
+				this.world.explode(x,y,z,5, blockData[this.world.getBlock(x,y,z)].liquid || !this.world.world.settings.tntExplode || "original", this.dimension)
+			}
+		}
+	},
+	{
+		name:"MovingBlock",
+		class: ({BlockEntity}) => class MovingBlock extends BlockEntity{
+			noRemoteDelete = true
+			constructor(block,x,y,z,mx,my,mz,despawns, solidWhenDone = false, tags = null){
+				super(block, x,y,z)
+				this.sx = x //s stands for start
+				this.sy = y
+				this.sz = z
+				this.mx = mx //m stands for end
+				this.my = my
+				this.mz = mz
+				this.despawns = despawns //also tells how much time for it to move
+				this.solidWhenDone = solidWhenDone
+				this.tags = tags
+				this.canStandOn = true
+				this.endAs = null
+			}
+			serverUpdate(){
+				if (this.lastUpdate - this.spawn >= this.despawns) {
+					this.canDespawn = true
+					if(this.solidWhenDone){
+						this.x = this.mx
+						this.y = this.my
+						this.z = this.mz
+						this.world.setBlock(round(this.x),round(this.y),round(this.z),this.endAs || this.block, false,false,false,false, this.dimension)
+						if(this.tags) this.world.setTags(round(this.x),round(this.y),round(this.z), this.tags)
+					}
+				}
+			}
+			update() {
+				this.previousX = this.x
+				this.previousY = this.y
+				this.previousZ = this.z
+				this.lastUpdate = now
+				
+				var prog = min((now - this.spawn) / this.despawns, 1)
+				this.x = lerp(prog, this.sx, this.mx)
+				this.y = lerp(prog, this.sy, this.my)
+				this.z = lerp(prog, this.sz, this.mz)
+				
+				this.velx = this.x - this.previousX
+				this.vely = this.y - this.previousY
+				this.velz = this.z - this.previousZ
+			}
+		}
+	},
+	{
+		name:"EnderPearl",
 		nameMcd:"ender_pearl",
 		Name:"Thrown Ender Pearl",
 		type: "projectile",
 		width: 0.25,
 		height: 0.25,
 		depth: 0.25,
-		metadata: "egg"
+		metadata: "egg",
+		class: ({BlockEntity}) => class extends BlockEntity{
+			constructor(x,y,z,velx,vely,velz,from){
+				super(blockIds.enderPearl, x,y,z)
+				this.velx = velx
+				this.vely = vely
+				this.velz = velz
+				this.from = from
+				this.facesPlayer = true
+				
+				this.gravityStength = -0.04
+			}
+			serverUpdate(){
+				if(this.hasCollided){
+					if(this.from){
+						let p = getPlayerById(this.from,this.world)
+						if(p){
+							p.tp(this.x,this.y+1,this.z,this.dimension)
+							this.canDespawn = true
+						}
+					}else this.canDespawn = true
+				}
+			}
+		}
 	},
 	{
-		name:"snowball",
+		name:"Snowball",
+		nameMcd:"snowball",
 		Name:"Snowball",
 		type: "projectile",
 		width: 0.25,
 		height: 0.25,
 		depth: 0.25,
-		metadata: "egg"
+		metadata: "egg",
+		class: ({BlockEntity}) => class extends BlockEntity{
+			constructor(x,y,z,velx,vely,velz,from){
+				super(blockIds.snowball, x,y,z)
+				this.velx = velx
+				this.vely = vely
+				this.velz = velz
+				this.from = from
+				this.facesPlayer = true
+				
+				this.gravityStength = -0.04
+			}
+			serverUpdate() {
+				if(now - this.spawn > 250){
+					var collided = entCollided(this)
+					let from = getEntityOrPlayer(this.from,this.world)
+					from = from && (from.username || from.name)
+					if(collided && collided !== this){
+						if(entPlayerCollided){
+							collided.damage(1,from+" killed "+collided.username+" with snowballs.",false,null,this.previousX,this.previousY,this.previousZ)
+						}else{
+							if(collided.damage) collided.onhit(1,false, 0,0, this.from)
+						}
+						this.canDespawn = true
+					}
+				}
+				if (this.hasCollided) {
+					this.canDespawn = true
+				}
+				if(this.canDespawn) this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break")
+				
+				this.canFacePlayer = true
+			}
+		}
 	},
 	{
-		name:"egg",
+		name:"Egg",
+		nameMcd:"egg",
 		Name:"Thrown Egg",
 		type: "projectile",
 		width: 0.25,
 		height: 0.25,
 		depth: 0.25,
-		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","item_stack"]
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","item_stack"],
+		class: ({BlockEntity}) => class extends BlockEntity{
+			constructor(x,y,z,velx,vely,velz,from){
+				super(blockIds.egg, x,y,z)
+				this.velx = velx
+				this.vely = vely
+				this.velz = velz
+				this.from = from
+				this.facesPlayer = true
+				
+				this.gravityStength = -0.07
+			}
+			serverUpdate() {
+				var collided = entCollided(this)
+				let from = getEntityOrPlayer(this.from,this.world)
+				from = from && (from.username || from.name)
+				if(collided && collided !== this){
+					if(entPlayerCollided) collided.damage(1,from+" killed "+collided.username+" with eggs.",false,null,this.previousX,this.previousY,this.previousZ)
+					else if(collided.damage) collided.onhit(1,false, 0,0, this.from)
+					this.canDespawn = true
+				}
+				if (this.hasCollided) {
+					this.canDespawn = true
+				}
+				if(this.canDespawn){
+					this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break")
+					if(rand() > 0.9) this.world.addEntity(new entities[entityIds.Chicken](this.x,this.y,this.z))
+				}
+				
+				this.canFacePlayer = true
+			}
+		}
 	},
 	{
-		name:"SlingshotShot"//todo n
+		name:"SlingshotShot",
+		class: ({BlockEntity}) => class extends BlockEntity{
+			constructor(x,y,z,velx,vely,velz){
+				super(blockIds.ironNugget, x,y,z)
+				this.velx = velx
+				this.vely = vely
+				this.velz = velz
+				this.despawns = 10000
+				this.facesPlayer = true
+				this.gravityStength = -0.02
+			}
+			serverUpdate() {
+				if (now - this.spawn > this.despawns && this.onGround) {
+					this.canDespawn = true
+					//world.addEntity(new Item(this.x,this.y,this.z,0,0,0,blockIds.ironNugget))
+				}
+				
+				var collided = entCollided(this)
+				if(collided){
+					if(entPlayerCollided) collided.damage(5,collided.username+" got killed by a slingshot.",false,null,this.previousX,this.previousY,this.previousZ)
+					else if(collided.damage) collided.damage(5)
+					this.canDespawn = true
+				}
+				
+				this.canFacePlayer = true
+			}
+			move(now) {
+				let pminX = floor(this.x - this.width / 2)
+				let pmaxX = ceil(this.x + this.width / 2)
+				let pminY = floor(this.y - this.height / 2)
+				let pmaxY = ceil(this.y + this.height / 2)
+				let pminZ = floor(this.z - this.depth / 2)
+				let pmaxZ = ceil(this.z + this.depth / 2)
+				let block = null
+		
+				this.liquid = false
+				for (let x = pminX; x <= pmaxX; x++) {
+					for (let y = pminY; y <= pmaxY; y++) {
+						for (let z = pminZ; z <= pmaxZ; z++) {
+							let block = this.world.getBlock(x, y, z, this.dimension)
+							if (block && blockData[block].solid) {
+								this.contacts.add(x, y, z, block)
+							}
+							if(x === round(this.x) && z === round(this.z) && blockData[block].liquid){
+								this.liquid = true
+							}
+						}
+					}
+				}
+		
+				this.previousX = this.x
+				this.previousY = this.y
+				this.previousZ = this.z
+		
+				var xBounce, yBounce, zBounce, pvelx = this.velx, pvely = this.vely, pvelz = this.velz
+				
+				this.canStepX = false
+				this.canStepY = false
+				this.onGround = false
+				this.hasCollided = false
+				//Check collisions in the Y direction
+				this.y += this.vely
+				for (let i = 0; i < this.contacts.size; i++) {
+					block = this.contacts.array[i]
+					if (this.collided(block[0], block[1], block[2], null, this.vely, null, block[3])) {
+						this.y = this.previousY
+						this.vely = 0
+						this.hasCollided = true
+						yBounce = true
+						break
+					}
+				}
+		
+				if (this.y === this.previousY) {
+					this.canStepX = true
+					this.canStepZ = true
+				}
+		
+				//Check collisions in the X direction
+				this.x += this.velx
+				for (let i = 0; i < this.contacts.size; i++) {
+					block = this.contacts.array[i]
+					if (this.collided(block[0], block[1], block[2], this.velx, null, null, block[3])) {
+						if (this.canStepX && !this.world.getBlock(block[0], block[1] + 1, block[2], this.dimension) && !this.world.getBlock(block[0], block[1] + 2, block[2], this.dimension)) {
+							continue
+						}
+						this.x = this.previousX
+						this.velx = 0
+						this.hasCollided = true
+						xBounce = true
+						break
+					}
+				}
+		
+				//Check collisions in the Z direction
+				this.z += this.velz
+				for (let i = 0; i < this.contacts.size; i++) {
+					block = this.contacts.array[i]
+					if (this.collided(block[0], block[1], block[2], null, null, this.velz, block[3])) {
+						if (this.canStepZ && !this.world.getBlock(block[0], block[1] + 1, block[2], this.dimension) && !this.world.getBlock(block[0], block[1] + 2, block[2]), this.dimension) {
+							continue
+						}
+						this.z = this.previousZ
+						this.velz = 0
+						this.hasCollided = true
+						zBounce = true
+						break
+					}
+				}
+				
+				if(this.onGround){
+					this.hasCollided = true
+				}
+				
+				if(xBounce) this.velx = -pvelx
+				if(yBounce) this.vely = -pvely
+				if(zBounce) this.velz = -pvelz
+		
+				this.updateChunk()
+		
+				this.lastUpdate = now
+				this.contacts.clear()
+			}
+		}
 	},
 	{
-		name:"arrow",
+		name:"Arrow",
+		nameMcd:"arrow",
 		Name:"Arrow",
 		type: "projectile",
 		width: 0.5,
 		height: 0.5,
 		depth: 0.5,
-		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","flags","pierce_level","effect_color"]
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","flags","pierce_level","effect_color"],
+		class: ({Entity}) => class extends Entity{
+			constructor(x,y,z,dx,dy,dz, from){
+				super(x, y, z, 0, 0, dx, dy, dz, 0.25, 0.25, 0.25, null, null, null, 60000)
+				this.direction = new PVector(dx,dy,dz)
+				this.stopStart = this.spawn
+				this.hasStopped = false
+				this.noHitbox = true
+				this.from = from
+			}
+			updateVelocity(now) {
+				this.vely += -0.005
+				let drag = this.liquid ? 0.7 : 0.99
+				if(blockData[this.standingOn].slide) drag = blockData[this.standingOn].slide
+				this.velz += (this.velz * drag - this.velz)
+				this.velx += (this.velx * drag - this.velx)
+				this.vely += (this.vely * drag - this.vely)
+			}
+			serverUpdate(){
+				if(this.hasCollided && !this.hasStopped){
+					this.hasStopped = true
+					this.stopStart = now
+					this.direction.x = this.velx
+					this.direction.y = this.vely
+					this.direction.z = this.velz
+					this.direction.normalize()
+					var x = round(this.x+this.direction.x)
+					var y = round(this.y+this.direction.y)
+					var z = round(this.z+this.direction.z)
+					var block = this.world.getBlock(x,y,z,this.dimension)
+					if(block && blockData[block].projectileHit){
+						blockData[block].projectileHit(x,y,z,this)
+					}
+				}
+				if (now - this.stopStart > this.despawns) {
+					this.canDespawn = true
+				}
+				if(!this.hasCollided){
+					let collided = entCollided(this)
+					let from = getEntityOrPlayer(this.from,this.world)
+					from = from && (from.username || from.name)
+					let d = dist3(this.velx,this.vely,this.velz,0,0,0)*4
+					if(collided && collided !== this){
+						this.canDespawn = true
+						if(entPlayerCollided) collided.damage(d,collided.username+" got killed by an arrow"+(from ? " from "+from+"." : "."),false,null,this.previousX,this.previousY,this.previousZ,null, this.velx/2, undefined,this.velz/2)
+						else if(collided.onhit) collided.onhit(d,false, this.velx/2,this.velz/2, this.from)
+						else this.canDespawn = false
+					}
+				}else{
+					let collided = entCollided(this)
+					if(entPlayerCollided && !collided.spectator && newInvItem(collided,blockIds.arrow)) this.canDespawn = true
+				}
+			}
+			update(){
+				let pvelx = this.velx
+				let pvely = this.vely
+				let pvelz = this.velz
+				super.update()
+				if(this.hasCollided){
+					this.x = this.previousX
+					this.y = this.previousY
+					this.z = this.previousZ
+					this.velx = pvelx
+					this.vely = pvely
+					this.velz = pvelz
+				}
+				
+				this.yaw = Math.PId - (atan2(this.velz, this.velx) + Math.PI2 + Math.PI)
+				var adjacent = sqrt(this.velx*this.velx+this.velz*this.velz)
+				this.pitch = Math.PId - atan2(this.vely, adjacent)
+			}
+		}
 	},
 	{
 		name:"Sign"//todo n
 	},
 	{
-		nameMcd:"itemFrame",
+		name:"itemFrame",//todo n
 		nameMcd:"item_frame",
 		Name:"Item Frame",
 		type: "other",
@@ -30839,14 +30553,49 @@ const entityData = [//todo n: do after initialize blockIds
 		metadata: "glowItemFrame"
 	},
 	{
-		name:"experienceOrb",
+		name:"ExperienceOrb",
 		nameMcd:"experience_orb",
 		Name:"Experience Orb",
 		type: "other",
 		width: 0.5,
 		height: 0.5,
 		depth: 0.5,
-		metadata: "breezeWindCharge"
+		metadata: "breezeWindCharge",
+		class: ({Entity}) => class extends Entity{
+			constructor(x,y,z,value){
+				super(x, y, z, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, null, null, null, 300000)
+				this.amount = value
+				this.noHitbox = true
+				this.facesPlayer = true
+			}
+			goToPlayer(e){
+				var dist = dist3(this.x,this.y,this.z,e.x,e.y-e.height*0.5,e.z)
+				if(dist < 7.25){
+					////var speed = (7.25 - dist) / 10
+					//var aDist = abs(dist)
+					//var xd = this.x - p.x, zd = this.z - p.z;
+					//var x = xd/*/abs(zd)*/; this.velx = (x-(Math.sign(x)*7.25)) / 150//; this.velx = -this.velx
+					//if(this.onGround) {var y = this.y - (p.y-p.bottomH); this.vely = (y-(Math.sign(y)*7.25)) / 40/*; this.vely = -this.vely*/}
+					//var z = zd/*/abs(xd)*/; this.velz = (z-(Math.sign(z)*7.25)) / 150//; this.velx = -this.velx
+					this.moveTowards(e.x, e.y-e.height*0.5, e.z, 7.25,7.25,7.25, 5, true)
+				}
+				return dist < 0.5
+			}
+			serverUpdate(){
+				let pickup
+				for(let p of this.world.world.players){
+					if(!p.hidden && !p.die && p.dimension === this.dimension){
+						if(this.goToPlayer(p)) pickup = p
+					}
+				}
+				if(pickup){
+					if(now - pickup.lastXP >= 100){
+						pickup.addXP(this.amount)
+						this.canDespawn = true
+					}
+				}
+			}
+		}
 	},
 	{
 		name:"cow",
@@ -31138,14 +30887,28 @@ const entityData = [//todo n: do after initialize blockIds
 	},
 	null,null,null,null,null,null,null,null,null,null,null,null,null,
 	{
-		name:"textDisplay",
+		name:"TextDisplay",
 		nameMcd:"text_display",
 		Name:"Text Display",
 		type: "other",
 		width: 0,
 		height: 0,
 		depth: 0,
-		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","transformation_interpolation_start_delta_ticks","transformation_interpolation_duration","pos_rot_interpolation_duration","translation","scale","left_rotation","right_rotation","billboard_render_constraints","brightness_override","view_range","shadow_radius","shadow_strength","width","height","glow_color_override","text","line_width","background_color","text_opacity","style_flags"]
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","transformation_interpolation_start_delta_ticks","transformation_interpolation_duration","pos_rot_interpolation_duration","translation","scale","left_rotation","right_rotation","billboard_render_constraints","brightness_override","view_range","shadow_radius","shadow_strength","width","height","glow_color_override","text","line_width","background_color","text_opacity","style_flags"],
+		class: ({Entity}) => class extends Entity{
+			constructor(x,y,z,text,size,color,background,glow) {
+				size = size || 1/2
+				super(x, y, z, 0, 0, 0, 0, 0, size, size, size, null,null, 0, 0)
+				this.gravityStength = 0
+				this.setText(text)
+				this.color = color || [1,1,1]
+				this.background = background || [0,0,0,0]
+				this.glow = glow || false
+				this.size = size
+			}
+			setText(t){this.text = t}
+			update(){}
+		}
 	},
 	{
 		name:"wolf",
@@ -31318,17 +31081,62 @@ const entityData = [//todo n: do after initialize blockIds
 		width: 0.3125,
 		height: 0.3125,
 		depth: 0.3125,
-		metadata: "egg"
+		metadata: "egg",
+		class: ({BlockEntity}) => class extends BlockEntity{
+			constructor(x,y,z,velx,vely,velz,from){
+				super(blockIds.fireCharge, x,y,z)
+				this.width = this.height = this.depth = 0.3125
+				this.velx = velx
+				this.vely = vely
+				this.velz = velz
+				this.from = from
+				this.facesPlayer = true
+				
+				this.gravityStength = -0.07
+			}
+			serverUpdate() {
+				if(now - this.spawn > 250){
+					var collided = entCollided(this)
+					let from = getEntityOrPlayer(this.from,this.world)
+					from = from && (from.username || from.name)
+					if(collided && collided !== this){
+						if(entPlayerCollided){
+							collided.burnTimer += 8
+							collided.damage(5,collided.username+" was shot by fireballs from "+from+".",false,null,this.previousX,this.previousY,this.previousZ)
+						}else{
+							if(collided.damage) collided.onhit(5,false, 0,0, this.from), collided.burnTimer += 8
+						}
+						this.canDespawn = true
+					}
+				}
+				if (now - this.spawn > this.despawns || this.hasCollided) {
+					this.canDespawn = true
+					if(this.hasCollided) this.world.setBlock(round(this.x),round(this.y),round(this.z),blockIds.fire,false,false,false,false,this.dimension)
+				}
+				if(this.canDespawn) this.world.blockParticles(this.block,this.x,this.y,this.z,30, "break")
+				
+				this.canFacePlayer = true
+			}
+		}
 	},
 	{
-		name:"blockDisplay",
+		name:"BlockDisplay",
 		nameMcd:"block_display",
 		Name:"Block Display",
 		type: "other",
 		width: 0,
 		height: 0,
 		depth: 0,
-		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","transformation_interpolation_start_delta_ticks","transformation_interpolation_duration","pos_rot_interpolation_duration","translation","scale","left_rotation","right_rotation","billboard_render_constraints","brightness_override","view_range","shadow_radius","shadow_strength","width","height","glow_color_override","block_state"]
+		metadata: ["shared_flags","air_supply","custom_name","custom_name_visible","silent","no_gravity","pose","ticks_frozen","transformation_interpolation_start_delta_ticks","transformation_interpolation_duration","pos_rot_interpolation_duration","translation","scale","left_rotation","right_rotation","billboard_render_constraints","brightness_override","view_range","shadow_radius","shadow_strength","width","height","glow_color_override","block_state"],
+		class: ({BlockEntity}) => class extends BlockEntity{
+			constructor(block,x,y,z,w,h,d){
+				super(block, x,y,z, w,h,d)
+				this.width = w
+				this.height = h
+				this.depth = d
+			}
+			update() {}
+		}
 	},
 	null,
 	{
@@ -31361,7 +31169,185 @@ const entityData = [//todo n: do after initialize blockIds
 		width: 0.98,
 		height: 0.7,
 		depth: 0.98,
-		metadata: "chestMinecart"
+		metadata: "chestMinecart",
+		class: ({Entity}) => class Minecart extends Entity{
+			pushes = true
+			constructor(x,y,z){
+				super(x, y, z, 0, 0, 0, 0, 0, 0.98, 1, 0.98, null, null, 0, Infinity)
+				this.heightOnDiagonal = 1-this.width
+				this.defaultHeight = this.height
+				this.health = 6
+				this.prevOnTrack = false
+				this.rideOffsetY = -6/16
+				this.canRide = true
+			}
+			onclick(holding,p){
+				p.riding = this.id
+				p.connection.send({type:"sit",riding:p.riding})
+				return true
+			}
+			updateVelocity(now) {
+				this.standingOn = this.world.getBlock(round(this.x), floor(this.y-this.height/2), round(this.z), this.dimension)
+				if(this.prevLiquid !== this.liquid){
+					this.prevLiquid = this.liquid
+					if(this.liquid && this.wet){
+						let pitch = (1/abs(this.y-this.previousY)*0.05+Math.random()*0.2)/((this.width+this.depth)*0.25/*0.25=average&correct width*/)
+						if(isFinite(pitch)) this.world.playSound(this.x,this.y-this.height/2,this.z,"liquid.splash",1,pitch)
+						this.world.sendAll({
+							type:"particles", particleType:"SplashParticle",
+							x:this.x, y:this.y-this.height/2, z:this.z, dimension:this.dimension, amount: 10
+						})
+					}
+				}
+				this.vely += this.gravityStength
+				let drag = this.liquid ? 0.7 : 0.95
+				let yDrag = this.liquid ? 0.7 : 0.95
+				if(blockData[this.standingOn].slide) drag = blockData[this.standingOn].slide
+				this.velz += (this.velz * drag - this.velz)
+				this.velx += (this.velx * drag - this.velx)
+				this.vely += (this.vely * yDrag - this.vely)
+			}
+			update() {//todo n: use new blockstate
+				let railX = round(this.x), railY = round(this.y), railZ = round(this.z)
+				let onBlock = this.world.getBlock(railX,railY,railZ,this.dimension)
+				if(!blockData[onBlock].rail){
+					let under = this.world.getBlock(railX,railY-1,railZ,this.dimension)//to allow diagonals
+					if(blockData[under].rail) onBlock = under, railY--
+				}
+		
+				this.updateVelocity(now)
+				for(let P of this.world.world.players){
+					if(!P.hidden && !P.die && P.dimension === this.dimension && P.riding !== this.id) this.pushByMob(P)
+				}
+				this.world.getEntitiesNear(this.x,this.y,this.z, 16, nearEntityArray)
+				for(let ent of nearEntityArray){
+					if(ent.pushes && ent !== this && ent.dimension === this.dimension && ent.riding !== this.id) this.pushByMob(ent)
+				}
+				let {velx, vely, velz} = this
+				let speed = sqrt(velx*velx+velz*velz+vely*vely)*2
+				if(speed>1){
+					this.velx /= speed, this.vely /= speed, this.velz /= speed
+				}
+				this.move(now)
+		
+				this.height = this.defaultHeight
+				this.pitch = 0
+				this.offsetY = 0
+				if(onBlock && blockData[onBlock].rail){
+					let rot = onBlock&ROTATION
+					let {prevOnTrack} = this
+					if((onBlock & isState) === CUBE){
+						let velMag = sqrt(velx*velx+velz*velz)
+						if(rot === NORTH || rot === SOUTH) this.velz = prevOnTrack ? velMag*Math.sign(velz) : velz, this.velx = 0, this.x = railX, this.yaw = round(this.yaw/Math.PI)*Math.PI
+						else if(rot === EAST || rot === WEST) this.velx = prevOnTrack ? velMag*Math.sign(velx) : velx, this.velz = 0, this.z = railZ, this.yaw = round((this.yaw-Math.PI2)/Math.PI)*Math.PI+Math.PI2
+						this.vely = 0, this.y = railY
+						this.prevOnTrack = true
+					}else if((onBlock & isState) === STAIR){//corner rail
+						let originX, originZ
+						if(rot === NORTH) originX = railX-0.5, originZ = railZ-0.5
+						else if(rot === WEST) originX = railX+0.5, originZ = railZ-0.5
+						else if(rot === SOUTH) originX = railX+0.5, originZ = railZ+0.5
+						else if(rot === EAST) originX = railX-0.5, originZ = railZ+0.5
+						let dx = this.x-originX, dz = this.z-originZ
+						let mag = sqrt(dx*dx+dz*dz)*2
+						dx /= mag, dz /= mag
+						this.x = originX+dx
+						this.z = originZ+dz
+						let targetYaw = atan2(dx,dz)+Math.PI2
+						this.yaw = round((this.yaw-targetYaw)/Math.PI)*Math.PI+targetYaw
+						//below: calculate new velocity
+						let velMag = sqrt(velx*velx+velz*velz)
+						let prevDir = velx*dz + velz*-dx//more accurate if use previous dx and dz
+						let s = dz*2, c = -dx*2
+						if(prevOnTrack){
+							prevDir = Math.sign(prevDir)
+							this.velx = velMag*s*prevDir
+							this.velz = velMag*c*prevDir
+						}else{
+							this.velx = prevDir*s
+							this.velz = prevDir*c
+						}
+						this.vely = 0, this.y = railY
+						//this.world.blockParticles(4,this.x+Math.sign(velMag)*sin(this.yaw),7,this.z+Math.sign(velMag)*cos(this.yaw),1,'','')
+						/*//stop velocity in certain direction
+						let dot = this.velx*dx + this.velz*dz
+						this.velx = this.velx - dx * dot
+						this.velz = this.velz - dz * dot*/
+						this.prevOnTrack = true
+					}else if((onBlock & isState) === SLAB){//raised
+						let diagonal = sqrt(0.5)
+						let originX = railX, originY = railY, originZ = railZ, dx = 0, dy = diagonal, dz = 0
+						if(rot === NORTH) originZ -= 0.5, dz = diagonal, this.yaw = round(this.yaw/Math.PI)*Math.PI
+						else if(rot === SOUTH) originZ += 0.5, dz = -diagonal, this.yaw = round(this.yaw/Math.PI)*Math.PI
+						else if(rot === EAST) originX -= 0.5, dx = diagonal, this.yaw = round((this.yaw-Math.PI2)/Math.PI)*Math.PI+Math.PI2
+						else if(rot === WEST) originX += 0.5, dx = -diagonal, this.yaw = round((this.yaw-Math.PI2)/Math.PI)*Math.PI+Math.PI2
+						let dot = (this.x-originX)*dx + (this.z-originZ)*dz + (this.y-originY)*dy
+						this.x = originX+dx*dot
+						this.y = originY+dy*dot
+						this.z = originZ+dz*dot
+						let velMag = sqrt(velx*velx+velz*velz+vely*vely)
+						let prevDir = velx*dx + velz*dz + vely*dy//more accurate if use previous dx and dz
+						if(prevOnTrack){
+							prevDir = Math.sign(prevDir)
+							this.velx = velMag*dx*prevDir
+							this.velz = velMag*dz*prevDir
+							this.vely = velMag*dy*prevDir
+						}else{
+							this.velx = prevDir*dx
+							this.velz = prevDir*dz
+							this.vely = prevDir*dy
+						}
+						this.prevOnTrack = true
+						this.height = this.heightOnDiagonal//to allow fitting
+						this.pitch = -Math.PI4*Math.sign(sin(this.yaw)*dx+cos(this.yaw)*dz)
+						this.offsetY = 0.25
+					}else this.prevOnTrack = false
+					if(this.yaw > Math.PId) this.yaw -= Math.PId, this.previousYaw -= Math.PId
+					if(this.yaw < 0) this.yaw += Math.PId, this.previousYaw += Math.PId
+					if(blockData[onBlock].name === "poweredRail"){
+						let velMag = sqrt(velx*velx+velz*velz+vely*vely)
+						if(onBlock&FLIP){
+							if(velMag > 0.01 && velMag<8){
+								let extraSpeed = (8-velMag)*0.06
+								this.velx += this.velx/velMag*extraSpeed
+								this.velz += this.velz/velMag*extraSpeed
+								this.vely += this.vely/velMag*extraSpeed
+								if((onBlock&isState) === CUBE){
+									if(rot === NORTH || rot === SOUTH){
+										if(blockData[this.world.getBlock(railX,railY,railZ+1)].solid) this.velz = min(this.velz,-0.1)
+										else if(blockData[this.world.getBlock(railX,railY,railZ-1)].solid) this.velz = max(this.velz,0.1)
+									}else if(rot === EAST || rot === WEST){
+										if(blockData[this.world.getBlock(railX+1,railY,railZ)].solid) this.velx = min(this.velx,-0.1)
+										else if(blockData[this.world.getBlock(railX-1,railY,railZ)].solid) this.velx = max(this.velx,0.1)
+									}
+								}
+							}
+						}else{
+							this.velx *= 0.65
+							this.velz *= 0.65
+							this.vely *= 0.65
+						}
+					}
+				}else this.prevOnTrack = false
+				
+				if(this.harmEffect > 0){
+					this.harmEffect--
+					this.roll = sin(this.harmEffect/3*Math.PI)*this.harmEffect*Math.PI*0.025
+				}else this.roll = 0
+			}
+			serverUpdate(){
+				if(this.health <= 0){
+					this.canDespawn = true
+					this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds.minecart,true,1,null,null,this.id)
+				}
+			}
+			onhit(damage,remote, vx,vz, from){
+				this.health -= damage
+				if(this.harmEffect>0) this.harmEffect += 7-floor(this.health)
+				else this.harmEffect = 7-floor(this.health)
+				if(!remote) this.world.sendEntityPos(this)
+			}
+		}
 	},
 	{
 		name:"allay",
@@ -32366,33 +32352,23 @@ win.entityData = entityData
 //todo n: extra used variables (like color) in posEntity
 //find: \t+(this.)*(\w*?) = (.*?)\n
 //replace: \t\t$2: $3,\n
+let entityClassMap = {Entity,Mob}
 for(let i=0; i<entityData.length; i++){
 	let data = entityData[i]
-	let ent = class extends (data.type === "animal" || data.type === "hostile" ? Mob : Entity) {
-		static name2 = data.name
+	if(!data) continue
+	if(!data.name) throw new Error("missing name at "+i)
+	let mob = data.type === "animal" || data.type === "hostile"
+	if(mob) data.hostile = data.type === "hostile"
+	let ent = data.class ? data.class(entityClassMap) : (class extends (mob ? Mob : Entity) {
 		constructor(x,y,z){
-			super(x,y,z,0,0,0,0,0, data.width,data.height,data.depth, null,null,null, 300000)
+			super(x,y,z,0,0,0,0,0, data.width,data.height,data.depth, null,null,null)
 			if(this.onspawn) this.onspawn()
 		}
-	}
+	})
+	ent.name2 = data.name
 	Object.assign(ent.prototype, data)
-	if(data.type === "hostile") ent.prototype.hostile = true
+	entityClassMap[data.name] = ent
 	entities.push(ent)
-}
-
-entities[entities.length] = class TextDisplay extends Entity{
-	static name2 = "TextDisplay"
-	constructor(x,y,z,text,size,color,background,glow) {
-		size = size || 1/2
-		super(x, y, z, 0, 0, 0, 0, 0, size, size, size, null,null, 0, 0)
-		this.gravityStength = 0
-		this.setText(text)
-		this.color = color || [1,1,1]
-		this.background = background || [0,0,0,0]
-		this.glow = glow || false
-		this.size = size
-	}
-	setText(t){this.text = t}
 }
 
 //let entityOrder = ['Item','BlockEntity', 'PrimedTNT', 'PrimedSuperTNT', 'PrimedUltraTNT', 'PrimedUnTNT', 'MovingBlock', 'EnderPearl', 'Snowball', 'Egg', 'SlingshotShot', 'Arrow', 'Sign', 'ItemFrame', 'ExperienceOrb', 'cow', 'pig', 'creeper', 'sheep', 'chicken', 'zombie', 'skeleton', 'spider', 'EnderDragon', 'BlockParticle', 'PoofParticle', 'FallingDustParticle', 'RedstoneParticle', 'ShockwaveParticle', 'SmokeParticle', 'NoteParticle', 'GlintParticle', 'FlameParticle', 'LavaParticle', 'DripParticle', 'SplashParticle', 'Spark', 'TextDisplay','Wolf','HeartParticle',"Blaze","SmallFireball","BlockDisplay","BeaconBeam","Enderman","Minecart"]
@@ -32401,7 +32377,7 @@ for(let i=0; i<entities.length; i++){
 }
 /*let unorderedEntities = entities
 entities = []*/
-for(let i=0; i<entityOrder.length; i++){
+for(let i=0; i<entities.length; i++){
 	/*let prevI = entityIds[entityOrder[i]]
 	entityIds[entityOrder[i]] = i
 	if(prevI === undefined){
@@ -37089,6 +37065,7 @@ class Chunk {
 		}
 		if(this.allGenerated) for (let [i,entity] of this.entities) {
 			entity.update()
+			entity.serverUpdate()
 			if (entity.canDespawn || (entity.y <= minEntityY)) {
 				world.deleteEntity(i)
 			}
@@ -39119,7 +39096,7 @@ class World{ // aka trueWorld
 		["version","constant",0],["id","basicString"],["entId","byte"],["x","double"],["y","double"],["z","double"],packetDimension,
 		["pitch","double"],["yaw","double"],["velx","double"],["vely","double"],["velz","double"],["spawnRelative","double"],
 		[ent=>ent.type==="Item"||ent.type==="ExperienceOrb","includeIf",[["amount","double"]]],
-		[ent=>ent.type==="Item"||(ent instanceof BlockEntity),"includeIf",[["block","uint"]]],
+		[ent=>ent.type==="Item"||(ent.blockEntity),"includeIf",[["block","uint"]]],
 		[ent=>ent.type==="Item","includeIf",[["from","basicString"],["durability","int"],["name","string"]]],
 		[ent=>ent.type==="BlockEntity","includeIf",[["solidOnGround","boolean"]]],
 		[ent=>ent.type==="MovingBlock","includeIf",[["sx","int"],["sy","int"],["sz","int"],["mx","int"],["my","int"],["mz","int"],["despawns","int"],["solidWhenDone","boolean"]]],

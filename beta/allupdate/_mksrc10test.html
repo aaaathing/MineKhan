@@ -8833,17 +8833,17 @@ otherwise
 			},
 		}
 
-		var itemFrameSet = function(x,y,z,dimension,block,itemFrameBlock,world){
+		var itemFrameSet = function(x,y,z,dimension,itemFrameBlock,world){
 			let chunkEntities = world.getChunk(x,z,dimension).entities
 			for(var i in chunkEntities){
 				let ent = chunkEntities[i]
 				if(ent.type === "ItemFrame" && ent.x === x && ent.y === y && ent.z === z && ent.dimension === dimension) return
 			}
-			world.addEntity(new entities[entityIds.ItemFrame](x,y,z,block,itemFrameBlock),true,dimension)
+			world.addEntity(new entities[entityIds.ItemFrame](x,y,z,itemFrameBlock),true,dimension)
 		}
 		var itemFrameOnset = function(x,y,z, dimension,world){
 			var block = world.getBlock(x,y,z,dimension)
-			this.set(x,y,z,dimension,0,block,world)
+			this.set(x,y,z,dimension,block,world)
 		}
 		var signSet = function(x,y,z,dimension,block,world){
 			let chunkEntities = world.getChunk(x,z,dimension).entities
@@ -14666,48 +14666,18 @@ r 11 y  n  n  n
 
 	let entities = []
 	let {serverEntities} = win
-	class Entity {
+	class Entity extends win.serverEntity {
 		constructor(x, y, z, pitch, yaw, velx, vely, velz, width, height, depth, vertices, texture, faces, despawns, vao, dimension) {
-			this.x = x
-			this.y = y
-			this.z = z
-			this.previousX = x
-			this.previousY = y
-			this.previousZ = z
-			this.canStepX = true
-			this.canStepY = true
-			this.pitch = pitch
-			this.yaw = yaw
-			this.roll = 0
+			super(...arguments)
 			this.pitch2 = 0
-      this.previousPitch = pitch
-      this.previousYaw = yaw
-			this.previousRoll = 0
 			this.previousPitch2 = 0
-			this.velx = velx
-			this.vely = vely
-			this.velz = velz
-			this.width = width
-			this.height = height
-			this.depth = depth
       this.offsetY = 0
       this.prevOffsetY = 0
       this.extraSize = 0
       this.hidden = false
       this.harmEffect = 0
-			this.contacts = new Contacts()
-			this.lastUpdate = performance.now()
-			this.onGround = false
-      this.hasCollided = false
-      this.gravityStength = -0.091
-      this.standingOn = 0
-      this.insideBlock = 0
-			this.despawns = despawns
-			this.spawn = this.lastUpdate
-			this.canDespawn = false
       this.dieEffect = 0
       this.dieRotate = 0
-      this.burning = false
       this.liquid = false
       this.prevLiquid = false
       this.wet = false
@@ -14715,16 +14685,11 @@ r 11 y  n  n  n
 			this.faces = faces
       this.shader = 0
 			this.world = world //also set in addEntity
-			this.chunkX = x >> 4
-			this.chunkZ = z >> 4
-			this.chunkDimension = ""
 			this.glow = false
 			this.canRide = false
 			this.lastPos = performance.now()
-			this.hitboxWidth = this.hitboxWidth || max(this.width,this.depth)//unused
-			this.hitboxHeight = this.hitboxHeight || this.height
 			this.rideOffsetX = 0
-			this.rideOffsetY = this.hitboxHeight/2
+			this.rideOffsetY = this.height/2
 			this.rideOffsetZ = 0
 			this.offsetry = 0
       if(vao){
@@ -14753,7 +14718,6 @@ r 11 y  n  n  n
         gl.enableVertexAttribArray(glCache.aTextureEntity)
         glExtensions.vertex_array_object.bindVertexArrayOES(null)
       }
-      this.dimension = dimension
 			this.targetX = x
 			this.targetY = y
 			this.targetZ = z
@@ -14772,100 +14736,6 @@ r 11 y  n  n  n
 				this.velz += (this.velz * drag - this.velz)
 				this.velx += (this.velx * drag - this.velx)
 				this.vely += (this.vely * drag - this.vely)
-			}
-		}
-		collided(x, y, z, vx, vy, vz, block) {
-			let verts = blockData[block].shape.verts
-			let px = this.x - this.width / 2 - x
-			let py = this.y - this.height / 2 - y
-			let pz = this.z - this.depth / 2 - z
-			let pxx = this.x + this.width / 2 - x
-			let pyy = this.y + this.height / 2 - y
-			let pzz = this.z + this.depth / 2 - z
-			let minX, minY, minZ, maxX, maxY, maxZ, min, max
-    	let stuckInBlock = this.mob && this.insideBlock && blockData[this.insideBlock].solid
-
-			//Top and bottom faces
-			let faces = verts[0]
-			if (vy <= 0) {
-				faces = verts[1]
-			}
-			if (vx === null && vz === null) {
-        let col = false
-				for (let face of faces) {
-					min = face.min
-					minX = min[0]
-					minZ = min[2]
-					max = face.max
-					maxX = max[0]
-					maxZ = max[2]
-					if (face[1] > py && face[1] < pyy && minX < pxx && maxX > px && minZ < pzz && maxZ > pz) {
-            col = true
-						if (vy <= 0) {
-							this.onGround = true
-							if(!stuckInBlock) this.y = face[1] + y + this.height / 2; else this.y = this.previousY
-							this.vely = 0
-						} else {
-							if(!stuckInBlock) this.y = face[1] + y - this.height / 2; else this.y = this.previousY
-              this.vely = 0
-						}
-					}
-				}
-				return col
-			}
-
-			//West and East faces
-			if (vx < 0) {
-				faces = verts[4]
-			} else if (vx > 0) {
-				faces = verts[5]
-			}
-			if (vx !== null) {
-				let col = false
-				for (let face of faces) {
-					min = face.min
-					minZ = min[2]
-					minY = min[1]
-					max = face.max
-					maxZ = max[2]
-					maxY = max[1]
-					if (face[0] > px && face[0] < pxx && minY < pyy && maxY > py && minZ < pzz && maxZ > pz) {
-						if (maxY - py > 0.5) {
-							this.canStepX = false
-							if(!stuckInBlock) this.x = x + face[0] + (vx < 0 ? this.width / 2 : -this.width / 2); else this.y = this.previousX
-              this.velx = 0
-						}
-						col = true
-					}
-				}
-				return col
-			}
-
-			//South and North faces
-			if (vz < 0) {
-				faces = verts[2]
-			} else if (vz > 0) {
-				faces = verts[3]
-			}
-			if (vz !== null) {
-				let col = false
-				for (let face of faces) {
-					min = face.min
-					minX = min[0]
-					minY = min[1]
-					max = face.max
-					maxX = max[0]
-					maxY = max[1]
-					if (face[2] > pz && face[2] < pzz && minY < pyy && maxY > py && minX < pxx && maxX > px) {
-						if (maxY - py > 0.5) {
-							this.canStepZ = false
-							if(!stuckInBlock) this.z = z + face[2] + (vz < 0 ? this.depth / 2 : -this.depth / 2); else this.y = this.previousY
-              this.velz = 0
-						}
-						col = true
-					}
-				}
-				return col
 			}
 		}
 		move(now) {
@@ -15047,44 +14917,10 @@ r 11 y  n  n  n
 			this.updateChunk()
 			this.lastUpdate = now
 		}
-		updateChunk(){
-			let chunkX = this.x >> 4, chunkZ = this.z >> 4
-			if(this.chunkX !== chunkX || this.chunkZ !== chunkZ || this.dimension !== this.chunkDimension){
-				let oldChunk = this.world.getChunk(this.chunkX<<4,this.chunkZ<<4,this.chunkDimension)
-				let chunk = this.world.getChunk(chunkX<<4,chunkZ<<4,this.dimension)
-				this.chunkX = chunkX
-				this.chunkZ = chunkZ
-				this.chunkDimension = this.dimension
-				if(oldChunk && oldChunk.entities[this.id]) delete oldChunk.entities[this.id]
-				if(chunk) chunk.entities[this.id] = this
-			}
+		update(){
+			super.update()
+			if(this.facesPlayer) this.canFacePlayer = true
 		}
-    moveTowards(x,y,z, rw, rh, rd, slowDown = 1, gravity){
-      var dist = dist3(this.x/rw,this.y/rh,this.z/rd,x/rw,y/rh,z/rd)
-      var aDist = abs(dist)
-      if(aDist > 1) return
-      var iDist = 1 - aDist //inverted distance
-      var velx = x-this.x
-      var vely = y-this.y
-      var velz = z-this.z
-      var mag = sqrt(velx * velx + vely * vely + velz * velz)
-      this.velx += velx*iDist/mag/slowDown
-      if(!gravity) this.vely = vely*iDist/mag/slowDown
-			else if(this.onGround) this.vely += vely*iDist/mag/slowDown*20
-      this.velz += velz*iDist/mag/slowDown
-      
-      /*var toX = lerp(iDist, this.x, x)
-      var toY = lerp(iDist, this.y, y)
-      var toZ = lerp(iDist, this.z, z)
-      this.velx = (toX - this.x) / slowDown * iDist
-      if(this.onGround) this.vely = (toY - this.y) / slowDown * iDist
-      this.velz = (toZ - this.z) / slowDown * iDist*/
-
-      /*var xd = this.x - p.x, zd = this.z - p.z;
-      var x = xd; this.velx = (x-(Math.sign(x)*7.25)) / 150
-      if(this.onGround) {var y = this.y - (p.y-p.bottomH); this.vely = (y-(Math.sign(y)*7.25)) / 40}
-      var z = zd; this.velz = (z-(Math.sign(z)*7.25)) / 150*/
-    }
 		setPos(x,y,z,vx,vy,vz){
 			this.velx = vx
 			this.vely = vy
@@ -15100,14 +14936,15 @@ r 11 y  n  n  n
 				this.z = z
 			}
 		}
-		update() {
-			this.updateVelocity(now)
-			this.move(now)
-		}
 		render() {
       totalEntites++
       if(this.hidden || !p.camera.canSeeEntity(this.x,this.y,this.z,this.width+this.extraSize,this.height+this.extraSize,this.depth+this.extraSize)) return
       renderedEntities++
+
+			if(this.canFacePlayer) {
+        this.facePlayer()
+        this.canFacePlayer = false
+      }
       
       let diff = (now - this.lastUpdate) / tickTime
 			if (diff > 1) diff = 1
@@ -15180,7 +15017,6 @@ r 11 y  n  n  n
       }
 			if(this.nameText && (p.thirdPerson || this !== p.spectating && this !== p)) this.nameText.render()
 		}
-		//todo n: share same entity on server
 		setPartShapes(bones){
 			for(let i in bones){
 				let shape = bones[i]
@@ -15322,1521 +15158,6 @@ r 11 y  n  n  n
 					gl.deleteBuffer(part.normalBuffer)
 				}
 			}
-		}
-	}
-
-	entities[entities.length] = class Item extends Entity {
-		static name2 = "Item"
-		constructor(x, y, z, velx, vely, velz, blockID, autoSetVel, amount, durability = null, name = null, from) {
-			super(x, y, z, 0, 0, velx, vely, velz, 0.25, 0.25, 0.25, null, null, 0, 300000/*1500000*/, glExtensions.vertex_array_object.createVertexArrayOES())
-      this.block = blockID
-      this.from = from || undefined
-      this.durability = durability
-      this.name = name
-      this.amount = amount || 1
-			this.updateShape()
-      this.gravityStength = -0.07
-      this.noHitbox = true
-      this.canFloat = true
-			this.cullFace = true
-      
-      if(autoSetVel){
-        this.velx = (Math.random()-0.5) * 0.2
-        this.vely = Math.random() * 0.2
-        this.velz = (Math.random()-0.5) * 0.2
-      }
-		}
-    goCloserToPlayer(e){
-      let xDist = this.x - e.x
-      let yDist = this.y - (e.y - e.height*0.5)
-      let zDist = this.z - e.z
-      var hRange = 1.425
-      let comeCloser = xDist > -hRange && xDist < hRange && yDist > -0.75 && yDist < 2.3 && zDist > -hRange && zDist < hRange
-      if(comeCloser){
-        this.moveTowards(e.x, Math.min(Math.max(this.y, e.y - e.height*0.5),e.y+e.height*0.5), e.z, hRange,2.3,hRange, 3)
-      }
-      /*if(pickup){
-        var dist = dist3(this.x, this.y, this.z, p.x, p.y, p.z)
-        var dist2 = dist3(this.x, this.y, this.z, p.x, p.y-1, p.z)
-        pickup = ((1 >= dist) && (dist >= -1)) || ((1 >= dist2) && (dist2 >= -1))
-      }*/
-    }
-    update() {
-			this.updateVelocity(now)
-		  this.move(now)
-      
-      this.yaw += 0.05;
-      if(this.yaw > Math.PId){
-        this.yaw -= Math.PId
-        this.previousYaw -= Math.PId
-      }
-      
-      if(now - this.spawn > 1000){
-        if(!p.spectator && !p.die && p.dimension === this.dimension) this.goCloserToPlayer(p)
-        if(multiplayer) for(var i in players){
-          var P = players[i]
-          if(!P.hidden && !P.die && P.dimension === this.dimension) this.goCloserToPlayer(P)
-        }
-      }
-      
-      if(this.willUpdateShape){
-        this.updateShape()
-        this.willUpdateShape = false
-      }
-      
-      this.offsetY = -0.1 * cos(this.yaw*2) + 0.15
-      
-      let id = this.block
-      if(id && blockData[id].tint){
-        let biome = this.world.getBiome(round(this.x),round(this.y),round(this.z),this.dimension)
-        let tints = blockData[id].tint
-        this.tint = tints[biome] || tints.default
-        this.tintGray = true
-      }
-    }
-		shape1 = [0,0,0]
-		shape2 = [-1,-1,-1, 1,1,1]
-		shape3 = [-1,-1,-1, 1,1,1, -0.5,0,0.5]
-		shape4 = [-1,-1,-1, 1,1,1, -0.5,0,0.5, 0.5,1.5,-0.5]
-		shape5 = [-1,-1,-1, 1,1,1, -0.5,0,0.5, 0.5,1.5,-0.5, 1.5,0.75,0]
-    updateShape(){
-      let amount
-      if(this.amount === 1){
-        amount = this.shape1
-      }else if(this.amount <= 16){
-        amount = this.shape2
-      }else if(this.amount <= 32){
-        amount = this.shape3
-      }else if(this.amount <= 48){
-        amount = this.shape4
-      }else{
-        amount = this.shape5
-      }
-      const block = blockData[this.block]
-			const tex = block.textures
-			const shape = block.shape
-			const shapeVerts = shape.verts
-			const shapeTexVerts = shape.texVerts
-			const size = shape.size*(amount.length/3)
-			const shapeNormal = shape.normal
-			let blockSides = Object.keys(Block)
-			let texNum = 0
-			let texture = []
-			let index = 0
-			let verts = [], vertIndex = 0
-			let normal = []
-			let offsetX = 0, offsetY = 0, offsetZ = 0
-			for(let amounti = 0; amounti < amount.length; amounti += 3){
-				offsetX = amount[amounti]/4, offsetY = amount[amounti+1]/4, offsetZ = amount[amounti+2]/4
-				texNum = 0
-				for (let n = 0; n < 6; n++) {
-					let side = blockSides[n]
-					let directionalFaces = shapeVerts[n]
-					for (let facei = 0; facei < directionalFaces.length; facei++) {
-						let texShapeVerts = shapeTexVerts[n][facei]
-						let texVerts
-						texVerts = textureCoords[textureMap[texShapeVerts.texture] || tex && textureMap[tex[texNum]] || textureMap.error]
-						let tx = texVerts[0]
-						let ty = texVerts[1]
-						let tw = texVerts[2]-tx
-						let th = texVerts[5]-ty
-						texture[index    ] = tx + texShapeVerts[0]*tw
-						texture[index + 1] = ty + texShapeVerts[1]*th
-						texture[index + 2] = tx + texShapeVerts[2]*tw
-						texture[index + 3] = ty + texShapeVerts[3]*th
-						texture[index + 4] = tx + texShapeVerts[4]*tw
-						texture[index + 5] = ty + texShapeVerts[5]*th
-						texture[index + 6] = tx + texShapeVerts[6]*tw
-						texture[index + 7] = ty + texShapeVerts[7]*th
-						index += 8
-						let faceVerts = directionalFaces[facei]
-						verts[vertIndex] = faceVerts[0]+offsetX
-						verts[vertIndex+1] = faceVerts[1]+offsetY
-						verts[vertIndex+2] = faceVerts[2]+offsetZ
-						verts[vertIndex+3] = faceVerts[3]+offsetX
-						verts[vertIndex+4] = faceVerts[4]+offsetY
-						verts[vertIndex+5] = faceVerts[5]+offsetZ
-						verts[vertIndex+6] = faceVerts[6]+offsetX
-						verts[vertIndex+7] = faceVerts[7]+offsetY
-						verts[vertIndex+8] = faceVerts[8]+offsetZ
-						verts[vertIndex+9] = faceVerts[9]+offsetX
-						verts[vertIndex+10] = faceVerts[10]+offsetY
-						verts[vertIndex+11] = faceVerts[11]+offsetZ
-						vertIndex += 12
-						normal.push(...shapeNormal[n][facei],...shapeNormal[n][facei],...shapeNormal[n][facei],...shapeNormal[n][facei])
-					}
-					texNum++
-				}
-			}
-      
-      var vertices = new Float32Array(verts)
-      texture = new Float32Array(texture)
-      
-			const verticesBuffer = gl.createBuffer()
-			const textureBuffer = gl.createBuffer()
-			const normalBuffer = gl.createBuffer()
-			glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
-
-			gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer)
-			gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
-			gl.vertexAttribPointer(glCache.aVertexEntity, 3, gl.FLOAT, false, 0, 0)
-
-			gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer)
-			gl.bufferData(gl.ARRAY_BUFFER, texture, gl.STATIC_DRAW)
-			gl.vertexAttribPointer(glCache.aTextureEntity, 2, gl.FLOAT, false, 0, 0)
-			
-			gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer)
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normal), gl.STATIC_DRAW)
-			gl.vertexAttribPointer(glCache.aNormalEntity, 3, gl.FLOAT, false, 0, 0)
-
-			gl.enableVertexAttribArray(glCache.aVertexEntity)
-			gl.enableVertexAttribArray(glCache.aTextureEntity)
-			gl.enableVertexAttribArray(glCache.aNormalEntity)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
-      
-      this.faces = size
-    }
-	}
-  let BlockEntity = entities[entities.length] = class BlockEntity extends Entity{
-		static name2 = "BlockEntity"
-    constructor(blockID, x,y,z, solidOnGround){
-      let v = generateBlockVAO(blockID)
-      super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, null, null, v.size, 1500000, v.vao)
-      this.block = blockID
-      this.solidOnGround = solidOnGround
-      this.lastY = y
-      this.noHitbox = true
-			this.cullFace = true
-    }
-    changeBlock(blockID){
-      if(this.block === blockID) return
-      this.block = blockID
-      let v = generateBlockVAO(blockID)
-      this.faces = v.size
-			this.vao = v.vao
-    }
-    update() {
-			this.updateVelocity(now)
-			this.move(now)
-      
-      var id = this.block
-      if(id && blockData[id].tint){
-        var biome = this.world.getBiome(round(this.x),round(this.y),round(this.z),this.dimension)
-        var tints = blockData[id].tint
-        this.tint = tints[biome] || tints.default
-        this.tintGray = true
-      }
-		}
-  }
-  
-  let PrimedTNT = entities[entities.length] = class PrimedTNT extends BlockEntity{
-		static name2 = "PrimedTNT"
-    constructor(x,y,z, timerStart, tntBlockId = blockIds.tnt){
-      super(tntBlockId, x,y,z)
-      this.velx = (Math.random() * 0.1) - 0.05
-      this.vely = Math.random() * 0.1
-      this.velz = (Math.random() * 0.1) - 0.05
-      
-      this.timerStart = timerStart || this.spawn
-      this.timeLimit = 80
-      
-      this.tntBlockId = tntBlockId
-    }
-    update() {
-			this.updateVelocity(now)
-			this.move(now)
-      
-      var i = Math.floor((now - this.timerStart) / 250)
-      this.shader = 0
-      if(!(i%2)){
-        this.shader = 1
-        if(!performFast) this.world.addParticle(new entities[entityIds.SmokeParticle](this.x,this.y+0.5-0.125,this.z), this.dimension)
-      }
-      if((now - this.spawn) / tickTime >= this.timeLimit - 10){
-        //get bigger
-        this.extraSize = min(-((this.timeLimit - 10) - ((now - this.spawn) / tickTime)) / 40,0.25)
-				this.shader = 1
-      }
-		}
-  }
-  entities[entities.length] = class PrimedSuperTNT extends PrimedTNT{
-		static name2 = "PrimedSuperTNT"
-    constructor(x,y,z, timerStart){
-      super(x,y,z, timerStart, blockIds.tnt | SLAB)
-    }
-  }
-  entities[entities.length] = class PrimedUltraTNT extends PrimedTNT{
-		static name2 = "PrimedUltraTNT"
-    constructor(x,y,z, timerStart){
-      super(x,y,z, timerStart, blockIds.tnt | STAIR)
-    }
-  }
-  entities[entities.length] = class PrimedUnTNT extends PrimedTNT{
-		static name2 = "PrimedUnTNT"
-    constructor(x,y,z, timerStart){
-      super(x,y,z, timerStart, blockIds.untnt)
-    }
-  }
-  
-  entities[entities.length] = class MovingBlock extends BlockEntity{
-		static name2 = "MovingBlock"
-		noRemoteDelete = true
-    constructor(block,x,y,z,mx,my,mz,despawns, solidWhenDone = false, tags = null){
-      super(block, x,y,z)
-      this.sx = x //s stands for start
-      this.sy = y
-      this.sz = z
-      this.mx = mx //m stands for end
-      this.my = my
-      this.mz = mz
-      this.despawns = despawns //also tells how much time for it to move
-      this.solidWhenDone = solidWhenDone
-      this.tags = tags
-      this.canStandOn = true
-      this.endAs = null
-			this.spawn2 = performance.now()
-    }
-		setPos(){}
-    update() {
-			if (this.lastUpdate - this.spawn2 - tickTime > this.despawns) {
-				this.canDespawn = true
-			}
-			this.previousX = this.x
-			this.previousY = this.y
-			this.previousZ = this.z
-      this.lastUpdate = now
-      
-      var prog = min((now - this.spawn2) / this.despawns, 1)
-      this.x = lerp(prog, this.sx, this.mx)
-      this.y = lerp(prog, this.sy, this.my)
-      this.z = lerp(prog, this.sz, this.mz)
-      
-      this.velx = this.x - this.previousX
-      this.vely = this.y - this.previousY
-      this.velz = this.z - this.previousZ
-
-      let id = this.block
-      if(id && blockData[id].tint){
-        let biome = this.world.getBiome(round(this.x),round(this.y),round(this.z),this.dimension)
-        let tints = blockData[id].tint
-        this.tint = tints[biome] || tints.default
-        this.tintGray = true
-      }
-		}
-  }
-	entities[entities.length] = class BlockDisplay extends BlockEntity{
-		static name2 = "BlockDisplay"
-    constructor(block,x,y,z,w,h,d){
-      super(block, x,y,z, w,h,d)
-			this.width = w
-			this.height = h
-			this.depth = d
-    }
-    update() {
-      let id = this.block
-      if(id && blockData[id].tint){
-        let biome = this.world.getBiome(round(this.x),round(this.y),round(this.z),this.dimension)
-        let tints = blockData[id].tint
-        this.tint = tints[biome] || tints.default
-        this.tintGray = true
-      }
-		}
-  }
-  
-  entities[entities.length] = class EnderPearl extends BlockEntity{
-		static name2 = "EnderPearl"
-    constructor(x,y,z,velx,vely,velz,from){
-      super(blockIds.enderPearl, x,y,z)
-      this.velx = velx
-      this.vely = vely
-      this.velz = velz
-      this.from = p.id
-      this.facesPlayer = true
-      
-      this.gravityStength = -0.04
-    }
-    update() {
-			this.updateVelocity(now)
-			this.move(now)
-      
-      this.canFacePlayer = true
-		}
-    render(){
-      totalEntites++
-      if(!p.camera.canSeeEntity(this.x,this.y,this.z,this.width+this.extraSize,this.height+this.extraSize,this.depth+this.extraSize)) return
-      renderedEntities++
-
-      if(this.canFacePlayer) {
-        this.facePlayer()
-        this.canFacePlayer = false
-      }
-      
-      let diff = (now - this.lastUpdate) / tickTime
-			if (diff > 1) diff = 1
-			const offsetY = this.offsetY
-      let renderx = (this.x - this.previousX) * diff + this.previousX
-			let rendery = ((this.y - this.previousY) * diff + this.previousY) + offsetY
-			let renderz = (this.z - this.previousZ) * diff + this.previousZ
-      
-			const modelMatrix = entityMatrices.modelMatrix;
-			modelMatrix.identity()
-			modelMatrix.translate(renderx, rendery, renderz)
-			modelMatrix.rotY(this.yaw)
-			modelMatrix.rotX(this.pitch)
-			modelMatrix.scale(this.width + this.extraSize, this.height + this.extraSize, this.depth + this.extraSize)
-			const viewMatrix = p.camera.transformation.elements
-			const proj = p.camera.projection
-			let projectionMatrix = entityMatrices.projectionMatrix
-      projectionMatrix.set(proj[0], 0, 0, 0, 0, proj[1], 0, 0, 0, 0, proj[2], proj[3], 0, 0, proj[4], 0)
-      projectionMatrix = projectionMatrix.elements
-			const modelViewProjectionMatrix = entityMatrices.modelViewProjectionMatrix
-			modelViewProjectionMatrix.identity()
-			modelViewProjectionMatrix.mult(projectionMatrix)
-			modelViewProjectionMatrix.mult(viewMatrix)
-			modelViewProjectionMatrix.mult(modelMatrix.elements)
-			// row major to column major
-			modelViewProjectionMatrix.transpose()
-			modelMatrix.transpose()//for normal
-			const x = round(this.x)
-			const y = round(this.y)
-			const z = round(this.z)
-			const blockLight = this.world.getLight(x, y, z, 1, this.dimension)/15
-			const skysLight = this.world.getLight(x, y, z, 0, this.dimension)/15
-			gl.uniform1i(glCache.uSamplerEntity, 0)
-			gl.uniform1f(glCache.uBlockLightEntity, blockLight)
-			gl.uniform1f(glCache.uSkylightEntity, skysLight)
-      gl.uniform1f(glCache.harmEffectEntity, 0)
-			gl.uniform3f(glCache.uPosEntity, p.renderX-this.x, p.renderY-this.y, p.renderZ-this.z)
-			gl.uniformMatrix4fv(glCache.uViewEntity, false, modelViewProjectionMatrix.elements)
-			gl.uniformMatrix4fv(glCache.uModelMatEntity, false, modelMatrix.elements)
-			glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
-			gl.drawElements(gl.TRIANGLES, 6 * this.faces, gl.UNSIGNED_INT, 0)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
-    }
-  }
-  
-  entities[entities.length] = class Snowball extends BlockEntity{
-		static name2 = "Snowball"
-    constructor(x,y,z,velx,vely,velz){
-      super(blockIds.snowball, x,y,z)
-      this.velx = velx
-      this.vely = vely
-      this.velz = velz
-      this.from = p.id
-      this.facesPlayer = true
-      
-      this.gravityStength = -0.04
-    }
-    update() {
-			this.updateVelocity(now)
-			this.move(now)
-      this.canFacePlayer = true
-		}
-    render(){
-      totalEntites++
-      if(!p.camera.canSeeEntity(this.x,this.y,this.z,this.width+this.extraSize,this.height+this.extraSize,this.depth+this.extraSize)) return
-      renderedEntities++
-
-      if(this.canFacePlayer) {
-        this.facePlayer()
-        this.canFacePlayer = false
-      }
-      
-      let diff = (now - this.lastUpdate) / tickTime
-			if (diff > 1) diff = 1
-			const offsetY = this.offsetY
-      let renderx = (this.x - this.previousX) * diff + this.previousX
-			let rendery = ((this.y - this.previousY) * diff + this.previousY) + offsetY
-			let renderz = (this.z - this.previousZ) * diff + this.previousZ
-      
-			const modelMatrix = entityMatrices.modelMatrix;
-			modelMatrix.identity()
-			modelMatrix.translate(renderx, rendery, renderz)
-			modelMatrix.rotY(this.yaw)
-			modelMatrix.rotX(this.pitch)
-			modelMatrix.scale(this.width + this.extraSize, this.height + this.extraSize, this.depth + this.extraSize)
-			const viewMatrix = p.camera.transformation.elements
-			const proj = p.camera.projection
-			let projectionMatrix = entityMatrices.projectionMatrix
-      projectionMatrix.set(proj[0], 0, 0, 0, 0, proj[1], 0, 0, 0, 0, proj[2], proj[3], 0, 0, proj[4], 0)
-      projectionMatrix = projectionMatrix.elements
-			const modelViewProjectionMatrix = entityMatrices.modelViewProjectionMatrix
-			modelViewProjectionMatrix.identity()
-			modelViewProjectionMatrix.mult(projectionMatrix)
-			modelViewProjectionMatrix.mult(viewMatrix)
-			modelViewProjectionMatrix.mult(modelMatrix.elements)
-			// row major to column major
-			modelViewProjectionMatrix.transpose()
-			modelMatrix.transpose()//for normal
-			const x = round(this.x)
-			const y = round(this.y)
-			const z = round(this.z)
-			const blockLight = this.world.getLight(x, y, z, 1, this.dimension)/15
-			const skysLight = this.world.getLight(x, y, z, 0, this.dimension)/15
-			gl.uniform1i(glCache.uSamplerEntity, 0)
-			gl.uniform1f(glCache.uBlockLightEntity, blockLight)
-			gl.uniform1f(glCache.uSkylightEntity, skysLight)
-			gl.uniform3f(glCache.uPosEntity, p.renderX-this.x, p.renderY-this.y, p.renderZ-this.z)
-			gl.uniformMatrix4fv(glCache.uViewEntity, false, modelViewProjectionMatrix.elements)
-			gl.uniformMatrix4fv(glCache.uModelMatEntity, false, modelMatrix.elements)
-			glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
-			gl.drawElements(gl.TRIANGLES, 6 * this.faces, gl.UNSIGNED_INT, 0)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
-    }
-  }
-	entities[entities.length] = class SmallFireball extends BlockEntity{
-		static name2 = "SmallFireball"
-    constructor(x,y,z,velx,vely,velz){
-      super(blockIds.fireCharge, x,y,z)
-			this.width = this.height = this.depth = 0.3125
-      this.velx = velx
-      this.vely = vely
-      this.velz = velz
-      this.from = p.id
-      this.facesPlayer = true
-      
-      this.gravityStength = -0.07
-    }
-    update() {
-			this.updateVelocity(now)
-			this.move(now)
-      this.canFacePlayer = true
-		}
-    render(){
-      totalEntites++
-      if(!p.camera.canSeeEntity(this.x,this.y,this.z,this.width+this.extraSize,this.height+this.extraSize,this.depth+this.extraSize)) return
-      renderedEntities++
-
-      if(this.canFacePlayer) {
-        this.facePlayer()
-        this.canFacePlayer = false
-      }
-      
-      let diff = (now - this.lastUpdate) / tickTime
-			if (diff > 1) diff = 1
-			const offsetY = this.offsetY
-      let renderx = (this.x - this.previousX) * diff + this.previousX
-			let rendery = ((this.y - this.previousY) * diff + this.previousY) + offsetY
-			let renderz = (this.z - this.previousZ) * diff + this.previousZ
-      
-			const modelMatrix = entityMatrices.modelMatrix;
-			modelMatrix.identity()
-			modelMatrix.translate(renderx, rendery, renderz)
-			modelMatrix.rotY(this.yaw)
-			modelMatrix.rotX(this.pitch)
-			modelMatrix.scale(this.width + this.extraSize, this.height + this.extraSize, this.depth + this.extraSize)
-			const viewMatrix = p.camera.transformation.elements
-			const proj = p.camera.projection
-			let projectionMatrix = entityMatrices.projectionMatrix
-      projectionMatrix.set(proj[0], 0, 0, 0, 0, proj[1], 0, 0, 0, 0, proj[2], proj[3], 0, 0, proj[4], 0)
-      projectionMatrix = projectionMatrix.elements
-			const modelViewProjectionMatrix = entityMatrices.modelViewProjectionMatrix
-			modelViewProjectionMatrix.identity()
-			modelViewProjectionMatrix.mult(projectionMatrix)
-			modelViewProjectionMatrix.mult(viewMatrix)
-			modelViewProjectionMatrix.mult(modelMatrix.elements)
-			// row major to column major
-			modelViewProjectionMatrix.transpose()
-			modelMatrix.transpose()//for normal
-			const x = round(this.x)
-			const y = round(this.y)
-			const z = round(this.z)
-			const blockLight = this.world.getLight(x, y, z, 1, this.dimension)/15
-			const skysLight = this.world.getLight(x, y, z, 0, this.dimension)/15
-			gl.uniform1i(glCache.uSamplerEntity, 0)
-			gl.uniform1f(glCache.uBlockLightEntity, blockLight)
-			gl.uniform1f(glCache.uSkylightEntity, skysLight)
-			gl.uniform3f(glCache.uPosEntity, p.renderX-this.x, p.renderY-this.y, p.renderZ-this.z)
-			gl.uniformMatrix4fv(glCache.uViewEntity, false, modelViewProjectionMatrix.elements)
-			gl.uniformMatrix4fv(glCache.uModelMatEntity, false, modelMatrix.elements)
-			glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
-			gl.drawElements(gl.TRIANGLES, 6 * this.faces, gl.UNSIGNED_INT, 0)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
-    }
-  }
-  
-  entities[entities.length] = class Egg extends BlockEntity{
-		static name2 = "Egg"
-    constructor(x,y,z,velx,vely,velz){
-      super(blockIds.egg, x,y,z)
-      this.velx = velx
-      this.vely = vely
-      this.velz = velz
-      this.from = p.id
-      this.facesPlayer = true
-      
-      this.gravityStength = -0.07
-    }
-    update() {
-			this.updateVelocity(now)
-			this.move(now)
-      this.canFacePlayer = true
-		}
-    render(){
-      totalEntites++
-      if(!p.camera.canSeeEntity(this.x,this.y,this.z,this.width+this.extraSize,this.height+this.extraSize,this.depth+this.extraSize)) return
-      renderedEntities++
-
-      if(this.canFacePlayer) {
-        this.facePlayer()
-        this.canFacePlayer = false
-      }
-      
-      let diff = (now - this.lastUpdate) / tickTime
-			if (diff > 1) diff = 1
-			const offsetY = this.offsetY
-      let renderx = (this.x - this.previousX) * diff + this.previousX
-			let rendery = ((this.y - this.previousY) * diff + this.previousY) + offsetY
-			let renderz = (this.z - this.previousZ) * diff + this.previousZ
-      
-			const modelMatrix = entityMatrices.modelMatrix;
-			modelMatrix.identity()
-			modelMatrix.translate(renderx, rendery, renderz)
-			modelMatrix.rotY(this.yaw)
-			modelMatrix.rotX(this.pitch)
-			modelMatrix.scale(this.width + this.extraSize, this.height + this.extraSize, this.depth + this.extraSize)
-			const viewMatrix = p.camera.transformation.elements
-			const proj = p.camera.projection
-			let projectionMatrix = entityMatrices.projectionMatrix
-      projectionMatrix.set(proj[0], 0, 0, 0, 0, proj[1], 0, 0, 0, 0, proj[2], proj[3], 0, 0, proj[4], 0)
-      projectionMatrix = projectionMatrix.elements
-			const modelViewProjectionMatrix = entityMatrices.modelViewProjectionMatrix
-			modelViewProjectionMatrix.identity()
-			modelViewProjectionMatrix.mult(projectionMatrix)
-			modelViewProjectionMatrix.mult(viewMatrix)
-			modelViewProjectionMatrix.mult(modelMatrix.elements)
-			// row major to column major
-			modelViewProjectionMatrix.transpose()
-			modelMatrix.transpose()//for normal
-			const x = round(this.x)
-			const y = round(this.y)
-			const z = round(this.z)
-			const blockLight = this.world.getLight(x, y, z, 1, this.dimension)/15
-			const skysLight = this.world.getLight(x, y, z, 0, this.dimension)/15
-			gl.uniform1i(glCache.uSamplerEntity, 0)
-			gl.uniform1f(glCache.uBlockLightEntity, blockLight)
-			gl.uniform1f(glCache.uSkylightEntity, skysLight)
-			gl.uniform3f(glCache.uPosEntity, p.renderX-this.x, p.renderY-this.y, p.renderZ-this.z)
-			gl.uniformMatrix4fv(glCache.uViewEntity, false, modelViewProjectionMatrix.elements)
-			gl.uniformMatrix4fv(glCache.uModelMatEntity, false, modelMatrix.elements)
-			glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
-			gl.drawElements(gl.TRIANGLES, 6 * this.faces, gl.UNSIGNED_INT, 0)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
-    }
-  }
-  
-  entities[entities.length] = class SlingshotShot extends BlockEntity{
-		static name2 = "SlingshotShot"
-    constructor(x,y,z,velx,vely,velz){
-      super(blockIds.ironNugget, x,y,z)
-      this.velx = velx
-      this.vely = vely
-      this.velz = velz
-      this.despawns = 10000
-      this.facesPlayer = true
-      this.gravityStength = -0.02
-    }
-    update() {
-			this.updateVelocity(now)
-			this.move(now)
-      
-      this.canFacePlayer = true
-		}
-    move(now) {
-			let pminX = floor(this.x - this.width / 2)
-			let pmaxX = ceil(this.x + this.width / 2)
-			let pminY = floor(this.y - this.height / 2)
-			let pmaxY = ceil(this.y + this.height / 2)
-			let pminZ = floor(this.z - this.depth / 2)
-			let pmaxZ = ceil(this.z + this.depth / 2)
-			let block = null
-
-      this.liquid = false
-			for (let x = pminX; x <= pmaxX; x++) {
-				for (let y = pminY; y <= pmaxY; y++) {
-					for (let z = pminZ; z <= pmaxZ; z++) {
-						let block = this.world.getBlock(x, y, z, this.dimension)
-						if (block && blockData[block].solid) {
-							this.contacts.add(x, y, z, block)
-						}
-            if(x === round(this.x) && z === round(this.z) && blockData[block].liquid){
-              this.liquid = true
-            }
-					}
-				}
-			}
-
-			this.previousX = this.x
-			this.previousY = this.y
-			this.previousZ = this.z
-
-      var xBounce, yBounce, zBounce, pvelx = this.velx, pvely = this.vely, pvelz = this.velz
-      
-			this.canStepX = false
-			this.canStepY = false
-			this.onGround = false
-      this.hasCollided = false
-			//Check collisions in the Y direction
-			this.y += this.vely
-			for (let i = 0; i < this.contacts.size; i++) {
-				block = this.contacts.array[i]
-				if (this.collided(block[0], block[1], block[2], null, this.vely, null, block[3])) {
-					this.y = this.previousY
-					this.vely = 0
-          this.hasCollided = true
-          yBounce = true
-					break
-				}
-			}
-
-			if (this.y === this.previousY) {
-				this.canStepX = true
-				this.canStepZ = true
-			}
-
-			//Check collisions in the X direction
-			this.x += this.velx
-			for (let i = 0; i < this.contacts.size; i++) {
-				block = this.contacts.array[i]
-				if (this.collided(block[0], block[1], block[2], this.velx, null, null, block[3])) {
-					if (this.canStepX && !this.world.getBlock(block[0], block[1] + 1, block[2], this.dimension) && !this.world.getBlock(block[0], block[1] + 2, block[2], this.dimension)) {
-						continue
-					}
-					this.x = this.previousX
-					this.velx = 0
-          this.hasCollided = true
-          xBounce = true
-					break
-				}
-			}
-
-			//Check collisions in the Z direction
-			this.z += this.velz
-			for (let i = 0; i < this.contacts.size; i++) {
-				block = this.contacts.array[i]
-				if (this.collided(block[0], block[1], block[2], null, null, this.velz, block[3])) {
-					if (this.canStepZ && !this.world.getBlock(block[0], block[1] + 1, block[2], this.dimension) && !this.world.getBlock(block[0], block[1] + 2, block[2]), this.dimension) {
-						continue
-					}
-					this.z = this.previousZ
-					this.velz = 0
-          this.hasCollided = true
-          zBounce = true
-					break
-				}
-			}
-      
-      if(this.onGround){
-        this.hasCollided = true
-      }
-      
-      if(xBounce) this.velx = -pvelx
-      if(yBounce) this.vely = -pvely
-      if(zBounce) this.velz = -pvelz
-
-			this.updateChunk()
-
-			this.lastUpdate = now
-			this.contacts.clear()
-		}
-    render(){
-      totalEntites++
-      if(!p.camera.canSeeEntity(this.x,this.y,this.z,this.width+this.extraSize,this.height+this.extraSize,this.depth+this.extraSize)) return
-      renderedEntities++
-
-      if(this.canFacePlayer) {
-        this.facePlayer()
-        this.canFacePlayer = false
-      }
-      
-      let diff = (now - this.lastUpdate) / tickTime
-			if (diff > 1) diff = 1
-			const offsetY = this.offsetY
-      let renderx = (this.x - this.previousX) * diff + this.previousX
-			let rendery = ((this.y - this.previousY) * diff + this.previousY) + offsetY
-			let renderz = (this.z - this.previousZ) * diff + this.previousZ
-      
-			const modelMatrix = entityMatrices.modelMatrix;
-			modelMatrix.identity()
-			modelMatrix.translate(renderx, rendery, renderz)
-			modelMatrix.rotY(this.yaw)
-			modelMatrix.rotX(this.pitch)
-			modelMatrix.scale(this.width + this.extraSize, this.height + this.extraSize, this.depth + this.extraSize)
-			const viewMatrix = p.camera.transformation.elements
-			const proj = p.camera.projection
-			let projectionMatrix = entityMatrices.projectionMatrix
-      projectionMatrix.set(proj[0], 0, 0, 0, 0, proj[1], 0, 0, 0, 0, proj[2], proj[3], 0, 0, proj[4], 0)
-      projectionMatrix = projectionMatrix.elements
-			const modelViewProjectionMatrix = entityMatrices.modelViewProjectionMatrix
-			modelViewProjectionMatrix.identity()
-			modelViewProjectionMatrix.mult(projectionMatrix)
-			modelViewProjectionMatrix.mult(viewMatrix)
-			modelViewProjectionMatrix.mult(modelMatrix.elements)
-			// row major to column major
-			modelViewProjectionMatrix.transpose()
-			modelMatrix.transpose()//for normal
-			const x = round(this.x)
-			const y = round(this.y)
-			const z = round(this.z)
-			const blockLight = this.world.getLight(x, y, z, 1, this.dimension)/15
-			const skysLight = this.world.getLight(x, y, z, 0, this.dimension)/15
-			gl.uniform1i(glCache.uSamplerEntity, 0)
-			gl.uniform1f(glCache.uBlockLightEntity, blockLight)
-			gl.uniform1f(glCache.uSkylightEntity, skysLight)
-			gl.uniform3f(glCache.uPosEntity, p.renderX-this.x, p.renderY-this.y, p.renderZ-this.z)
-			gl.uniformMatrix4fv(glCache.uViewEntity, false, modelViewProjectionMatrix.elements)
-			gl.uniformMatrix4fv(glCache.uModelMatEntity, false, modelMatrix.elements)
-			glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
-			gl.drawElements(gl.TRIANGLES, 6 * this.faces, gl.UNSIGNED_INT, 0)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
-    }
-  }
-  entities[entities.length] = class Arrow extends Entity{
-		static name2 = "Arrow"
-    constructor(x,y,z,dx,dy,dz, from){
-      let t = textureCoords[textureMap.arrow]
-      let v = generateVAO(shapes.arrow, t[0],t[1],t[2]-t[0],t[5]-t[1])
-      super(x, y, z, 0, 0, dx, dy, dz, 0.25, 0.25, 0.25, null, null, v.size, 60000, v.vao)
-			this.noHitbox = true
-			this.from = from
-    }
-		updateVelocity(now) {
-			this.vely += -0.005
-			let drag = this.liquid ? 0.7 : 0.99
-			if(blockData[this.standingOn].slide) drag = blockData[this.standingOn].slide
-			this.velz += (this.velz * drag - this.velz)
-			this.velx += (this.velx * drag - this.velx)
-			this.vely += (this.vely * drag - this.vely)
-		}
-    update(){
-			let pvelx = this.velx
-			let pvely = this.vely
-			let pvelz = this.velz
-			this.updateVelocity(now)
-			this.move(now)
-			if(this.hasCollided){
-				this.x = this.previousX
-				this.y = this.previousY
-				this.z = this.previousZ
-				this.velx = pvelx
-				this.vely = pvely
-				this.velz = pvelz
-			}
-		
-			this.yaw = Math.PId - (atan2(this.velz, this.velx) + Math.PI2 + Math.PI)
-			var adjacent = sqrt(this.velx*this.velx+this.velz*this.velz)
-			this.pitch = Math.PId - atan2(this.vely, adjacent)
-    }
-    render() {
-      totalEntites++
-      if(this.hidden || !p.camera.canSeeEntity(this.x,this.y,this.z,this.width+this.extraSize,this.height+this.extraSize,this.depth+this.extraSize)) return
-      renderedEntities++
-      
-      let diff = (now - this.lastUpdate) / tickTime
-			if (diff > 1) diff = 1
-			const offsetY = this.offsetY
-      let renderx = (this.x - this.previousX) * diff + this.previousX
-			let rendery = ((this.y - this.previousY) * diff + this.previousY) + offsetY
-			let renderz = (this.z - this.previousZ) * diff + this.previousZ
-      
-			const modelMatrix = entityMatrices.modelMatrix;
-			modelMatrix.identity()
-			modelMatrix.translate(renderx, rendery, renderz)
-			modelMatrix.rotY(this.yaw)
-			modelMatrix.rotX(this.pitch)
-			const viewMatrix = p.camera.transformation.elements
-			const proj = p.camera.projection
-			let projectionMatrix = entityMatrices.projectionMatrix
-      projectionMatrix.set(proj[0], 0, 0, 0, 0, proj[1], 0, 0, 0, 0, proj[2], proj[3], 0, 0, proj[4], 0)
-      projectionMatrix = projectionMatrix.elements
-			const modelViewProjectionMatrix = entityMatrices.modelViewProjectionMatrix
-			modelViewProjectionMatrix.identity()
-			modelViewProjectionMatrix.mult(projectionMatrix)
-			modelViewProjectionMatrix.mult(viewMatrix)
-			modelViewProjectionMatrix.mult(modelMatrix.elements)
-			// row major to column major
-			modelViewProjectionMatrix.transpose()
-			modelMatrix.transpose()//for normal
-			const x = round(this.x)
-			const y = round(this.y)
-			const z = round(this.z)
-			const blockLight = this.world.getLight(x, y, z, 1, this.dimension)/15
-			const skysLight = this.world.getLight(x, y, z, 0, this.dimension)/15
-			gl.uniform1i(glCache.uSamplerEntity, 0)
-			gl.uniform1f(glCache.uBlockLightEntity, blockLight)
-			gl.uniform1f(glCache.uSkylightEntity, skysLight)
-      gl.uniform1f(glCache.harmEffectEntity, 0)
-			gl.uniform3f(glCache.uPosEntity, p.renderX-this.x, p.renderY-this.y, p.renderZ-this.z)
-			gl.uniformMatrix4fv(glCache.uViewEntity, false, modelViewProjectionMatrix.elements)
-			gl.uniformMatrix4fv(glCache.uModelMatEntity, false, modelMatrix.elements)
-			glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
-			gl.drawElements(gl.TRIANGLES, 6 * this.faces, gl.UNSIGNED_INT, 0)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
-    }
-  }
-  
-  entities[entities.length] = class Sign extends Entity{
-		static name2 = "Sign"
-    constructor(x,y,z,base,block){
-      const v = generateBlockVAO(block, {poleSide:blockData[block].poleSide,poleTop:blockData[block].poleTop})
-			super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, null,null, v.size, Infinity, v.vao)
-      this.width = this.height = this.depth = 16/24
-			this.block = block
-      this.offsetY = -0.15
-      this.from = p.id
-      this.noHitbox = true
-      this.textEnt = null, this.textEnt2 = null
-      this.prevText = null, this.prevText2 = null
-      this.remote = true
-      
-      this.gravityStength = 0
-    }
-    update() {
-			let block = this.world.getBlock(this.x,this.y,this.z,this.dimension)
-			if(block != this.baseBlock){
-      	if(block !== this.block) this.canDespawn = true
-				else{
-					let signBlock = this.block
-					let v = generateBlockVAO(signBlock)
-		      this.faces = v.size
-					this.vao = v.vao
-				}
-			}
-      //if(host && this.canDespawn) return blockParticles(this.block,this.x,this.y,this.z,30, "break",this.world,this.dimension)
-      
-      let tags = this.world.getTags(this.x,this.y,this.z,this.dimension)
-      if(tags){
-        var rotation = tags.rot || 0
-        this.yaw = -rotation * Math.PId / 16
-        if(this.textEnt){
-          this.textEnt.yaw = this.yaw + Math.PI
-					if(tags.color){
-            this.textEnt.color = tags.color
-          }else if(blockData[this.baseBlock].color){
-            var data = blockData[this.baseBlock].color
-            this.textEnt.color[0] = data[0]
-            this.textEnt.color[1] = data[1]
-            this.textEnt.color[2] = data[2]
-          }
-					this.textEnt.glow = !!tags.glow
-        }
-				if(this.textEnt2){
-          this.textEnt2.yaw = this.yaw
-					if(tags.color){
-            this.textEnt2.color = tags.color
-          }else if(blockData[this.baseBlock].color){
-            var data = blockData[this.baseBlock].color
-            this.textEnt2.color[0] = data[0]
-            this.textEnt2.color[1] = data[1]
-            this.textEnt2.color[2] = data[2]
-          }
-					this.textEnt2.glow = !!tags.glow2
-        }
-        if(tags.text !== this.prevText && (tags.text || tags.text === "")){
-          this.prevText = tags.text
-          if(this.textEnt){
-            this.textEnt.setText(tags.text)
-          }else{
-            this.textEnt = this.world.generateTextForEntity(tags.text,this,1/8,[0,0,0],null)
-            if(!blockData[block].useAsWall){
-              this.textEnt.offsetZ = -5.5/16
-            }else{
-              this.textEnt.offsetZ = 1/16
-              this.textEnt.y += 0.35
-            }
-          }
-        }
-				if(tags.text2 !== this.prevText2 && (tags.text2 || tags.text2 === "")){
-          this.prevText2 = tags.text2
-          if(this.textEnt2){
-            this.textEnt2.setText(tags.text2)
-          }else{
-            this.textEnt2 = this.world.generateTextForEntity(tags.text2,this,1/8,[0,0,0],null)
-            if(!blockData[block].useAsWall){
-              this.textEnt2.offsetZ = 7.25/16
-            }else{
-              this.textEnt2.offsetZ = 1.25/16
-              this.textEnt2.y += 0.35
-            }
-          }
-        }
-      }
-		}
-    render(){
-      totalEntites++
-      if(!p.camera.canSeeEntity(this.x,this.y,this.z,this.width+this.extraSize,this.height+this.extraSize,this.depth+this.extraSize)) return
-      renderedEntities++
-
-      if(this.canFacePlayer) {
-        this.facePlayer()
-        this.canFacePlayer = false
-      }
-      
-      let diff = (now - this.lastUpdate) / tickTime
-			if (diff > 1) diff = 1
-			const offsetY = this.offsetY
-      let renderx = (this.x - this.previousX) * diff + this.previousX
-			let rendery = ((this.y - this.previousY) * diff + this.previousY) + offsetY
-			let renderz = (this.z - this.previousZ) * diff + this.previousZ
-      
-			const modelMatrix = entityMatrices.modelMatrix;
-			modelMatrix.identity()
-			modelMatrix.translate(renderx, rendery, renderz)
-			modelMatrix.rotY(this.yaw)
-			modelMatrix.rotX(this.pitch)
-			modelMatrix.scale(this.width + this.extraSize, this.height + this.extraSize, this.depth + this.extraSize)
-			const viewMatrix = p.camera.transformation.elements
-			const proj = p.camera.projection
-			let projectionMatrix = entityMatrices.projectionMatrix
-      projectionMatrix.set(proj[0], 0, 0, 0, 0, proj[1], 0, 0, 0, 0, proj[2], proj[3], 0, 0, proj[4], 0)
-      projectionMatrix = projectionMatrix.elements
-			const modelViewProjectionMatrix = entityMatrices.modelViewProjectionMatrix
-			modelViewProjectionMatrix.identity()
-			modelViewProjectionMatrix.mult(projectionMatrix)
-			modelViewProjectionMatrix.mult(viewMatrix)
-			modelViewProjectionMatrix.mult(modelMatrix.elements)
-			// row major to column major
-			modelViewProjectionMatrix.transpose()
-			modelMatrix.transpose()//for normal
-			const x = round(this.x)
-			const y = round(this.y)
-			const z = round(this.z)
-			const blockLight = this.world.getLight(x, y, z, 1, this.dimension)/15
-			const skysLight = this.world.getLight(x, y, z, 0, this.dimension)/15
-			gl.uniform1i(glCache.uSamplerEntity, 0)
-			gl.uniform1f(glCache.uBlockLightEntity, blockLight)
-			gl.uniform1f(glCache.uSkylightEntity, skysLight)
-			gl.uniform3f(glCache.uPosEntity, p.renderX-this.x, p.renderY-this.y, p.renderZ-this.z)
-			gl.uniformMatrix4fv(glCache.uViewEntity, false, modelViewProjectionMatrix.elements)
-			gl.uniformMatrix4fv(glCache.uModelMatEntity, false, modelMatrix.elements)
-			glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
-			gl.drawElements(gl.TRIANGLES, 6 * this.faces, gl.UNSIGNED_INT, 0)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
-      
-      if(this.textEnt) this.textEnt.render()
-			if(this.textEnt2) this.textEnt2.render()
-    }
-  }
-  entities[entities.length] = class ItemFrame extends BlockEntity{
-		static name2 = "ItemFrame"
-    constructor(x,y,z,block,base){
-      super(block,x,y,z)
-      this.width = this.height = this.depth = 0.5
-      this.baseBlock = base
-      this.noHitbox = true
-      this.remote = true
-      this.rz = 0
-      this.offsetX = 0, this.offsetZ = 0
-      var off = 7/16
-      switch(base & ROTATION){
-        case NORTH:
-          this.offsetZ = off
-          break
-        case SOUTH:
-          this.offsetZ = -off
-          this.yaw = Math.PI
-          break
-        case EAST:
-          this.offsetX = off
-          this.yaw = Math.PI2
-          break
-        case WEST:
-          this.offsetX = -off
-          this.yaw = -Math.PI2
-          break
-      }
-    }
-    update(){
-      if(this.world.getBlock(this.x,this.y,this.z,this.dimension) !== this.baseBlock) this.canDespawn = true
-      var rot = this.world.getTagByName(this.x,this.y,this.z,"rot",this.dimension) || 0
-      this.rz = rot*Math.PId/8
-      this.changeBlock(this.world.getTagByName(this.x,this.y,this.z,"block",this.dimension) || 0)
-    }
-    render(){
-      totalEntites++
-      if(!p.camera.canSeeEntity(this.x,this.y,this.z,this.width,this.height,this.depth)) return
-      renderedEntities++
-
-      const modelMatrix = entityMatrices.modelMatrix;
-			modelMatrix.identity()
-			modelMatrix.translate(this.x+this.offsetX, this.y, this.z+this.offsetZ)
-			modelMatrix.rotX(this.pitch)
-			modelMatrix.rotY(this.yaw)
-      modelMatrix.rotZ(this.rz)
-			modelMatrix.scale(this.width, this.height, this.depth)
-			const viewMatrix = p.camera.transformation.elements
-			const proj = p.camera.projection
-			let projectionMatrix = entityMatrices.projectionMatrix
-      projectionMatrix.set(proj[0], 0, 0, 0, 0, proj[1], 0, 0, 0, 0, proj[2], proj[3], 0, 0, proj[4], 0)
-      projectionMatrix = projectionMatrix.elements
-			const modelViewProjectionMatrix = entityMatrices.modelViewProjectionMatrix
-			modelViewProjectionMatrix.identity()
-			modelViewProjectionMatrix.mult(projectionMatrix)
-			modelViewProjectionMatrix.mult(viewMatrix)
-			modelViewProjectionMatrix.mult(modelMatrix.elements)
-			// row major to column major
-			modelViewProjectionMatrix.transpose()
-			modelMatrix.transpose()//for normal
-			const x = round(this.x)
-			const y = round(this.y)
-			const z = round(this.z)
-			const blockLight = this.world.getLight(x, y, z, 1, this.dimension)/15
-			const skysLight = this.world.getLight(x, y, z, 0, this.dimension)/15
-			gl.uniform1i(glCache.uSamplerEntity, 0)
-			gl.uniform1f(glCache.uBlockLightEntity, blockLight)
-			gl.uniform1f(glCache.uSkylightEntity, skysLight)
-      gl.uniform1f(glCache.harmEffectEntity, 0)
-			gl.uniform3f(glCache.uPosEntity, p.renderX-this.x, p.renderY-this.y, p.renderZ-this.z)
-			gl.uniformMatrix4fv(glCache.uViewEntity, false, modelViewProjectionMatrix.elements)
-			gl.uniformMatrix4fv(glCache.uModelMatEntity, false, modelMatrix.elements)
-			glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
-			gl.drawElements(gl.TRIANGLES, 6 * this.faces, gl.UNSIGNED_INT, 0)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
-    }
-  }
-  
-  entities[entities.length] = class ExperienceOrb extends Entity{
-		static name2 = "ExperienceOrb"
-    //experienceOrb
-    constructor(x,y,z,value){
-      var i
-      if(!value || value <= 2){
-        i = 0
-      }else if(value <= 6){
-        i = 1
-      }else if(value <= 16){
-        i = 2
-      }else if(value <= 36){
-        i = 3
-      }else if(value <= 72){
-        i = 4
-      }else if(value <= 148){
-        i = 5
-      }else if(value <= 306){
-        i = 6
-      }else if(value <= 616){
-        i = 7
-      }else if(value <= 1236){
-        i = 8
-      }else if(value <= 2476){
-        i = 9
-      }else if(value <= 32767){
-        i = 10
-      }
-      super(x, y, z, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, null, null, experienceOrbVaos.size, 300000, experienceOrbVaos[i])
-      this.amount = value
-      this.tint = {r:1,g:1,b:1}
-      this.noHitbox = true
-      this.facesPlayer = true
-    }
-    goToPlayer(e){
-      var dist = dist3(this.x,this.y,this.z,e.x,e.y-e.height*0.5,e.z)
-      if(dist < 7.25){
-        ////var speed = (7.25 - dist) / 10
-        //var aDist = abs(dist)
-        //var xd = this.x - p.x, zd = this.z - p.z;
-        //var x = xd/*/abs(zd)*/; this.velx = (x-(Math.sign(x)*7.25)) / 150//; this.velx = -this.velx
-        //if(this.onGround) {var y = this.y - (p.y-p.bottomH); this.vely = (y-(Math.sign(y)*7.25)) / 40/*; this.vely = -this.vely*/}
-        //var z = zd/*/abs(xd)*/; this.velz = (z-(Math.sign(z)*7.25)) / 150//; this.velx = -this.velx
-        this.moveTowards(e.x, e.y-e.height*0.5, e.z, 7.25,7.25,7.25, 5, true)
-      }
-    }
-    update(){
-      if(multiplayer) for(var i in players){
-        if(!players[i].hidden && !players[i].die && players[i].dimension === this.dimension) this.goToPlayer(players[i])
-      }
-      
-			this.updateVelocity(now)
-			this.move(now)
-      
-      this.facePlayer()
-      
-      this.tint.r = min(max(abs((now-this.spawn) % 1000 - 500) / 500, 0), 1)
-      this.tint.g = 1
-      this.tint.b = 0
-    }
-    facePlayer(){
-      this.yaw = Math.PId - (atan2(p.camera.z - this.z, p.camera.x - this.x) + Math.PI2 + Math.PI)
-      var adjacent = dist2(this.x,this.z,p.camera.x,p.camera.z)
-      this.pitch = Math.PId - atan2(p.camera.y - this.y, adjacent)
-    }
-    render(){
-      totalEntites++
-      if(!p.camera.canSeeEntity(this.x,this.y,this.z,this.width,this.height,this.depth)) return
-      renderedEntities++
-
-      const modelMatrix = new Matrix();
-			modelMatrix.identity()
-			modelMatrix.translate(this.x, this.y, this.z)
-			modelMatrix.rotY(this.yaw)
-			modelMatrix.rotX(this.pitch)
-			modelMatrix.scale(this.width, this.height, this.depth)
-			const viewMatrix = p.camera.transformation.elements
-			const proj = p.camera.projection
-			const projectionMatrix = [proj[0], 0, 0, 0, 0, proj[1], 0, 0, 0, 0, proj[2], proj[3], 0, 0, proj[4], 0]
-			const modelViewProjectionMatrix = new Matrix()
-			modelViewProjectionMatrix.identity()
-			modelViewProjectionMatrix.mult(projectionMatrix)
-			modelViewProjectionMatrix.mult(viewMatrix)
-			modelViewProjectionMatrix.mult(modelMatrix.elements)
-			// row major to column major
-			modelViewProjectionMatrix.transpose()
-			modelMatrix.transpose()//for normal
-			const x = round(this.x)
-			const y = round(this.y)
-			const z = round(this.z)
-			const blockLight = this.world.getLight(x, y, z, 1, this.dimension)/15
-			const skysLight = this.world.getLight(x, y, z, 0, this.dimension)/15
-			gl.uniform1i(glCache.uSamplerEntity, 0)
-			gl.uniform1f(glCache.uBlockLightEntity, blockLight)
-			gl.uniform1f(glCache.uSkylightEntity, skysLight)
-      gl.uniform1f(glCache.harmEffectEntity, 0)
-			gl.uniform3f(glCache.uPosEntity, p.renderX-this.x, p.renderY-this.y, p.renderZ-this.z)
-      gl.uniform3f(glCache.tintEntity, this.tint.r,this.tint.g,this.tint.b)
-			gl.uniformMatrix4fv(glCache.uViewEntity, false, modelViewProjectionMatrix.elements)
-			gl.uniformMatrix4fv(glCache.uModelMatEntity, false, modelMatrix.elements)
-			glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
-			gl.drawElements(gl.TRIANGLES, 6 * this.faces, gl.UNSIGNED_INT, 0)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
-      gl.uniform3f(glCache.tintEntity, 1,1,1)
-    }
-  }
-
-	entities[entities.length] = class BeaconBeam extends Entity{
-		static name2 = "BeaconBeam"
-		alwaysRender = true
-		constructor(x,y,z){
-      super(x, y+(maxHeight-y)/2, z, 0, 0, 0, 0, 0, 0.25, maxHeight - y, 0.25, null, null, 0, Infinity, glExtensions.vertex_array_object.createVertexArrayOES())
-			this.willUpdateShape = true
-			this.shader = 2
-			this.remote = true
-			this.noHitbox = true
-			this.actualY = y
-			this.prevColumn = null
-			this.glow = true
-    }
-		generateVAO(y,y2,vao){
-			const shape = shapes.cube
-			const shapeVerts = shape.verts
-			const shapeTexVerts = shape.texVerts
-			const size = shape.size
-			let tex = "beaconBeam"
-			let blockSides = Object.keys(Block)
-			let texture = []
-			let index = 0
-			let verts = [], vertIndex = 0
-			let ay = this.actualY/maxHeight
-			for (let n = 0; n < 6; n++) {
-				let side = blockSides[n]
-				let directionalFaces = shapeVerts[n]
-				for (let facei = 0; facei < directionalFaces.length; facei++) {
-					let texVerts = textureCoords[textureMap[tex]]
-					let tx = texVerts[0]
-					let ty = texVerts[1]
-					let tw = texVerts[2] - tx
-					let th = texVerts[5] - ty
-					let texShapeVerts = shapeTexVerts[n][facei]
-					let newY = ay+(1-ay)*y, newY2 = ay+(1-ay)*y2
-					texture[index    ] = tx + texShapeVerts[0]*tw
-					texture[index + 1] = ty + lerp(texShapeVerts[1], newY,newY2)*th
-					texture[index + 2] = tx + texShapeVerts[2]*tw
-					texture[index + 3] = ty + lerp(texShapeVerts[3], newY,newY2)*th
-					texture[index + 4] = tx + texShapeVerts[4]*tw
-					texture[index + 5] = ty + lerp(texShapeVerts[5], newY,newY2)*th
-					texture[index + 6] = tx + texShapeVerts[6]*tw
-					texture[index + 7] = ty + lerp(texShapeVerts[7], newY,newY2)*th
-					index += 8
-					let face = directionalFaces[facei]
-					verts[vertIndex] = face[0]
-					verts[vertIndex+1] = map(face[1], -0.5,0.5, y-0.5,y2-0.5)
-					verts[vertIndex+2] = face[2]
-					verts[vertIndex+3] = face[3]
-					verts[vertIndex+4] = map(face[4], -0.5,0.5, y-0.5,y2-0.5)
-					verts[vertIndex+5] = face[5]
-					verts[vertIndex+6] = face[6]
-					verts[vertIndex+7] = map(face[7], -0.5,0.5, y-0.5,y2-0.5)
-					verts[vertIndex+8] = face[8]
-					verts[vertIndex+9] = face[9]
-					verts[vertIndex+10] = map(face[10], -0.5,0.5, y-0.5,y2-0.5)
-					verts[vertIndex+11] = face[11]
-					vertIndex += 12
-				}
-			}
-			const verticesBuffer = gl.createBuffer()
-			const textureBuffer = gl.createBuffer()
-			glExtensions.vertex_array_object.bindVertexArrayOES(vao)
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
-
-			gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer)
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW)
-			gl.vertexAttribPointer(glCache.aVertexEntity, 3, gl.FLOAT, false, 0, 0)
-
-			gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer)
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texture), gl.STATIC_DRAW)
-			gl.vertexAttribPointer(glCache.aTextureEntity, 2, gl.FLOAT, false, 0, 0)
-
-			gl.enableVertexAttribArray(glCache.aVertexEntity)
-			gl.enableVertexAttribArray(glCache.aTextureEntity)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
-			return {vao,size}
-		}
-		updateShape(){
-			const top = this.world.getSolidTop(this.x,this.z,this.dimension)
-			let parts = [1,1,1,0]
-			let end = 1
-			const height = maxHeight-this.actualY
-			for(let y=this.actualY+1; y<=top; y++){
-				const block = this.world.getBlock(this.x,y,this.z,this.dimension), data = blockData[block]
-				if(data.solid && !data.transparent){
-					end = map(y-0.5, this.actualY,maxHeight, 0,1)
-					break
-				}
-				if(data.name.endsWith("StainedGlass")){
-					let color = colors.dye[data.name.replace("StainedGlass","")]
-					let y2 = map(y-0.5, this.actualY,maxHeight, 0,1)
-					parts.push(y2)
-					parts.push((color[0]+parts[parts.length-5])/2, (color[1]+parts[parts.length-4])/2, (color[2]+parts[parts.length-3])/2)
-					parts.push(y2)
-				}
-			}
-			parts.push(end)
-			for(let i=0; i<parts.length; i+=5){
-				let part = i && this.parts[i]
-				const {vao,size} = this.generateVAO(parts[i+3],parts[i+4], i ? (part ? part.vao : glExtensions.vertex_array_object.createVertexArrayOES()) : this.vao)
-				if(!i){
-					this.faces = size
-					this.tint = [parts[i],parts[i+1],parts[i+2]]
-				}else{
-					if(!part){
-						part = this.addPart(i,size,vao,0,0,0,0.25,maxHeight-this.actualY,0.25,0,0)
-						part.glow = true
-					}
-					part.size = size
-					part.tint = [parts[i],parts[i+1],parts[i+2]]
-				}
-			}
-			for(let part in this.parts){
-				if(+part >= parts.length) delete this.parts[part]
-			}
-		}
-		update() {
-			let h = world.getSolidTop(round(this.x),round(this.y),round(this.z),this.dimension)
-			if(h !== this.prevColumn){
-				this.prevColumn = h
-				this.willUpdateShape = true
-			}
-			if(this.willUpdateShape){
-				this.updateShape()
-				this.willUpdateShape = false
-			}
-			this.previousYaw = this.yaw
-			this.yaw += 0.05
-      if(this.yaw > Math.PId){
-        this.yaw -= Math.PId
-        this.previousYaw -= Math.PId
-      }
-			this.lastUpdate = now
-			this.hidden = !world.getTagByName(round(this.x),round(this.y),round(this.z),"on",this.dimension)
-		}
-	}
-
-	entities[entities.length] = class Minecart extends Entity{
-		static name2 = "Minecart"
-		pushes = true
-		constructor(x,y,z){
-			let tex = textureCoords[textureMap.minecart]
-      let vao = generateVAO(shapes.minecart, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
-			super(x, y, z, 0, 0, 0, 0, 0, 0.98, 1, 0.98, null, null, vao.size, Infinity, vao.vao)
-			this.health = 6
-			this.noScale = true
-			this.heightOnDiagonal = 1-this.width
-			this.defaultHeight = this.height
-			this.health = 6
-			this.prevOnTrack = false
-			this.rideOffsetY = -6/16
-			this.canRide = true
-		}
-		updateVelocity(now) {
-      this.standingOn = this.world.getBlock(round(this.x), floor(this.y-this.height/2), round(this.z), this.dimension)
-      if(this.prevLiquid !== this.liquid){
-        this.prevLiquid = this.liquid
-      }
-			this.vely += this.gravityStength
-			let drag = this.liquid ? 0.7 : 0.95
-			let yDrag = this.liquid ? 0.7 : 0.95
-			if(blockData[this.standingOn].slide) drag = blockData[this.standingOn].slide
-			this.velz += (this.velz * drag - this.velz)
-			this.velx += (this.velx * drag - this.velx)
-			this.vely += (this.vely * yDrag - this.vely)
-		}
-		update(){
-			let railX = round(this.x), railY = round(this.y), railZ = round(this.z)
-			let onBlock = this.world.getBlock(railX,railY,railZ,this.dimension)
-			if(!blockData[onBlock].rail){
-				let under = this.world.getBlock(railX,railY-1,railZ,this.dimension)//to allow diagonals
-				if(blockData[under].rail) onBlock = under, railY--
-			}
-
-			this.updateVelocity(now)
-			let {velx, vely, velz} = this
-			let speed = sqrt(velx*velx+velz*velz+vely*vely)*2
-			if(speed>1){
-				this.velx /= speed, this.vely /= speed, this.velz /= speed
-			}
-			this.move(now)
-
-			this.height = this.defaultHeight
-			this.pitch = 0
-			this.offsetY = 0
-			if(onBlock && blockData[onBlock].rail){
-				let rot = onBlock&ROTATION
-				let {prevOnTrack} = this
-				if((onBlock & isState) === CUBE){
-					let velMag = sqrt(velx*velx+velz*velz)
-					if(rot === NORTH || rot === SOUTH) this.velz = prevOnTrack ? velMag*Math.sign(velz) : velz, this.velx = 0, this.x = railX, this.yaw = round(this.yaw/Math.PI)*Math.PI
-					else if(rot === EAST || rot === WEST) this.velx = prevOnTrack ? velMag*Math.sign(velx) : velx, this.velz = 0, this.z = railZ, this.yaw = round((this.yaw-Math.PI2)/Math.PI)*Math.PI+Math.PI2
-					this.vely = 0, this.y = railY
-					this.prevOnTrack = true
-				}else if((onBlock & isState) === STAIR){//corner rail
-					let originX, originZ
-					if(rot === NORTH) originX = railX-0.5, originZ = railZ-0.5
-					else if(rot === WEST) originX = railX+0.5, originZ = railZ-0.5
-					else if(rot === SOUTH) originX = railX+0.5, originZ = railZ+0.5
-					else if(rot === EAST) originX = railX-0.5, originZ = railZ+0.5
-					let dx = this.x-originX, dz = this.z-originZ
-					let mag = sqrt(dx*dx+dz*dz)*2
-					dx /= mag, dz /= mag
-					this.x = originX+dx
-					this.z = originZ+dz
-					let targetYaw = atan2(dx,dz)+Math.PI2
-					this.yaw = round((this.yaw-targetYaw)/Math.PI)*Math.PI+targetYaw
-					//below: calculate new velocity
-					let velMag = sqrt(velx*velx+velz*velz)
-					let prevDir = velx*dz + velz*-dx//more accurate if use previous dx and dz
-					let s = dz*2, c = -dx*2
-					if(prevOnTrack){
-						prevDir = Math.sign(prevDir)
-						this.velx = velMag*s*prevDir
-						this.velz = velMag*c*prevDir
-					}else{
-						this.velx = prevDir*s
-						this.velz = prevDir*c
-					}
-					this.vely = 0, this.y = railY
-					//this.world.blockParticles(4,this.x+Math.sign(velMag)*sin(this.yaw),7,this.z+Math.sign(velMag)*cos(this.yaw),1,'','')
-					/*//stop velocity in certain direction
-					let dot = this.velx*dx + this.velz*dz
-					this.velx = this.velx - dx * dot
-					this.velz = this.velz - dz * dot*/
-					this.prevOnTrack = true
-				}else if((onBlock & isState) === SLAB){//raised
-					let diagonal = sqrt(0.5)
-					let originX = railX, originY = railY, originZ = railZ, dx = 0, dy = diagonal, dz = 0
-					if(rot === NORTH) originZ -= 0.5, dz = diagonal, this.yaw = round(this.yaw/Math.PI)*Math.PI
-					else if(rot === SOUTH) originZ += 0.5, dz = -diagonal, this.yaw = round(this.yaw/Math.PI)*Math.PI
-					else if(rot === EAST) originX -= 0.5, dx = diagonal, this.yaw = round((this.yaw-Math.PI2)/Math.PI)*Math.PI+Math.PI2
-					else if(rot === WEST) originX += 0.5, dx = -diagonal, this.yaw = round((this.yaw-Math.PI2)/Math.PI)*Math.PI+Math.PI2
-					let dot = (this.x-originX)*dx + (this.z-originZ)*dz + (this.y-originY)*dy
-					this.x = originX+dx*dot
-					this.y = originY+dy*dot
-					this.z = originZ+dz*dot
-					let velMag = sqrt(velx*velx+velz*velz+vely*vely)
-					let prevDir = velx*dx + velz*dz + vely*dy//more accurate if use previous dx and dz
-					if(prevOnTrack){
-						prevDir = Math.sign(prevDir)
-						this.velx = velMag*dx*prevDir
-						this.velz = velMag*dz*prevDir
-						this.vely = velMag*dy*prevDir
-					}else{
-						this.velx = prevDir*dx
-						this.velz = prevDir*dz
-						this.vely = prevDir*dy
-					}
-					this.prevOnTrack = true
-					this.height = this.heightOnDiagonal//to allow fitting
-					this.pitch = -Math.PI4*Math.sign(sin(this.yaw)*dx+cos(this.yaw)*dz)
-					this.offsetY = 0.25
-				}else this.prevOnTrack = false
-				if(this.yaw > Math.PId) this.yaw -= Math.PId, this.previousYaw -= Math.PId
-				if(this.yaw < 0) this.yaw += Math.PId, this.previousYaw += Math.PId
-				if(blockData[onBlock].name === "poweredRail"){
-					let velMag = sqrt(velx*velx+velz*velz+vely*vely)
-					if(onBlock&FLIP){
-						if(velMag > 0.01 && velMag<8){
-							let extraSpeed = (8-velMag)*0.06
-							this.velx += this.velx/velMag*extraSpeed
-							this.velz += this.velz/velMag*extraSpeed
-							this.vely += this.vely/velMag*extraSpeed
-							if((onBlock&isState) === CUBE){
-								if(rot === NORTH || rot === SOUTH){
-									if(blockData[this.world.getBlock(railX,railY,railZ+1)].solid) this.velz = min(this.velz,-0.1)
-									else if(blockData[this.world.getBlock(railX,railY,railZ-1)].solid) this.velz = max(this.velz,0.1)
-								}else if(rot === EAST || rot === WEST){
-									if(blockData[this.world.getBlock(railX+1,railY,railZ)].solid) this.velx = min(this.velx,-0.1)
-									else if(blockData[this.world.getBlock(railX-1,railY,railZ)].solid) this.velx = max(this.velx,0.1)
-								}
-							}
-						}
-					}else{
-						this.velx *= 0.65
-						this.velz *= 0.65
-						this.vely *= 0.65
-					}
-				}
-			}else this.prevOnTrack = false
-
-			if(this.harmEffect > 0){
-				this.harmEffect--
-				this.roll = sin(this.harmEffect/3*Math.PI)*this.harmEffect*Math.PI*0.025
-			}else this.roll = 0
-		}
-		render() {
-      totalEntites++
-      if(this.hidden || !p.camera.canSeeEntity(this.x,this.y,this.z,this.width,this.height,this.depth)) return
-      renderedEntities++
-      
-      let diff = (now - this.lastUpdate) / tickTime
-			if (diff > 1) diff = 1
-			const offsetY = lerp(diff,this.prevOffsetY,this.offsetY)
-      let renderx = (this.x - this.previousX) * diff + this.previousX
-			let rendery = ((this.y - this.previousY) * diff + this.previousY) + offsetY
-			let renderz = (this.z - this.previousZ) * diff + this.previousZ
-      
-			const modelMatrix = entityMatrices.modelMatrix;
-			modelMatrix.identity()
-			modelMatrix.translate(renderx, rendery, renderz)
-			modelMatrix.rotY(lerp(diff,this.previousYaw,this.yaw))
-			modelMatrix.rotX(lerp(diff,this.previousPitch,this.pitch))
-			if(this.roll || this.previousRoll) modelMatrix.rotZ(lerp(diff,this.previousRoll,this.roll))
-			const viewMatrix = p.camera.transformation.elements
-			const proj = p.camera.projection
-			let projectionMatrix = entityMatrices.projectionMatrix
-      projectionMatrix.set(proj[0], 0, 0, 0, 0, proj[1], 0, 0, 0, 0, proj[2], proj[3], 0, 0, proj[4], 0)
-      projectionMatrix = projectionMatrix.elements
-			const modelViewProjectionMatrix = entityMatrices.modelViewProjectionMatrix
-			modelViewProjectionMatrix.identity()
-			modelViewProjectionMatrix.mult(projectionMatrix)
-			modelViewProjectionMatrix.mult(viewMatrix)
-			modelViewProjectionMatrix.mult(modelMatrix.elements)
-			// row major to column major
-			modelViewProjectionMatrix.transpose()
-			modelMatrix.transpose()//for normal
-			const x = round(this.x)
-			const y = round(this.y)
-			const z = round(this.z)
-			const blockLight = this.glow ? 1 : this.world.getLight(x, y, z, 1, this.dimension)/15
-			const skysLight = this.world.getLight(x, y, z, 0, this.dimension)/15
-			gl.uniform1i(glCache.uSamplerEntity, 0)
-			gl.uniform1f(glCache.uBlockLightEntity, blockLight)
-			gl.uniform1f(glCache.uSkylightEntity, skysLight)
-      gl.uniform1f(glCache.harmEffectEntity, 0)
-			gl.uniform3f(glCache.uPosEntity, p.renderX-this.x, p.renderY-this.y, p.renderZ-this.z)
-			gl.uniformMatrix4fv(glCache.uViewEntity, false, modelViewProjectionMatrix.elements)
-			gl.uniformMatrix4fv(glCache.uModelMatEntity, false, modelMatrix.elements)
-			glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
-			gl.drawElements(gl.TRIANGLES, 6 * this.faces, gl.UNSIGNED_INT, 0)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
 		}
 	}
   
@@ -17638,39 +15959,9 @@ r 11 y  n  n  n
   class Mob extends Entity{
 		static mob = true
 		mob = true
-		pushes = true
+		noScale = true
     constructor(){
 			super(...arguments)
-      /*this.moveTime = 0
-      this.spinTime = 0
-      this.spin = 0
-      this.dirx = 0
-      this.dirz = 0*/
-      this.health = 0
-			this.path = null
-			this.walking = false
-			this.panick = 0
-			this.drop = null
-			this.dropAmount = 0
-			this.burnTimer = 0
-			this.burning = false
-			this.oxygen = 20
-			this.spinTarget = 0
-			this.spinTargetPitch = 0
-			this.die = false
-			this.lastDamage = 0
-			this.lastStepSound = 0
-			this.noScale = true
-			this.target = null, this.targetEnt = null
-			this.attackCooldown = 0
-			this.attractEnt = null, this.attractedBy = null
-			this.holding = this.prevHolding = 0
-			this.canClimb = false
-			this.canFly = false
-			this.sitting = false
-			this.owner = null
-			this.name = null
-			this.effects = {}
 			this.doInterpolate = true
 			this.offsetry = Math.PI
     }
@@ -17803,6 +16094,833 @@ r 11 y  n  n  n
   }
   
 	let entityDataAdditional = {
+		Item: Item => class extends Item {
+			constructor() {
+				super(...arguments)
+				this.vao = glExtensions.vertex_array_object.createVertexArrayOES()
+				this.updateShape()
+				this.noHitbox = true
+				this.canFloat = true
+				this.cullFace = true
+			}
+			update() {
+				super.update()
+				
+				if(now - this.spawn > 1000){
+					if(!p.spectator && !p.die && p.dimension === this.dimension) this.goCloserToPlayer(p)
+					if(multiplayer) for(var i in players){
+						var P = players[i]
+						if(!P.hidden && !P.die && P.dimension === this.dimension) this.goCloserToPlayer(P)
+					}
+				}
+				
+				if(this.willUpdateShape){
+					this.updateShape()
+					this.willUpdateShape = false
+				}
+				
+				this.offsetY = -0.1 * cos(this.yaw*2) + 0.15
+				
+				let id = this.block
+				if(id && blockData[id].tint){
+					let biome = this.world.getBiome(round(this.x),round(this.y),round(this.z),this.dimension)
+					let tints = blockData[id].tint
+					this.tint = tints[biome] || tints.default
+					this.tintGray = true
+				}
+			}
+			shape1 = [0,0,0]
+			shape2 = [-1,-1,-1, 1,1,1]
+			shape3 = [-1,-1,-1, 1,1,1, -0.5,0,0.5]
+			shape4 = [-1,-1,-1, 1,1,1, -0.5,0,0.5, 0.5,1.5,-0.5]
+			shape5 = [-1,-1,-1, 1,1,1, -0.5,0,0.5, 0.5,1.5,-0.5, 1.5,0.75,0]
+			updateShape(){
+				let amount
+				if(this.amount === 1){
+					amount = this.shape1
+				}else if(this.amount <= 16){
+					amount = this.shape2
+				}else if(this.amount <= 32){
+					amount = this.shape3
+				}else if(this.amount <= 48){
+					amount = this.shape4
+				}else{
+					amount = this.shape5
+				}
+				const block = blockData[this.block]
+				const tex = block.textures
+				const shape = block.shape
+				const shapeVerts = shape.verts
+				const shapeTexVerts = shape.texVerts
+				const size = shape.size*(amount.length/3)
+				const shapeNormal = shape.normal
+				let blockSides = Object.keys(Block)
+				let texNum = 0
+				let texture = []
+				let index = 0
+				let verts = [], vertIndex = 0
+				let normal = []
+				let offsetX = 0, offsetY = 0, offsetZ = 0
+				for(let amounti = 0; amounti < amount.length; amounti += 3){
+					offsetX = amount[amounti]/4, offsetY = amount[amounti+1]/4, offsetZ = amount[amounti+2]/4
+					texNum = 0
+					for (let n = 0; n < 6; n++) {
+						let side = blockSides[n]
+						let directionalFaces = shapeVerts[n]
+						for (let facei = 0; facei < directionalFaces.length; facei++) {
+							let texShapeVerts = shapeTexVerts[n][facei]
+							let texVerts
+							texVerts = textureCoords[textureMap[texShapeVerts.texture] || tex && textureMap[tex[texNum]] || textureMap.error]
+							let tx = texVerts[0]
+							let ty = texVerts[1]
+							let tw = texVerts[2]-tx
+							let th = texVerts[5]-ty
+							texture[index    ] = tx + texShapeVerts[0]*tw
+							texture[index + 1] = ty + texShapeVerts[1]*th
+							texture[index + 2] = tx + texShapeVerts[2]*tw
+							texture[index + 3] = ty + texShapeVerts[3]*th
+							texture[index + 4] = tx + texShapeVerts[4]*tw
+							texture[index + 5] = ty + texShapeVerts[5]*th
+							texture[index + 6] = tx + texShapeVerts[6]*tw
+							texture[index + 7] = ty + texShapeVerts[7]*th
+							index += 8
+							let faceVerts = directionalFaces[facei]
+							verts[vertIndex] = faceVerts[0]+offsetX
+							verts[vertIndex+1] = faceVerts[1]+offsetY
+							verts[vertIndex+2] = faceVerts[2]+offsetZ
+							verts[vertIndex+3] = faceVerts[3]+offsetX
+							verts[vertIndex+4] = faceVerts[4]+offsetY
+							verts[vertIndex+5] = faceVerts[5]+offsetZ
+							verts[vertIndex+6] = faceVerts[6]+offsetX
+							verts[vertIndex+7] = faceVerts[7]+offsetY
+							verts[vertIndex+8] = faceVerts[8]+offsetZ
+							verts[vertIndex+9] = faceVerts[9]+offsetX
+							verts[vertIndex+10] = faceVerts[10]+offsetY
+							verts[vertIndex+11] = faceVerts[11]+offsetZ
+							vertIndex += 12
+							normal.push(...shapeNormal[n][facei],...shapeNormal[n][facei],...shapeNormal[n][facei],...shapeNormal[n][facei])
+						}
+						texNum++
+					}
+				}
+				
+				var vertices = new Float32Array(verts)
+				texture = new Float32Array(texture)
+				
+				const verticesBuffer = gl.createBuffer()
+				const textureBuffer = gl.createBuffer()
+				const normalBuffer = gl.createBuffer()
+				glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
+
+				gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer)
+				gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
+				gl.vertexAttribPointer(glCache.aVertexEntity, 3, gl.FLOAT, false, 0, 0)
+
+				gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer)
+				gl.bufferData(gl.ARRAY_BUFFER, texture, gl.STATIC_DRAW)
+				gl.vertexAttribPointer(glCache.aTextureEntity, 2, gl.FLOAT, false, 0, 0)
+				
+				gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer)
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normal), gl.STATIC_DRAW)
+				gl.vertexAttribPointer(glCache.aNormalEntity, 3, gl.FLOAT, false, 0, 0)
+
+				gl.enableVertexAttribArray(glCache.aVertexEntity)
+				gl.enableVertexAttribArray(glCache.aTextureEntity)
+				gl.enableVertexAttribArray(glCache.aNormalEntity)
+				glExtensions.vertex_array_object.bindVertexArrayOES(null)
+				
+				this.faces = size
+			}
+		},
+		BlockEntity: BlockEntity => class extends BlockEntity{
+			constructor(){
+				super(...arguments)
+				let v = generateBlockVAO(this.block)
+				this.faces = v.size
+				this.vao = v.vao
+				this.noHitbox = true
+				this.cullFace = true
+			}
+			changeBlock(blockID){
+				if(this.block === blockID) return
+				this.block = blockID
+				let v = generateBlockVAO(blockID)
+				this.faces = v.size
+				this.vao = v.vao
+			}
+			update() {
+				super.update()
+				
+				var id = this.block
+				if(id && blockData[id].tint){
+					var biome = this.world.getBiome(round(this.x),round(this.y),round(this.z),this.dimension)
+					var tints = blockData[id].tint
+					this.tint = tints[biome] || tints.default
+					this.tintGray = true
+				}
+			}
+		},
+		PrimedTNT: PrimedTNT => class extends PrimedTNT{
+			update() {
+				super.update()
+				
+				var i = Math.floor((now - this.timerStart) / 250)
+				this.shader = 0
+				if(!(i%2)){
+					this.shader = 1
+					if(!performFast) this.world.addParticle(new entities[entityIds.SmokeParticle](this.x,this.y+0.5-0.125,this.z), this.dimension)
+				}
+				if((now - this.spawn) / tickTime >= this.timeLimit - 10){
+					//get bigger
+					this.extraSize = min(-((this.timeLimit - 10) - ((now - this.spawn) / tickTime)) / 40,0.25)
+					this.shader = 1
+				}
+			}
+		},
+		MovingBlock: MovingBlock => class extends MovingBlock{
+			noRemoteDelete = true
+			setPos(){}
+			update() {
+				if (this.lastUpdate - this.spawn2 - tickTime > this.despawns) {
+					this.canDespawn = true
+				}
+				super.update()
+
+				let id = this.block
+				if(id && blockData[id].tint){
+					let biome = this.world.getBiome(round(this.x),round(this.y),round(this.z),this.dimension)
+					let tints = blockData[id].tint
+					this.tint = tints[biome] || tints.default
+					this.tintGray = true
+				}
+			}
+		},
+		BlockDisplay: BlockDisplay => class extends BlockDisplay{
+			update() {
+				super.update()
+				let id = this.block
+				if(id && blockData[id].tint){
+					let biome = this.world.getBiome(round(this.x),round(this.y),round(this.z),this.dimension)
+					let tints = blockData[id].tint
+					this.tint = tints[biome] || tints.default
+					this.tintGray = true
+				}
+			}
+		},
+		SlingshotShot: SlingshotShot => class extends SlingshotShot{
+			move(now) {
+				let pminX = floor(this.x - this.width / 2)
+				let pmaxX = ceil(this.x + this.width / 2)
+				let pminY = floor(this.y - this.height / 2)
+				let pmaxY = ceil(this.y + this.height / 2)
+				let pminZ = floor(this.z - this.depth / 2)
+				let pmaxZ = ceil(this.z + this.depth / 2)
+				let block = null
+
+				this.liquid = false
+				for (let x = pminX; x <= pmaxX; x++) {
+					for (let y = pminY; y <= pmaxY; y++) {
+						for (let z = pminZ; z <= pmaxZ; z++) {
+							let block = this.world.getBlock(x, y, z, this.dimension)
+							if (block && blockData[block].solid) {
+								this.contacts.add(x, y, z, block)
+							}
+							if(x === round(this.x) && z === round(this.z) && blockData[block].liquid){
+								this.liquid = true
+							}
+						}
+					}
+				}
+
+				this.previousX = this.x
+				this.previousY = this.y
+				this.previousZ = this.z
+
+				var xBounce, yBounce, zBounce, pvelx = this.velx, pvely = this.vely, pvelz = this.velz
+				
+				this.canStepX = false
+				this.canStepY = false
+				this.onGround = false
+				this.hasCollided = false
+				//Check collisions in the Y direction
+				this.y += this.vely
+				for (let i = 0; i < this.contacts.size; i++) {
+					block = this.contacts.array[i]
+					if (this.collided(block[0], block[1], block[2], null, this.vely, null, block[3])) {
+						this.y = this.previousY
+						this.vely = 0
+						this.hasCollided = true
+						yBounce = true
+						break
+					}
+				}
+
+				if (this.y === this.previousY) {
+					this.canStepX = true
+					this.canStepZ = true
+				}
+
+				//Check collisions in the X direction
+				this.x += this.velx
+				for (let i = 0; i < this.contacts.size; i++) {
+					block = this.contacts.array[i]
+					if (this.collided(block[0], block[1], block[2], this.velx, null, null, block[3])) {
+						if (this.canStepX && !this.world.getBlock(block[0], block[1] + 1, block[2], this.dimension) && !this.world.getBlock(block[0], block[1] + 2, block[2], this.dimension)) {
+							continue
+						}
+						this.x = this.previousX
+						this.velx = 0
+						this.hasCollided = true
+						xBounce = true
+						break
+					}
+				}
+
+				//Check collisions in the Z direction
+				this.z += this.velz
+				for (let i = 0; i < this.contacts.size; i++) {
+					block = this.contacts.array[i]
+					if (this.collided(block[0], block[1], block[2], null, null, this.velz, block[3])) {
+						if (this.canStepZ && !this.world.getBlock(block[0], block[1] + 1, block[2], this.dimension) && !this.world.getBlock(block[0], block[1] + 2, block[2]), this.dimension) {
+							continue
+						}
+						this.z = this.previousZ
+						this.velz = 0
+						this.hasCollided = true
+						zBounce = true
+						break
+					}
+				}
+				
+				if(this.onGround){
+					this.hasCollided = true
+				}
+				
+				if(xBounce) this.velx = -pvelx
+				if(yBounce) this.vely = -pvely
+				if(zBounce) this.velz = -pvelz
+
+				this.updateChunk()
+
+				this.lastUpdate = now
+				this.contacts.clear()
+			}
+		},
+		Arrow: Arrow => class extends Arrow{
+			noScale = true
+			constructor(x,y,z,dx,dy,dz, from){
+				let t = textureCoords[textureMap.arrow]
+				let v = generateVAO(shapes.arrow, t[0],t[1],t[2]-t[0],t[5]-t[1])
+				this.faces = v.size, this.vao = v.vao
+				super(...arguments)
+				this.noHitbox = true
+				this.from = from
+			}
+		},
+		/*Sign: class Sign extends BlockEntity{//todo n
+			static name2 = "Sign"
+			constructor(x,y,z,base,block){
+				const v = generateBlockVAO(block, {poleSide:blockData[block].poleSide,poleTop:blockData[block].poleTop})
+				super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, null,null, v.size, Infinity, v.vao)
+				this.width = this.height = this.depth = 16/24
+				this.block = block
+				this.offsetY = -0.15
+				this.from = p.id
+				this.noHitbox = true
+				this.textEnt = null, this.textEnt2 = null
+				this.prevText = null, this.prevText2 = null
+				this.remote = true
+				
+				this.gravityStength = 0
+			}
+			update() {
+				let block = this.world.getBlock(this.x,this.y,this.z,this.dimension)
+				if(block != this.baseBlock){
+					if(block !== this.block) this.canDespawn = true
+					else{
+						let signBlock = this.block
+						let v = generateBlockVAO(signBlock)
+						this.faces = v.size
+						this.vao = v.vao
+					}
+				}
+				//if(host && this.canDespawn) return blockParticles(this.block,this.x,this.y,this.z,30, "break",this.world,this.dimension)
+				
+				let tags = this.world.getTags(this.x,this.y,this.z,this.dimension)
+				if(tags){
+					var rotation = tags.rot || 0
+					this.yaw = -rotation * Math.PId / 16
+					if(this.textEnt){
+						this.textEnt.yaw = this.yaw + Math.PI
+						if(tags.color){
+							this.textEnt.color = tags.color
+						}else if(blockData[this.baseBlock].color){
+							var data = blockData[this.baseBlock].color
+							this.textEnt.color[0] = data[0]
+							this.textEnt.color[1] = data[1]
+							this.textEnt.color[2] = data[2]
+						}
+						this.textEnt.glow = !!tags.glow
+					}
+					if(this.textEnt2){
+						this.textEnt2.yaw = this.yaw
+						if(tags.color){
+							this.textEnt2.color = tags.color
+						}else if(blockData[this.baseBlock].color){
+							var data = blockData[this.baseBlock].color
+							this.textEnt2.color[0] = data[0]
+							this.textEnt2.color[1] = data[1]
+							this.textEnt2.color[2] = data[2]
+						}
+						this.textEnt2.glow = !!tags.glow2
+					}
+					if(tags.text !== this.prevText && (tags.text || tags.text === "")){
+						this.prevText = tags.text
+						if(this.textEnt){
+							this.textEnt.setText(tags.text)
+						}else{
+							this.textEnt = this.world.generateTextForEntity(tags.text,this,1/8,[0,0,0],null)
+							if(!blockData[block].useAsWall){
+								this.textEnt.offsetZ = -5.5/16
+							}else{
+								this.textEnt.offsetZ = 1/16
+								this.textEnt.y += 0.35
+							}
+						}
+					}
+					if(tags.text2 !== this.prevText2 && (tags.text2 || tags.text2 === "")){
+						this.prevText2 = tags.text2
+						if(this.textEnt2){
+							this.textEnt2.setText(tags.text2)
+						}else{
+							this.textEnt2 = this.world.generateTextForEntity(tags.text2,this,1/8,[0,0,0],null)
+							if(!blockData[block].useAsWall){
+								this.textEnt2.offsetZ = 7.25/16
+							}else{
+								this.textEnt2.offsetZ = 1.25/16
+								this.textEnt2.y += 0.35
+							}
+						}
+					}
+				}
+			}
+			render(){
+				super.render()
+				if(this.textEnt) this.textEnt.render()
+				if(this.textEnt2) this.textEnt2.render()
+			}
+		},
+		ItemFrame: class ItemFrame extends BlockEntity{//todo n: entity and new blockstates
+			static name2 = "ItemFrame"
+			constructor(x,y,z,base){
+				super(block,x,y,z)
+				this.width = this.height = this.depth = 0.5
+				this.baseBlock = base
+				this.noHitbox = true
+				this.remote = true
+				this.rz = 0
+				this.offsetX = 0, this.offsetZ = 0
+				var off = 7/16
+				switch(base & ROTATION){
+					case NORTH:
+						this.z += off
+						break
+					case SOUTH:
+						this.z -= off
+						this.yaw = Math.PI
+						break
+					case EAST:
+						this.x += off
+						this.yaw = Math.PI2
+						break
+					case WEST:
+						this.x -= off
+						this.yaw = -Math.PI2
+						break
+				}
+			}
+			update(){
+				if(this.world.getBlock(round(this.x),round(this.y),round(this.z),this.dimension) !== this.baseBlock) this.canDespawn = true
+				var rot = this.world.getTagByName(round(this.x),round(this.y),round(this.z),"rot",this.dimension) || 0
+				this.rz = rot*Math.PId/8
+				this.changeBlock(this.world.getTagByName(round(this.x),round(this.y),round(this.z),"block",this.dimension) || 0)
+			}
+		},*/
+		ExperienceOrb: ExperienceOrb => class extends ExperienceOrb{
+			//experienceOrb
+			constructor(){
+				super(...arguments)
+				let value = this.value
+				let i
+				if(!value || value <= 2){
+					i = 0
+				}else if(value <= 6){
+					i = 1
+				}else if(value <= 16){
+					i = 2
+				}else if(value <= 36){
+					i = 3
+				}else if(value <= 72){
+					i = 4
+				}else if(value <= 148){
+					i = 5
+				}else if(value <= 306){
+					i = 6
+				}else if(value <= 616){
+					i = 7
+				}else if(value <= 1236){
+					i = 8
+				}else if(value <= 2476){
+					i = 9
+				}else if(value <= 32767){
+					i = 10
+				}
+				this.faces = experienceOrbVaos.size, this.vao = experienceOrbVaos[i]
+				this.tint = {r:1,g:1,b:1}
+				this.facesPlayer = true
+			}
+			update(){
+				if(multiplayer) for(var i in players){
+					if(!players[i].hidden && !players[i].die && players[i].dimension === this.dimension) this.goToPlayer(players[i])
+				}
+				
+				super.update()
+				
+				this.facePlayer()
+				
+				this.tint.r = min(max(abs((now-this.spawn) % 1000 - 500) / 500, 0), 1)
+				this.tint.g = 1
+				this.tint.b = 0
+			}
+			facePlayer(){
+				this.yaw = Math.PId - (atan2(p.camera.z - this.z, p.camera.x - this.x) + Math.PI2 + Math.PI)
+				var adjacent = dist2(this.x,this.z,p.camera.x,p.camera.z)
+				this.pitch = Math.PId - atan2(p.camera.y - this.y, adjacent)
+			}
+		},
+		BeaconBeam: class BeaconBeam extends Entity{//todo n
+			static name2 = "BeaconBeam"
+			alwaysRender = true
+			constructor(x,y,z){
+				super(x, y+(maxHeight-y)/2, z, 0, 0, 0, 0, 0, 0.25, maxHeight - y, 0.25, null, null, 0, Infinity, glExtensions.vertex_array_object.createVertexArrayOES())
+				this.willUpdateShape = true
+				this.shader = 2
+				this.remote = true
+				this.noHitbox = true
+				this.actualY = y
+				this.prevColumn = null
+				this.glow = true
+			}
+			generateVAO(y,y2,vao){
+				const shape = shapes.cube
+				const shapeVerts = shape.verts
+				const shapeTexVerts = shape.texVerts
+				const size = shape.size
+				let tex = "beaconBeam"
+				let blockSides = Object.keys(Block)
+				let texture = []
+				let index = 0
+				let verts = [], vertIndex = 0
+				let ay = this.actualY/maxHeight
+				for (let n = 0; n < 6; n++) {
+					let side = blockSides[n]
+					let directionalFaces = shapeVerts[n]
+					for (let facei = 0; facei < directionalFaces.length; facei++) {
+						let texVerts = textureCoords[textureMap[tex]]
+						let tx = texVerts[0]
+						let ty = texVerts[1]
+						let tw = texVerts[2] - tx
+						let th = texVerts[5] - ty
+						let texShapeVerts = shapeTexVerts[n][facei]
+						let newY = ay+(1-ay)*y, newY2 = ay+(1-ay)*y2
+						texture[index    ] = tx + texShapeVerts[0]*tw
+						texture[index + 1] = ty + lerp(texShapeVerts[1], newY,newY2)*th
+						texture[index + 2] = tx + texShapeVerts[2]*tw
+						texture[index + 3] = ty + lerp(texShapeVerts[3], newY,newY2)*th
+						texture[index + 4] = tx + texShapeVerts[4]*tw
+						texture[index + 5] = ty + lerp(texShapeVerts[5], newY,newY2)*th
+						texture[index + 6] = tx + texShapeVerts[6]*tw
+						texture[index + 7] = ty + lerp(texShapeVerts[7], newY,newY2)*th
+						index += 8
+						let face = directionalFaces[facei]
+						verts[vertIndex] = face[0]
+						verts[vertIndex+1] = map(face[1], -0.5,0.5, y-0.5,y2-0.5)
+						verts[vertIndex+2] = face[2]
+						verts[vertIndex+3] = face[3]
+						verts[vertIndex+4] = map(face[4], -0.5,0.5, y-0.5,y2-0.5)
+						verts[vertIndex+5] = face[5]
+						verts[vertIndex+6] = face[6]
+						verts[vertIndex+7] = map(face[7], -0.5,0.5, y-0.5,y2-0.5)
+						verts[vertIndex+8] = face[8]
+						verts[vertIndex+9] = face[9]
+						verts[vertIndex+10] = map(face[10], -0.5,0.5, y-0.5,y2-0.5)
+						verts[vertIndex+11] = face[11]
+						vertIndex += 12
+					}
+				}
+				const verticesBuffer = gl.createBuffer()
+				const textureBuffer = gl.createBuffer()
+				glExtensions.vertex_array_object.bindVertexArrayOES(vao)
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
+
+				gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer)
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW)
+				gl.vertexAttribPointer(glCache.aVertexEntity, 3, gl.FLOAT, false, 0, 0)
+
+				gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer)
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texture), gl.STATIC_DRAW)
+				gl.vertexAttribPointer(glCache.aTextureEntity, 2, gl.FLOAT, false, 0, 0)
+
+				gl.enableVertexAttribArray(glCache.aVertexEntity)
+				gl.enableVertexAttribArray(glCache.aTextureEntity)
+				glExtensions.vertex_array_object.bindVertexArrayOES(null)
+				return {vao,size}
+			}
+			updateShape(){
+				const top = this.world.getSolidTop(this.x,this.z,this.dimension)
+				let parts = [1,1,1,0]
+				let end = 1
+				const height = maxHeight-this.actualY
+				for(let y=this.actualY+1; y<=top; y++){
+					const block = this.world.getBlock(this.x,y,this.z,this.dimension), data = blockData[block]
+					if(data.solid && !data.transparent){
+						end = map(y-0.5, this.actualY,maxHeight, 0,1)
+						break
+					}
+					if(data.name.endsWith("StainedGlass")){
+						let color = colors.dye[data.name.replace("StainedGlass","")]
+						let y2 = map(y-0.5, this.actualY,maxHeight, 0,1)
+						parts.push(y2)
+						parts.push((color[0]+parts[parts.length-5])/2, (color[1]+parts[parts.length-4])/2, (color[2]+parts[parts.length-3])/2)
+						parts.push(y2)
+					}
+				}
+				parts.push(end)
+				for(let i=0; i<parts.length; i+=5){
+					let part = i && this.parts[i]
+					const {vao,size} = this.generateVAO(parts[i+3],parts[i+4], i ? (part ? part.vao : glExtensions.vertex_array_object.createVertexArrayOES()) : this.vao)
+					if(!i){
+						this.faces = size
+						this.tint = [parts[i],parts[i+1],parts[i+2]]
+					}else{
+						if(!part){
+							part = this.addPart(i,size,vao,0,0,0,0.25,maxHeight-this.actualY,0.25,0,0)
+							part.glow = true
+						}
+						part.size = size
+						part.tint = [parts[i],parts[i+1],parts[i+2]]
+					}
+				}
+				for(let part in this.parts){
+					if(+part >= parts.length) delete this.parts[part]
+				}
+			}
+			update() {
+				let h = world.getSolidTop(round(this.x),round(this.y),round(this.z),this.dimension)
+				if(h !== this.prevColumn){
+					this.prevColumn = h
+					this.willUpdateShape = true
+				}
+				if(this.willUpdateShape){
+					this.updateShape()
+					this.willUpdateShape = false
+				}
+				this.previousYaw = this.yaw
+				this.yaw += 0.05
+				if(this.yaw > Math.PId){
+					this.yaw -= Math.PId
+					this.previousYaw -= Math.PId
+				}
+				this.lastUpdate = now
+				this.hidden = !world.getTagByName(round(this.x),round(this.y),round(this.z),"on",this.dimension)
+			}
+		},
+		Minecart: Minecart => entities[entities.length] = class extends Minecart{
+			noScale = true
+			pushes = true
+			constructor(){//todo n: use new shape
+				super(...arguments)
+				let tex = textureCoords[textureMap.minecart]
+				let vao = generateVAO(shapes.minecart, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
+				this.faces = vao.size, this.vao = vao.vao
+			}
+		},
+		TextDisplay: TextDisplay => class extends TextDisplay{
+			constructor(x,y,z,text,size,color,background,glow) {
+				super(...arguments)
+				this.offsetZ = 0
+				this.offsetX = 0
+				this.facesPlayer = true
+				
+				this.vao = glExtensions.vertex_array_object.createVertexArrayOES()
+				this.buffer = gl.createBuffer()
+			}
+			setText(text){
+				if(userInfo ? userInfo.profanityFilter : true) for(var obj of Messages.remove){ //remove bad words
+					text = text.replace(obj.replace, obj.with)
+				}//if you change this, change the one in Messages.format
+
+				let textStr = text
+				text = Array.from(text)//split into unicode
+				let data = new Float32Array(text.length*32)
+				let lineData = []
+				let x = 0, y = 0
+				let lineW = []
+				let line = 0
+				let i = 0
+				let color = [0,0,0], colorSet = 0, bold = false, italic = false
+				const italicX = tan(14*Math.PI/180)
+				for (let idx = 0; idx<text.length; idx++) {
+					let l = text[idx]
+					if(l === "§"){
+						let code = text[idx+1]
+						if(code === "l"){
+							bold = true
+						}else if(code === "o"){
+							italic = true
+						}else if(code === "r"){
+							bold = false, italic = false
+							colorSet = 0
+						}else{
+							color = colors.rgb[code] || color
+							colorSet = 1
+						}
+						idx++
+						continue
+					}
+					if(l === "\n"){
+						x = 0
+						y -= 10/8//linegap = 2
+						line++
+						continue
+					}
+					
+					let coords = textCoords[bold ? "b"+l : l] || textCoords["\0"]
+					let coordsPixels = textCoordsPixels[bold ? "b"+l : l] || textCoordsPixels["\0"]
+					data[i] = x + (italic ? italicX*coordsPixels[3] : 0)
+					data[i+1] = y + coordsPixels[3]
+					data[i+2] = coords[0]
+					data[i+3] = coords[1]
+					data[i+4] = color[0]
+					data[i+5] = color[1]
+					data[i+6] = color[2]
+					data[i+7] = colorSet
+					
+					data[i+8] = x + coordsPixels[2] + (italic ? italicX*coordsPixels[3] : 0)
+					data[i+9] = y + coordsPixels[3]
+					data[i+10] = coords[0] + coords[2]
+					data[i+11] = coords[1]
+					data[i+12] = color[0]
+					data[i+13] = color[1]
+					data[i+14] = color[2]
+					data[i+15] = colorSet
+					
+					data[i+16] = x + coordsPixels[2]
+					data[i+17] = y
+					data[i+18] = coords[0] + coords[2]
+					data[i+19] = coords[1] + coords[3]
+					data[i+20] = color[0]
+					data[i+21] = color[1]
+					data[i+22] = color[2]
+					data[i+23] = colorSet
+					
+					data[i+24] = x
+					data[i+25] = y
+					data[i+26] = coords[0]
+					data[i+27] = coords[1] + coords[3]
+					data[i+28] = color[0]
+					data[i+29] = color[1]
+					data[i+30] = color[2]
+					data[i+31] = colorSet
+					
+					x += coordsPixels[2]
+					lineData[i/32] = line
+					lineW[line] = x
+					i += 32
+				}
+				for(i = 0; i<data.length; i+=8){
+					data[i] -= lineW[lineData[floor(i/32)]] / 2
+					data[i+1] -= y/2
+				}
+				
+				this.faces = i / 32
+				glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
+				gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW)
+				gl.enableVertexAttribArray(glCache.aVertexText)
+				gl.enableVertexAttribArray(glCache.aTextureText)
+				gl.enableVertexAttribArray(glCache.aColorText)
+				gl.enableVertexAttribArray(glCache.aColorSetText)
+				gl.vertexAttribPointer(glCache.aVertexText, 2, gl.FLOAT, false, 32, 0)
+				gl.vertexAttribPointer(glCache.aTextureText, 2, gl.FLOAT, false, 32, 8)
+				gl.vertexAttribPointer(glCache.aColorText, 3, gl.FLOAT, false, 32, 16)
+				gl.vertexAttribPointer(glCache.aColorSetText, 1, gl.FLOAT, false, 32, 28)
+				glExtensions.vertex_array_object.bindVertexArrayOES(null)
+				this.text = textStr
+			}
+			update() {
+				this.canFacePlayer = true
+				this.lastUpdate = now
+				this.previousX = this.x
+				this.previousY = this.y
+				this.previousZ = this.z
+			}
+			render(){
+				world.renderTextDisplay(this)
+			}
+			renderText() {
+				let diff = (now - this.lastUpdate) / tickTime
+				if (diff > 1) diff = 1
+				let renderx = (this.x - this.previousX) * diff + this.previousX
+				let rendery = (this.y - this.previousY) * diff + this.previousY
+				let renderz = (this.z - this.previousZ) * diff + this.previousZ
+				
+				if(this.canFacePlayer){
+					this.facePlayer()
+					this.canFacePlayer = false
+				}
+				
+				const offsetY = this.offsetY, offsetX = this.offsetX, offsetZ = this.offsetZ
+				const modelMatrix = new Matrix();
+				modelMatrix.identity()
+				modelMatrix.translate(renderx, rendery + offsetY, renderz)
+				modelMatrix.rotY(this.yaw)
+				modelMatrix.rotX(this.pitch)
+				modelMatrix.translate(0,0,offsetZ)
+				modelMatrix.scale(this.width, this.height, this.depth)
+				modelMatrix.translate(offsetX,0,0)
+				const viewMatrix = p.camera.transformation.elements
+				const proj = p.camera.projection
+				const projectionMatrix = [proj[0], 0, 0, 0, 0, proj[1], 0, 0, 0, 0, proj[2], proj[3], 0, 0, proj[4], 0]
+				const modelViewProjectionMatrix = new Matrix()
+				modelViewProjectionMatrix.identity()
+				modelViewProjectionMatrix.mult(projectionMatrix)
+				modelViewProjectionMatrix.mult(viewMatrix)
+				modelViewProjectionMatrix.mult(modelMatrix.elements)
+				// row major to column major
+				modelViewProjectionMatrix.transpose()
+				const x = round(this.x)
+				const y = round(this.y)
+				const z = round(this.z)
+				const blockLight = world.getLight(x, y, z, 1, this.dimension)
+				const skysLight = world.getLight(x, y, z, 0, this.dimension)
+				const lightLevel = min(max(skysLight * skyLight / 15, blockLight / 15), 1.0)
+				gl.uniform1i(glCache.uSamplerText, 9)
+				gl.uniform1i(glCache.glowText, this.glow)
+				gl.uniform1f(glCache.uLightLevelText, lightLevel)
+				gl.uniform1f(glCache.uLanternText, lantern - dist3(this.x,this.y,this.z, p.renderX,p.renderY,p.renderZ) / 10.0)
+				gl.uniform3f(glCache.colorText, ...this.color)
+				gl.uniform4f(glCache.backgroundText, ...this.background)
+				gl.uniform1f(glCache.brightnessText, brightness)
+				gl.uniformMatrix4fv(glCache.uViewText, false, modelViewProjectionMatrix.elements)
+				glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
+				gl.drawElements(gl.TRIANGLES, 6 * this.faces, gl.UNSIGNED_INT, 0)
+				glExtensions.vertex_array_object.bindVertexArrayOES(null)
+			}
+		},
+
 		creeper:{
 			additionalUpdateClient(){
 				let d = this.targetEnt && max(abs(this.targetEnt.x-this.x),abs(this.targetEnt.y-this.y),abs(this.targetEnt.z-this.z))
@@ -17995,20 +17113,28 @@ r 11 y  n  n  n
 	}
 
 	let entityData = win.entityData
+	let entityClassMap = {Entity,Mob}
 	for(let i=0; i<entityData.length; i++){
 		let data = entityData[i]
-		let ent = class extends Mob {
-			static name2 = data.name
+		if(!data) continue
+		let mob = data.type === "animal" || data.type === "hostile"
+		let ent = data.class ? data.class(entityClassMap) : (class extends (mob ? Mob : Entity) {
 			constructor(x,y,z){
-				super(x,y,z,0,0,0,0,0, data.width,data.height,data.depth, null,null,null, 300000)
+				super(x,y,z,0,0,0,0,0, data.width,data.height,data.depth, null,null,null)
 				if(this.onspawn) this.onspawn()
 				this.setPartShapes(data.variantsBones.default)
 			}
-		}
+		})
+		ent.name2 = data.name
 		Object.assign(ent.prototype, data)
-		if(entityDataAdditional[data.name]) Object.assign(ent.prototype, entityDataAdditional[data.name])
-		entities[entities.length] = ent
+		if(entityDataAdditional[data.name]){
+			if(typeof entityDataAdditional[data.name] === "function") ent = entityDataAdditional[data.name](ent)
+			else Object.assign(ent.prototype, entityDataAdditional[data.name])
+		}
+		entityClassMap[data.name] = ent
+		entities.push(ent)
 	}
+	let {BlockEntity} = entityClassMap
 
 	/*entities[entities.length] = class EnderDragon extends Mob{
 		static name2 = "EnderDragon"
@@ -19591,201 +18717,7 @@ r 11 y  n  n  n
     }
   }
   
-  entities[entities.length] = class TextDisplay extends Entity{
-		static name2 = "TextDisplay"
-		constructor(x,y,z,text,size,color,background,glow) {
-      size = size || 1/2
-			super(x, y, z, 0, 0, 0, 0, 0, size, size, size, null,null, 0, 0)
-      this.gravityStength = 0
-      this.offsetZ = 0
-      this.offsetX = 0
-      this.facesPlayer = true
-      
-      this.vao = glExtensions.vertex_array_object.createVertexArrayOES()
-      this.buffer = gl.createBuffer()
-      this.setText(text)
-      this.color = color || [1,1,1]
-      this.background = background || [0,0,0,0]
-      this.glow = glow || false
-      this.size = size
-		}
-    setText(text){
-      if(userInfo ? userInfo.profanityFilter : true) for(var obj of Messages.remove){ //remove bad words
-        text = text.replace(obj.replace, obj.with)
-      }//if you change this, change the one in Messages.format
-
-			let textStr = text
-			text = Array.from(text)//split into unicode
-      let data = new Float32Array(text.length*32)
-      let lineData = []
-      let x = 0, y = 0
-      let lineW = []
-      let line = 0
-      let i = 0
-      let color = [0,0,0], colorSet = 0, bold = false, italic = false
-			const italicX = tan(14*Math.PI/180)
-			for (let idx = 0; idx<text.length; idx++) {
-        let l = text[idx]
-        if(l === "§"){
-					let code = text[idx+1]
-					if(code === "l"){
-						bold = true
-					}else if(code === "o"){
-						italic = true
-					}else if(code === "r"){
-						bold = false, italic = false
-						colorSet = 0
-					}else{
-						color = colors.rgb[code] || color
-						colorSet = 1
-					}
-          idx++
-          continue
-        }
-        if(l === "\n"){
-          x = 0
-          y -= 10/8//linegap = 2
-          line++
-          continue
-        }
-        
-        let coords = textCoords[bold ? "b"+l : l] || textCoords["\0"]
-				let coordsPixels = textCoordsPixels[bold ? "b"+l : l] || textCoordsPixels["\0"]
-        data[i] = x + (italic ? italicX*coordsPixels[3] : 0)
-        data[i+1] = y + coordsPixels[3]
-        data[i+2] = coords[0]
-        data[i+3] = coords[1]
-        data[i+4] = color[0]
-        data[i+5] = color[1]
-        data[i+6] = color[2]
-        data[i+7] = colorSet
-        
-        data[i+8] = x + coordsPixels[2] + (italic ? italicX*coordsPixels[3] : 0)
-        data[i+9] = y + coordsPixels[3]
-        data[i+10] = coords[0] + coords[2]
-        data[i+11] = coords[1]
-        data[i+12] = color[0]
-        data[i+13] = color[1]
-        data[i+14] = color[2]
-        data[i+15] = colorSet
-        
-        data[i+16] = x + coordsPixels[2]
-        data[i+17] = y
-        data[i+18] = coords[0] + coords[2]
-        data[i+19] = coords[1] + coords[3]
-        data[i+20] = color[0]
-        data[i+21] = color[1]
-        data[i+22] = color[2]
-        data[i+23] = colorSet
-        
-        data[i+24] = x
-        data[i+25] = y
-        data[i+26] = coords[0]
-        data[i+27] = coords[1] + coords[3]
-        data[i+28] = color[0]
-        data[i+29] = color[1]
-        data[i+30] = color[2]
-        data[i+31] = colorSet
-        
-        x += coordsPixels[2]
-        lineData[i/32] = line
-        lineW[line] = x
-        i += 32
-			}
-      for(i = 0; i<data.length; i+=8){
-        data[i] -= lineW[lineData[floor(i/32)]] / 2
-        data[i+1] -= y/2
-      }
-      
-      this.faces = i / 32
-      glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
-			gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
-			gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW)
-			gl.enableVertexAttribArray(glCache.aVertexText)
-			gl.enableVertexAttribArray(glCache.aTextureText)
-			gl.enableVertexAttribArray(glCache.aColorText)
-			gl.enableVertexAttribArray(glCache.aColorSetText)
-			gl.vertexAttribPointer(glCache.aVertexText, 2, gl.FLOAT, false, 32, 0)
-			gl.vertexAttribPointer(glCache.aTextureText, 2, gl.FLOAT, false, 32, 8)
-			gl.vertexAttribPointer(glCache.aColorText, 3, gl.FLOAT, false, 32, 16)
-			gl.vertexAttribPointer(glCache.aColorSetText, 1, gl.FLOAT, false, 32, 28)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
-      this.text = textStr
-    }
-		update() {
-      this.canFacePlayer = true
-			this.lastUpdate = now
-			this.previousX = this.x
-			this.previousY = this.y
-			this.previousZ = this.z
-		}
-    render(){
-      world.renderTextDisplay(this)
-    }
-		renderText() {
-      let diff = (now - this.lastUpdate) / tickTime
-			if (diff > 1) diff = 1
-      let renderx = (this.x - this.previousX) * diff + this.previousX
-			let rendery = (this.y - this.previousY) * diff + this.previousY
-			let renderz = (this.z - this.previousZ) * diff + this.previousZ
-      
-      if(this.canFacePlayer){
-        this.facePlayer()
-        this.canFacePlayer = false
-      }
-      
-			const offsetY = this.offsetY, offsetX = this.offsetX, offsetZ = this.offsetZ
-			const modelMatrix = new Matrix();
-			modelMatrix.identity()
-			modelMatrix.translate(renderx, rendery + offsetY, renderz)
-			modelMatrix.rotY(this.yaw)
-			modelMatrix.rotX(this.pitch)
-      modelMatrix.translate(0,0,offsetZ)
-			modelMatrix.scale(this.width, this.height, this.depth)
-      modelMatrix.translate(offsetX,0,0)
-			const viewMatrix = p.camera.transformation.elements
-			const proj = p.camera.projection
-			const projectionMatrix = [proj[0], 0, 0, 0, 0, proj[1], 0, 0, 0, 0, proj[2], proj[3], 0, 0, proj[4], 0]
-			const modelViewProjectionMatrix = new Matrix()
-			modelViewProjectionMatrix.identity()
-			modelViewProjectionMatrix.mult(projectionMatrix)
-			modelViewProjectionMatrix.mult(viewMatrix)
-			modelViewProjectionMatrix.mult(modelMatrix.elements)
-			// row major to column major
-			modelViewProjectionMatrix.transpose()
-			const x = round(this.x)
-			const y = round(this.y)
-			const z = round(this.z)
-			const blockLight = world.getLight(x, y, z, 1, this.dimension)
-			const skysLight = world.getLight(x, y, z, 0, this.dimension)
-			const lightLevel = min(max(skysLight * skyLight / 15, blockLight / 15), 1.0)
-			gl.uniform1i(glCache.uSamplerText, 9)
-      gl.uniform1i(glCache.glowText, this.glow)
-			gl.uniform1f(glCache.uLightLevelText, lightLevel)
-			gl.uniform1f(glCache.uLanternText, lantern - dist3(this.x,this.y,this.z, p.renderX,p.renderY,p.renderZ) / 10.0)
-      gl.uniform3f(glCache.colorText, ...this.color)
-      gl.uniform4f(glCache.backgroundText, ...this.background)
-      gl.uniform1f(glCache.brightnessText, brightness)
-			gl.uniformMatrix4fv(glCache.uViewText, false, modelViewProjectionMatrix.elements)
-			glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
-			gl.drawElements(gl.TRIANGLES, 6 * this.faces, gl.UNSIGNED_INT, 0)
-			glExtensions.vertex_array_object.bindVertexArrayOES(null)
-		}
-	}
-	let {entityOrder, entityIds} = win
-	let unorderedEntities = entities
-	entities = []
-	for(let i=0; i<unorderedEntities.length; i++){
-		if(unorderedEntities[i] === undefined){
-			continue
-		}
-		let ri = entityIds[unorderedEntities[i].name2]
-		entities[ri] = unorderedEntities[i]
-		entities[ri].prototype.entId = ri
-		entities[ri].prototype.type = entities[ri].name2
-		if(serverEntities[ri]) entities[ri].nameMcd = serverEntities[ri].nameMcd
-	}
+	let {entityIds} = win
 	console.log(entities.length,'entities and particles')
 	win.entities = entities
 
@@ -22176,7 +21108,7 @@ switch(name){
 			if(!objFormat && p.data[0] !== 0 || preBetaVersion) return this.posEntityOldBab(p, m, preBetaVersion)
 			let now = performance.now()
 			if(!objFormat) p = bitArrayToPacket(p,this.entityPacketType)
-			const entType = entityOrder[p.entId]
+			const entType = entities[p.entId].name2
 			let ent = this.getEntity(p.id)
 			if(ent){
 				if(entType === "TextDisplay" && ent.text !== p.text) ent.setText(p.text)
@@ -25003,7 +23935,7 @@ p.camera.transformation.elements.set(matrix)//*/
   let textureImageData //for drawing on canvas
   let textureImageCanvas
   let textureImageCtx
-  let textureSize = 256
+  let textureSize = 512
   let textureH = 4096
 	let initTextureProgress = 0
 	let setPixOffsetX
