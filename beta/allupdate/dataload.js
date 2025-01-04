@@ -121,7 +121,7 @@ function loadNamespaceBlocks(allData, namespace, {
 	}
 	function addFace(dataFace, shape, side, pos, normal, textureSelectors, rotation, texWidth=16, texHeight=16){
 		pos = pos.map(c => roundBits(c / 16 - 0.5))
-		if(rotation) rotateVerts[rotation.axis](pos, rotation.origin, rotation.angle*Math.PI/180, rotation.rescale)
+		if(rotation) rotateVerts[rotation.axis](pos, normal, [rotation.origin[0]/16-0.5, rotation.origin[1]/16-0.5, rotation.origin[2]/16-0.5], rotation.angle*Math.PI/180, rotation.rescale)
 		let minmax = compareArr(pos)
 		pos.max = minmax[1]
 		pos.min = minmax[0]
@@ -298,6 +298,7 @@ export function loadNamespaceEntityBe(allData, namespace, {
 	entityData,
 	shapes, textures
 }){
+	const nullOrigin = [0,0,0]
 	const elemFaces = {
 		up: {
 			dir: [0, 1, 0],
@@ -386,9 +387,12 @@ export function loadNamespaceEntityBe(allData, namespace, {
 		let entity = data.entity[name]
 		if(!entity) continue
 		let variantsBones = {}
+		let allTextures =Object.keys(entity.textures)
+		allTextures.idx = 0
 		for(let v in entity.textures){
 			let g = entity.geometry[v] || entity.geometry.default
-			if(g) variantsBones[v] = getShapeForVariant(shapes, fixResourceLocation(name)+":"+v, g, entity.textures[v])
+			if(g) variantsBones[v] = getShapeForVariant(shapes, fixResourceLocation(name)+":"+v, g, entity.textures[v], allTextures)
+			allTextures.idx++
 		}
 		entityData[i].variantsBones = variantsBones
 	}
@@ -407,7 +411,7 @@ export function loadNamespaceEntityBe(allData, namespace, {
 	function dot (a, b) {
 		return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 	}
-	function addFace(cube, shape, sideName, side, faceMult, texture, texWidth=16, texHeight=16){
+	function addFace(cube, shape, sideName, side, faceMult, texture, boneRot, allTextures, texWidth=64, texHeight=32){
 		let uv = cube.uv && cube.uv[sideName] ? cube.uv[sideName].uv : cube.uv
 		if(!uv) return
 		let pos = [], tex = []
@@ -415,8 +419,8 @@ export function loadNamespaceEntityBe(allData, namespace, {
 		let normal = [-dir[0],-dir[1],-dir[2]]
 		// loop from https://github.com/PrismarineJS/prismarine-viewer/blob/master/viewer/lib/entity/Entity.js
 		for (const cpos of corners) {
-      const u = (uv[0] + dot(cpos[3] ? u1 : u0, cube.size)) / texWidth
-      const v = (uv[1] + dot(cpos[4] ? v1 : v0, cube.size)) / texHeight
+      let u = (uv[0] + dot(cpos[3] ? u1 : u0, cube.size)) / texWidth
+      let v = (uv[1] + dot(cpos[4] ? v1 : v0, cube.size)) / texHeight - Math.floor(uv[1] / texHeight)
 			tex.push(u,v)
 
       const inflate = cube.inflate ? cube.inflate : 0
@@ -425,7 +429,18 @@ export function loadNamespaceEntityBe(allData, namespace, {
         (cube.origin[1] + cpos[1] * cube.size[1] + (cpos[1] ? inflate : -inflate)) / 16,
         (cube.origin[2] + cpos[2] * cube.size[2] + (cpos[2] ? inflate : -inflate)) / 16
       )
-			//todo rotate bone.rotation, cubeRotation
+		}
+		if(cube.rotation){
+			let origin = cube.origin ? [(cube.origin[0]+cube.size[0]/2)/16,(cube.origin[1]+cube.size[1]/2)/16,(cube.origin[2]+cube.size[2]/2)/16] : nullOrigin
+			if(cube.rotation[0]) rotateVerts.x(pos,normal,origin,cube.rotation[0]*Math.PI/180)
+			if(cube.rotation[1]) rotateVerts.y(pos,normal,origin,cube.rotation[1]*Math.PI/180)
+			if(cube.rotation[2]) rotateVerts.z(pos,normal,origin,cube.rotation[2]*Math.PI/180)
+		}
+		if(boneRot){
+			let origin = shape.pivot||nullOrigin
+			if(boneRot[0]) rotateVerts.x(pos,normal,origin,boneRot[0]*Math.PI/180)
+			if(boneRot[1]) rotateVerts.y(pos,normal,origin,boneRot[1]*Math.PI/180)
+			if(boneRot[2]) rotateVerts.z(pos,normal,origin,boneRot[2]*Math.PI/180)
 		}
 		let minmax = compareArr(pos)
 		pos.max = minmax[1]
@@ -435,7 +450,7 @@ export function loadNamespaceEntityBe(allData, namespace, {
 		shape.texVerts[side].push(tex)
 		shape.normal[side].push(normal)
 	}
-	function getShapeForVariant(shapes, shapePrefix, model, texture){
+	function getShapeForVariant(shapes, shapePrefix, model, texture, allTextures){
 		let bones = {}
 		texture = getTexture(texture)
 		for(let i=0; i<model.bones.length; i++){
@@ -447,15 +462,14 @@ export function loadNamespaceEntityBe(allData, namespace, {
 				attachChain: [], attached: bone.parent
 			}
 			let rot = bone.bind_pose_rotation || bone.rotation
-			let boneRotation = rot ? [rot[0]*Math.PI/180, rot[1]*Math.PI/180, rot[2]*Math.PI/180] : [0,0,0]
 			if(bone.cubes) for(let i=0; i<bone.cubes.length; i++){
 				let cube = bone.cubes[i]
-				addFace(cube, shape, "down", 0, elemFaces.down, texture, model.texturewidth, model.textureheight)
-				addFace(cube, shape, "up", 1, elemFaces.up, texture, model.texturewidth, model.textureheight)
-				addFace(cube, shape, "north", 2, elemFaces.north, texture, model.texturewidth, model.textureheight)
-				addFace(cube, shape, "south", 3, elemFaces.south, texture, model.texturewidth, model.textureheight)
-				addFace(cube, shape, "east", 4, elemFaces.east, texture, model.texturewidth, model.textureheight)
-				addFace(cube, shape, "west", 5, elemFaces.west, texture, model.texturewidth, model.textureheight)
+				addFace(cube, shape, "down", 0, elemFaces.down, texture, rot, allTextures, model.texturewidth, model.textureheight)
+				addFace(cube, shape, "up", 1, elemFaces.up, texture, rot, allTextures, model.texturewidth, model.textureheight)
+				addFace(cube, shape, "north", 2, elemFaces.north, texture, rot, allTextures, model.texturewidth, model.textureheight)
+				addFace(cube, shape, "south", 3, elemFaces.south, texture, rot, allTextures, model.texturewidth, model.textureheight)
+				addFace(cube, shape, "east", 4, elemFaces.east, texture, rot, allTextures, model.texturewidth, model.textureheight)
+				addFace(cube, shape, "west", 5, elemFaces.west, texture, rot, allTextures, model.texturewidth, model.textureheight)
 			}
 			for(let i=0; i<6; i++) shape.size += shape.verts[i].length
 			bones[bone.name] = shape
@@ -490,35 +504,44 @@ export function loadNamespaceEntityBe(allData, namespace, {
 
 let {sin,cos,max,min,abs} = Math
 const rotateVerts = {
-	x:function(elems,origin,rot,stretch){
+	x:function(pos,normal,origin,rot,stretch){
 		let s = sin(rot), c = cos(rot)
 		let a = 1/max(abs(s),abs(c))
-		for(let i=0; i<elems.length; i+=3){
-			let t1 = elems[i+1]-(origin[1]/16-0.5), t2 = elems[i+2]-(origin[2]/16-0.5)
+		for(let i=0; i<pos.length; i+=3){
+			let t1 = pos[i+1]-origin[1], t2 = pos[i+2]-origin[2]
 			if(stretch) t1 *= a, t2 *= a
-			elems[i+1] = t1 * c + t2 * s + (origin[1]/16-0.5)
-			elems[i+2] = t1 * -s + t2 * c + (origin[2]/16-0.5)
+			pos[i+1] = t1 * c + t2 * s + origin[1]
+			pos[i+2] = t1 * -s + t2 * c + origin[2]
 		}
+		let t1 = normal[1], t2 = normal[2]
+		normal[1] = t1 * c + t2 * s
+		normal[2] = t1 * -s + t2 * c
 	},
-	y:function(elems,origin,rot,stretch){
+	y:function(pos,normal,origin,rot,stretch){
 		let s = sin(rot), c = cos(rot)
 		let a = 1/max(abs(s),abs(c))
-		for(let i=0; i<elems.length; i+=3){
-			let t1 = elems[i+0]-(origin[0]/16-0.5), t2 = elems[i+2]-(origin[2]/16-0.5)
+		for(let i=0; i<pos.length; i+=3){
+			let t1 = pos[i+0]-origin[0], t2 = pos[i+2]-origin[2]
 			if(stretch) t1 *= a, t2 *= a
-			elems[i+0] = t1 * c + t2 * -s + (origin[0]/16-0.5)
-			elems[i+2] = t1 * s + t2 * c + (origin[2]/16-0.5)
+			pos[i+0] = t1 * c + t2 * -s + origin[0]
+			pos[i+2] = t1 * s + t2 * c + origin[2]
 		}
+		let t1 = normal[0], t2 = normal[2]
+		normal[0] = t1 * c + t2 * -s
+		normal[2] = t1 * s + t2 * c
 	},
-	z:function(elems,origin,rot,stretch){
+	z:function(pos,normal,origin,rot,stretch){
 		let s = sin(rot), c = cos(rot)
 		let a = 1/max(abs(s),abs(c))
-		for(let i=0; i<elems.length; i+=3){
-			let t1 = elems[i+0]-(origin[0]/16-0.5), t2 = elems[i+1]-(origin[1]/16-0.5)
+		for(let i=0; i<pos.length; i+=3){
+			let t1 = pos[i+0]-origin[0], t2 = pos[i+1]-origin[1]
 			if(stretch) t1 *= a, t2 *= a
-			elems[i+0] = t1 * c + t2 * s + (origin[0]/16-0.5)
-			elems[i+1] = t1 * -s + t2 * c + (origin[1]/16-0.5)
+			pos[i+0] = t1 * c + t2 * s + origin[0]
+			pos[i+1] = t1 * -s + t2 * c + origin[1]
 		}
+		let t1 = normal[0], t2 = normal[1]
+		normal[0] = t1 * c + t2 * s
+		normal[1] = t1 * -s + t2 * c
 	},
 }
 

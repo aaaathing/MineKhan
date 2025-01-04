@@ -14568,6 +14568,74 @@ r 11 y  n  n  n
     glExtensions.vertex_array_object.bindVertexArrayOES(null)
     return {vao, size}
   }
+	function generateVAOMultipleShape(shapes){
+		let blockSides = Object.keys(Block)
+		let texture = []
+		let index = 0
+		let normal = []
+		let size = 0
+		let verts = []
+		for(let i=0; i<shapes.length; i++){
+			let shape = shapes[i]
+			const shapeVerts = shape.verts
+			const shapeTexVerts = shape.texVerts
+			size += shape.size
+			const shapeNormal = shape.normal
+			for (let n = 0; n < 6; n++) {
+				let side = blockSides[n]
+				let directionalFaces = shapeVerts[n]
+				for (let facei = 0; facei < directionalFaces.length; facei++) {
+					let texShapeVerts = shapeTexVerts[n][facei]
+					let tx = 0, ty = 0, tw = 0, th = 0
+					if(texShapeVerts.texture){
+						let texVerts = textureCoords[textureMap[texShapeVerts.texture]]
+						tx = texVerts[0]
+						ty = texVerts[1]
+						tw = texVerts[2]-tx
+						th = texVerts[5]-ty
+					}
+					texture[index    ] = tx + texShapeVerts[0]*tw
+					texture[index + 1] = ty + texShapeVerts[1]*th
+					texture[index + 2] = tx + texShapeVerts[2]*tw
+					texture[index + 3] = ty + texShapeVerts[3]*th
+					texture[index + 4] = tx + texShapeVerts[4]*tw
+					texture[index + 5] = ty + texShapeVerts[5]*th
+					texture[index + 6] = tx + texShapeVerts[6]*tw
+					texture[index + 7] = ty + texShapeVerts[7]*th
+					index += 8
+					normal.push(...shapeNormal[n][facei],...shapeNormal[n][facei],...shapeNormal[n][facei],...shapeNormal[n][facei])
+				}
+			}
+			verts.push(shapeVerts)
+		}
+		const vao = glExtensions.vertex_array_object.createVertexArrayOES()
+		const verticesBuffer = gl.createBuffer()
+		const textureBuffer = gl.createBuffer()
+		const normalBuffer = gl.createBuffer()
+		vao.tHeVerticesBuffer = verticesBuffer
+		vao.tHeTextureBuffer = textureBuffer
+		vao.tHeNormalBuffer = normalBuffer
+		glExtensions.vertex_array_object.bindVertexArrayOES(vao)
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer)
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts.flat(Infinity)), gl.STATIC_DRAW)
+		gl.vertexAttribPointer(glCache.aVertexEntity, 3, gl.FLOAT, false, 0, 0)
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer)
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texture), gl.STATIC_DRAW)
+		gl.vertexAttribPointer(glCache.aTextureEntity, 2, gl.FLOAT, false, 0, 0)
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer)
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normal), gl.STATIC_DRAW)
+		gl.vertexAttribPointer(glCache.aNormalEntity, 3, gl.FLOAT, false, 0, 0)
+
+		gl.enableVertexAttribArray(glCache.aVertexEntity)
+		gl.enableVertexAttribArray(glCache.aTextureEntity)
+		gl.enableVertexAttribArray(glCache.aNormalEntity)
+    glExtensions.vertex_array_object.bindVertexArrayOES(null)
+    return {vao, size}
+  }
 	function generatParticleVAO(shape, textureX, textureY, textureW, textureH, cached){
     const shapeVerts = shape.verts
     const shapeTexVerts = shape.texVerts
@@ -15064,8 +15132,9 @@ r 11 y  n  n  n
 			if(this.nameText && (p.thirdPerson || this !== p.spectating && this !== p)) this.nameText.render()
 		}
 		setPartShapes(bones){
-			for(let i in bones){
-				let shape = bones[i]
+			if(!Array.isArray(bones)) bones = [bones]
+			for(let i in bones[0]){
+				let shape = bones[0][i]
 				if(!this.parts[shape.boneName]){
 					let x=0,y=0,z=0, rx=0,ry=0,rz=0
 					let w=1,h=1,d=1
@@ -15080,7 +15149,9 @@ r 11 y  n  n  n
 					}
 				}
 				let part = this.parts[shape.boneName]
-				let vao = generateVAO(shape)
+				let shapes = []
+				for(let b=0; b<bones.length; b++) shapes.push(bones[b][i])
+				let vao = generateVAOMultipleShape(shapes)
 				part.size = vao.size
 				part.vao = vao.vao
 			}
@@ -16010,6 +16081,7 @@ r 11 y  n  n  n
 			super(...arguments)
 			this.doInterpolate = true
 			this.offsetry = Math.PI
+			this.offsetY = -this.height*0.5
     }
     mobUpdate(now) {
       this.maxBurnBlock = this.maxDamageBlock = 0
@@ -16070,6 +16142,7 @@ r 11 y  n  n  n
 		walkRot = 0
 		update(){
       this.mobUpdate(now)
+			if(this.additionalUpdateClient) this.additionalUpdateClient()
 
       if(this.prevWalking !== this.walking){
         this.prevWalking = this.walking
@@ -16116,7 +16189,6 @@ r 11 y  n  n  n
 					this.parts.head.rx = this.parts.head.ry2 = 0
 				}
 			}
-			if(this.additionalUpdate) this.additionalUpdate()
 		}
     /*onhit(damage,remote, vx,vz, from){
       if(!remote) send({
@@ -16531,6 +16603,8 @@ r 11 y  n  n  n
 				this.buffer = gl.createBuffer()
 			}
 			setText(text){
+				if(!text) return this.text = text
+
 				if(userInfo ? userInfo.profanityFilter : true) for(var obj of Messages.remove){ //remove bad words
 					text = text.replace(obj.replace, obj.with)
 				}//if you change this, change the one in Messages.format
@@ -16642,9 +16716,12 @@ r 11 y  n  n  n
 				this.previousZ = this.z
 			}
 			render(){
+				if(!this.text) return
 				world.renderTextDisplay(this)
 			}
 			renderText() {
+				if(!this.text) return
+
 				let diff = (now - this.lastUpdate) / tickTime
 				if (diff > 1) diff = 1
 				let renderx = (this.x - this.previousX) * diff + this.previousX
@@ -16734,7 +16811,7 @@ r 11 y  n  n  n
 				}
 				if(this.fur !== this.prevFur){
 					this.prevFur = this.fur
-					this.setPartShapes(this.fur ? this.variantsBones.default : this.variantsBones.sheared)
+					this.setPartShapes(this.fur ? [this.variantsBones.default, this.variantsBones.sheared] : this.variantsBones.sheared)
 				}
 				this.tint = this.color
 			}
@@ -16743,14 +16820,14 @@ r 11 y  n  n  n
 			additionalUpdateClient(){
 				if(this.vely < 0 || this.liquid){
 					let rot = sin(((now - this.walkStart) / 125) * Math.PI) * Math.PI / 4 + Math.PI2
-					this.parts.leftWing.rz = rot
-					this.parts.rightWing.rz = -rot
+					this.parts.wing0.rz = rot
+					this.parts.wing1.rz = -rot
 				}else{
-					this.parts.leftWing.rz = this.parts.rightWing.rz = 0
+					this.parts.wing0.rz = this.parts.wing1.rz = 0
 				}
 			}
 		},
-		zombie:{
+		zombie:{//todo: it looks wrong
 			additionalUpdateClient(){
 				if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0, this.dimension)*skyLight > 11){
 					this.burnTimer += 0.2

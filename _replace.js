@@ -9,11 +9,10 @@ replace old blockStates
 add all blocks & items
 	item models
 craft
-models rotate (v.x, v.y, entity)
 add custom blockStates and shapes for them
 	fern, wall carpet, etc.
 add all entities
-	fix some textures (sheep)
+	fix some textures (z)
 	posEntity
 animated textures
 semi transparent textures

@@ -39118,9 +39118,9 @@ class World{ // aka trueWorld
 		[ent=>ent.mob,"includeIf",[
 			["harmEffect","number",6,1],["health","double"],["burning","boolean"],["burnTimer","double"],["oxygen","double"],["spinTarget","double"],
 			[ent=>ent.path,"includeIf",[["path","array",[null,"int"]]]],
-			[ent=>ent.type==="Sheep"||ent.type==="Spider","includeIf",[["fur","boolean"]]],
-			[ent=>ent.type==="Sheep","includeIf",[["wool","basicString"]]],
-			[ent=>ent.type==="Sheep"||ent.type==="Wolf","includeIf",[["color","array",[null,"number",8,255]]]],
+			[ent=>"fur" in ent,"includeIf",[["fur","boolean"]]],
+			[ent=>"wool" in ent,"includeIf",[["wool","basicString"]]],
+			[ent=>"color" in ent,"includeIf",[["color","array",[null,"number",8,255]]]],
 			["eating","boolean"],["target","basicString"],["tame","boolean"],["sitting","boolean"],["owner","string"],["holding","uint"],["attractedBy","basicString"],
 			[ent=>ent.type==="Creeper","includeIf",[["explodeAmount","byte"],["timerStartRelative","double"]]],
 			["attackCooldown","byte"],["effects","mapObject",[null,"object",[["level","byte"],["time","int"],["showParticles","boolean"]]]]
