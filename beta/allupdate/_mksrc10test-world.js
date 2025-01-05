@@ -1,7 +1,7 @@
 "use strict"
 import * as dataLoad from "./dataload.js"
 
-const version = "Beta 1.1.2"
+const version = "Beta 1.1.2.test-allupdate"
 let win, isNode = false
 try{
 	win = window
