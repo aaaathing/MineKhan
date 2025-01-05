@@ -451,12 +451,13 @@ export function loadNamespaceEntityBe(allData, namespace, {
 		shape.normal[side].push(normal)
 	}
 	function getShapeForVariant(shapes, shapePrefix, model, texture, allTextures){
-		let bones = {}
+		let bones = {}, bonesLowerCase = {}
 		texture = getTexture(texture)
 		for(let i=0; i<model.bones.length; i++){
 			let bone = model.bones[i]
 			let shape = {
 				verts:[[],[],[],[],[],[]], texVerts:[[],[],[],[],[],[]], normal:[[],[],[],[],[],[]], size:0,
+				hidden: bone.neverRender,
 				pivot: bone.pivot ? [bone.pivot[0]/16,bone.pivot[1]/16,bone.pivot[2]/16] : null,
 				boneName: bone.name,
 				attachChain: [], attached: bone.parent
@@ -473,15 +474,17 @@ export function loadNamespaceEntityBe(allData, namespace, {
 			}
 			for(let i=0; i<6; i++) shape.size += shape.verts[i].length
 			bones[bone.name] = shape
+			bonesLowerCase[bone.name.toLowerCase()] = shape
 			shapes[shapePrefix+":"+bone.name] = shape
 		}
 		for(let i in bones){
 			let bone = bones[i]
-			if(bone.parent){
+			if(bone.attached){
 				let bone2 = bone
-				while(bone2.parent){
-					bone2 = bones[bone2.parent]
-					bone.attachChain.push(bone2.name)
+				while(bone2.attached){
+					bone2 = bonesLowerCase[bone2.attached.toLowerCase()]
+					if(!bone2) break
+					bone.attachChain.push(bone2.boneName)
 				}
 				bone.attachChain.reverse()
 			}

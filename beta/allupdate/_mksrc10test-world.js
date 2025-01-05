@@ -214,9 +214,11 @@ function map(v, min, max, min2, max2){
 function mapFrom(v, min, max){
 	return (v - min) / (max - min)
 }
+win.mapFrom = mapFrom
 function mapClamped(v, min, max){
 	return Math.min(Math.max(((v - min) / (max - min)),0),1);
 }
+win.mapClamped = mapClamped
 function lerp(t, a, b) {
 	return a + t * (b - a);
 }
@@ -1017,6 +1019,31 @@ function getBlockState(id, blockStateObj){
 	return blockStateObj.values[ floor((id % blockStateObj.maxMult) / blockStateObj.minMult) ]
 }
 win.getBlockState = getBlockState
+
+function getBlockRotation(rot){
+	switch(rot){
+		case "north":
+			return 0
+		case "east":
+			return 1
+		case "south":
+			return 2
+		case "west":
+			return 3
+	}
+}
+function getRotationBlock(rot){
+	switch(rot){
+		case 0:
+			return "north"
+		case 1:
+			return "east"
+		case 2:
+			return "south"
+		case 3:
+			return "west"
+	}
+}
 
 //todo n: remove unused type & textures & shape specific textures, change those for mk only things
 const blockData = [
@@ -12303,13 +12330,13 @@ const blockData = [
 		item: true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			let pos = movePositionByFace(face,x,y,z)
-			let ent = new entities[entityIds.Skeleton](pos[0],pos[1],pos[2])
+			let ent = new entities[entityIds.skeleton](pos[0],pos[1],pos[2])
 			if(item.customName) ent.name = item.customName
 			world.addEntity(ent)
 			item.amount--
 		},
 		spawnMob: function(x,y,z,world){
-			world.addEntity(new entities[entityIds.Skeleton](x,y,z),false)
+			world.addEntity(new entities[entityIds.skeleton](x,y,z),false)
 		},
 		category:"items"
 	},
@@ -13892,7 +13919,58 @@ const blockData = [
 		blockStates: [{"name":"facing","values":["north","south","west","east"]},{"name":"half","values":["top","bottom"]},{"name":"shape","values":["straight","inner_left","inner_right","outer_left","outer_right"]},{"name":"waterlogged","values":[false,true]}],
 		hardness: 2,
 		blastResistance: 3,
-		material: "mineable/axe"
+		material: "mineable/axe",
+		copyFromProperties:["canStairConnect","flipFacing"],
+		useAs:function(x,y,z,block,face,world,rotate,flip){
+			return setBlockState(setBlockState(this.id,this.blockStatesMap.facing,rotate),this.blockStatesMap.half, flip?"top":"bottom")
+		},
+		canStairConnect(sourceBlock,otherBlock,isBack){
+			if(blockData[otherBlock].name !== this.name) return
+			let sourceRot = getBlockRotation(getBlockState(sourceBlock,this.blockStatesMap.facing))
+			let otherRot = getBlockRotation(getBlockState(otherBlock,this.blockStatesMap.facing))
+			let rotDiff = mod(sourceRot-otherRot,4)
+			if(rotDiff === 1) return 1
+			else if(rotDiff === 3) return -1
+		},
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			if(getBlockState(b,this.blockStatesMap.shape) !== "straight") return
+			let front, back //front is lower side
+			switch(getBlockState(b,this.blockStatesMap.facing)){
+				case "north":
+					front = world.getBlock(x,y,z-1)
+					back = world.getBlock(x,y,z+1)
+					break
+				case "south":
+					front = world.getBlock(x,y,z+1)
+					back = world.getBlock(x,y,z-1)
+					break
+				case "east":
+					front = world.getBlock(x-1,y,z)
+					back = world.getBlock(x+1,y,z)
+					break
+				case "west":
+					front = world.getBlock(x+1,y,z)
+					back = world.getBlock(x-1,y,z)
+					break
+			}
+			let connectBack = this.canStairConnect(b,back,true)
+			let connectFront = this.canStairConnect(b,front,false)
+			if(connectBack || connectFront) world.setTimeout(() => {
+				if(connectBack === 1) world.setBlock(x,y,z,this.flipFacing(false,setBlockState(b,this.blockStatesMap.shape,"outer_right")))
+				else if(connectBack === -1) world.setBlock(x,y,z,this.flipFacing(true,setBlockState(b,this.blockStatesMap.shape,"outer_left")))
+				else if(connectFront === 1) world.setBlock(x,y,z,this.flipFacing(false,setBlockState(b,this.blockStatesMap.shape,"inner_right")))
+				else if(connectFront === -1) world.setBlock(x,y,z,this.flipFacing(true,setBlockState(b,this.blockStatesMap.shape,"inner_left")))
+			},tickTime)
+		},
+		flipFacing:function(alt,block){
+			if((getBlockState(block,this.blockStatesMap.half) === "bottom") !== alt) return block
+			switch(getBlockState(block,this.blockStatesMap.facing)){
+				case "north": return setBlockState(block,this.blockStatesMap.facing,"south")
+				case "south": return setBlockState(block,this.blockStatesMap.facing,"north")
+				case "east": return setBlockState(block,this.blockStatesMap.facing,"west")
+				case "west": return setBlockState(block,this.blockStatesMap.facing,"east")
+			}
+		}
 	},
 	{
 		name:"paleOakSign",
@@ -13910,6 +13988,7 @@ const blockData = [
 		name:"cobblestoneStairs",
 		nameMcd:"cobblestone_stairs",
 		Name:"Cobblestone Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 6,
@@ -14485,6 +14564,7 @@ const blockData = [
 		name:"brickStairs",
 		nameMcd:"brick_stairs",
 		Name:"Brick Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 6,
@@ -14496,6 +14576,7 @@ const blockData = [
 		name:"stoneBrickStairs",
 		nameMcd:"stone_brick_stairs",
 		Name:"Stone Brick Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -14507,6 +14588,7 @@ const blockData = [
 		name:"mudBrickStairs",
 		nameMcd:"mud_brick_stairs",
 		Name:"Mud Brick Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 3,
@@ -14529,6 +14611,7 @@ const blockData = [
 		name:"netherBrickStairs",
 		nameMcd:"nether_brick_stairs",
 		Name:"Nether Brick Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 6,
@@ -14619,6 +14702,7 @@ const blockData = [
 		name:"sandstoneStairs",
 		nameMcd:"sandstone_stairs",
 		Name:"Sandstone Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 0.8,
 		blastResistance: 0.8,
@@ -14657,6 +14741,7 @@ const blockData = [
 		name:"spruceStairs",
 		nameMcd:"spruce_stairs",
 		Name:"Spruce Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 3,
@@ -14666,6 +14751,7 @@ const blockData = [
 		name:"birchStairs",
 		nameMcd:"birch_stairs",
 		Name:"Birch Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 3,
@@ -14675,6 +14761,7 @@ const blockData = [
 		name:"jungleStairs",
 		nameMcd:"jungle_stairs",
 		Name:"Jungle Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 3,
@@ -15029,6 +15116,7 @@ const blockData = [
 		name:"quartzStairs",
 		nameMcd:"quartz_stairs",
 		Name:"Quartz Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 0.8,
 		blastResistance: 0.8,
@@ -15053,6 +15141,7 @@ const blockData = [
 		name:"acaciaStairs",
 		nameMcd:"acacia_stairs",
 		Name:"Acacia Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 3,
@@ -15062,6 +15151,7 @@ const blockData = [
 		name:"cherryStairs",
 		nameMcd:"cherry_stairs",
 		Name:"Cherry Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 3,
@@ -15071,6 +15161,7 @@ const blockData = [
 		name:"darkOakStairs",
 		nameMcd:"dark_oak_stairs",
 		Name:"Dark Oak Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 3,
@@ -15080,6 +15171,7 @@ const blockData = [
 		name:"paleOakStairs",
 		nameMcd:"pale_oak_stairs",
 		Name:"Pale Oak Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 3,
@@ -15089,6 +15181,7 @@ const blockData = [
 		name:"mangroveStairs",
 		nameMcd:"mangrove_stairs",
 		Name:"Mangrove Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 3,
@@ -15098,6 +15191,7 @@ const blockData = [
 		name:"bambooStairs",
 		nameMcd:"bamboo_stairs",
 		Name:"Bamboo Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 3,
@@ -15107,6 +15201,7 @@ const blockData = [
 		name:"bambooMosaicStairs",
 		nameMcd:"bamboo_mosaic_stairs",
 		Name:"Bamboo Mosaic Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 3,
@@ -15116,6 +15211,7 @@ const blockData = [
 		name:"prismarineStairs",
 		nameMcd:"prismarine_stairs",
 		Name:"Prismarine Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -15127,6 +15223,7 @@ const blockData = [
 		name:"prismarineBrickStairs",
 		nameMcd:"prismarine_brick_stairs",
 		Name:"Prismarine Brick Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -15138,6 +15235,7 @@ const blockData = [
 		name:"darkPrismarineStairs",
 		nameMcd:"dark_prismarine_stairs",
 		Name:"Dark Prismarine Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -15566,6 +15664,7 @@ const blockData = [
 		name:"redSandstoneStairs",
 		nameMcd:"red_sandstone_stairs",
 		Name:"Red Sandstone Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 0.8,
 		blastResistance: 0.8,
@@ -15956,6 +16055,7 @@ const blockData = [
 		name:"purpurStairs",
 		nameMcd:"purpur_stairs",
 		Name:"Purpur Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -16789,6 +16889,7 @@ const blockData = [
 		name:"polishedGraniteStairs",
 		nameMcd:"polished_granite_stairs",
 		Name:"Polished Granite Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -16800,6 +16901,7 @@ const blockData = [
 		name:"smoothRedSandstoneStairs",
 		nameMcd:"smooth_red_sandstone_stairs",
 		Name:"Smooth Red Sandstone Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 6,
@@ -16811,6 +16913,7 @@ const blockData = [
 		name:"mossyStoneBrickStairs",
 		nameMcd:"mossy_stone_brick_stairs",
 		Name:"Mossy Stone Brick Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -16822,6 +16925,7 @@ const blockData = [
 		name:"polishedDioriteStairs",
 		nameMcd:"polished_diorite_stairs",
 		Name:"Polished Diorite Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -16833,6 +16937,7 @@ const blockData = [
 		name:"mossyCobblestoneStairs",
 		nameMcd:"mossy_cobblestone_stairs",
 		Name:"Mossy Cobblestone Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 6,
@@ -16844,6 +16949,7 @@ const blockData = [
 		name:"endStoneBrickStairs",
 		nameMcd:"end_stone_brick_stairs",
 		Name:"End Stone Brick Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 3,
 		blastResistance: 9,
@@ -16855,6 +16961,7 @@ const blockData = [
 		name:"stoneStairs",
 		nameMcd:"stone_stairs",
 		Name:"Stone Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -16866,6 +16973,7 @@ const blockData = [
 		name:"smoothSandstoneStairs",
 		nameMcd:"smooth_sandstone_stairs",
 		Name:"Smooth Sandstone Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 6,
@@ -16877,6 +16985,7 @@ const blockData = [
 		name:"smoothQuartzStairs",
 		nameMcd:"smooth_quartz_stairs",
 		Name:"Smooth Quartz Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 6,
@@ -16888,6 +16997,7 @@ const blockData = [
 		name:"graniteStairs",
 		nameMcd:"granite_stairs",
 		Name:"Granite Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -16899,6 +17009,7 @@ const blockData = [
 		name:"andesiteStairs",
 		nameMcd:"andesite_stairs",
 		Name:"Andesite Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -16910,6 +17021,7 @@ const blockData = [
 		name:"redNetherBrickStairs",
 		nameMcd:"red_nether_brick_stairs",
 		Name:"Red Nether Brick Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 6,
@@ -16921,6 +17033,7 @@ const blockData = [
 		name:"polishedAndesiteStairs",
 		nameMcd:"polished_andesite_stairs",
 		Name:"Polished Andesite Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -16932,6 +17045,7 @@ const blockData = [
 		name:"dioriteStairs",
 		nameMcd:"diorite_stairs",
 		Name:"Diorite Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -17308,6 +17422,7 @@ const blockData = [
 		name:"crimsonStairs",
 		nameMcd:"crimson_stairs",
 		Name:"Crimson Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 3,
@@ -17317,6 +17432,7 @@ const blockData = [
 		name:"warpedStairs",
 		nameMcd:"warped_stairs",
 		Name:"Warped Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 3,
@@ -17393,6 +17509,7 @@ const blockData = [
 		name:"blackstoneStairs",
 		nameMcd:"blackstone_stairs",
 		Name:"Blackstone Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -17437,6 +17554,7 @@ const blockData = [
 		name:"polishedBlackstoneBrickStairs",
 		nameMcd:"polished_blackstone_brick_stairs",
 		Name:"Polished Blackstone Brick Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -17459,6 +17577,7 @@ const blockData = [
 		name:"polishedBlackstoneStairs",
 		nameMcd:"polished_blackstone_stairs",
 		Name:"Polished Blackstone Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 2,
 		blastResistance: 6,
@@ -17791,6 +17910,7 @@ const blockData = [
 		name:"tuffStairs",
 		nameMcd:"tuff_stairs",
 		Name:"Tuff Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -17834,6 +17954,7 @@ const blockData = [
 		name:"polishedTuffStairs",
 		nameMcd:"polished_tuff_stairs",
 		Name:"Polished Tuff Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -17887,6 +18008,7 @@ const blockData = [
 		name:"tuffBrickStairs",
 		nameMcd:"tuff_brick_stairs",
 		Name:"Tuff Brick Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 1.5,
 		blastResistance: 6,
@@ -18057,6 +18179,7 @@ const blockData = [
 		name:"oxidizedCutCopperStairs",
 		nameMcd:"oxidized_cut_copper_stairs",
 		Name:"Oxidized Cut Copper Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 3,
 		blastResistance: 6,
@@ -18068,6 +18191,7 @@ const blockData = [
 		name:"weatheredCutCopperStairs",
 		nameMcd:"weathered_cut_copper_stairs",
 		Name:"Weathered Cut Copper Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 3,
 		blastResistance: 6,
@@ -18079,6 +18203,7 @@ const blockData = [
 		name:"exposedCutCopperStairs",
 		nameMcd:"exposed_cut_copper_stairs",
 		Name:"Exposed Cut Copper Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 3,
 		blastResistance: 6,
@@ -18090,6 +18215,7 @@ const blockData = [
 		name:"cutCopperStairs",
 		nameMcd:"cut_copper_stairs",
 		Name:"Cut Copper Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 3,
 		blastResistance: 6,
@@ -18225,6 +18351,7 @@ const blockData = [
 		name:"waxedOxidizedCutCopperStairs",
 		nameMcd:"waxed_oxidized_cut_copper_stairs",
 		Name:"Waxed Oxidized Cut Copper Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 3,
 		blastResistance: 6,
@@ -18236,6 +18363,7 @@ const blockData = [
 		name:"waxedWeatheredCutCopperStairs",
 		nameMcd:"waxed_weathered_cut_copper_stairs",
 		Name:"Waxed Weathered Cut Copper Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 3,
 		blastResistance: 6,
@@ -18247,6 +18375,7 @@ const blockData = [
 		name:"waxedExposedCutCopperStairs",
 		nameMcd:"waxed_exposed_cut_copper_stairs",
 		Name:"Waxed Exposed Cut Copper Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 3,
 		blastResistance: 6,
@@ -18258,6 +18387,7 @@ const blockData = [
 		name:"waxedCutCopperStairs",
 		nameMcd:"waxed_cut_copper_stairs",
 		Name:"Waxed Cut Copper Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 3,
 		blastResistance: 6,
@@ -18737,6 +18867,7 @@ const blockData = [
 		name:"cobbledDeepslateStairs",
 		nameMcd:"cobbled_deepslate_stairs",
 		Name:"Cobbled Deepslate Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 3.5,
 		blastResistance: 6,
@@ -18770,6 +18901,7 @@ const blockData = [
 		name:"polishedDeepslateStairs",
 		nameMcd:"polished_deepslate_stairs",
 		Name:"Polished Deepslate Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 3.5,
 		blastResistance: 6,
@@ -18803,6 +18935,7 @@ const blockData = [
 		name:"deepslateTileStairs",
 		nameMcd:"deepslate_tile_stairs",
 		Name:"Deepslate Tile Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 3.5,
 		blastResistance: 6,
@@ -18836,6 +18969,7 @@ const blockData = [
 		name:"deepslateBrickStairs",
 		nameMcd:"deepslate_brick_stairs",
 		Name:"Deepslate Brick Stairs",
+		copyPropertiesHere:"oakStairs",
 		blockStates: "oakStairs",
 		hardness: 3.5,
 		blastResistance: 6,
@@ -24884,7 +25018,7 @@ let packetTypes = [
 	["saveProg",["data","basicString"]],
 	["canSendPos"],
 	["setTags",["x","int"],["y","int"],["z","int"],packetDimension,["data","json"],["lazy","boolean"]],
-	["serverChangeBlock",["x","int"],["y","int"],["z","int"],packetDimension,["place","boolean"],packetFace,["shift","boolean"],["blockMode","uint"],["rotate",...packetFace.slice(1)],["flip","uint"]],
+	["serverChangeBlock",["x","int"],["y","int"],["z","int"],packetDimension,["place","boolean"],packetFace,["shift","boolean"],["blockMode","uint"],["rotate",...packetFace.slice(1)],["flip","boolean"]],
 	["entityPos",["data","bitArray"]],
 	["entityDelete",["id","basicString"]],
 	["entityPosAll", ["data","array",[null,"bitArray"]]],
@@ -25773,7 +25907,7 @@ function initBlockDataShapes(){
 		var block = world.getBlock(x,y,z)
 		var tags = {sign:true}
 		var rot = round(player.ry*16/Math.PId)
-		if((block & STAIR) === STAIR) rot = round(rot/4)*4
+		if(!blockData[block].useAsWall) rot = round(rot/4)*4
 		tags.rot = rot
 		world.setTags(x,y,z,tags)
 	}
@@ -30813,8 +30947,10 @@ const entityData = [//todo n: do after initialize blockIds
 		minFollowDist: 8,
 		maxFollowDist: 16,
 		detectionDist: 16,
-		holding: blockIds.bow,
 		maxAttackCooldown: 20,
+		onspawn(){
+			this.holding = blockIds.bow
+		},
 		additionalAI(){
 			if(blockData[this.holding].name === "bow" && this.targetEnt && this.attackCooldown <= 0){
 				let vx = this.targetEnt.x - this.x, vy = this.targetEnt.y - this.y, vz = this.targetEnt.z - this.z
@@ -31065,7 +31201,7 @@ const entityData = [//todo n: do after initialize blockIds
 		}
 	},
 	{
-		name:"smallFireball",
+		name:"SmallFireball",
 		nameMcd:"small_fireball",
 		Name:"Small Fireball",
 		type: "projectile",
@@ -38901,7 +39037,7 @@ class World{ // aka trueWorld
 			if(holding && blockData[holding].useAs){
 	      let useAs = blockData[holding].useAs
 	      if(typeof useAs === "function"){
-	        useAs = useAs(x,y,z,cblock,face,this[dimension])
+	        useAs = blockData[holding].useAs(x,y,z,cblock,face,this[dimension],rotate,flip)
 	        if(typeof useAs === "string" && blockIds[useAs]){
 	          holding = blockIds[useAs]
 	        }else holding = useAs
@@ -42481,46 +42617,6 @@ class WorldDimension{
 			blockData[block].onpowerupdate(x,y,z,sx,sy,sz, blockPowerChanged,this)
 		}
 	}
-	getBlockRotation(block){
-		switch(block&ROTATION){
-			case NORTH:
-				return 0
-			case EAST:
-				return 1
-			case SOUTH:
-				return 2
-			case WEST:
-				return 3
-		}
-	}
-	getRotationBlock(rot){
-		switch(rot){
-			case 0:
-				return NORTH
-			case 1:
-				return EAST
-			case 2:
-				return SOUTH
-			case 3:
-				return WEST
-		}
-	}
-	canStairConnect(sourceBlock,otherBlock,isBack){
-		if((sourceBlock&FLIP) !== (otherBlock&FLIP)) return
-		let sourceRot = this.getBlockRotation(sourceBlock)
-		let otherRot = this.getBlockRotation(otherBlock)
-		let rotDiff = mod(sourceRot-otherRot,4)
-		if((otherBlock&isState) === STAIR){
-			if(rotDiff === 1) return 1
-			else if(rotDiff === 3) return -1
-		}else if((otherBlock&isState) === CORNERSTAIRIN){
-			if(rotDiff === 0 && isBack || rotDiff === 1 && !isBack) return 1
-			else if(rotDiff === 3 && isBack || rotDiff === 2 && !isBack) return -1
-		}else if((otherBlock&isState) === CORNERSTAIROUT){
-			if(rotDiff === 1 && isBack || rotDiff === 0 && !isBack) return 1
-			else if(rotDiff === 2 && isBack || rotDiff === 3 && !isBack) return -1
-		}
-	}
 	setTimeout(func,time,x,y,z,block){
 		let exist
 		if(x || x === 0) for(let i = this.timeoutQueue.length-1; i>=0; i--){
@@ -42543,34 +42639,6 @@ class WorldDimension{
 	doBlockUpdate(x,y,z,sx,sy,sz){
 		let block = this.getBlock(x,y,z)
 		if(blockData[block].onupdate) blockData[block].onupdate(x,y,z,block,this,sx,sy,sz)
-		else if((block & isState) === STAIR && blockData[block].shape.varients.includes(shapes.stair)){//stair corner update
-			let front, back //front is lower side
-			switch(block&ROTATION){
-				case NORTH:
-					front = this.getBlock(x,y,z-1)
-					back = this.getBlock(x,y,z+1)
-					break
-				case SOUTH:
-					front = this.getBlock(x,y,z+1)
-					back = this.getBlock(x,y,z-1)
-					break
-				case EAST:
-					front = this.getBlock(x-1,y,z)
-					back = this.getBlock(x+1,y,z)
-					break
-				case WEST:
-					front = this.getBlock(x+1,y,z)
-					back = this.getBlock(x-1,y,z)
-					break
-			}
-			let connectBack = this.canStairConnect(block,back,true)
-			let connectFront = this.canStairConnect(block,front,false)
-			if(connectBack || connectFront) this.setTimeout(() => {
-				if(connectBack === -1 || connectFront === -1) block = block&(~ROTATION) | this.getRotationBlock(mod(this.getBlockRotation(block)+1,4))
-				if(connectBack) this.setBlock(x,y,z,(block&(~isState))|CORNERSTAIROUT)
-				else if(connectFront) this.setBlock(x,y,z,(block&(~isState))|CORNERSTAIRIN)
-			},tickTime)
-		}
 	}
 	getTop(x,z){
 		let chunk = this.getChunk(x,z)

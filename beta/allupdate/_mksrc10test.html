@@ -11999,12 +11999,27 @@ return//*/
 			send({type:"place",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2], cx: (p.direction.x*hitBox.closest-(hitBox.pos[0]-round(p.x))), cy: (p.direction.y*hitBox.closest-(hitBox.pos[1]-round(p.y))), cz: (p.direction.z*hitBox.closest-(hitBox.pos[2]-round(p.z))) })
 			return
 		}
+
+		let rotate, flip = false
+		let pi = Math.PI / 4
+		if (p.ry <= pi) {
+			rotate = "north"
+		}else if (p.ry < 3 * pi) {
+			rotate = "west"
+		} else if (p.ry < 5 * pi) {
+			rotate = "south"
+		} else if (p.ry < 7 * pi) {
+			rotate = "east"
+		}else rotate = "north"
+		if (hitBox.face !== "top" && (hitBox.face === "bottom" || (p.direction.y * hitBox.closest + p.y+p.cOffsetY) % 1 < 0.5)) {
+			flip = true
+		}
     
     let adjholding = holding
     if(adjholding && pos && blockData[adjholding].useAs){
       var useAs = blockData[adjholding].useAs
       if(typeof useAs === "function"){
-        useAs = useAs(x,y,z,cblock,face)
+        useAs = blockData[adjholding].useAs(x,y,z,cblock,face,world,rotate,flip)
         if(typeof useAs === "string" && blockIds[useAs]){
           adjholding = blockIds[useAs]
         }else adjholding = useAs
@@ -12016,20 +12031,6 @@ return//*/
 		try{
 		
 		let mode = adjholding < isCube && !blockData[adjholding].item ? blockMode : 0
-		let rotate = 0, flip = 0
-		let pi = Math.PI / 4
-		if (p.ry <= pi) {
-			rotate = "north"
-		}else if (p.ry < 3 * pi) {
-			rotate = "west"
-		} else if (p.ry < 5 * pi) {
-			rotate = "south"
-		} else if (p.ry < 7 * pi) {
-			rotate = "east"
-		}
-		if (hitBox.face !== "top" && (hitBox.face === "bottom" || (p.direction.y * hitBox.closest + p.y+p.cOffsetY) % 1 < 0.5)) {
-			flip = FLIP
-		}
 		let predictBlock = adjholding|mode
 		let shape = adjholding && blockData[predictBlock].shape
 		//if (shape && shape.rotate) predictBlock |= rotate//todo n
@@ -15150,10 +15151,15 @@ r 11 y  n  n  n
 				}
 				let part = this.parts[shape.boneName]
 				let shapes = []
-				for(let b=0; b<bones.length; b++) shapes.push(bones[b][i])
-				let vao = generateVAOMultipleShape(shapes)
-				part.size = vao.size
-				part.vao = vao.vao
+				for(let b=0; b<bones.length; b++){
+					if(!bones[b][i].hidden) shapes.push(bones[b][i])
+				}
+				if(shapes.length){
+					part.hidden = false
+					let vao = generateVAOMultipleShape(shapes)
+					part.size = vao.size
+					part.vao = vao.vao
+				}else part.hidden = true
 			}
 		}
     addPart(name,size,vao,x,y,z,w,h,d,rx,ry,rz = 0,attached = null,glow = false){
@@ -15202,6 +15208,7 @@ r 11 y  n  n  n
 				for(let partName of part.attachChain){
 					let part2 = this.parts[partName]
 					modelMatrix.translate(part2.x, part2.y, part2.z)
+					if(part2.pivot) modelMatrix.translate(part2.pivot[0], part2.pivot[1], part2.pivot[2])
 					prevYaw = part2.pry
 					if(part2.ry - prevYaw > Math.PI) prevYaw += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
 					if(part2.ry - prevYaw < -Math.PI) prevYaw -= Math.PId
@@ -15209,6 +15216,7 @@ r 11 y  n  n  n
 					if(part2.ry2) modelMatrix.rotY(lerp(diff,part2.pry2,part2.ry2))
 					modelMatrix.rotX(lerp(diff,part2.prx,part2.rx))
 					modelMatrix.rotY(lerp(diff,prevYaw,part2.ry))
+					if(part2.pivot) modelMatrix.translate(-part2.pivot[0], -part2.pivot[1], -part2.pivot[2])
 				}
 			}
 			modelMatrix.translate(part.x, part.y, part.z)
@@ -16117,7 +16125,7 @@ r 11 y  n  n  n
       }
 			if(this.prevHolding !== this.holding){
 				this.prevHolding = this.holding
-				if(this.updateHolding) this.updateHolding()
+				this.updateHolding()
 			}
 			if(this.prevName !== this.name){
 				this.prevName = this.name
@@ -16163,6 +16171,29 @@ r 11 y  n  n  n
       if(this.parts.leftLeg) this.parts.leftLeg.rx = this.walkRot
       if(this.parts.rightLeg) this.parts.rightLeg.rx = -this.walkRot
 
+			const holdRot = Math.PI / -10
+			let armRot = (sin((now - this.spawn) / 1000) / 2 + 0.5) * Math.PI / 40
+			let leftArm = this.parts.leftArm || this.parts.leftarm || this.parts.arm0
+			let rightArm = this.parts.rightArm || this.parts.rightarm || this.parts.arm1
+			if(leftArm) leftArm.rz = armRot
+			if(rightArm) rightArm.rz = -armRot
+			if(leftArm && rightArm){
+				if(this.targetEnt){
+					if(blockData[this.holding].name === "bow"){
+						leftArm.rx = Math.PI2
+						leftArm.ry2 = Math.PI4
+						rightArm.rx = Math.PI2
+					}else if(blockData[this.holding].spyglass){
+						rightArm.rx = Math.PI2+holdRot
+					}else{
+						leftArm.rx = rightArm.rx = Math.PI2
+					}
+				}else{
+					leftArm.rx = this.walkRot
+					rightArm.rx = -this.walkRot
+				}
+			}
+
 			if(this.parts.head){
 				if(this.targetEnt || this.attractEnt){
 					let {x,y,z} = this.targetEnt || this.attractEnt
@@ -16188,6 +16219,51 @@ r 11 y  n  n  n
 					if(this.parts.head.ry - this.parts.head.pry < -Math.PI) this.parts.head.pry -= Math.PId
 					this.parts.head.rx = this.parts.head.ry2 = 0
 				}
+			}
+		}
+		updateHolding(){
+			let part = this.parts.rightItem
+			if(!part) return
+			let v = generateBlockVAO(this.holding)
+			part.vao = v.vao
+			part.size = v.size
+			let pix = 1 / 16
+			const holdRot = Math.PI / -10
+			if(blockData[this.holding].tool){
+				part.x = 0
+				part.y = pix*-12
+				part.z = pix*6
+				part.w = part.h = part.d = 1
+				part.rx = Math.PI / 1.25
+				part.ry = Math.PI * -0.5
+			}else if(blockData[this.holding].name === "bow"){
+				part.x = 0
+				part.y = pix*-12
+				part.z = pix*12
+				part.w = part.h = part.d = 1
+				part.rx = Math.PI / 1.25
+				part.ry = Math.PI * -0.5
+			}else if(blockData[this.holding].spyglass){
+				part.x = pix*2
+				part.y = pix*-10
+				part.z = 0
+				part.w = part.h = part.d = 1
+				part.rx = -holdRot
+				part.ry = 0
+			}else if(blockData[this.holding].item){
+				part.x = -pix*6
+				part.y = 0//pix*-11
+				part.z = pix*12
+				part.w = part.h = part.d = 0.5
+				part.rx = Math.PI2
+				part.ry = 0
+			}else if(this.holding){
+				part.x = 0
+				part.y = pix*12
+				part.z = 0//pix*3
+				part.w = part.h = part.d = 0.25
+				part.rx = 0
+				part.ry = Math.PI / 4
 			}
 		}
     /*onhit(damage,remote, vx,vz, from){
@@ -16835,51 +16911,6 @@ r 11 y  n  n  n
 			}
 		},
 		skeleton:{
-			updateHolding(){//todo n: update holding
-				let part = this.parts.holding
-				let v = generateBlockVAO(this.holding)
-				part.vao = v.vao
-				part.size = v.size
-				let pix = 1 / 16
-				if(blockData[this.holding].tool){
-					part.x = 0
-					part.y = pix*-12
-					part.z = pix*6
-					part.w = part.h = part.d = 1
-					part.rx = Math.PI / 1.25
-					part.ry = Math.PI * -0.5
-				}else if(blockData[this.holding].name === "bow"){
-					part.x = 0
-					part.y = pix*-12
-					part.z = 0
-					part.w = part.h = part.d = 1
-					part.rx = Math.PI / 1.25
-					part.ry = Math.PI * -0.5
-				}else if(blockData[this.holding].spyglass){
-					part.x = pix*2
-					part.y = pix*-10
-					part.z = 0
-					part.w = part.h = part.d = 1
-					part.rx = -this.holdRot
-					part.ry = 0
-				}else if(blockData[this.holding].item){
-					part.x = 0
-					part.y = pix*-11
-					part.z = pix*4
-					part.w = part.h = part.d = 0.5
-					part.rx = Math.PI2
-					part.ry = 0
-				}else if(this.holding){
-					part.x = 0
-					part.y = pix*-12
-					part.z = pix*3
-					part.w = part.h = part.d = 0.25
-					part.rx = 0
-					part.ry = Math.PI / 4
-				}else{
-					this.parts.rightArm.rx = 0
-				}
-			},
 			additionalUpdateClient(){
 				if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0, this.dimension)*skyLight > 11){
 					this.burnTimer += 0.2
@@ -16938,27 +16969,28 @@ r 11 y  n  n  n
 			}
 		},
 		blaze:{
-			putThingy(layer,n,speed,size){
-				let part = this.parts["thingy"+layer+"_"+n]
+			putThingy(n,speed,size){
+				let part = this.parts["upperBodyParts"+n]
 				let where = (now-this.spawn)/speed+n/2
 				part.x = sin(where*Math.PI)*size
+				part.y = -6/16
 				part.z = cos(where*Math.PI)*size
 			},
 			additionalUpdateClient(){
 				if(this.burnTimer) this.burnTimer = 0
 
-				this.putThingy(1,0,1000,0.5)
-				this.putThingy(1,1,1000,0.5)
-				this.putThingy(1,2,1000,0.5)
-				this.putThingy(1,3,1000,0.5)
-				this.putThingy(2,0,-750,0.375)
-				this.putThingy(2,1,-750,0.375)
-				this.putThingy(2,2,-750,0.375)
-				this.putThingy(2,3,-750,0.375)
-				this.putThingy(3,0,500,0.25)
-				this.putThingy(3,1,500,0.25)
-				this.putThingy(3,2,500,0.25)
-				this.putThingy(3,3,500,0.25)
+				this.putThingy(0,1000,0.5)
+				this.putThingy(1,1000,0.5)
+				this.putThingy(2,1000,0.5)
+				this.putThingy(3,1000,0.5)
+				this.putThingy(4,-750,0.375)
+				this.putThingy(5,-750,0.375)
+				this.putThingy(6,-750,0.375)
+				this.putThingy(7,-750,0.375)
+				this.putThingy(8,500,0.25)
+				this.putThingy(9,500,0.25)
+				this.putThingy(10,500,0.25)
+				this.putThingy(11,500,0.25)
 			}
 		},
 		itemFrame: itemFrame => class extends itemFrame{

@@ -12,8 +12,9 @@ craft
 add custom blockStates and shapes for them
 	fern, wall carpet, etc.
 add all entities
-	fix some textures (z)
+	fix some textures (skel. holding not show)
 	posEntity
+	entity drops (it undefined because blockIds not initialized yet)
 animated textures
 semi transparent textures
 remove unused textures & shapes & properties
@@ -21,7 +22,6 @@ remove unused textures & shapes & properties
 	propeties include: shadow, more...
 new save format using block names and block state names
 sounds
-stair (set shape on place and update)
 */
 	// CUBE|SLAB|STAIR|CROSS|TALLCROSS|DOOR|TORCH|LANTERN|LANTERNHANG|BEACON|CACTUS|PANE|PORTAL|WALLFLAT|TRAPDOOR|TRAPDOOROPEN|FENCE|WALLPOST|BUTTON|CHAIN|POT|POTCROSS|CORNERSTAIRIN|CORNERSTAIROUT|VERTICALSLAB|LAYER1|LAYER2|LAYER3|LAYER4|LAYER5|LAYER6|LAYER7|LAYER8|FLIP|NORTH|SOUTH|EAST|WEST|ROTATION|isCube|isState
 	// name:.*?wall

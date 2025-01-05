@@ -1,3 +1,4 @@
+// node public/minekhan/beta/allupdate/mcdata-convert.js
 const html=`
 <!doctype html>
 <meta charset="utf-8">
@@ -159,20 +160,20 @@ function encodeImage(data, width, height, quality = 1) {
 	return str
 }
 let canv=document.createElement("canvas"),ctx=canv.getContext("2d")
-function doEncode(str){
+let imgEl=new Image
+function doEncode(str, actualW,actualH){
 	return new Promise((res,rej)=>{
-		let img=new Image
-		img.onload=()=>{
-			canv.width=img.width
-			canv.height=img.height
-			ctx.drawImage(img,0,0)
-			res(encodeImage(ctx.getImageData(0,0,img.width,img.height).data,img.width,img.height))
+		imgEl.onload=()=>{
+			canv.width = actualW ?? imgEl.width
+			canv.height = actualH ?? imgEl.height
+			ctx.drawImage(imgEl,0,0)
+			res(encodeImage(ctx.getImageData(0,0,imgEl.width,imgEl.height).data,imgEl.width,imgEl.height))
 		}
-		img.onerror=()=>{
+		imgEl.onerror=()=>{
 			console.error(str)
 			rej()
 		}
-		img.src=str
+		imgEl.src=str
 	})
 }
 
@@ -243,8 +244,7 @@ for(let i in ent){
 	let entity = ent[i]
 	for(let v in entity.textures){
 		let path = entity.textures[v].split(":").pop().split("/")
-		if(entity.textures[v])
-		if(path[0]==="textures"){
+		if(entity.textures[v] && path[0]==="textures"){
 			path.shift()
 			let img="/"+path.join("/")
 			let t
@@ -257,6 +257,8 @@ for(let i in ent){
 				}
 			}
 			setProp(path,etex, t)
+			let g=entity.geometry[v]
+			if(g&&g.texturewidth)g.texturewidth=imgEl.width,g.textureheight=imgEl.height
 		}
 	}
 }
