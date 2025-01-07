@@ -7037,13 +7037,13 @@ Division: //
 		return Messages.span.innerHTML
 	}
 	
-	const HTMLSafeElements = new Set(["h1","h2","h3","h4","h5","h6","p","img","video","audio","a","ul","ol","li","pre","code","br","b","i","big","center","small","span","strike","strong","sub","sup","table","tbody","td","tfoot","th","thead","tr","hr","button"])
-  const HTMLSafeAttributes = new Set(["align","alt","width","height","href","src","media","title","style","target","controls","loop"])
+	const HTMLSafeElements = new Set(["h1","h2","h3","h4","h5","h6","p","img","video","audio","a","ul","ol","li","pre","code","br","b","i","big","center","small","span","strike","strong","sub","sup","table","tbody","td","tfoot","th","thead","tr","hr","button","details","summary","div","blockquote","q"])
+	const HTMLSafeAttributes = new Set(["align","alt","width","height","href","src","media","title","style","target","controls","loop"])
 	const HTMLEvalAttributes = new Set(["onclick","onmousemove","onmousedown","onmouseup","onmouseover","onmouseout","onmouseenter","onmouseleave","onmousewheel","onwheel"])
 	let safeTemplate = document.createElement("template")
 	function makeHTMLSafeElement(el,attrcb,elcb){
 		if(elcb && elcb(el)) return
-		for(let c of el.children){
+		for(let c of Array.from(el.children)){
 			if(!HTMLSafeElements.has(c.tagName.toLowerCase())){
 				c.remove()
 				continue
