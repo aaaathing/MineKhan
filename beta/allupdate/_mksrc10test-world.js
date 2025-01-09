@@ -39717,9 +39717,12 @@ class World{ // aka trueWorld
 		}
 	}
 	tickUpdates(world,now){
+		let toUpdate = []
 		for(let i = world.timeoutQueue.length-1; i>=0; i--){
-			if(now - world.timeoutQueue[i].time >= 0) world.timeoutQueue.splice(i,1)[0].func()
+			if(now - world.timeoutQueue[i].time >= 0) toUpdate.push(world.timeoutQueue.splice(i,1)[0])
 		}
+		for(let i=0; i<toUpdate.length; i++) toUpdate[i].func()
+		
 		for(let i=0; i<world.updateQueue.length; i+=6){
 			let x = world.updateQueue[i]
 			let y = world.updateQueue[i+1]
