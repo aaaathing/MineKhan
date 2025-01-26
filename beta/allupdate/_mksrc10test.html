@@ -7415,14 +7415,14 @@ Division: //
 			this.highlightLastCmd = null
 			this.hilight(tree,arr)
 			let overlay = ""
-			overlay += value.substring(0, arr[1])
+			overlay += sanitize(value.substring(0, arr[1]))
 			for(let i=0; i<arr.length; i+=2){
 				if(arr[i]){
 					overlay += "<span style='"+arr[i]+"'>"
 				}else{
 					overlay += "</span>"
 				}
-				overlay += value.substring(arr[i+1], arr[i+3])
+				overlay += sanitize(value.substring(arr[i+1], arr[i+3]))
 			}
 			/*if(!(0 in arr)){
 				overlay += value.substring(0)
