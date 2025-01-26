@@ -28805,7 +28805,7 @@ class Player extends Entity{
 		if(!inv) inv = this.world.world.playersInv[this.host ? ":host" : this.username] = {}
 		inv.survivStr = this.world.world.getSurvivStr(this).array
 		inv.inv = this.world.world.getInv(this).array
-		inv.version = this.world.world.version
+		inv.version = version //this.world.world.version
 	}
 	addAchievment(name){
 		let id = achievmentIds[name]
@@ -40998,12 +40998,14 @@ window.parent.postMessage({ready:true}, "*")
 					}
 					if(inv.x !== undefined){
 						p.x = inv.x, p.y = inv.y, p.z = inv.z
+						delete inv.x, delete inv.y, delete inv.z
 					}
 					if(inv.inv && inv.inv.length){
 						world.loadInv(new BitArrayReader(inv.inv),p,preBetaVersion)
 					}
 				}
 				p.connected = true
+				p.connection.send({type:"tp",x:p.x,y:p.y,z:p.z,dimension:p.dimension})
 				c.send({
 					type:"loadSave",
 					name:world.name,
@@ -41012,9 +41014,9 @@ window.parent.postMessage({ready:true}, "*")
 					inv,
 					//resourcePacks:world.resourcePacks,
 					activeResourcePacks:world.activeResourcePacks,
-					x:p.x,
-					y:p.y,
-					z:p.z,
+					x:0,//unused
+					y:0,
+					z:0,
 					version:world.version,
 					weather:world.weather,
 					time:world.time,
