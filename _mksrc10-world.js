@@ -20631,7 +20631,7 @@ function initDefaultCommands(world){
 		}))),
 		CommandNode.l("time",null,"mode can be: set, add. n is the time to set to. 1000 is a day. n an also be: day, night").then(
 			CommandNode.l("set").then(CommandNode.a("time", args => {world.time = args.time === "day" ? 500 : (args.time === "night" ? 0 : (parseFloat(args.time)||0))},"number")),
-			CommandNode.l("add").then(CommandNode.a("amount", args => {world.time += parseFloat(args.time)||0},"number"))
+			CommandNode.l("add").then(CommandNode.a("amount", args => {world.time += parseFloat(args.amount)||0},"number"))
 		),
 		CommandNode.l("weather",null,"Set weather. May take a few moments to start.").then(
 			CommandNode.l("clear", () => {world.weather = ""}),
@@ -20641,7 +20641,7 @@ function initDefaultCommands(world){
 		tp = CommandNode.l("teleport",null,"Teleport certain player/self to location/entity/player").then(CommandNode.a("target",null,"target").then(
 			CommandNode.a("x",null,"x").then(CommandNode.a("y",null,"y").then(CommandNode.a("z",
 			(args,pos) => {
-				if(!+args.x || !+args.y || !+args.z) return ["x y z must be number","error"]
+				if(isNaN(args.x) || isNaN(args.y) || isNaN(args.z)) return ["x y z must be number","error"]
 				let arr = parseTarget(args.target,pos,world[pos.dimension])
 				for(let e of arr) e.tp(args.x,args.y,args.z)
 			}, "z"))),
