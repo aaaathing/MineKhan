@@ -5772,7 +5772,33 @@ if time is 0, it will update every time
 			}
 		})
 	}
+	let backupWorldsDir
+	loadFromDB("backupWorldsDir").then(r => r && (backupWorldsDir = r.data))
+	async function backupWorlds(){
+		let dir = await showDirectoryPicker({mode:"readwrite"})
+		backupWorldsDir = dir
+		saveToDB("backupWorldsDir", backupWorldsDir)
+		for(let id in worlds){
+			saveBackupWorld(worlds[id], JSON.stringify(worlds[id],saveJSONReplacer))
+		}
+	}
+	async function saveBackupWorld(obj, str){
+		if(!backupWorldsDir) return
+		let file = await backupWorldsDir.getFileHandle(obj.name+" "+obj.id+".minekhan", {create:true})
+		const writable = await file.createWritable();
+		await writable.write(str);
+		await writable.close();
+	}
+	async function deleteBackupWorld(obj){
+		if(!backupWorldsDir) return
+		await backupWorldsDir.removeEntry(obj.name+" "+obj.id+".minekhan").catch(console.error)
+	}
 
+	function saveJSONReplacer(key,value){
+		if(value instanceof Uint8Array) return value.toString()
+		else return value
+	}
+	
 	async function save(getObj) {
     let obj = {
 			id: serverWorld.id,
@@ -19005,6 +19031,9 @@ r 11 y  n  n  n
 		userSessionString = userSid ? "thingmakersauth sid="+userSid+",spwd="+userSpwd : ""
 		if(!noSave) saveToDB("userSession",{sid:userSid,spwd:userSpwd})
 	}
+	loadFromDB("userSession").then(res => {
+		if(res) setUserSession(res.data,true)
+	})
 
 	function evalAtCorrectScope(str){
 		eval(str)
@@ -22774,13 +22803,14 @@ p.camera.transformation.elements.set(matrix)//*/
 		let w2 = min(width / 2 - 10, 450)
 		let x2 = w2 / 2 + 5
 		let mid = width / 2
+		Button.add(mid - 3 * x4, height - 30, w4, 40*ss, "Backup Worlds", "loadsave menu", backupWorlds, null, () => "Backup or save worlds to a folder. It will save to the folder when a world is saved. "+(backupWorldsDir ? "Folder: "+backupWorldsDir.name : "No folder yet"),)
 		/*Button.add(mid - 3 * x4, height - 30, w4, 40, "Edit", "loadsave menu", r => changeScene("editworld"), () => (selected() || !worlds[selectedWorld].edited))
 		Button.add(mid - x4, height - 30, w4, 40, "Delete", "loadsave menu", deleteSelectedWorld, () => (selected() || !worlds[selectedWorld].edited), "Delete the world forever.")
 		Button.add(mid + x4, height - 30, w4, 40, "Export", "loadsave menu", r => {
 			boxCenterTop.value = worlds[selectedWorld].code
 		}, selected, "Export the save code into the text box above for copy/paste.")*/
-		Button.add(mid + 3 * x4, height - 40*ss, w4, 40*ss, "Back", "loadsave menu", r => changeScene("main menu"))
-		Button.add(mid - x2, height - 40*ss, w2, 40*ss, "Play Selected World", "loadsave menu", playSelectedWorld, () => !(!selectedWorld && boxCenterTop.value) && !worlds[selectedWorld])
+		Button.add(mid + 3 * x4, height - 30*ss, w4, 40*ss, "Back", "loadsave menu", r => changeScene("main menu"))
+		Button.add(mid - x2, height - 75*ss, w2, 40*ss, "Play Selected World", "loadsave menu", playSelectedWorld, () => !(!selectedWorld && boxCenterTop.value) && !worlds[selectedWorld])
 		//Button.add(mid + x2, height - 75, w2, 40, "Create New World", "loadsave menu", r => changeScene("creation menu"))
     
     //broken world buttons
@@ -29041,15 +29071,16 @@ p.camera.transformation.elements.set(matrix)//*/
 		}).catch(console.error)
   }
 	function deleteSelectedWorld(){
-		if (worlds[selectedWorld] && confirm(`Are you sure you want to delete ${worlds[selectedWorld].name}? This will also delete it from the cloud.`)) {
+		if (worlds[selectedWorld] && confirm(`Are you sure you want to delete ${worlds[selectedWorld].name}? This will also delete it from the cloud (if it exists) and the backup (if it exists).`)) {
 			deleteFromDB(selectedWorld)
-			window.worlds.removeChild(document.getElementById(selectedWorld))
-			delete worlds[selectedWorld]
 			fetch(`saves/${selectedWorld}`, { method: "DELETE", headers:{Authorization:userSessionString} }).then(r => r.json()).then(r => {
 				if(!r.success){
 					console.log(r.message)
 				}
 			}).catch(console.error)
+			deleteBackupWorld(worlds[selectedWorld])
+			window.worlds.removeChild(document.getElementById(selectedWorld))
+			delete worlds[selectedWorld]
 			selectedWorld = 0
 		}
 	}
@@ -29236,10 +29267,6 @@ p.camera.transformation.elements.set(matrix)//*/
 				if (index >= 0) {
 					savedUpdates = res[index].data
 				}
-				index = res.findIndex(obj => obj.id === "userSession")
-				if (index >= 0) {
-					setUserSession(res[index].data,true)
-				}else setUserSession()
 			}
 		}).catch(r => console.error(r))
 
