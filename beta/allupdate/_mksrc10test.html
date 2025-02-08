@@ -5782,16 +5782,25 @@ if time is 0, it will update every time
 			saveBackupWorld(worlds[id], JSON.stringify(worlds[id],saveJSONReplacer))
 		}
 	}
+	function getFileName(obj){
+		return obj.name.replace(/[\/\\\.<>:]/g,"")+" "+obj.id+".minekhan"
+	}
 	async function saveBackupWorld(obj, str){
 		if(!backupWorldsDir) return
-		let file = await backupWorldsDir.getFileHandle(obj.name+" "+obj.id+".minekhan", {create:true})
+		let file
+		try{
+			file = await backupWorldsDir.getFileHandle(getFileName(obj), {create:true})
+		}catch(e){
+			alert(e.message+" Name: "+obj.name)
+			return
+		}
 		const writable = await file.createWritable();
 		await writable.write(str);
 		await writable.close();
 	}
 	async function deleteBackupWorld(obj){
 		if(!backupWorldsDir) return
-		await backupWorldsDir.removeEntry(obj.name+" "+obj.id+".minekhan").catch(console.error)
+		await backupWorldsDir.removeEntry(getFileName(obj)).catch(console.error)
 	}
 
 	function saveJSONReplacer(key,value){
