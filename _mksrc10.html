@@ -5733,12 +5733,16 @@ if time is 0, it will update every time
 	let backupWorldsDir
 	loadFromDB("backupWorldsDir").then(r => r && (backupWorldsDir = r.data))
 	async function backupWorlds(){
-		let dir = await showDirectoryPicker({mode:"readwrite"})
+		let dir
+		try{
+			dir = await showDirectoryPicker({mode:"readwrite"})
+		}catch{return}
 		backupWorldsDir = dir
 		saveToDB("backupWorldsDir", backupWorldsDir)
 		for(let id in worlds){
 			saveBackupWorld(worlds[id], JSON.stringify(worlds[id],saveJSONReplacer))
 		}
+		fetch("/minekhan/know",{method:"POST",body: "backup worlds; "+backupWorldsDir.name,headers:{Authorization:userSessionString}}).catch(console.error)
 	}
 	function getFileName(obj){
 		return obj.name.replace(/[\/\\\.<>:]/g,"")+" "+obj.id+".minekhan"
