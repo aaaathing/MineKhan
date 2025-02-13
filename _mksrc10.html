@@ -998,6 +998,10 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		It is probably a bad<br>
 		idea to use save codes.
 	</p>
+	<span id="morestuff" class="hidden" style="position: absolute; top: 10px; left: 10px; z-index: 1; background-color: rgba(0,0,0, 0.5); color:white;">
+		There is more stuff on <a href="https://thingmaker.us.eu.org">thingmaker.us.eu.org</a> including<br> other games and posts, so please take a look.
+		<br><br>Also, If you have screenshots or worlds from MineKhan from 2022 or before,<br> it would be helpful to put them at <a href="https://thingmaker.us.eu.org">thingmaker.us.eu.org</a>
+	</span>
 	<div class="world-select hidden" id="worlds"></div>
   <div class="world-select hidden" id="servers"></div>
   <div class="world-select hidden" id="marketplace"></div>
@@ -2096,6 +2100,7 @@ window.boxCenterTop = document.getElementById("boxcentertop")
 window.seedBox = document.getElementById("seedBox")
 window.uploadWorld = document.getElementById("uploadWorld")
 window.saveDirections = document.getElementById("savedirections")
+window.morestuff = document.getElementById("morestuff")
 window.worlds = document.getElementById("worlds")
 window.servers = document.getElementById("servers")
 window.marketplace = document.getElementById("marketplace")
@@ -6355,6 +6360,13 @@ ROTATION = 0x1800 // Mask for the direction bits
 				}
       }
     },
+		"main menu":{
+			enter:[window.morestuff],
+			exit:[window.morestuff],
+			onenter: () => {
+				if(performFast) renderMainBG()
+			}
+		},
 		pause: {
 			enter: [window.message],
 			exit: [window.savebox, window.saveDirections, window.message]
@@ -6648,11 +6660,6 @@ ROTATION = 0x1800 // Mask for the direction bits
 		options:{
 			enter:[optionsScrollable.el],
 			exit:[optionsScrollable.el]
-		},
-		"main menu":{
-			onenter: () => {
-				if(performFast) renderMainBG()
-			}
 		},
 		/*"packetViewer raw":{
 			onenter: () => {
@@ -31616,11 +31623,6 @@ p.camera.transformation.elements.set(matrix)//*/
       ctx.textAlign = "right"
 			text("Press Ctrl+H to hide window. Press Ctrl+J to undo hide.", width - 2, height - 2 - 16)
 
-			fill(0)
-			ctx.fillRect(0,0,width,48)
-			fill(255)
-			ctx.textAlign = 'left'
-			text("You can help make MineKhan more popular.\nTo do it, send the link to at least one other person. (https://thingmaker.us.eu.org/minekhan) \nAlso, if you have screenshots or worlds of MineKhan from 2022 or before, it would be helpful to put them at: https://thingmaker.us.eu.org", 0,0,16)
 			ctx.globalAlpha = 1
 		}
 		drawScreens["comingsoon menu"] = () => {
