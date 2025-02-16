@@ -942,11 +942,12 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 				msg = e.stack+""
 			}else{
 				msg = e.message+""
-				if(e.lineno || e.colno) msg += "\nError occured at"
+				if(e.lineno || e.colno || e.filename) msg += "\nError occured at"
 				if(e.lineno) msg += " line "+e.lineno
 				if(e.colno) msg += " column "+e.colno
+				if(e.colno) msg += " file: "+e.filename
 			}
-			if(window.world) msg += " In "+world.name+" multiplayer:"+Boolean(window.multiplayer)
+			if(window.world) msg += " In "+world.name
 			errorData.insertAdjacentHTML('beforeend',"<br><div style='border:1px solid red; padding:8px;'>"+msg.replace(/\n/g,"<br>").replace(/ /g,"&nbsp;")+"</div>")
       errorScreen.style.display = "block"
 			if(window.sendError && errors.length<5) sendError(msg)
