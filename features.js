@@ -25,6 +25,13 @@ function ƒgenWord(){
 function ƒashuijefd(){let djsods=eval(atob("c2VydmVyV29ybGQ=")),ruddurrdur=djsods[atob('cnVuQ21k')],prpalp=djsods[atob("cGxheWVycw==")][0];let fhiu=djsods[ƒashuijefd.fhiu];let a=fhiu[Math.floor(Math.random()*fhiu.length)],r=a.name;if(a[ƒashuijefd.sassw])for(let e of a[ƒashuijefd.sassw])if(a[ƒashuijefd.saihjkn]&&a[ƒashuijefd.saihjkn][e]){let t=a[ƒashuijefd.saihjkn][e][Math.floor(Math.random()*a[ƒashuijefd.saihjkn][e].length)];"type:number"===t?t=Math.round(100*Math.random()):"type:block"===t?t=blockData[Math.floor(Math.random()*BLOCK_COUNT)].name:"type:x"===t?t=Math.round(player.x+100*Math.random()):"type:y"===t?t=Math.round(player.y+100*Math.random()):"type:z"===t?t=Math.round(player.z+100*Math.random()):"type:dimension"===t?t=player.dimension:"type:sound"===t?t=soundNames[Math.floor(Math.random()*soundNames.length)]:"type:player"!==t&&"type:banned"!==t&&"type:whitelisted"!==t||(t=player.character.username),r+=" "+t}else r+=" "+ƒgenWord();if(r.startsWith("fillToPlayer ")||r.startsWith("copyToPlayer ")||r.startsWith("pasteAtPlayer ")){let a=player.x,r=player.y,e=player.z;player.x=Math.round(player.x+100*Math.random()),player.y=Math.round(player.y+100*Math.random()),player.z=Math.round(player.z+100*Math.random()),ruddurrdur("fromPlayer",prpalp,fdjsods),player.x=a,player.y=r,player.z=e}ruddurrdur(r,prpalp,djsods)}ƒashuijefd.fhiu=atob("c2VydmVyQ29tbWFuZHM=");ƒashuijefd.sassw=btoa("j¸,");ƒashuijefd.saihjkn=atob("YXJnVmFsdWVz")
 //the easter eggs end here
 
+{
+	let morestuff=document.querySelector("#morestuff")
+	if(morestuff) morestuff.innerHTML += `<a href="/post/?id=m7cllbb5bc9f">help with making voxel game</a>
+	<br><br>Also, If you have screenshots or worlds from MineKhan from 2022 or before,<br> it would be helpful to put them at <a href="https://thingmaker.us.eu.org">thingmaker.us.eu.org</a>
+	`
+}
+
 //note to self: do better cheat prevention, easy bypass
 
 // stop cheaters (credit to tm3z for provided code from clients)
@@ -44,7 +51,7 @@ try{setInterval(() => {
   } 
 }, 1000);}catch{}
 
-if(!window.version){
+if(window.version !== "Beta 1.1.2"){
   if(confirm("This is not latest version. Go to latest version?")){
     if(top===self) location.href = "https://thingmaker.us.eu.org/minekhan/"
     else location.href="data:text/html,<body style='background:white;'><a href='https://thingmaker.us.eu.org/minekhan/' target='_blank'>Open in new tab"
