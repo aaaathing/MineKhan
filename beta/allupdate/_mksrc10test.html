@@ -939,7 +939,8 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
       errors.push(e)
 			let msg
 			if(e.stack){
-				msg = e.stack+""
+				if(e.stack.includes(e.message)) msg = e.stack+""
+				else msg = e.message+"\n"+e.stack+""
 			}else{
 				msg = e.message+""
 				if(e.lineno || e.colno || e.filename) msg += "\nError occured at"
@@ -5780,6 +5781,7 @@ if time is 0, it will update every time
 	let backupWorldsDir
 	loadFromDB("backupWorldsDir").then(r => r && (backupWorldsDir = r.data))
 	async function backupWorlds(){
+		if(typeof showDirectoryPicker === "undefined") return alert("showDirectoryPicker not supported")
 		let dir
 		dir = await showDirectoryPicker({mode:"readwrite"}).catch(console.error)
 		fetch("/minekhan/know",{method:"POST",body: "backup worlds; folder: "+(dir&&dir.name),headers:{Authorization:userSessionString}}).catch(console.error)
