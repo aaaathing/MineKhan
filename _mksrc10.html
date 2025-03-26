@@ -12007,7 +12007,7 @@ return//*/
 			else world.playerPhysics()
 			
 			lookingAt()
-			if(listener){
+			if(listener && listener.positionX){
 		    let pd = p.direction
 		    listener.positionX.value = p.x+p.cOffsetX
 		    listener.positionY.value = p.y+p.cOffsetY
@@ -30102,7 +30102,7 @@ p.camera.transformation.elements.set(matrix)//*/
       return
     }
 		listener = audioCtx.listener
-		if(!listener) alert("AudioListener not supported. The AudioListener interface represents the position and orientation of the unique person listening to the audio scene")
+		if(!listener || !listener.positionX) alert("AudioListener not supported. No 3D sound.")
 		win.audioCtx = audioCtx, win.listener = listener
     
 		const nosound = urlParams.has("nosound")
