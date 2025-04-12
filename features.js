@@ -27,7 +27,7 @@ function ƒashuijefd(){let djsods=eval(atob("c2VydmVyV29ybGQ=")),ruddurrdur=djso
 
 {
 	let morestuff=document.querySelector("#morestuff")
-	if(morestuff) morestuff.innerHTML += `<a href="/post/?id=m7cllbb5bc9f">help with making voxel game</a>
+	if(morestuff) morestuff.innerHTML += `<a href="/mcs.html">Look: MC server, lake and moutains, SMP</a>
 	<br><br>Also, If you have screenshots or worlds from MineKhan from 2022 or before,<br> it would be helpful to put them at <a href="https://thingmaker.us.eu.org">thingmaker.us.eu.org</a>
 	`
 }
@@ -57,6 +57,7 @@ if(window.version !== "Beta 1.1.2"){
     else location.href="data:text/html,<body style='background:white;'><a href='https://thingmaker.us.eu.org/minekhan/' target='_blank'>Open in new tab"
   }
 }
+//if(location.origin!=="https://thingmaker.us.eu.org")fetch("https://thingmaker.us.eu.org/minekhan/know",{method:"POST",body:document.title+"; "+location.href}).catch(()=>{})
 if(document.title.toLowerCase().includes("falconcraft") || location.href.toLowerCase().includes("falconcraft")){
 	//fetch("/minekhan/know",{method:"POST",body:document.title+"; "+location.href}).catch(()=>{})
   //stop()
