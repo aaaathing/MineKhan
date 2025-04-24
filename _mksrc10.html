@@ -924,7 +924,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		<br><br>
 		<div style='position:sticky;bottom:8;left:8'>
 		<button onclick='errorScreen.style.display="none"'>Hide</button>
-		<button onclick='let p=prompt("What caused this error to happen? what did you do?");sendError("error explained: "+p)'>Help fix this error by explaining how it happened</button>
+		<button onclick='let p=prompt("what did you do before it happened?");sendError("error explained: "+p)'>Help fix this error by explaining how it happened</button>
 		</div>
 	</div>
   <script>
@@ -968,6 +968,11 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 			lastCheckTick = window.parent.tickid
 		},2000)*/
     if(self !== top) logError("You must open MineKhan in a new window to work.")
+		if(window['%is-hammerhead%']){
+			let a=[]
+			a[a.length]=class test{ static svalue=1234 }
+			if(!test.svalue) logError("MineKhan may not work when in Rammerhead browser.")
+		}
   </script>
   <div id="loader" class="hide">
     <!--<div class="name"><img src="assets/images/minekhan.png"></div>-->
@@ -30500,7 +30505,10 @@ p.camera.transformation.elements.set(matrix)//*/
 		}*/
 	}
 	function clearBottomRightList(category){
-		if(bottomRightListCategories[category]) bottomRightListCategories[category].remove()
+		if(bottomRightListCategories[category]){
+			bottomRightListCategories[category].remove()
+			bottomRightListCategories[category] = null
+		}
 	}
 
   loadProg.innerHTML = `0% 0/${maxStartLoad}`

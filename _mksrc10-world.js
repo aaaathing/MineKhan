@@ -31159,7 +31159,7 @@ class World{ // aka trueWorld
 	        breakTime /= blockData[holding].mineSpeed
 	      }
 			}else breakTime *= 5
-      if(holding && blockData[holding].shears && blockData[block].shearBreakTime){
+      if(holding && blockData[holding].shears && blockData[prevBlock].shearBreakTime){
         breakTime = blockData[prevBlock].shearBreakTime
       }
       if(p.liquid) breakTime *= 5
@@ -31243,7 +31243,7 @@ class World{ // aka trueWorld
         blockMode = POTCROSS
       }else if(blockData[holding].crossShape){
         if(onPot && blockIds[blockData[holding].name+"Pot"]){
-          block = blockIds[blockData[holding].name+"Pot"]
+          holding = blockIds[blockData[holding].name+"Pot"]
           blockMode = POTCROSS
         }else{
           blockMode = CROSS
@@ -32319,7 +32319,7 @@ class World{ // aka trueWorld
 			return this.loadCrossSaveCode(data, onlyMetdata)
 		}
 		let preBetaVersion = verMoreThan("1.1.0",this.version.replace(/(Alpha|Beta) /, ''))
-		let worldTypeBits2 = preBetaVersion ? 0 : (verMoreThan(this.version.replace(/(Alpha|Beta) /, ''),"1.1.1") ? reader.read(1) : (1-reader.read(1)))
+		let worldTypeBits2 = preBetaVersion ? 0 : (verMoreThan(this.version.replace(/(Alpha|Beta) /, ''),"1.1.1") ? reader.read(1) : (worldTypeBits1 ? (reader.read(1), 0) : 1-reader.read(1)))
 
 		this.worldType = worldTypeBits2 ? "large" : (worldTypeBits1 === 2 ? "island" : (worldTypeBits1 === 3 ? "void" : (worldTypeBits1 ? "superflat" : "alpha")))
 
