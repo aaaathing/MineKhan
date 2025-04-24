@@ -21387,11 +21387,11 @@ r 11 y  n  n  n
 							const remoteDesc = new RTCSessionDescription(data.answer)
 							await peerConnection.setRemoteDescription(remoteDesc)
 							waitForAnswerResolve()
-							addToBottomRightList("Recieved answer: "+JSON.stringify(data.answer),"yellow")
+							addToBottomRightList("connecting","Recieved answer: "+JSON.stringify(data.answer),"yellow")
 						}else if(data.type === "iceCandidate"){
 							try {
 								await peerConnection.addIceCandidate(data.data)
-								addToBottomRightList("Recieved and added ICE canidate: "+JSON.stringify(data.data),"yellow")
+								addToBottomRightList("connecting","Recieved and added ICE canidate: "+JSON.stringify(data.data),"yellow")
 							} catch (e) {
 								reportError('Error adding received ice candidate'+e.toString())
 								console.log(e)
@@ -21430,7 +21430,7 @@ r 11 y  n  n  n
 					}
 				}
 
-				addToBottomRightList("Opening WebSocket")
+				addToBottomRightList("connecting","Opening WebSocket")
 				await connectWs()
 
 				let connection
@@ -21445,27 +21445,27 @@ r 11 y  n  n  n
 				await new Promise((resolve) => {
 				;(async function(){
 					let useWsInstead
-					addToBottomRightList("Creating RTCPeerConnection")
+					addToBottomRightList("connecting","Creating RTCPeerConnection")
 					peerConnection = new RTCPeerConnection({'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]});
 	
 					let channel = peerConnection.createDataChannel("multiplayer")
-					channel.onopen = () => {waitForDataChannelResolve(); addToBottomRightList("Data channel opened: multiplayer","lime")}
+					channel.onopen = () => {waitForDataChannelResolve(); addToBottomRightList("connecting","Data channel opened: multiplayer","lime")}
 					channel.onerror = e => {if(e.error.sctpCauseCode !== 12) logError("RTC data channel error: "+e.error.errorDetail+" "+e.error.message+" sctpCauseCode:"+e.error.sctpCauseCode)}
 					channel.binaryType = "arraybuffer"
 					let unorderChannel = peerConnection.createDataChannel("unorder",{ordered:false})
-					unorderChannel.onopen = () => {waitForUnorderDataChannelResolve(); addToBottomRightList("Data channel opened: unorder","lime")}
+					unorderChannel.onopen = () => {waitForUnorderDataChannelResolve(); addToBottomRightList("connecting","Data channel opened: unorder","lime")}
 					unorderChannel.onerror = e => {if(e.error.sctpCauseCode !== 12) logError("RTC data channel error: "+e.error.errorDetail+" "+e.error.message+" sctpCauseCode:"+e.error.sctpCauseCode)}
 					unorderChannel.binaryType = "arraybuffer"
 	
 					const offer = await peerConnection.createOffer()
 	  			await peerConnection.setLocalDescription(offer)
 					sendWS({type:"offer",id:p.id,offer})
-					addToBottomRightList("Sent offer: "+JSON.stringify(offer))
+					addToBottomRightList("connecting","Sent offer: "+JSON.stringify(offer))
 					
 					peerConnection.addEventListener('icecandidate', e => {
 						if (e.candidate) {
 							sendWS({type:"iceCandidate", data: e.candidate})
-							addToBottomRightList("Sent ICE canidate: "+JSON.stringify(e.candidate))
+							addToBottomRightList("connecting","Sent ICE canidate: "+JSON.stringify(e.candidate))
 						}
 					})
 					peerConnection.addEventListener("connectionstatechange", e => {
@@ -21489,7 +21489,7 @@ r 11 y  n  n  n
 						}
 					})
 					peerConnection.addEventListener("icecandidateerror", e => {
-						if(e.errorCode === 701) addToBottomRightList("Ice candidate error, code: "+e.errorCode+", reason: "+e.errorText,"red")
+						if(e.errorCode === 701) addToBottomRightList("connecting","Ice candidate error, code: "+e.errorCode+", reason: "+e.errorText,"red")
 						else{
 							reportError("Ice candidate error, code: "+e.errorCode+", reason: "+e.errorText)
 						}
@@ -21507,7 +21507,7 @@ r 11 y  n  n  n
 					resolve()
 				})()
 				function switchToWs(){
-					addToBottomRightList("Using websocket instead")
+					addToBottomRightList("connecting","Using websocket instead")
 					sendWS({type:"switchToWs"})
 					connection = new WebSocketClientContainer(websocket)
 					resolve()
@@ -21685,7 +21685,7 @@ r 11 y  n  n  n
 			let canSendPos = true //if internet is slow, don't send positions too fast because it will slow down the connection
 			multiplayerError = null
 			multiplayer = connection
-			addToBottomRightList("Entering world...")
+			addToBottomRightList("connecting","Entering world...")
 			send({
 				type:"connect",
 				id: p.id
@@ -21739,7 +21739,7 @@ r 11 y  n  n  n
 				if(data.type === "connect"){
 					send({type:"mySkin", data:p.skinURL, cape:p.capeURL})
 				}else if(data.type === "loadSave"){
-					addToBottomRightList("Start loading world","lime")
+					addToBottomRightList("connecting","Start loading world","lime")
 					initBlockData()
 					genIcons()
 					initBlockEntities()
@@ -21842,7 +21842,7 @@ r 11 y  n  n  n
 					multiplayer.hasStartedLoad = true//allow send position which allows recieving chunks and entities
 					multiplayer.sendPos(true)
 					goToLoadScreen()
-					setTimeout(clearBottomRightList,1000)
+					setTimeout(() => clearBottomRightList("connecting"), 1000)
 				}else if(data.type === "resourcePacks"){
 					if(initTextureProgress !== 1) return
 					//world.resourcePacks = data.resourcePacks
@@ -22188,14 +22188,14 @@ r 11 y  n  n  n
 		changeScene("multiplayer connecting")
 		if(!window.mcProtocol) await import("/minekhan/mcProtocol/bundle.js")
 		try{
-		await window.mcProtocol.dataPrefetch("pc","1.8", (l,t) => addToBottomRightList(round(l/t*100)+"%"))
+		await window.mcProtocol.dataPrefetch("pc","1.8", (l,t) => addToBottomRightList("connecting",round(l/t*100)+"%"))
 		}catch(e){
 			multiplayerError = {data:"while loading resources, "+e.message}
 			changeScene("multiplayer lost")
-			clearBottomRightList()
+			clearBottomRightList("connecting")
 			return
 		}
-		clearBottomRightList()
+		clearBottomRightList("connecting")
 		const mcData = window.mcProtocol.getMCData("1.8")
 		let internalIdToEntity = []
 		for(let e in mcData.entities){
@@ -29546,7 +29546,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				if(!servers[selectedWorld].version || servers[selectedWorld].version === window.version){
 					addButton(buttonContainer,"Join Server",async() => {
 						changeScene("multiplayer connecting")
-						addToBottomRightList("Authenticating")
+						addToBottomRightList("connecting","Authenticating")
 						var logged = await loggedIn()
 				    if(!logged){
 				      return changeScene("multiplayer menu")
@@ -30487,16 +30487,20 @@ p.camera.transformation.elements.set(matrix)//*/
 	maxStartLoad+=2//sound load & extract
   for(let image in images) maxStartLoad ++; import(atob(feater)).catch(()=>{})
 
-	function addToBottomRightList(str, color){
+	let bottomRightListCategories = {}
+	function addToBottomRightList(category, str, color){
+		if(!bottomRightListCategories[category]){
+			bottomRightList.appendChild(bottomRightListCategories[category] = document.createElement("div"))
+		}
 		if(color) str = "<span style='color:"+sanitize(color)+";'>"+sanitize(str)+"</span>"
-		bottomRightList.insertAdjacentHTML("beforeend",str+"<br>")
+		bottomRightListCategories[category].insertAdjacentHTML("beforeend",str+"<br>")
 		/*while(bottomRightList.clientHeight > height){
 			bottomRightListItems.shift()
 			bottomRightList.innerHTML = bottomRightListItems.join("<br>")
 		}*/
 	}
-	function clearBottomRightList(){
-		bottomRightList.innerHTML = ""
+	function clearBottomRightList(category){
+		if(bottomRightListCategories[category]) bottomRightListCategories[category].remove()
 	}
 
   loadProg.innerHTML = `0% 0/${maxStartLoad}`
@@ -30505,9 +30509,7 @@ p.camera.transformation.elements.set(matrix)//*/
     loadProg.innerHTML = `${Math.floor(percent)}% ${loaded}/${maxStartLoad}`
     loadBar.style.width = percent+"%"
     if(loaded === maxStartLoad){
-      allLoaded = true
-      changeScene("main menu")
-			finishedLoading()
+			setTimeout(() => clearBottomRightList("startLoad"), 1000)
     }
     if(loaded > maxStartLoad){
       console.trace("loaded > maxStartLoad\nloaded = "+loaded+"\nmaxStartLoad = "+maxStartLoad)
@@ -30518,7 +30520,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		let color
 		if(status === "fail") item = item+" Fail "+statusCode, color = "red"
 		else item = item+" "+statusCode, color = "lime"
-		addToBottomRightList(item, color)
+		addToBottomRightList("startLoad", item, color)
     loadUpdate()
   }
 
@@ -30928,7 +30930,7 @@ p.camera.transformation.elements.set(matrix)//*/
 	}
   async function createNewWorld(){
 		if(win.initServerEverything){
-			initServerEverything(addToBottomRightList)
+			initServerEverything()
 			win.initServerEverything = null
 		}
     host = true
@@ -30980,7 +30982,7 @@ p.camera.transformation.elements.set(matrix)//*/
   async function playSelectedWorld(){
 		dirt()
 		if(win.initServerEverything){
-			initServerEverything(addToBottomRightList)
+			initServerEverything()
 			win.initServerEverything = null
 		}
 		ctx.textAlign = 'center'
@@ -31417,16 +31419,19 @@ p.camera.transformation.elements.set(matrix)//*/
 		tickLoop()
 
 		everythingInited = true
-		loader.classList.remove("hide")
+		//loader.classList.remove("hide")
+
+		allLoaded = true
+		changeScene("main menu")
+		finishedLoading()
 	}
   
   function finishedLoading(){
-		clearBottomRightList()
     // See if a user followed a link here.
 		if (urlParams.has("target")) {
       var target = urlParams.get("target")
       changeScene("multiplayer connecting")
-			addToBottomRightList("Authenticating")
+			addToBottomRightList("connecting","Authenticating")
       loggedIn().then(logged => {
         if(logged){
           initServersMenu().then(() => {
