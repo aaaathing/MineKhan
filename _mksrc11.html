@@ -6426,8 +6426,8 @@ ROTATION = 0x1800 // Mask for the direction bits
 				loadJoined = true
         
         if(websocket){
-          sendWS({type:"joined"})
-        }else send({type:"joined"})
+          sendWS({type:"joined", to:multiplayer.target})
+        }else send({type:"joined", to:multiplayer.target})
         if(world.isMK) Messages.add("<span style='color:lime;'>Press t or 💬 to open chat. "+(cheats ? "Type /? for help with commands." : "")+"</span>")
 				/*if(host && !window.multiplayerMessageShown){
 					Messages.add("You should enable multiplayer which is in pause menu because multiplayer is rarely used and should be used more. "+(userInfo?"":"If it requires login, you should do that because it is needed for multiplayer.")+" Using multiplayer is also more fun.")
@@ -21130,8 +21130,9 @@ r 11 y  n  n  n
 			updateUserTo(multiplayer.differentAccount)
 			return
 		}
+		return updateUserTo()
 		
-    var logged = false;
+    /*var logged = false;
     await fetch("/server/account", {headers:{Authorization:userSessionString}}).then(r => r.json()).then(r => {
       logged = updateUserTo(r)
     }, console.error)
@@ -21150,12 +21151,41 @@ r 11 y  n  n  n
       }
       return false
       changeScene("main menu")
-    }
+    }*/
   }
-  async function getWorlds(addWorldCallback,pingCallback){
+  async function getWorlds(addWorldCallback){
     if(!navigator.onLine) return "You are offline. Connect to the internet first."
     let worlds = []
-    await fetch("/server/worlds").then(r => r.json()).then(r => {
+		let ws = new WebSocket("wss://cloud.achex.ca")
+		await new Promise(resolve => ws.onopen = resolve)
+		await new Promise(resolve => {
+			ws.send(JSON.stringify({auth:"getWorlds"}))
+			ws.send(JSON.stringify({joinHub:"minekhan"}))
+			ws.send(JSON.stringify({serverstat:true}))
+			ws.send(JSON.stringify({toH:"minekhan",type:"ping"}))
+			let users = {}
+			ws.onmessage = msg => {
+				let data = JSON.parse(msg.data)
+				if(data.users){
+					for(let i of data.users){
+						if(i.hub === "minekhan" && i.username !== "getWorlds"){
+							let w = i.world = {id: i.username, name:"Pinging...", version:"Pinging...", host:"", players:[]}
+							users[i.username] = i
+							worlds.push(w)
+							if(addWorldCallback) addWorldCallback(w)
+						}
+					}
+					resolve()
+				}else if(data.type === "pong" && users[data.FROM]){
+					let w = users[data.FROM].world
+					Object.assign(w, data.data)
+					if(addWorldCallback) addWorldCallback(w)
+				}
+			}
+			setTimeout(() => ws.close(), 10000)
+		})
+
+    /*await fetch("/server/worlds").then(r => r.json()).then(r => {
       for(var w of r){
 				worlds.push(w)
         if(addWorldCallback) addWorldCallback(w)
@@ -21185,7 +21215,7 @@ r 11 y  n  n  n
           pingCallback(p,pings[p])
         }
       }, console.error)
-    }
+    }*/
     return worlds
   }
 	function sendError(err){fetch("/minekhan/know/error",{method:"POST",body:err,headers:{Authorization:userSessionString}}).catch(console.error)}
@@ -21347,7 +21377,6 @@ r 11 y  n  n  n
 			if(preVersion && !(userInfo&&userInfo.admin)) return alert("Multiplayer is not available on this version")
 			if(multiplayer) return
 			
-			//var ban = []
 			external = false, isSafe = true, originalTarget = target
 			host = false
 			external = servers[target].external
@@ -21376,14 +21405,15 @@ r 11 y  n  n  n
 				await new Promise(resolve => {ws.onopen = resolve})
 				return new WebSocketClientContainer(ws)
 			}else{
-				target = "wss://thingmaker.us.eu.org/mkjoin?target="+target
+				//target = "wss://thingmaker.us.eu.org/mkjoin?target="+target
 				let cAnCeLcOnNectION = false
 				async function connectWs(){
-					websocket = new WebSocket(target)
+					websocket = new WebSocket("wss://cloud.achex.ca")
 					websocket.binaryType = "arraybuffer"
 					await new Promise(resolve => {websocket.onopen = resolve})
 					
-					sendWS({type:"login",sid:userSid,spwd:userSpwd})
+					sendWS({auth:p.id})
+					//sendWS({type:"login",sid:userSid,spwd:userSpwd})
 					websocket.onmessage = async msg => {
 						if(msg.data instanceof ArrayBuffer) return //should be handled by WebSocketClientContainer
 						
@@ -21464,12 +21494,12 @@ r 11 y  n  n  n
 	
 					const offer = await peerConnection.createOffer()
 	  			await peerConnection.setLocalDescription(offer)
-					sendWS({type:"offer",id:p.id,offer})
+					sendWS({type:"offer",id:p.id,offer, username:p.username, to:target})
 					addToBottomRightList("connecting","Sent offer: "+JSON.stringify(offer))
 					
 					peerConnection.addEventListener('icecandidate', e => {
 						if (e.candidate) {
-							sendWS({type:"iceCandidate", data: e.candidate})
+							sendWS({type:"iceCandidate", data: e.candidate, to:target})
 							addToBottomRightList("connecting","Sent ICE canidate: "+JSON.stringify(e.candidate))
 						}
 					})
@@ -21480,10 +21510,10 @@ r 11 y  n  n  n
 							if(connection) connection.close()
 							peerConnection.close()
 							cAnCeLcOnNectION = true
-							if(!connection){
+							/*if(!connection){
 								useWsInstead = true
 								switchToWs()
-							}else{
+							}else*/{
 								multiplayerError = multiplayerError || {data:"WebRTC connection failed."}
 							}
 						}
@@ -21502,21 +21532,22 @@ r 11 y  n  n  n
 	
 					await Promise.all([waitForAnswerPromise,waitForDataChannelPromise,waitForUnorderDataChannelPromise])
 
-					if(useWsInstead) return
+					//if(useWsInstead) return
 					if(cAnCeLcOnNectION){
 						connection = {cAnCeLcOnNectION:true}
 						resolve()
 						return
 					}
 					connection = new RTCClientContainer(channel,peerConnection,unorderChannel)
+					connection.target = target
 					resolve()
 				})()
-				function switchToWs(){
+				/*function switchToWs(){
 					addToBottomRightList("connecting","Using websocket instead")
 					sendWS({type:"switchToWs"})
 					connection = new WebSocketClientContainer(websocket)
 					resolve()
-				}
+				}*/
 				})
 				return connection
 			}
@@ -21536,11 +21567,13 @@ r 11 y  n  n  n
 			let websocketError = null
 			let peerConnections = {}
 			let wsConnections = {}, nextWsConnection
-			websocket = new WebSocket("wss://thingmaker.us.eu.org/mkhost?target="+serverWorld.id)
+			websocket = new WebSocket("wss://cloud.achex.ca")
 			websocket.binaryType = "arraybuffer"
 			websocket.onopen = () => {
-				sendWS({type:"login",sid:userSid,spwd:userSpwd})
-				sendWS({
+				sendWS({auth:p.id})
+				sendWS({joinHub: "minekhan"})
+				//sendWS({type:"login",sid:userSid,spwd:userSpwd})
+				/*sendWS({
 					type:"init",
 					name: world.name,
 					version,
@@ -21552,22 +21585,23 @@ r 11 y  n  n  n
 				if(whitelist){
 					sendWS({type:"whitelist",data:"enable"})
 					for(let i of whitelist) sendWS({type:"whitelist",data:"add",who:i})
-				}
+				}*/
 			}
 			websocket.onmessage = async e => {
-				if(e.data instanceof ArrayBuffer){
+				/*if(e.data instanceof ArrayBuffer){
 					if(wsConnections[nextWsConnection]) wsConnections[nextWsConnection].doOnmessage(new Uint8Array(e.data))
 					return
-				}
+				}*/
 				let data = JSON.parse(e.data)
 				if(data.type === "offer"){
+					if(!data.id) return
 					serverWorld.sendAll({type:"message",data:"<span style='color:lightgreen;'>"+data.username+" is connecting. "+(serverWorld.players.length+1)+" players now.", fromServer:true})
 					let peerConnection = new RTCPeerConnection({'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]})
 					peerConnections[data.id] = peerConnection
 
 					peerConnection.addEventListener('icecandidate', event => {
 						if (event.candidate) {
-							sendWS({type:"iceCandidate", data: event.candidate},data.FROM)
+							sendWS({type:"iceCandidate", data: event.candidate, to:data.FROM})
 						}
 					})
 
@@ -21592,16 +21626,24 @@ r 11 y  n  n  n
 					peerConnection.addEventListener("connectionstatechange", e => {
 						if(peerConnection.connectionState === "closed"){
 							cAnCeLcOnNectION = true
+							if(peerConnections[data.id]){
+								serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+data.data+" left. "+serverWorld.players.length+" players now.", fromServer:true})
+								delete peerConnections[data.id]
+							}
 						}else if(peerConnection.connectionState === "failed"){
 							cAnCeLcOnNectION = true
 							peerConnection.close()
+							if(peerConnections[data.id]){
+								serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+data.data+" left because connection failed. "+serverWorld.players.length+" players now.", fromServer:true})
+								delete peerConnections[data.id]
+							}
 						}
 					})
 
 					peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
 					const answer = await peerConnection.createAnswer();
 					await peerConnection.setLocalDescription(answer);
-					sendWS({type:"answer", answer},data.FROM)
+					sendWS({type:"answer", answer, to:data.FROM})
 
 					await Promise.all([waitForDataChannelPromise,waitForUnorderDataChannelPromise])
 
@@ -21616,14 +21658,14 @@ r 11 y  n  n  n
 						logError('Error adding received ice candidate'+e.toString())
 						console.log(e)
 					}
-				}else if(data.type === "switchToWs"){
+				}/*else if(data.type === "switchToWs"){
 					wsConnections[data.id] = new WebSocketServerContainer(websocket,data.id)
 					serverWorld.serverAddPlayer(wsConnections[data.id],data.id,data.username,false,data.admin)
 				}else if(data.type === "nextWsConnection"){
 					nextWsConnection = data.data
-				}else if(data.type === "joined"){
-					serverWorld.sendAll({type:"message",data:"<span style='color:lightgreen;'>"+data.data+" joined.", fromServer:true})
-				}else if(data.type === "dc"){
+				}*/else if(data.type === "joined"){
+					serverWorld.sendAll({type:"message",data:"<span style='color:lightgreen;'>"+serverWorld.players.find(r => r.id === data.FROM).username+" joined.", fromServer:true})
+				}/*else if(data.type === "dc"){
 					serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+data.data+" left. "+serverWorld.players.length+" players now.", fromServer:true})
 					if(peerConnections[data.id]){
 						peerConnections[data.id].close()//Make sure its closed to prevent hacks
@@ -21647,10 +21689,15 @@ r 11 y  n  n  n
 					}else if(data.action === "whitelistDisable"){
 						whitelist = null
 					}
-				}else if(data.type === "ping"){
+				}*/else if(data.type === "ping"){
 					sendWS({
 						type:"pong",
-						id:data.id
+						id:data.id,
+						to:data.FROM,
+						data:{
+							name: world.name, version,
+							host:p.username, players: serverWorld.players.map(r => r.username)
+						}
 					})
 				}else if(data.type === "message"){
 					if(data.fromServer){
@@ -25054,11 +25101,8 @@ p.camera.transformation.elements.set(matrix)//*/
 			if(websocket){
 				disableMultiplayer()
 			}else{
-				let logged
-				await loggedIn().then(r => logged = r)
-				if(logged){
-					enableMultiplayer()
-				}
+				await loggedIn()
+				enableMultiplayer()
 			}
 		}, () => !host || preVersion && !(userInfo&&userInfo.admin), () => "Enabling multiplayer enables others to join. Use whitelist command to allow only some people to join. /whitelist enable /whitelist add username1234", () => websocket ? 1 : 0)
     Button.add(width/2-110*ss, height / 2 + 75*ss, 200*ss, 40*ss, "Invite", "pause", r => {
@@ -29535,13 +29579,15 @@ p.camera.transformation.elements.set(matrix)//*/
 			window.servers.removeChild(window.servers.firstChild)
 		}
 		selectedWorld = null
+		window.servers.onclick = () => Button.draw()
 
 		function addWorld(server) {
       let {name,id,host,players,external,banned,whitelist,thumbnail,version} = server
       
-			let div = doc.createElement("div")
+			let div = server.element || doc.createElement("div")
 			div.className = "world"
-			div.onclick = e => {
+			div.innerHTML = ""
+			if(!server.element) div.onclick = e => {
 				serversMenuDeselect()
 				div.classList.add("selected")
 				selectedWorld = id
@@ -29552,10 +29598,7 @@ p.camera.transformation.elements.set(matrix)//*/
 					addButton(buttonContainer,"Join Server",async() => {
 						changeScene("multiplayer connecting")
 						addToBottomRightList("connecting","Authenticating")
-						var logged = await loggedIn()
-				    if(!logged){
-				      return changeScene("multiplayer menu")
-				    }
+						await loggedIn()
 						initMultiplayer(servers[selectedWorld].id).then(joinWorld)
 					})
 				}else addButton(buttonContainer,"Join Server", emptyFunc, "Different version").disable()
@@ -29567,7 +29610,19 @@ p.camera.transformation.elements.set(matrix)//*/
 			let br = "<br>"
 			div.id = id
       if((banned && typeof banned[p.username] === "string") || (whitelist && !whitelist.includes(p.username))) div.innerHTML += "<div class='lockImg'></div>"
-      div.innerHTML += "<div class='ping'>Pinging...</div>"
+			if(typeof server.ping === "number"){
+        var y
+        if(server.ping > 800) y = -56
+        else if(server.ping > 600) y = -42
+        else if(server.ping > 400) y = -28
+        else if(server.ping > 200) y = -14
+        else y = 0
+        div.innerHTML += "<div class='ping'>"+server.ping+" ms <div class='img' style='background-position:0 "+y+"px;'></div></div>"
+      }else if(server.ping === "timeout"){
+        div.innerHTML += "<div class='ping'>Ping timed out <div class='img' style='background-position:0 -70px;'></div></div>"
+      }else{
+        div.innerHTML += "<div class='ping'>Pinging...</div>"
+      }
 			if(thumbnail) div.innerHTML += "<img class='thumbnail' src='" + thumbnail + "'></div>"
 			div.innerHTML += "<strong>" + Messages.format(name)+ "</strong>" + br
       if(external) div.innerHTML += Messages.format(server.description) + br
@@ -29577,34 +29632,16 @@ p.camera.transformation.elements.set(matrix)//*/
 			if (whitelist) div.innerHTML += "Whitelisted" + br
 			
       servers[id] = server
-			window.servers.appendChild(div)
+			if(!server.element) window.servers.appendChild(div)
+			server.element = div
 		}
 
-		let worlds = await getWorlds(addWorld, (id,ping) => {
-      if(screen !== "multiplayer menu") return
-      var el = doc.getElementById(id)
-      if(!el) return
-      let p = el.querySelector(".ping")
-      if(!p) return
-      if(typeof ping === "number"){
-        var y
-        if(ping > 800) y = -56
-        else if(ping > 600) y = -42
-        else if(ping > 400) y = -28
-        else if(ping > 200) y = -14
-        else y = 0
-        p.innerHTML = ping+" ms <div class='img' style='background-position:0 "+y+"px;'></div>"
-      }else if(ping === "timeout"){
-        p.innerHTML = "Ping timed out <div class='img' style='background-position:0 -70px;'></div>"
-      }else{
-        p.innerHTML = "Error <div class='img' style='background-position:0 -70px;'></div>"
-      }
-      p.setAttribute("pingDone",true)
-    })
+		let worlds = await getWorlds(addWorld)
     //if(worlds === "notLoggedIn") return changeScene("main menu")
     if(typeof worlds === "string") return window.servers.innerHTML = "<div class='message'>"+worlds+"</div>"
 		if(!worlds.length) window.servers.insertAdjacentHTML('beforeend',"<div class='select-message'>No servers. You can host one by clicking 'Enable Multiplayer' in a world.</div>")
 
+		/*
     for(var el of window.servers.querySelectorAll(".world")){
       let p = el.querySelector(".ping")
       if(!p.getAttribute("pingDone")) p.innerHTML = "Ping failed <div class='img' style='background-position:0 -70px;'></div>"
@@ -29633,8 +29670,7 @@ p.camera.transformation.elements.set(matrix)//*/
       addPingMsg("Something went wrong when pinging: "+e)
       console.error(e)
     })
-    
-		window.servers.onclick = () => Button.draw()
+		*/
 	}
   let marketplace = {}; let marketplaceData = null
 	let downloadingProgress = 0, downloadingTotal = 0
@@ -31441,17 +31477,13 @@ p.camera.transformation.elements.set(matrix)//*/
       changeScene("multiplayer connecting")
 			addToBottomRightList("connecting","Authenticating")
       loggedIn().then(logged => {
-        if(logged){
-          initServersMenu().then(() => {
-            if(servers[target]){
-              initMultiplayer(target)
-            }else{
-              changeScene("main menu")
-            }
-          })
-        }else{
-          changeScene("main menu")
-        }
+        initServersMenu().then(() => {
+					if(servers[target]){
+						initMultiplayer(target)
+					}else{
+						changeScene("main menu")
+					}
+				})
       })
       
 		}
