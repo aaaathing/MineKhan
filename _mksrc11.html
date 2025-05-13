@@ -728,7 +728,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
       width:200px;
       margin: 16px;
     }
-    #customMenuContainer, #updates{
+    .customMenu{
       position:absolute;
       left:25vw;
       top:25vh;
@@ -1025,11 +1025,11 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		<button id="messagesEnter">Enter</button>
 		<div id="messageOverlay"></div>
   </div>
-  <div id="customMenuContainer" class='hidden'>
+  <div id="customMenuContainer" class='hidden customMenu'>
     <button id="customMenuClose" style="float:right;">&times;</button>
     <div id="customMenu"></div>
   </div>
-	<div id="updates" class="hidden"></div>
+	<div id="updates" class="hidden customMenu"></div>
   <div style="position:absolute;top:0;left:0;width:100vw;"><video id="endPoemVideo" style="display:block;height:calc(var(--vh) - 40px);margin:auto;" class="hidden"></div>
   <div id="controls" class="hidden"></div>
   <div id="controlDetect" class="hidden" tabindex="0">Click or press a key</div>
@@ -1051,6 +1051,11 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		<div id="packetViewerJSON"></div>
 	</div>
 	<div id="achievments" class="hidden"></div>
+	<div id="editProfile" class="hidden" style="position:absolute; right:8px; bottom:8px; font-family:thefont; color:white;">
+		<label for="editUsername">Username:</label> <input id="editUsername" type="text"><br>
+		<label for="editSkin">Skin:</label> <input id="editSkin" type="file"><br>
+		<label for="editCape">Cape:</label> <input id="editCape" type="file"><br>
+	</div>
 	<!--<div style="z-index:4;position:absolute;top:0;left:0;width:100vw;height:100vh;background:white;">
 		<div id="countdown" style="font-size:24px;position:absolute;top:50%;left:50%;transform:translateX(-50%) translateY(-50%);"></div>
 		<button id="hideCountdown" style="margin:8px;">Hide and possibly get MineKhan blocked</button>
@@ -1129,7 +1134,10 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
         One day, Willard spin-offed Scusraft and made MineKhan.<br>
         After many days, he ported it from a pjs program to to a webpage.<br>
         Then, when Willard made his own website (willard.fun), thingMaker copied the code and programmed it more so soon it became this.<br>
-        The End.
+        The End.<br>
+				<br>
+				A lot of great and fun things and interesting conflicts happened in MineKhan in its golden days.<br>
+				Read about it <a href="https://thingmaker.us.eu.org/history.html">here</a>
 				<br><br>
 				<span id="credits"></span>
       </div>
@@ -2151,6 +2159,7 @@ window.loader = document.getElementById("loader")
 window.loadBar = document.querySelector("#loadBar div")
 window.bottomRightList = document.querySelector("#bottomRightList")
 window.themeColor = document.getElementById("themeColor")
+window.editProfile = document.getElementById("editProfile")
 
 let touchScreen = "ontouchstart" in document
 
@@ -6367,8 +6376,8 @@ ROTATION = 0x1800 // Mask for the direction bits
       }
     },
 		"main menu":{
-			enter:[window.morestuff],
-			exit:[window.morestuff],
+			enter:[window.morestuff, window.editProfile],
+			exit:[window.morestuff, window.editProfile],
 			onenter: () => {
 				if(performFast) renderMainBG()
 			}
@@ -17719,9 +17728,9 @@ r 11 y  n  n  n
       var part = this.parts.holding
       if(this.holding !== this.prevHolding){
         this.prevHolding = this.holding
-        var v = generateBlockVAO(this.holding)
-        part.vao = v.vao
-        part.size = v.size
+				var v = generateBlockVAO(this.holding)
+				part.vao = v.vao
+				part.size = v.size
       }
       this.parts.rightArm.rx = this.holdRot
       this.parts.leftArm.rx = 0 //if you change below, also change mob holding
@@ -17934,8 +17943,40 @@ r 11 y  n  n  n
       }
       if(this.nameText && !this.sneaking && (p.thirdPerson || this !== p.spectating && this !== p)) this.nameText.render()
     }
+		renderPreview(renderx,rendery,renderz,scale){
+			if(!this.swimming) rendery += this.offsetY
+      let pscale = this.scale
+			this.scale = scale
+
+      let offsetry = this.offsetry
+      
+      //set texture to skin
+      gl.activeTexture(gl.TEXTURE7)
+      gl.bindTexture(gl.TEXTURE_2D, this.skinTex)
+      
+			const modelMatrix = entityMatrices.modelMatrix
+			entityMatrices.projectionMatrix.identity()// actually used as view matrix
+			const viewMatrix = entityMatrices.projectionMatrix.elements
+			const modelViewProjectionMatrix = entityMatrices.modelViewProjectionMatrix
+			const proj = p.camera.projection
+			const projectionMatrix = [proj[0], 0, 0, 0, 0, proj[1], 0, 0, 0, 0, proj[2], proj[3], 0, 0, proj[4], 0]
+			gl.uniform1i(glCache.uSamplerEntity, 7)
+			gl.uniform1f(glCache.uBlockLightEntity, 1)
+			gl.uniform1f(glCache.uSkylightEntity, 1)
+			gl.uniform3f(glCache.uPosEntity, 0,0,0)
+			gl.uniform1f(glCache.fogTimeEntity, 1)
+			gl.uniform1f(glCache.uDistEntity, 1000)
+			gl.uniform1f(glCache.brightnessEntity, 1)
+      gl.uniform3f(glCache.tintEntity, 1,1,1)
+			gl.uniform3f(glCache.skyColorEntity, skyBottom[0], skyBottom[1], skyBottom[2])
+      gl.uniform1f(glCache.uTimeEntity, 1)
+			for(var part in this.parts){
+        this.renderPart(this.parts[part], modelMatrix, modelViewProjectionMatrix, projectionMatrix, viewMatrix, renderx, rendery, renderz)
+      }
+			this.scale = pscale
+    }
     renderPart(part, modelMatrix, modelViewProjectionMatrix, projectionMatrix, viewMatrix, x,y,z){
-      if(part.name === "cape"){
+			if(part.name === "cape"){
         if(!this.capeTex) return
         gl.activeTexture(gl.TEXTURE7)
         gl.bindTexture(gl.TEXTURE_2D, this.capeTex)
@@ -17948,7 +17989,7 @@ r 11 y  n  n  n
       let diff = (now - this.lastUpdate) / tickTime
 			if (diff > 1) diff = 1
       let partDiff = (now - part.lastUpdate) / tickTime
-			if (partDiff > 1) partDiff = 1
+			if (partDiff > 1 || isNaN(partDiff)) partDiff = 1
       let yaw = lerp(diff,this.previousYaw,this.yaw)
       let pitch = lerp(diff,this.previousPitch,this.pitch)
       
@@ -21077,6 +21118,40 @@ r 11 y  n  n  n
       return null
     }
   }
+	function updateProfile(){
+		p.username = profile.username
+		editUsername.value = profile.username
+		p.setSkin(profile.skin)
+		p.setCape(profile.cape)
+	}
+	let profile = {username:"Steve"}
+	let editUsername = document.getElementById("editUsername")
+	editUsername.value = profile.username
+	editUsername.onchange = () => {
+		profile.username = editUsername.value
+		saveToDB("profile", profile).catch(console.error)
+	}
+	document.getElementById("editSkin").onchange = function(){
+		let fileReader = new FileReader(), file = this.files[0]
+    if(!file) return
+    fileReader.onload = () => {
+			profile.skin = fileReader.result
+			saveToDB("profile", profile).catch(console.error)
+			p.setSkin(profile.skin)
+		}
+    fileReader.readAsDataURL(file)
+	}
+	document.getElementById("editCape").onchange = function(){
+		let fileReader = new FileReader(), file = this.files[0]
+    if(!file) return
+    fileReader.onload = () => {
+			profile.cape = fileReader.result
+			saveToDB("profile", profile).catch(console.error)
+			p.setCape(profile.cape)
+		}
+    fileReader.readAsDataURL(file)
+	}
+
 	function getCookieValue(name){
 		const regex = new RegExp(`(^| )${name}=([^;]+)`)
 		const match = document.cookie.match(regex)
@@ -21126,11 +21201,11 @@ r 11 y  n  n  n
   }
 
   async function loggedIn(){
-		if(multiplayer && multiplayer.differentAccount){
-			updateUserTo(multiplayer.differentAccount)
+		updateProfile()
+		if(multiplayer && multiplayer.differentUsername){
+			p.username = multiplayer.differentUsername
 			return
 		}
-		return updateUserTo()
 		
     /*var logged = false;
     await fetch("/server/account", {headers:{Authorization:userSessionString}}).then(r => r.json()).then(r => {
@@ -21269,6 +21344,16 @@ r 11 y  n  n  n
 		websocket.send(JSON.stringify(msg))
 	}
 	const {unorderedPackets} = win
+
+	let iceServers = [{'urls': 'stun:stun.l.google.com:19302'}, {urls: 'turn:turn.anyfirewall.com:443?transport=tcp', credential: 'webrtc', username: 'webrtc'}, {urls: 'turn:numb.viagenie.ca', credential: 'muazkh', username: 'webrtc@live.com'}, {urls: 'turn:turn.bistri.com:80', credential: 'homeo', username: 'homeo'}]
+	loadFromDB("iceServers").then(res => {
+		if(res){
+			let s = new Set(res.data.map(r => r.urls))
+			for(let i of res.data){
+				if(!s.has(i.urls)) iceServers.push(i)
+			}
+		}
+	})
 	class RTCClientContainer{
 		constructor(channel,connection,unorderChannel){
 			this.channel = channel
@@ -21431,13 +21516,13 @@ r 11 y  n  n  n
 								reportError('Error adding received ice candidate'+e.toString())
 								console.log(e)
 							}
-						}else if(data.type === "message"){
+						}else if(data.type === "message" && !data.FROM){
 							if(data.fromServer){
 								Messages.add(data.data)
 							}else{
 								Messages.write(data.data, data.username)
 							}
-						}else if(data.type === "eval"){
+						}else if(data.type === "eval" && !data.FROM){
 							//This is also in other places!!!!!!
 							console.log("Evaluating script: "+data.data)
 							var res, error = false
@@ -21449,7 +21534,7 @@ r 11 y  n  n  n
 								res = e
 							}
 							//send({type:"evalRes",data:res,error:error})
-						}else if(data.type === "error"){
+						}else if(data.type === "error" && !data.FROM){
 							multiplayerError = data
 							console.warn("Multiplayer error!",data.data)
 						}
@@ -21481,7 +21566,7 @@ r 11 y  n  n  n
 				;(async function(){
 					let useWsInstead
 					addToBottomRightList("connecting","Creating RTCPeerConnection")
-					peerConnection = new RTCPeerConnection({'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]});
+					peerConnection = new RTCPeerConnection({iceServers});
 	
 					let channel = peerConnection.createDataChannel("multiplayer")
 					channel.onopen = () => {waitForDataChannelResolve(); addToBottomRightList("connecting","Data channel opened: multiplayer","lime")}
@@ -21596,7 +21681,7 @@ r 11 y  n  n  n
 				if(data.type === "offer"){
 					if(!data.id) return
 					serverWorld.sendAll({type:"message",data:"<span style='color:lightgreen;'>"+data.username+" is connecting. "+(serverWorld.players.length+1)+" players now.", fromServer:true})
-					let peerConnection = new RTCPeerConnection({'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]})
+					let peerConnection = new RTCPeerConnection({iceServers})
 					peerConnections[data.id] = peerConnection
 
 					peerConnection.addEventListener('icecandidate', event => {
@@ -21699,16 +21784,16 @@ r 11 y  n  n  n
 							host:p.username, players: serverWorld.players.map(r => r.username)
 						}
 					})
-				}else if(data.type === "message"){
+				}else if(data.type === "message" && !data.FROM){
 					if(data.fromServer){
 						Messages.add(data.data)
 					}else{
 						Messages.write(data.data, data.username)
 					}
-				}else if(data.type === "error"){
+				}else if(data.type === "error" && !data.FROM){
 					websocketError = data
 					console.warn("Multiplayer error!",data.data)
-				}else if(data.type === "eval"){
+				}else if(data.type === "eval" && !data.FROM){
 					//This is also in other places!!!!!!
 					console.log("Evaluating script: "+data.data)
 					var res, error = false
@@ -22323,10 +22408,7 @@ r 11 y  n  n  n
 			updateTitle(false)
 			changeScene("multiplayer lost")
 		})
-		multiplayer.differentAccount = {
-			username,
-			skin:undefined, cape:undefined
-		}
+		multiplayer.differentUsername = username
 		await loggedIn()
 		
 		world = new World()
@@ -24993,6 +25075,14 @@ p.camera.transformation.elements.set(matrix)//*/
     }, () => !(servers[selectedWorld] && servers[selectedWorld].url))*/
     Button.add(mid - 3 * x4, height - 40*ss, w4, 40*ss, "Reload", "multiplayer menu", initServersMenu)
     Button.add(mid - 1 * x4, height - 40*ss, w4, 40*ss, "join eaglercraf server (experimental)", "multiplayer menu", joinEaglerServer, null,"it has bugs and no inventory")
+    Button.add(mid + 1 * x4, height - 40*ss, w4, 40*ss, "Edit ICE servers", "multiplayer menu", () => {
+			try{
+				iceServers = JSON.parse(prompt("ICE servers", JSON.stringify(iceServers)))
+			}catch(e){
+				alert(e); return
+			}
+			saveToDB("iceServers",iceServers)
+		})
 		Button.add(mid + 3 * x4, height - 40*ss, w4, 40*ss, "Back", "multiplayer menu", r => changeScene("main menu"))
 		
     //multiplayer connecting buttons
@@ -31335,17 +31425,15 @@ p.camera.transformation.elements.set(matrix)//*/
 		loadDone("Initializing MineKhan.")
     changeScene("initLoading")
 		let settingsSaved, savedUpdates
-		await loadFromDB().then(async res => {
-			if(res && res.length) {
-				let index = res.findIndex(obj => obj.id === "settings")
-				if (index >= 0) {
-					Object.assign(settings, res[index].data) // Stored data overrides any hardcoded settings
-					settingsSaved = true
-				}
-				index = res.findIndex(obj => obj.id === "lastUpdate")
-				if (index >= 0) {
-					savedUpdates = res[index].data
-				}
+		await loadFromDB("settings").then(async res => {
+			if (res) {
+				Object.assign(settings, res.data) // Stored data overrides any hardcoded settings
+				settingsSaved = true
+			}
+		}).catch(r => console.error(r))
+		await loadFromDB("lastUpdate").then(async res => {
+			if (res) {
+				savedUpdates = res.data
 			}
 		}).catch(r => console.error(r))
 
@@ -31354,13 +31442,23 @@ p.camera.transformation.elements.set(matrix)//*/
 		await waitAFrame()
     initPlayer()
 		let req
-    fetch("/server/account",{headers:{Authorization:userSessionString}}).then(r => {req = r; return r.json()}).then(r => {
+    /*fetch("/server/account",{headers:{Authorization:userSessionString}}).then(r => {req = r; return r.json()}).then(r => {
       updateUserTo(r)
       loadDone("Fetch account","",req.status)
     }).catch(e => {
       console.log(e)
       loadDone("Fetch account","fail")
-    })
+    })*/
+		loadFromDB("profile").then(async res => {
+			if (res){
+				Object.assign(profile, res.data)
+				updateProfile()
+			}
+			loadDone("Load profile")
+		}).catch(r => {
+			console.error(r)
+			loadDone("Load profile","fail")
+		})
     
     skybox = new Skybox()
 		win.skybox = skybox
@@ -31667,7 +31765,11 @@ p.camera.transformation.elements.set(matrix)//*/
 			ctx.textAlign = 'left'
 			text("MineKhan-thingmaker " + version, 2, lerp(ctx.globalAlpha,height+16,height - 2 - 16))
       ctx.textAlign = "right"
-			text("Press Ctrl+H to hide window. Press Ctrl+J to undo hide.", width - 2, height - 2 - 16)
+			//text("Press Ctrl+H to hide window. Press Ctrl+J to undo hide.", width - 2, height - 2 - 16)
+
+			gl.useProgram(programEntity)
+			p.renderPreview(width/height*0.6,0,-1, 0.25)
+			gl.useProgram(program3D)
 
 			ctx.globalAlpha = 1
 		}
