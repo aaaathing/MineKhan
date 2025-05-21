@@ -2185,7 +2185,7 @@ riverBiome(temperature){
 return temperature===0 ? "frozenRiver" : "river"
 },
 get(temperature,rainfall,weirdness,ridges,continentalness,erosion,height,jaggedness,factor,bottom){
-/*rett*/return"stonyShore"
+//*rett*/return"stonyShore"
 
 if(erosion < -0.2 && height > 150){
 return this.peakBiome(temperature,rainfall,weirdness,ridges,erosion,jaggedness,factor)
