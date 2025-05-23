@@ -21211,7 +21211,7 @@ r 11 y  n  n  n
     /*var logged = false;
     await fetch("/server/account", {headers:{Authorization:userSessionString}}).then(r => r.json()).then(r => {
       logged = updateUserTo(r)
-    }, console.error)
+    }).catch(console.error)
     if(logged){
       return logged
     }else{
@@ -21221,7 +21221,7 @@ r 11 y  n  n  n
 					setUserSession(logged)
           await fetch("/server/account", {headers:{Authorization:userSessionString}}).then(r => r.json()).then(r => {
             logged = updateUserTo(r)
-          }, console.error)
+          }).catch(console.error)
           return logged
         }
       }
@@ -21266,7 +21266,7 @@ r 11 y  n  n  n
 				worlds.push(w)
         if(addWorldCallback) addWorldCallback(w)
       }
-    }, console.error)
+    }).catch(console.error)
     await fetch("/server/servers").then(r => r.json()).then(r => {
       for(var v of r){
         let obj = {
@@ -21284,13 +21284,13 @@ r 11 y  n  n  n
         worlds.push(obj)
         addWorldCallback(obj)
       }
-    }, console.error)
+    }).catch(console.error)
     if(pingCallback){
       await fetch("/server/worldsPing").then(r => r.json()).then(pings => {
         for(let p in pings){
           pingCallback(p,pings[p])
         }
-      }, console.error)
+      }).catch(console.error)
     }*/
     return worlds
   }
@@ -29641,7 +29641,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				}
 			}
       
-      let cloudSaves = await fetch('saves', {headers:{Authorization:userSessionString}}).then(res => res.json(), console.error)
+      let cloudSaves = await fetch('saves', {headers:{Authorization:userSessionString}}).then(res => res.json()).catch(console.error)
 			if (Array.isArray(cloudSaves) && cloudSaves.length) {
 				cloudSaves.sort((a,b) => b.edited - a.edited)
 				for (let data of cloudSaves) {
@@ -29811,8 +29811,15 @@ p.camera.transformation.elements.set(matrix)//*/
 			progEl.innerHTML = floor(loaded*100)+"%"+" "+formatBytes(loaded1)+"/"+formatBytes(max1)+" "+formatBytes(loaded2)+"/"+formatBytes(max2)+" "+formatBytes(loaded3)+"/"+formatBytes(max3)
 		}
 		await Promise.all([
-			!search && fetch("/server/mapCategories").then(r => r.json()).then(r => {
+			!search && fetch("/server/mapCategories").then(r => r.json()).catch(console.error).then(r => {
 				window.marketplace.prepend(document.createElement("br"))
+				if(!r){
+					var div = document.createElement("div")
+		      div.classList.add("select-message")
+		      div.innerHTML = "Maps are not available now"
+		      window.marketplace.prepend(div)
+					return
+				}
 				for(let i of r.reverse()){
 					let a = document.createElement("a")
 					a.textContent = i.replace(/[A-Z]/g, " $&").replace(/./, c => c.toUpperCase())
@@ -29834,15 +29841,18 @@ p.camera.transformation.elements.set(matrix)//*/
 				window.marketplace.prepend(a)
 			}),
 			(async function(){
-				let data = await fetch(search ? "/server/mapsSearch?q="+encodeURIComponent(search) : (marketplaceCategory ? "/server/mapsCategory/"+marketplaceCategory : "/server/maps")).then(r => showProgressFromResponse(r,load2)).then(r => r.json())
-				for(var m in data){
+				let data = await fetch(search ? "/server/mapsSearch?q="+encodeURIComponent(search) : (marketplaceCategory ? "/server/mapsCategory/"+marketplaceCategory : "/server/maps")).then(r => showProgressFromResponse(r,load2)).then(r => r.json()).catch(console.error)
+				if(data) for(var m in data){
 					let v = data[m]
 					v.rp = m.startsWith("rp:")
 					if(v.rp) v.fetchUrl = "/server/rp/"+v.name
 					else v.fetchUrl = "/server/map/"+v.name
 					marketplaceData.push(v)
 				}
-				if(!marketplaceCategory && !search) marketplaceData.push(...await fetch("maps.json").then(r => showProgressFromResponse(r,load1)).then(r => r.json()))
+				if(!marketplaceCategory && !search){
+					let data = await fetch("maps.json").then(r => showProgressFromResponse(r,load1)).then(r => r.json())
+					if(data) for(let i of data) marketplaceData.push(i)
+				}
 			})()
 		])
 		progEl.remove()
@@ -30702,7 +30712,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				div.innerHTML += "<strong>" + Messages.format(r.name) + "</strong>" + br
 				
 				window.languages.appendChild(div)
-			}, console.error)
+			}).catch(console.error)
 		}
 		for(let i of languageNames){
 			loadLang(i)
@@ -31521,7 +31531,7 @@ p.camera.transformation.elements.set(matrix)//*/
 					}
 					window.updates.appendChild(btn)
 				}
-			}, console.error)
+			}).catch(console.error)
 			/*let updates = savedUpdates
 			let r = await fetch("/updates/all").then(r => r.json()).catch(e => {console.error(e); return []})
 			updates = r.filter(u => !updates.includes(u))
@@ -31554,7 +31564,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			fetch("updatesAfter/null").then(r => r.text()).then(async r => {
 				let last = r.lastIndexOf("-- "), lastEnd = r.indexOf("\n",last)
 				await saveToDB("lastUpdate",+r.substring(last+3,lastEnd))
-			}, console.error)
+			}).catch(console.error)
 		}
 		if(unsupported.length) alert("Unfortunately, these are unsupported: "+unsupported.join(", "))
 		
