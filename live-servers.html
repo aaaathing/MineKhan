@@ -11,11 +11,11 @@
         font-family:font;
       }
       body{
-        font-family:font;
+        /*font-family:font;*/
         color:whitesmoke;
       }
       #bg{
-        background-image:url(/assets/dirt.png);
+        background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA0UlEQVR42nWSsQ1CMQxEvQ4rINFR0SOBxAgpaRgA/Q3YhelAF+mi9+/nF1YS2zn7zq7v+/H7tEu31/XYbea7nw6ruM/SRYlM0HtZluEzIO+KycporsI3qzGHeSW01tpwsJukkl0MAAcV0GdyJ6AKpa/cVlZyq9SG9yFicpR4TKDipOmzMjnH525m/g6QTp5uOT8zNt2D5J68SaVyPORsYPtJxVrVjBcraHSkwDH3TUxnguyZu1pRkD1v541wpjHb0MokKkz+WWgDkDtgkfbm7wJ/9oUoq3qXqFkAAAAASUVORK5CYII=);
         image-rendering:pixelated;
         filter:brightness(0.4);
         z-index:-1;
@@ -81,7 +81,7 @@
 </script>
   </head>
   <body>
-    <div id="nav"><a href="javascript:useUrl('https://willard.fun/minekhan/worlds')">use willard.fun (not recommended)</a></div>
+    <!--<div id="nav"><a href="javascript:useUrl('https://willard.fun/minekhan/worlds')">use willard.fun (not recommended)</a></div>-->
 
     <div id="bg"></div>
     
@@ -102,19 +102,21 @@
       }
       onresize()
 
-      function updateList(data){
-        var html = ""
-        players = 0
-        data.forEach(v => {
+      function updateList(toUpdate){
+        for(let v of toUpdate){
+					if(!v.el){
+						v.el = document.createElement("div")
+						v.el.className = "server"
+						servers.appendChild(v.el)
+					}
+					let html = ""
           if(!v.players && v.users) v.players = v.users
-          html += "<div class='server'>"
           if(v.thumbnail) html += "<img class='thumbnail' src='" + v.thumbnail + "'>"
           if((v.banned && typeof v.banned[username] === "string") || (v.whitelist && !v.whitelist.includes(username))) html += "<div class='lockImg'></div>"
           html += "<b>"+format(v.name)+"</b><br>"
           if(v.host) html += "Hosted by "+v.host+"<br>"
           if(v.description) html += v.description+"<br>"
           html += v.players.length+" players online: "+v.players.join(", ")+"<br>"
-          for(let i of v.players) if(i !== username) players++
           let i = 0
           for(let j in v.banned) i++
           if(i){
@@ -123,24 +125,27 @@
             html = html.substring(0,html.length-2) + "<br>"
           }
           if(v.whitelist) html += v.whitelist.length+" players whitelisted: "+format(v.whitelist.join(", "))
-          html += "</div>"
-        })
-        servers.innerHTML = html
-        document.title = data.length+" Servers, "+players+" Players. "+(usingUrl ? "From "+usingUrl : "")
+					v.el.innerHTML = html
+        }
+        players = 0
+				for(let v of worlds){
+          for(let i of v.players) if(i !== username) players++
+				}
+        document.title = worlds.length+" Servers, "+players+" Players. "+(usingUrl ? "From "+usingUrl : "")
       }
       
       var ws, worlds, username, prevPlayers, players, usingUrl
-      function ondata(data){
+      function ondata(toUpdate){
         prevPlayers = players
-        worlds = data
-        updateList(data)
+        //worlds = data
+        updateList(toUpdate)
         if(!prevPlayers && players && Notification.permission === "granted"){
           new Notification('Players online!', {
             body: 'There is now a player online!'
           });
         }
       }
-      function initWs(){
+      /*function initWs(){
         ws = new WebSocket("wss://"+location.host+"/worlds")
         ws.onmessage = msg => ondata(JSON.parse(msg.data))
         ws.onerror = () => ws.close()
@@ -148,8 +153,56 @@
           initWs()
         }
       }
+      initWs()*/
+			
+			function initWs(){
+				ws = new WebSocket("wss://cloud.achex.ca")
+				function sendupdate(){
+					ws.send(JSON.stringify({auth:"getWorlds"}))
+					ws.send(JSON.stringify({joinHub:"minekhan"}))
+					ws.send(JSON.stringify({serverstat:true}))
+					ws.send(JSON.stringify({toH:"minekhan",type:"ping"}))
+				}
+				ws.onopen = () => {
+					setInterval(sendupdate, 5000)
+					sendupdate()
+				}
+				let users = {}
+				ws.onmessage = msg => {
+					let data = JSON.parse(msg.data)
+					if(data.users){
+						worlds = []
+						let nextUsers = [], toUpdate = []
+						for(let i of data.users){
+							if(i.hub === "minekhan" && i.username !== "getWorlds"){
+								let w = i.world = users[i.username] && users[i.username].world
+								if(!w){
+									w = i.world = {id: i.username, name:"Pinging...", version:"Pinging...", host:"", players:[]}
+									toUpdate.push(w)
+								}
+								nextUsers[i.username] = i
+								worlds.push(w)
+							}
+						}
+						for(let i in users){
+							if(!nextUsers[i]) users[i].world.el.remove()
+						}
+						users = nextUsers
+						ondata(toUpdate)
+					}else if(data.type === "pong" && users[data.FROM]){
+						let w = users[data.FROM].world
+						Object.assign(w, data.data)
+						ondata([users[data.FROM].world])
+					}
+				}
+        ws.onerror = () => ws.close()
+        ws.onclose = function(){
+          initWs()
+        }
+      }
       initWs()
-      function useUrl(url){
+			
+      /*function useUrl(url){
         usingUrl = url
         url = "https://around.thingmaker.repl.co/-?url="+encodeURIComponent(url)
         ws.onclose = null
@@ -170,7 +223,7 @@
         }
         me = ws
         ws.timeout()
-      }
+      }*/
 
       fetch("/server/getuser").then(r => r.text()).then(r => {
         username = r
