@@ -30588,7 +30588,7 @@ p.camera.transformation.elements.set(matrix)//*/
 	let recording = false, recorder, recordStream
 	async function startRecord(){
 		try{
-			recordStream = await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:"browser",width:{max:400},height:{max:400}},preferCurrentTab:true})
+			recordStream = await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:"browser",width:{max:400},height:{max:400}},preferCurrentTab:true,surfaceSwitching:"include"})
 			recorder = new MediaRecorder(recordStream,{mimeType:"video/mp4"})
 		}catch(e){
 			console.error(e)
@@ -30600,7 +30600,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			const blob = new Blob(chunks, {type:recorder.mimeType.split(";")[0]})
 			let a = document.createElement("a")
 			a.href = URL.createObjectURL(blob)
-			a.download = "Screen recording "+(new Date().toString())
+			a.download = "Screen recording "+document.title.replace(/[.]/g,",")+" "+(new Date().toLocaleString()).replace(/\//g,"-").replace(/:/g,",")
 			a.click()
 			URL.revokeObjectURL(a.href)
 			//savebox.classList.remove("hidden")
