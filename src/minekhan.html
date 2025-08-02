@@ -1007,9 +1007,6 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		It is probably a bad<br>
 		idea to use save codes.
 	</p>
-	<span id="morestuff" class="hidden" style="position: absolute; top: 10px; left: 10px; z-index: 1; background-color: rgba(0,0,0, 0.5); color:white; font:16px sans-serif;">
-		If you have old screenshots or worlds,<br> please let it be seen so more history can be found. <a href="/old.html" targe="_blank">how?</a>
-	</span>
 	<div class="world-select hidden" id="worlds"></div>
   <div class="world-select hidden" id="servers"></div>
   <div class="world-select hidden" id="marketplace"></div>
@@ -1053,7 +1050,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		<div id="packetViewerJSON"></div>
 	</div>
 	<div id="achievments" class="hidden"></div>
-	<div id="editProfile" class="hidden" style="position:absolute; right:8px; bottom:8px; font-family:thefont; color:white;">
+	<div id="editProfile" class="hidden" style="position:absolute; left:8px; bottom:24px; font-family:thefont; color:white;">
 		<label for="editUsername">Username:</label> <input id="editUsername" type="text"><br>
 		<label for="editSkin">Skin:</label> <input id="editSkin" type="file"><br>
 		<label for="editCape">Cape:</label> <input id="editCape" type="file"><br>
@@ -1141,8 +1138,10 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 				A lot of great and fun things and interesting conflicts happened in MineKhan in its golden days.<br>
 				Read about it <a href="https://thingmaker.us.eu.org/history.html">here</a>
 				<br><br>
-				<span id="credits"></span>
+				<a href="updates.txt" target="_blank">Changelog</a>
+				<br><br>
 				<img src="assets/images/sij.png">
+				<span id="credits"></span>
       </div>
 			<div>
 				<h1>URL parameters</h1>
@@ -2117,7 +2116,6 @@ window.boxCenterTop = document.getElementById("boxcentertop")
 window.seedBox = document.getElementById("seedBox")
 window.uploadWorld = document.getElementById("uploadWorld")
 window.saveDirections = document.getElementById("savedirections")
-window.morestuff = document.getElementById("morestuff")
 window.worlds = document.getElementById("worlds")
 window.servers = document.getElementById("servers")
 window.marketplace = document.getElementById("marketplace")
@@ -6092,7 +6090,7 @@ if time is 0, it will update every time
 		//Actually offhand//shield:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAbUlEQVQ4y62TURJAEQhF24Y/Y/97zI/e1JXk0Uw/6h4XIWammwyLpTYeGQN0KBE7INNsHHgNpbYvcQPjQGxmQzQTIAvxAEcu9MW+AejF3wApZMTTMz4F7I6xA4QQrK0A5g/AeFMIwPFF4RJwkx12yiHWwRBgCAAAAABJRU5ErkJggg==",
 		elytra:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAGFJREFUOE9jZKAQMFKonwHDAEkFpf/4DH3+4B6KHjgHphGmAN0gdHEYH2wASDG6ychi+ORHDbjHSJ0wwBYT+GIBWQ4lHSBHJckGILsCX7yjy6EkS/TUiJ6ksclTPzORmjsBcJ+oEcgNm4wAAAAASUVORK5CYII=",
     //minekhan: "assets/images/minekhan.png",
-    panorama: "assets/images/panorama/aug-26-2024.jpg",
+    panorama: "assets/images/panorama/aug-2-2025.png",
 		loadbar: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAAICAYAAABpsU6/AAAABGdBTUEAALGPC/xhBQAAAPpJREFUeNrt20EOgjAQBVCa9P5XRo0rkYUSOmln3iybSPiPoS2ibX/W9lltU6/iwoULFy5cuPBK6dIB/p2TCxcTCxcuXLjwWtqlAy/fiK7nWJdsvly4mF/0C68ELl8bwNbenz++Gf5hfD+Mt4vHCR2/Mf+S4wH5p+6L4w20St8GXP8SLhf6P5XLQvP/kOOb/6Zb/0K9Zsp/dm6jXa58A+gJRX6Vpy9m608u+la/5O9f99fJZi/6PxldA8gvPxfe03tHn6c+5MIruUtfCKb6bx3kt2GW30Jyt0tWVy6xucxPC65bvSD8Xrzx5JdffguSDfN52bjUehAvnf8Ba86fI1AtGCgAAAAASUVORK5CYII=",
 		autosave:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKIAAAAeCAYAAACv+sUVAAADdUlEQVR42u3av2sTYRzH8XfONOkPqrGl1F8VXRqklFIcxKGDm0Na0KlQaSeRjgrqvyAKdtOhk6KlFLFgOwm6ODk4FAdJHULpYGtKGikmJqk5hyNHr7m73B1PW5N8vxBIk+PVb57nc7nn7hLCoRKJMd3u9eXldyGkpGqU3/yE3bCll7ctf49Ozh54Q1L1FSBV+QkfxoeTQDdugFRVuJ4GuxEDXe8BasogNmqg6zlAEsQGCbSUUZoMgZQEUUrK7tDstO5x2kbOWKVU5Sdca93j9J7bekgC3TwBUpWf8P4zvtFJdDesgtQKjwS6OQKkKj9hv5iXEEqgmydAqvITchsIu8sTfibJzvBruRleLS+GF2t/gGpdvnFzVPSjanxUzpfK/FgwPbOk65kl3cteXMsIatkZfi03w6vlxVBpqfhsKsZaxdwHNQB0QE8kxipI5eHbsWlIb+ZA/+cBUjJffvMTcgCYme7jXCxmvlgoFAG49TRZ87Bu57z4ehGA8f5kYOfD+rB5OBydnGW8P+nbSSTGcDhkeHbsDBvr0PpROT4q58tPfkL7gVf34qTzObq1CABtx9st/6VQKJLO57j7fN2psQN1FtYGAJgaTAV2FtYGLBM2NZjy7eyd9L0BGu9PHkk/KsfnKOa9gukz0330tLXbRjydz5nvRaMRM917wLpz5lfjlj0+iDO/Gq/6BjrKfup5vkzodG8XAA9udlSB5cIuWjRsPgd4+GYbgB+bGUtDzebsD5CMTzDHhK4PdQKwstFigoCJpvM5AB6//Q3AjSHjNvWz91uWhsQRJ4hTleihUyUL+GSih3Q+VwUsrpRd9wxxxPHjmHdWznf9BeDC1QlGRkbIPboDwP3XaVvgWr+xGJ3btK4HxBEniGMG8WTE2CCVSpHNZvn+09hwuC/E5o7G4spfC9AVs/9NrTjiBHGq1K2tLQDOxI5VlpoWINa2S1lroVz443oxSRxx/DiWIGotEXpKq7CxSm9nxLJhrM0429GirWhAuVBybEYccfw6ZhC3ixoUd+nuiFAuFSmXiiZuPRU3kpzdLds2I444QZxKEEOfv/3SAa5cOgFo5jHfkvhoK5mskey5Txt2V9jFESeQ43iv2QChuyPM5o5G/Kyx2Jz7mPF1z1Eccbw4oVrg5XgPAF+Saa+NiCOOSscCBv4tmTjieHH+ASOfDpJpNy6QAAAAAElFTkSuQmCC",
     error:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAABhJREFUGFdj/M/w/z8jAwgyMPz/z/CfAQA5DAX/rY1o3wAAAABJRU5ErkJggg==",
@@ -6123,7 +6121,7 @@ if time is 0, it will update every time
   }
 	function loadOriginalImage(i){
 		let url = images[i]
-		loadImage(i,images).then(r => loadDone("Loaded "+i)).catch(r => loadDone("Failed to load "+i,"fail"))
+		loadImage(i,images).then(r => url.startsWith("data:") ? loadDone() : loadDone("Loaded "+i)).catch(r => loadDone("Failed to load "+i,"fail"))
 	}
   for(var i in images){
     loadOriginalImage(i)
@@ -6379,8 +6377,8 @@ ROTATION = 0x1800 // Mask for the direction bits
       }
     },
 		"main menu":{
-			enter:[window.morestuff, window.editProfile],
-			exit:[window.morestuff, window.editProfile],
+			enter:[window.editProfile],
+			exit:[window.editProfile],
 			onenter: () => {
 				if(performFast) renderMainBG()
 			}
@@ -21510,11 +21508,11 @@ r 11 y  n  n  n
 							const remoteDesc = new RTCSessionDescription(data.answer)
 							await peerConnection.setRemoteDescription(remoteDesc)
 							waitForAnswerResolve()
-							addToBottomRightList("connecting","Recieved answer: "+JSON.stringify(data.answer),"yellow")
+							addToBottomRightList("connecting","Recieved answer","yellow")
 						}else if(data.type === "iceCandidate"){
 							try {
 								await peerConnection.addIceCandidate(data.data)
-								addToBottomRightList("connecting","Recieved and added ICE canidate: "+JSON.stringify(data.data),"yellow")
+								addToBottomRightList("connecting","Recieved and added ICE canidate","yellow")
 							} catch (e) {
 								reportError('Error adding received ice candidate'+e.toString())
 								console.log(e)
@@ -21568,7 +21566,7 @@ r 11 y  n  n  n
 				await new Promise((resolve) => {
 				;(async function(){
 					let useWsInstead
-					addToBottomRightList("connecting","Creating RTCPeerConnection")
+					//addToBottomRightList("connecting","Creating RTCPeerConnection")
 					peerConnection = new RTCPeerConnection({iceServers});
 	
 					let channel = peerConnection.createDataChannel("multiplayer")
@@ -21583,12 +21581,12 @@ r 11 y  n  n  n
 					const offer = await peerConnection.createOffer()
 	  			await peerConnection.setLocalDescription(offer)
 					sendWS({type:"offer",id:p.id,offer, username:p.username, to:target})
-					addToBottomRightList("connecting","Sent offer: "+JSON.stringify(offer))
+					addToBottomRightList("connecting","Sent offer")
 					
 					peerConnection.addEventListener('icecandidate', e => {
 						if (e.candidate) {
 							sendWS({type:"iceCandidate", data: e.candidate, to:target})
-							addToBottomRightList("connecting","Sent ICE canidate: "+JSON.stringify(e.candidate))
+							addToBottomRightList("connecting","Sent ICE canidate")
 						}
 					})
 					peerConnection.addEventListener("connectionstatechange", e => {
@@ -21612,6 +21610,7 @@ r 11 y  n  n  n
 						}
 					})
 					peerConnection.addEventListener("icecandidateerror", e => {
+						if(connection) return
 						if(e.errorCode === 701) addToBottomRightList("connecting","Ice candidate error, code: "+e.errorCode+", reason: "+e.errorText,"red")
 						else{
 							reportError("Ice candidate error, code: "+e.errorCode+", reason: "+e.errorText)
@@ -30248,6 +30247,8 @@ p.camera.transformation.elements.set(matrix)//*/
 		listener = audioCtx.listener
 		if(!listener || !listener.positionX) alert("AudioListener not supported. No 3D sound.")
 		win.audioCtx = audioCtx, win.listener = listener
+
+		addToBottomRightList("startLoad", "Loading sounds. May take a while.", "yellow")
     
 		const nosound = urlParams.has("nosound")
 		async function loadSounds(){
@@ -30664,10 +30665,12 @@ p.camera.transformation.elements.set(matrix)//*/
   }
   function loadDone(item,status,statusCode = ""){
     loaded++
-		let color
-		if(status === "fail") item = item+" Fail "+statusCode, color = "red"
-		else item = item+" "+statusCode, color = "lime"
-		addToBottomRightList("startLoad", item, color)
+		if(item){
+			let color
+			if(status === "fail") item = item+" Fail "+statusCode, color = "red"
+			else item = item+" "+statusCode, color = "lime"
+			addToBottomRightList("startLoad", item, color)
+		}
     loadUpdate()
   }
 
@@ -31434,8 +31437,6 @@ p.camera.transformation.elements.set(matrix)//*/
 
 	let everythingInited = false
 	async function initEverything() {
-		maxStartLoad += 7 // fetch the account, and other stuff
-		loadDone("Initializing MineKhan.")
     changeScene("initLoading")
 		let settingsSaved, savedUpdates
 		await loadFromDB("settings").then(async res => {
@@ -31451,8 +31452,6 @@ p.camera.transformation.elements.set(matrix)//*/
 		}).catch(r => console.error(r))
 
 		await initWebgl()
-		loadDone("Initialized WebGL context, shapes, and textures.")
-		await waitAFrame()
     initPlayer()
 		let req
     /*fetch("/server/account",{headers:{Authorization:userSessionString}}).then(r => {req = r; return r.json()}).then(r => {
@@ -31467,10 +31466,8 @@ p.camera.transformation.elements.set(matrix)//*/
 				Object.assign(profile, res.data)
 				updateProfile()
 			}
-			loadDone("Load profile")
 		}).catch(r => {
 			console.error(r)
-			loadDone("Load profile","fail")
 		})
     
     skybox = new Skybox()
@@ -31481,19 +31478,12 @@ p.camera.transformation.elements.set(matrix)//*/
 		initCachedShapes()
 
 		await initBackgrounds()
-		loadDone("Initialized backgrounds.")
-		await waitAFrame()
 
 		p.camera.FOV(settings.fov)
 		initButtons()
 		initInputs()
-		loadDone("Initialized UI.")
-		await waitAFrame()
     initAudioCtx()
-		loadDone("Initialized audio context.")
-		await waitAFrame()
 		await initFont()
-		loadDone("Initialized font.")
 		if(settingsSaved){
 			loadControls()
 			selectVoiceFromList(settings.narratorVoice)

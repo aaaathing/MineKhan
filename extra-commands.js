@@ -1,4 +1,3 @@
-// get latest file from: https://drive.google.com/file/d/1AHR8mciisTOgJHDQO-aJTOBE-lJe6BT3/view?usp=sharing
 /*
   html for world name:
   <div style="position:absolute;top:0;left:0;width:100vw;height:100vh;background:yellow;"><a href="https://www.thingmaker.repl.co">COOL</a></div>
@@ -1155,9 +1154,9 @@ let pan = {
 		console.log("Preparing...")
 		pan.w = innerWidth
 		pan.h = innerHeight
-		player.transformation.copyMatrix(defaultTransformation)
-		player.FOV(90)
-		let matrix = player.getMatrix()
+		player.camera.transformation.elements.set(defaultTransformation.elements)
+		player.camera.FOV(90)
+		let matrix = player.camera.getMatrix()
 		let point0 = projectPointToScreen(matrix,[0,-0.5,0.5])
 		let point1 = projectPointToScreen(matrix,[0,0.5,0.5])
 		pan.y = point0[1]
@@ -1173,9 +1172,9 @@ let pan = {
 				isDone = true
 			}
 			var rotY = pan.rotY * Math.PI / 180
-			player.rx = 0
-			player.ry = rotY
-			player.setDirection()
+			player.camera.rx = 0
+			player.camera.ry = rotY
+			player.camera.setDirection()
 			world.render()
 			gl.flush()
 			pan.ctx.drawImage(gl.canvas, (pan.w/2)-1,pan.y,1,pan.h, (pan.rotY-1) / pan.res,0,1,pan.h)
@@ -1207,9 +1206,9 @@ let pan = {
 	},
 	async panoramaV2(){
 		if(getScene() !== "pause") return console.log("Please have a active world and pause")
-		player.transformation.copyMatrix(defaultTransformation)
-		player.FOV(90)
-		let matrix = player.getMatrix()
+		player.camera.transformation.elements.set(defaultTransformation.elements)
+		player.camera.FOV(90)
+		let matrix = player.camera.getMatrix()
 		let point0 = projectPointToScreen(matrix,[0.5,-0.5,0.5])
 		let point1 = projectPointToScreen(matrix,[-0.5,0.5,0.5])
 		let w = Math.round(point1[0] - point0[0])
@@ -1220,28 +1219,28 @@ let pan = {
 		pan.c.height = h
 		function copyToCanv(tox){
 			tox *= w
-			player.setDirection()
+			player.camera.setDirection()
 			world.render()
 			gl.flush()
 			pan.ctx.drawImage(gl.canvas, x,y,w,h, tox,0,w,h)
 		}
-		let offsetry = player.ry
-		player.rx = 0, player.ry = offsetry
+		let offsetry = player.camera.ry
+		player.camera.rx = 0, player.camera.ry = offsetry
 		copyToCanv(0)
 		await sleep(200)
-		player.rx = 0, player.ry = offsetry+Math.PI2
+		player.camera.rx = 0, player.camera.ry = offsetry+Math.PI2
 		copyToCanv(1)
 		await sleep(200)
-		player.rx = 0, player.ry = offsetry+Math.PI
+		player.camera.rx = 0, player.camera.ry = offsetry+Math.PI
 		copyToCanv(2)
 		await sleep(200)
-		player.rx = 0, player.ry = offsetry-Math.PI2
+		player.camera.rx = 0, player.camera.ry = offsetry-Math.PI2
 		copyToCanv(3)
 		await sleep(200)
-		player.rx = Math.PI2, player.ry = offsetry
+		player.camera.rx = Math.PI2, player.camera.ry = offsetry
 		copyToCanv(4)
 		await sleep(200)
-		player.rx = -Math.PI2, player.ry = offsetry
+		player.camera.rx = -Math.PI2, player.camera.ry = offsetry
 		copyToCanv(5)
 		await sleep(200)
 		console.log("Done! Run pan.download() to download")
@@ -1420,7 +1419,8 @@ change size: /sendEval @A var ssscaleee=1.2; eachTick=()=>{if(p.scale<ssscaleee)
 text: /sendeval 2-people world.addEntity(new entities[entityIds.TextDisplay](p2.x,p2.y,p2.z,"look,\nfloating text",1,[1,0,0]),false,p.dimension)
 link to rickroll: /sendeval @A Messages.add(`<a href="https://thingmaker.us.eu.org/minekhan/extra-hidden-stuff">Where does this link lead to???</a>`);Messages.all.at(-1).onclick=function(){event.preventDefault();Messages.write('I clicked the link and got free money.');window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ','_blank')}
 spawn tree: /sendeval 2-people runCmd("/sendeval @A if(host){serverSaveWorldGen();let x="+p2.x+", y="+p2.y+", z="+p2.z+", d='"+p.dimension+"'; serverWorld.getChunk(x,z,d).spawnSmallTree(x&15,y,z&15,x,z); serverRestoreWorldGen()}")
-turn on resource pack: /sendeval @A if(host){var rp="/minekhan/assets/resource_packs/example.json";serverWorld.setResourcePacks(rp,rp))}
+turn on resource pack: /sendeval @A if(host){var rp=["/minekhan/assets/resource_packs/example.json"];serverWorld.setResourcePacks(rp,rp)}
+who spectating?: /sendEval 2-people for(let i in players){if(players[i].spectating===userId)Messages,add(player[i].username)}
 
 old ones:
 turn on resource pack: /sendEval @A if(host){var rp="/minekhan/assets/resource_packs/example.json";(async function(){if(!world.resourcePacks.includes(rp)){world.resourcePacks.push(rp)} if(!world.activeResourcePacks.includes(rp)){world.activeResourcePacks.push(rp)} await initResourcePacks();initTextures();initBackgrounds();send({type:"resourcePacks",resourcePacks:world.resourcePacks,activeResourcePacks:world.activeResourcePacks}) })()}
@@ -1681,16 +1681,17 @@ sendNotifToAll('Want to see weird blocks? Click here',[{action:'open:/minekhan/?
 
 //show path
 let e
-for(let entt of world.entities){if(entt.mob)e=entt}
-apaa=e&&e.path
-if(apaa)intsss=setInterval(()=>{
-    let[x,y,z]=apaa.splice(0,3)
-    world.setBlock(x,y,z,Math.floor(Math.random()*80)+1)
-    if(!apaa.length){
-        clearInterval(intsss)
-        fireworkExplode(x,y,z,"",'',[0,1,0])
-    }
-},100)
+for(let entt of serverWorld.entities){if(entt.mob)e=entt}
+intsss=setInterval(()=>{
+		let apaa=e&&e.path
+		if(!apaa)return
+    for(let i=0;i<apaa.length;i+=3)world.addParticle(new entities[entityIds.Spark](apaa[i],apaa[i+1],apaa[i+2],0,0,0,[0,1,0]),"")
+		//world.setBlock(x,y,z,Math.floor(Math.random()*80)+1)
+    //if(!apaa.length){
+    //    clearInterval(intsss)
+    //    fireworkExplode(x,y,z,"",'',[0,1,0])
+    //}
+},1000)
 
 //Rickroll text:
 var text=((function(t){var i,e,r,n,o;function s(){var e=t.charAt(n++);return i.indexOf(e)}function u(e,t,r){for(var n=o.length-t*i.length-r-1;e--;)o+=o.charAt(n++)}for(n=0,o=i="",e=35;e<127;e++)i+=String.fromCharCode(e),91==e&&(e+=1);for(;n<t.length;)if((r=s())<12)for(r++;r--;)o+=t.charAt(n++);else r<57?u(r-8,s(),s()):u(3,r-57,s());return o})
@@ -1721,6 +1722,17 @@ console.log(b)
 b=a=0
 
 remove cull in shapes: ,\n\t*cull: *\{[\n\ta-z: 0-9,]*\}
+
+replace update with file
+db.list("up:").then(async updates => {let res=""
+    updates.sort((a,b) => a.replace("up:",'') - b.replace("up:",''))
+    for(let i of updates){let a=await db.get(i)
+res+="-- "+a.timestamp+"\n"+a.name+"\n"+
+(a.desc==="No description"?"":(a.desc+"").replace(/<br>/g,'\n'))
++"\n\n"
+}
+fs.writeFileSync("public/minekhan/updates.txt",res)
+  });
 
 
 Some things to put in chat
