@@ -6729,8 +6729,8 @@ ROTATION = 0x1800 // Mask for the direction bits
 				element.classList.add("hidden") //done after animation
 			}
 		}
-		if (html[previousScreen] && html[previousScreen].exit) {//in case change before finish animation
-			for (let element of html[previousScreen].exit) {
+		if (html[screen] && html[screen].exit) {
+			for (let element of html[screen].exit) {
 				element.classList.add("hidden")
 			}
 		}
@@ -6738,11 +6738,6 @@ ROTATION = 0x1800 // Mask for the direction bits
 		if (html[newScene] && html[newScene].enter) {
 			for (let element of html[newScene].enter) {
 				element.classList.remove("hidden")
-			}
-		}
-		if (html[newScene] && html[newScene].exit) {
-			for (let element of html[newScene].exit) {
-				element.style.transform = "", element.style.opacity = ""
 			}
 		}
 
@@ -13614,7 +13609,7 @@ r 11 y  n  n  n
         }
       }*/
 		}
-		async genMesh(barray, index) {
+		genMesh(barray, index) {
 			if (!this.renderLength) {
 				return index
 			}
@@ -13826,7 +13821,7 @@ r 11 y  n  n  n
 					}
 					texNum++
 				}
-				if(!(i%256)) await yieldThread()
+				//if(!(i%256)) await yieldThread()
 			}
 			return index
 		}
@@ -14306,10 +14301,10 @@ r 11 y  n  n  n
 				}
 			}
 		}
-		async optimize() {
+		optimize() {
 			for (let i = 0; i < this.sections.length; i++) {
 				this.sections[i].optimize()
-				await yieldThread()
+				//await yieldThread()
 			}
 			/*if (!this.world.meshQueue.includes(this)) {
 				this.world.meshQueue.push(this)
@@ -14378,15 +14373,15 @@ r 11 y  n  n  n
 				}
 			}
 		}
-		async genMesh() {
+		genMesh() {
 			let start = performance.now()
 			let barray = bigArray
 			let index = 0
 			if (!this.buffer) {
-				this.buffer = gl.createBuffer() // this should exist after sync call to genMesg
+				this.buffer = gl.createBuffer()
 			}
 			for (let i = 0; i < this.sections.length; i++) {
-				index = await this.sections[i].genMesh(barray, index)
+				index = this.sections[i].genMesh(barray, index)
 			}
 			let arrayDone = performance.now()
 
@@ -21970,7 +21965,7 @@ r 11 y  n  n  n
 					if(lastResourcesHash !== resourcesHash){
 						await initTextures()
 						initCachedShapes()
-						await initBackgrounds()
+						initDirt()
 					}
 					p3.x = p.x
 					p3.y = p.y
@@ -21991,7 +21986,7 @@ r 11 y  n  n  n
 					await initResources()
 					await initTextures()
 					initCachedShapes()
-					await initBackgrounds()
+					initDirt()
 					world.redoMeshes()
 					play()
 				}else if(data.type === "chunkData"){
@@ -23723,7 +23718,7 @@ switch(name){
 				if (this.meshQueue.length) {
 					// Update all chunk meshes.
 					do {
-						await this.meshQueue.pop().genMesh()
+						this.meshQueue.pop().genMesh()
 					} while(this.meshQueue.length)
 					doneWork = true
 					debug("Meshes")
@@ -23759,7 +23754,7 @@ switch(name){
 						let chunk = this.chunkGenQueue[i]
 						if (!fillReqs(chunk.x >> 4, chunk.z >> 4, chunk.type)) {
 				 		} else if (!chunk.optimized) {
-							await chunk.optimize()
+							chunk.optimize()
 							debug("Optimize")
 							doneWork = true
 						} else if (!chunk.buffer) {
@@ -24361,10 +24356,10 @@ p.camera.transformation.elements.set(matrix)//*/
 
 			this.x = this.originalX, this.y = this.originalY
 			this.w = this.originalW, this.h = this.originalH
-			if(changeSceneAnimation !== null){
+			/*if(changeSceneAnimation !== null){
 				if(thisSceneCurrent) this.x += (1-animationAmount)*width/4, ctx.globalAlpha = animationAmount
 				else this.w *= 1-animationAmount, this.h *= 1-animationAmount, ctx.globalAlpha = 1-animationAmount
-			}
+			}*/
 			if(this.scrollable){
 				this.x += this.scrollable.x
 				this.y += this.scrollable.y
@@ -24463,9 +24458,9 @@ p.camera.transformation.elements.set(matrix)//*/
       }
       this.previousHovering = hovering
 			
-			if(changeSceneAnimation !== null){
+			/*if(changeSceneAnimation !== null){
 				ctx.globalAlpha = 1
-			}
+			}*/
 		}
     mouseCollided(useMouse){
       return touchScreen && !useMouse ? Boolean(this.touch) : (mouseX > this.x - this.w / 2 && mouseX < this.x + this.w / 2 && mouseY > this.y - this.h / 2 && mouseY < this.y + this.h / 2)
@@ -24610,10 +24605,10 @@ p.camera.transformation.elements.set(matrix)//*/
 			this.x = this.originalX, this.y = this.originalY
 			this.w = this.originalW, this.h = this.originalH
 
-			if(changeSceneAnimation !== null){
+			/*if(changeSceneAnimation !== null){
 				if(thisSceneCurrent) this.x += (1-animationAmount)*width/4, ctx.globalAlpha = animationAmount
 				else this.w *= 1-animationAmount, this.h *= 1-animationAmount, ctx.globalAlpha = 1-animationAmount
-			}
+			}*/
 			if(this.scrollable){
 				this.x += this.scrollable.x
 				this.y += this.scrollable.y
@@ -24726,9 +24721,9 @@ p.camera.transformation.elements.set(matrix)//*/
         if(hoverText) speak(customResources.texts[hoverText] || hoverText)
       }
       this.previousHovering = hovering
-			if(changeSceneAnimation !== null){
+			/*if(changeSceneAnimation !== null){
 				ctx.globalAlpha = 1
-			}
+			}*/
 		}
 		click(e) {
 			if (!mouseDown || !this.scenes.includes(screen) || this.disabled() || (this.scrollable && !this.scrollable.mouseIsIn())) {
@@ -26717,9 +26712,9 @@ p.camera.transformation.elements.set(matrix)//*/
     let scale = 0.16 / height * inventory.size
     if(obj && obj.animation) scale *= obj.animation
 		if(addScale) scale *= addScale
-		if(changeSceneAnimation !== null && obj !== false){
+		/*if(changeSceneAnimation !== null && obj !== false){
 			scale *= thisSceneCurrent ? animationAmount : 1-animationAmount
-		}
+		}*/
 		let data = blockData[id]
     
 		initModelView(null, X, Y, 0, 0, 0, scale)
@@ -27253,14 +27248,14 @@ p.camera.transformation.elements.set(matrix)//*/
 	function startDrawInv(){
 		defineWorld()
 		ctx.drawImage(gl.canvas,0,0, width,height)//image of inventory overwrites webgl canvas
-		if(changeSceneAnimation !== null){
+		/*if(changeSceneAnimation !== null){
 			if(!thisSceneCurrent) clear()
-		}
+		}*/
 		gl.clearColor(0, 0, 0, 0)
 		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
     gl.useProgram(program3D)
     gl.uniform1i(glCache.uSampler, 0)
-		ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
+		//ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
 		ctx.textAlign = 'left'
 		ctx.fillStyle = "rgb(127, 127, 127, 65%)"
 		ctx.fillRect(0, 0, width, height)
@@ -27946,7 +27941,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				mouseX = e.x
 				mouseY = e.y
 			}
-      if((screen !== "main menu" || performFast) && !autoDrawScreens.includes(screen) && changeSceneAnimation === null){
+      if((screen !== "main menu" || performFast) && !autoDrawScreens.includes(screen)){
 				hoverbox.classList.add("hidden")
         drawScreens[screen]()
         redraw = true
@@ -28556,6 +28551,8 @@ p.camera.transformation.elements.set(matrix)//*/
 		if(html[screen] && html[screen].onresize){
 			html[screen].onresize()
 		}
+		initDirt()
+		use3d()
 		if (screen === "play") {
 			play()
 		} else {
@@ -28563,8 +28560,6 @@ p.camera.transformation.elements.set(matrix)//*/
 			Button.draw()
 			Slider.draw()
 		}
-		await initBackgrounds()
-		use3d()
 	}
 
 	let removePixelRatioChange;
@@ -28603,6 +28598,33 @@ p.camera.transformation.elements.set(matrix)//*/
 		gl.enableVertexAttribArray(glCache.aShadow)
 		gl.enableVertexAttribArray(glCache.aSkylight)
 		gl.enableVertexAttribArray(glCache.aBlocklight)
+	}
+	const dirt = (textureNumber) => {
+		ctx.clearRect(0, 0, width, height) // Don't draw over the beautful dirt
+
+		use2d()
+		gl.bindBuffer(gl.ARRAY_BUFFER, dirtBuffer)
+		gl.uniform1i(glCache.uSampler2, textureNumber || 1) // Dirt texture
+		gl.vertexAttribPointer(glCache.aVertex2, 2, gl.FLOAT, false, 20, 0)
+		gl.vertexAttribPointer(glCache.aTexture2, 2, gl.FLOAT, false, 20, 8)
+		gl.vertexAttribPointer(glCache.aShadow2, 1, gl.FLOAT, false, 20, 16)
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
+	}
+	const initDirt = () => {
+		// Dirt background
+		let aspect = width / height
+		let stack = height / 96
+		let bright = 0.4
+		if (!dirtBuffer) dirtBuffer = gl.createBuffer()
+		gl.bindBuffer(gl.ARRAY_BUFFER, dirtBuffer)
+		let bgCoords = new Float32Array([
+			-1, -1, 0, stack, bright,
+			1, -1, stack * aspect, stack, bright,
+			1, 1, stack * aspect, 0, bright,
+			-1, 1, 0, 0, bright
+		])
+		gl.bufferData(gl.ARRAY_BUFFER, bgCoords, gl.STATIC_DRAW)
+		dirt()
 	}
 
 	let maxLoad = 1
@@ -29338,62 +29360,6 @@ p.camera.transformation.elements.set(matrix)//*/
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(new Float32Array(texture)), gl.STATIC_DRAW)
     
     panoramaSize = size
-
-		// Dirt background
-		use2d()
-		let aspect = width / height
-		let stack = height / 96
-		let bright = 0.4
-		if (dirtBuffer) {
-			gl.deleteBuffer(dirtBuffer)
-		}
-		dirtBuffer = gl.createBuffer()
-		gl.bindBuffer(gl.ARRAY_BUFFER, dirtBuffer)
-		//let screenSize = 1/max(resolution,1)*2-1
-		//let minRes = min(resolution,1)
-		let bgCoords = new Float32Array([
-			1, 1, 0, stack, bright,
-			-1, 1, stack * aspect, stack, bright,
-			-1, -1, stack * aspect, 0, bright,
-			1, -1, 0, 0, bright
-		])
-		gl.bufferData(gl.ARRAY_BUFFER, bgCoords, gl.STATIC_DRAW)
-		gl.uniform1i(glCache.uSampler2, 1)
-		gl.clearColor(0, 0, 0, 1)
-		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
-		gl.vertexAttribPointer(glCache.aVertex2, 2, gl.FLOAT, false, 20, 0)
-		gl.vertexAttribPointer(glCache.aTexture2, 2, gl.FLOAT, false, 20, 8)
-		gl.vertexAttribPointer(glCache.aShadow2, 1, gl.FLOAT, false, 20, 16)
-		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
-		let prevBg = dirtbg
-		dirtbg = await createImageBitmap(gl.canvas,0,0,gl.canvas.width,gl.canvas.height)
-		if(prevBg) prevBg.close()
-    
-    // Netherrack background
-		bright = 0.4
-		gl.uniform1i(glCache.uSampler2, 2) //netherrack textures uses TEXTURE2 so the number is 2
-		gl.clearColor(0, 0, 0, 1)
-		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
-		gl.vertexAttribPointer(glCache.aVertex2, 2, gl.FLOAT, false, 20, 0)
-		gl.vertexAttribPointer(glCache.aTexture2, 2, gl.FLOAT, false, 20, 8)
-		gl.vertexAttribPointer(glCache.aShadow2, 1, gl.FLOAT, false, 20, 16)
-		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
-		prevBg = netherbg
-		netherbg = await createImageBitmap(gl.canvas,0,0,gl.canvas.width,gl.canvas.height)
-		if(prevBg) prevBg.close()
-    
-    // Endstone background
-		bright = 0.4
-		gl.uniform1i(glCache.uSampler2, 5)
-		gl.clearColor(0, 0, 0, 1)
-		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
-		gl.vertexAttribPointer(glCache.aVertex2, 2, gl.FLOAT, false, 20, 0)
-		gl.vertexAttribPointer(glCache.aTexture2, 2, gl.FLOAT, false, 20, 8)
-		gl.vertexAttribPointer(glCache.aShadow2, 1, gl.FLOAT, false, 20, 16)
-		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
-		prevBg = endbg
-		endbg = await createImageBitmap(gl.canvas,0,0,gl.canvas.width,gl.canvas.height)
-		if(prevBg) prevBg.close()
 	}
 	const
 		pW = 0.3,
@@ -31478,6 +31444,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		initCachedShapes()
 
 		await initBackgrounds()
+		initDirt()
 
 		p.camera.FOV(settings.fov)
 		initButtons()
@@ -31591,7 +31558,7 @@ p.camera.transformation.elements.set(matrix)//*/
   }
 
 	// Define all the scene draw functions
-  let clear,dirt,netherrack,endstone
+  let clear
 	(function() {
     var splashs = [
       "Multiplayer!",
@@ -31692,7 +31659,7 @@ p.camera.transformation.elements.set(matrix)//*/
     }
     rdmSplash()
     setInterval(() => rdmSplash(), 60000)
-		function drawTitle(offsetX) {
+		function drawTitle() {
 			const ss = inventory.ss
 			let title = "MINEKHAN"
       //let titleWidth = images.minekhan.width*1.6*ss
@@ -31706,31 +31673,31 @@ p.camera.transformation.elements.set(matrix)//*/
 			//if(!images.minekhan.naturalWidth || win.weirdTitle){
 			ctx.font = "bold "+(110*ss)+"px " + font
 			fill(/*30*/70)
-			text(title, width / 2+offsetX, 158/2*ss)
+			text(title, width / 2, 158/2*ss)
 			//fill(40)
-			text(title, width / 2+offsetX, 155/2*ss)
+			text(title, width / 2, 155/2*ss)
 			ctx.font = "bold "+(111*ss)+"px " + font
 			//fill(50)
-			text(title, width / 2+offsetX, 152/2*ss)
+			text(title, width / 2, 152/2*ss)
 			//fill(70)
-			text(title, width / 2+offsetX, 150/2*ss)
+			text(title, width / 2, 150/2*ss)
 			//fill(90)
 			ctx.font = "bold "+(112*ss)+"px " + font
-			text(title, width / 2+offsetX, 148/2*ss)
+			text(title, width / 2, 148/2*ss)
 			fill(110)
-			text(title, width / 2+offsetX, 145/2*ss)
+			text(title, width / 2, 145/2*ss)
 			//}else
-			//drawImage("minekhan", width/2 - (titleWidth/2), lerp(ctx.globalAlpha,-titleHeight,145*ss - titleHeight), titleWidth,titleHeight)
+			//drawImage("minekhan", width/2 - (titleWidth/2), 145*ss - titleHeight, titleWidth,titleHeight)
 
 			ctx.font = "bold "+(32*ss)+"px " + font
 			fill(50)
-			text(subtext, width / 2-1+offsetX, 148*ss)
-			text(subtext, width / 2+1+offsetX, 148*ss)
-			text(subtext, width / 2+offsetX, 147*ss)
-			text(subtext, width / 2+offsetX, 149*ss)
+			text(subtext, width / 2-1, 148*ss)
+			text(subtext, width / 2+1, 148*ss)
+			text(subtext, width / 2, 147*ss)
+			text(subtext, width / 2, 149*ss)
 			ctx.font = "bold "+(32*ss)+"px " + font
 			fill(150)
-			text(subtext, width / 2+offsetX, 148*ss)
+			text(subtext, width / 2, 148*ss)
       
       fill(230,220,0)
 			ctx.translate(width/2 + 280*ss,170*ss)
@@ -31744,47 +31711,42 @@ p.camera.transformation.elements.set(matrix)//*/
 			ctx.translate(-(width/2+280*ss),-170*ss)
 		}
     clear = x => ctx.clearRect(x || 0, 0, width, height)
-    dirt = () => ctx.drawImage(dirtbg, changeSceneAnimation ? (thisSceneCurrent ? (1-animationAmount)*width/4 : (animationAmount)*width/4) : 0, 0, width,height)
-    netherrack = () => ctx.drawImage(netherbg, changeSceneAnimation ? (thisSceneCurrent ? (1-animationAmount)*width/4 : (animationAmount)*width/4) : 0, 0, width,height)
-    endstone = () => ctx.drawImage(endbg, changeSceneAnimation ? (thisSceneCurrent ? (1-animationAmount)*width/4 : (animationAmount)*width/4) : 0, 0, width,height)
-
     drawScreens["initLoading"] = () => {}
     
     /*var size = 0
     var sizes = 0
     var sizess = 1*/
 		drawScreens["main menu"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
-			let offsetX = changeSceneAnimation ? (thisSceneCurrent ? (1-animationAmount)*width/4 : (animationAmount)*width/4) : 0
-			if(changeSceneAnimation === null || !thisSceneCurrent || previousScreen !== "options" && !previousScreen.startsWith('options ') || previousScreen === "initLoading") clear()
+			//ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
+			//let offsetX = changeSceneAnimation ? (thisSceneCurrent ? (1-animationAmount)*width/4 : (animationAmount)*width/4) : 0
+			//if(!thisSceneCurrent || previousScreen !== "options" && !previousScreen.startsWith('options ') || previousScreen === "initLoading") clear()
+			clear()
       /*sizes += sizess
       if((sizes > 5) || (sizes < -5)){
         sizess = -sizess
       }
       size += sizes*/
-			drawTitle(offsetX)
+			drawTitle()
 			fill(220)
 			ctx.font = "16px thefont"
 			ctx.textAlign = 'left'
-			text("MineKhan-thingmaker " + version, 2, lerp(ctx.globalAlpha,height+16,height - 2 - 16))
+			text("MineKhan-thingmaker " + version, 2, height - 2 - 16)
       ctx.textAlign = "right"
 			//text("Press Ctrl+H to hide window. Press Ctrl+J to undo hide.", width - 2, height - 2 - 16)
 
-			gl.useProgram(programEntity)
+			/*gl.useProgram(programEntity)
 			p.renderPreview(width/height*0.6,0,-1, 0.25)
-			gl.useProgram(program3D)
+			gl.useProgram(program3D)*/
 
 			ctx.globalAlpha = 1
 		}
 		drawScreens["comingsoon menu"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
-      dirt()
+			dirt()
 			ctx.textAlign = 'center'
 			fill(255)
 			textSize(25)
-			text("Coming soon", width / 2, lerp(ctx.globalAlpha,-25,height / 2 - 100), 25)
-			ctx.globalAlpha = 1
-    }
+			text("Coming soon", width / 2, height / 2 - 100, 25)
+		}
 
 		drawScreens.play = () => {
       ctx2.clearRect(0,0,width,height)
@@ -31802,8 +31764,8 @@ p.camera.transformation.elements.set(matrix)//*/
 				updateHUD = true
 			}
       
-			if (updateHUD || p.effects.blur || changeSceneAnimation !== null) {
-				if(!p.effects.blur && (changeSceneAnimation === null || !thisSceneCurrent)) clear()
+			if (updateHUD || p.effects.blur) {
+				clear()
 				updateHUD = false
 				hud()
 				freezeFrame = false
@@ -31970,57 +31932,49 @@ p.camera.transformation.elements.set(matrix)//*/
 
     drawScreens.dead = () => {
       defineWorld()
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
-			let prevOffsetX = changeSceneAnimation ? (thisSceneCurrent ? (1-prevAnimationAmount)*width/4 : (prevAnimationAmount)*width/4) : 0
-			let offsetX = changeSceneAnimation ? (thisSceneCurrent ? (1-animationAmount)*width/4 : (animationAmount)*width/4) : 0
-			if(changeSceneAnimation === null || thisSceneCurrent){
-				if(now - lastDeathTime > 10000){
-					ctx.fillStyle = "black"
-					ctx.fillRect(0,0,width,height)
-				}else{
-					let blurry = (now - lastDeathTime)/10000
-					let amount = (now - lastBlur)/20
-					lastBlur = now
-					clear()
-					ctx.filter = 'blur('+(blurry*5)+'px)'
-					ctx.drawImage(gl.canvas, blurry*-20, 0, width,height)
-					ctx.globalAlpha = 0.5
-					ctx.drawImage(gl.canvas, blurry*20, 0, width,height)
-					ctx.globalAlpha = 1
-					ctx.filter = 'none'
-					ctx2.globalAlpha = 0.05*amount/blurry
-					ctx2.drawImage(canvas,0,0)
-					ctx2.globalAlpha = 1
-					ctx.drawImage(canvas2,0,0)
-					ctx.fillStyle = "rgba(0,0,0,"+((now - lastDeathTime)/100)+"%)"
-					ctx.fillRect(0,0,width,height)
-				}
+			if(now - lastDeathTime > 10000){
+				ctx.fillStyle = "black"
+				ctx.fillRect(0,0,width,height)
+			}else{
+				let blurry = (now - lastDeathTime)/10000
+				let amount = (now - lastBlur)/20
+				lastBlur = now
+				clear()
+				ctx.filter = 'blur('+(blurry*5)+'px)'
+				ctx.drawImage(gl.canvas, blurry*-20, 0, width,height)
+				ctx.globalAlpha = 0.5
+				ctx.drawImage(gl.canvas, blurry*20, 0, width,height)
+				ctx.globalAlpha = 1
+				ctx.filter = 'none'
+				ctx2.globalAlpha = 0.05*amount/blurry
+				ctx2.drawImage(canvas,0,0)
+				ctx2.globalAlpha = 1
+				ctx.drawImage(canvas2,0,0)
+				ctx.fillStyle = "rgba(0,0,0,"+((now - lastDeathTime)/100)+"%)"
+				ctx.fillRect(0,0,width,height)
 			}
-			if(changeSceneAnimation !== null && !thisSceneCurrent) clear(prevOffsetX)
 			let ss = inventory.ss
       
       ctx.fillStyle = "rgba(255,0,0,50%)"
-      ctx.fillRect(offsetX,0,width,height)
+      ctx.fillRect(0,0,width,height)
       
       fill(0)
       ctx.font = (50*ss)+"px Arial"
       ctx.textAlign = "center"
-      text(p.gameMode === "hardcore" ? "Game Over" : "You Died", width/2+offsetX, 60)
+      text(p.gameMode === "hardcore" ? "Game Over" : "You Died", width/2, 60)
       
       ctx.font = (20*ss)+"px Arial"
-      text(dieMessage, width/2+offsetX, 120)
+      text(dieMessage, width/2, 120)
       
-      text("Score: "+p.level, width/2+offsetX, 160)
-			ctx.globalAlpha = 1
+      text("Score: "+p.level, width/2, 160)
     }
 		drawScreens["temporary dead"] = () => {
 			defineWorld()
 			clear()
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
 			ctx.fillStyle = "black"
 			ctx.fillRect(0,0,width,height)
 			ctx.globalAlpha = 1
-			if(thisSceneCurrent && now - lastDeathTime > 1000){
+			if(now - lastDeathTime > 1000){
       	respawn()
 				play()
 			}
@@ -32064,54 +32018,51 @@ p.camera.transformation.elements.set(matrix)//*/
 		drawScreens.loading = () => {
 			let sub = 0
 			let findingLand
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
-			if(thisSceneCurrent){
-				p.dimension = ""
-				if (host && serverWorld.worldType === "island" && serverWorld.islandGenerator.stage < 10) {
-				} else if(host && serverWorld.worldType === "large" && !serverWorld.spawnPoint.land){
-					findingLand = true
-				} else {
-					let standing = true
-					/*if (world.loadFrom.length) { //not needed because save from loadFrom
-						let load = world.loadFrom[0]
-						p.x = load.x * 16
-						p.y = load.y * 16
-						p.z = load.z * 16
-						standing = false
-					} else {*/
+			p.dimension = ""
+			if (host && serverWorld.worldType === "island" && serverWorld.islandGenerator.stage < 10) {
+			} else if(host && serverWorld.worldType === "large" && !serverWorld.spawnPoint.land){
+				findingLand = true
+			} else {
+				let standing = true
+				/*if (world.loadFrom.length) { //not needed because save from loadFrom
+					let load = world.loadFrom[0]
+					p.x = load.x * 16
+					p.y = load.y * 16
+					p.z = load.z * 16
+					standing = false
+				} else {*/
+				/*p.x = p2.x
+				p.y = p2.y
+				p.z = p2.z*/
+
+				let cx = p.x >> 4
+				let cz = p.z >> 4
+
+				for (let x = cx - 1; x <= cx + 1; x++) {
+					for (let z = cz - 1; z <= cz + 1; z++) {
+						let chunk = world.getChunk(x*16,z*16,"")
+						if (!chunk || !chunk.buffer) {
+							standing = false
+						} else {
+							sub++
+						}
+					}
+				}
+				//}
+				if (standing && !doEndPoem || skipWaitingLoading) {
+					skipWaitingLoading = false
 					/*p.x = p2.x
 					p.y = p2.y
 					p.z = p2.z*/
-
-					let cx = p.x >> 4
-					let cz = p.z >> 4
-
-					for (let x = cx - 1; x <= cx + 1; x++) {
-						for (let z = cz - 1; z <= cz + 1; z++) {
-							let chunk = world.getChunk(x*16,z*16,"")
-							if (!chunk || !chunk.buffer) {
-								standing = false
-							} else {
-								sub++
-							}
-						}
-					}
-					//}
-					if (standing && !doEndPoem || skipWaitingLoading) {
-						skipWaitingLoading = false
-						/*p.x = p2.x
-						p.y = p2.y
-						p.z = p2.z*/
-						play()
-						//if you change below, add it to html.loading.onexit
-						//if(portalFadeOutEffect > 0) blockData[blockIds.portal].doneLoading()
-						//else if(fromEndPortal) blockData[blockIds.endPortal].doneLoading()
-						return
-					}
+					play()
+					//if you change below, add it to html.loading.onexit
+					//if(portalFadeOutEffect > 0) blockData[blockIds.portal].doneLoading()
+					//else if(fromEndPortal) blockData[blockIds.endPortal].doneLoading()
+					return
 				}
-			}else clear()
+			}
 
-			if(thisSceneCurrent) dirt()
+			dirt()
 			fill(255)
 			textSize(25)
 			ctx.textAlign = "center"
@@ -32140,43 +32091,38 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
 		drawScreens.netherLoading = () => {
 			let sub = 0
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
-			if(thisSceneCurrent){
-				p.dimension = "nether"
-				let standing = true
+			p.dimension = "nether"
+			let standing = true
+			/*p.x = p2.x
+			p.y = p2.y
+			p.z = p2.z*/
+
+			let cx = p.x >> 4
+			let cz = p.z >> 4
+
+			for (let x = cx - 1; x <= cx + 1; x++) {
+				for (let z = cz - 1; z <= cz + 1; z++) {
+					let chunk = world.getChunk(x*16,z*16,"nether")
+					if (!chunk || !chunk.buffer) {
+						standing = false
+					} else {
+						sub++
+					}
+				}
+			}
+
+			if (standing || skipWaitingLoading) {
+				skipWaitingLoading = false
 				/*p.x = p2.x
 				p.y = p2.y
 				p.z = p2.z*/
-
-				let cx = p.x >> 4
-				let cz = p.z >> 4
-
-				for (let x = cx - 1; x <= cx + 1; x++) {
-					for (let z = cz - 1; z <= cz + 1; z++) {
-						let chunk = world.getChunk(x*16,z*16,"nether")
-						if (!chunk || !chunk.buffer) {
-							standing = false
-						} else {
-							sub++
-						}
-					}
-				}
-
-				if (standing || skipWaitingLoading) {
-					skipWaitingLoading = false
-					/*p.x = p2.x
-					p.y = p2.y
-					p.z = p2.z*/
-					play()
-					//if(portalFadeOutEffect > 0) blockData[blockIds.portal].doneLoading()
-					return
-				}
-			}else clear()
+				play()
+				//if(portalFadeOutEffect > 0) blockData[blockIds.portal].doneLoading()
+				return
+			}
 			
-			if(thisSceneCurrent) netherrack()
+			dirt(2)
 
-			let cx = p.x >> 4
-      let cz = p.z >> 4
       sub = drawChunkMap(cx,cz)
 			let progress = Math.round(100 * sub / maxLoad)
 
@@ -32190,43 +32136,38 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
     
     drawScreens.endLoading = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
 			let sub = 0
-			if(thisSceneCurrent){
-				p.dimension = "end"
-				let standing = true
+			p.dimension = "end"
+			let standing = true
+			/*p.x = p2.x
+			p.y = p2.y
+			p.z = p2.z*/
+
+			let cx = p.x >> 4
+			let cz = p.z >> 4
+
+			for (let x = cx - 1; x <= cx + 1; x++) {
+				for (let z = cz - 1; z <= cz + 1; z++) {
+					let chunk = world.getChunk(x*16,z*16,"end")
+					if (!chunk || !chunk.buffer) {
+						standing = false
+					} else {
+						sub++
+					}
+				}
+			}
+
+			if (standing || skipWaitingLoading) {
+				skipWaitingLoading = false
 				/*p.x = p2.x
 				p.y = p2.y
 				p.z = p2.z*/
-
-				let cx = p.x >> 4
-				let cz = p.z >> 4
-
-				for (let x = cx - 1; x <= cx + 1; x++) {
-					for (let z = cz - 1; z <= cz + 1; z++) {
-						let chunk = world.getChunk(x*16,z*16,"end")
-						if (!chunk || !chunk.buffer) {
-							standing = false
-						} else {
-							sub++
-						}
-					}
-				}
-
-				if (standing || skipWaitingLoading) {
-					skipWaitingLoading = false
-					/*p.x = p2.x
-					p.y = p2.y
-					p.z = p2.z*/
-					play()
-					//if(fromEndPortal) blockData[blockIds.endPortal].doneLoading()
-					return
-				}
-			}else clear()
+				play()
+				//if(fromEndPortal) blockData[blockIds.endPortal].doneLoading()
+				return
+			}
 			
-			if(thisSceneCurrent) endstone()
-      let cx = p.x >> 4
-      let cz = p.z >> 4
+			dirt(5)
       sub = drawChunkMap(cx,cz)
 			let progress = Math.round(100 * sub / maxLoad)
 
@@ -32310,23 +32251,21 @@ p.camera.transformation.elements.set(matrix)//*/
     
     drawScreens.sleep = () => {
       defineWorld()
-      if(thisSceneCurrent && skyLight > 0.5){
+      if(skyLight > 0.5){
         p.y += p.height*0.5
 				p.sleeping = false
         return play()
       }
       
       clear()
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
-      fill(0,0,0,50)
+			fill(0,0,0,50)
       ctx.fillRect(0,0,width,height)
       
 			textSize(20)
 			fill(255)
 			ctx.textAlign = 'center'
 			text(`${sleepCount} of ${sleepTotal} players sleeping.`, width / 2, height - 90)
-			ctx.globalAlpha = 1
-    }
+		}
 
     drawScreens["custom menu"] = () => {
       defineWorld()
@@ -32334,204 +32273,162 @@ p.camera.transformation.elements.set(matrix)//*/
 
 		drawScreens.pause = () => {
 			strokeWeight(1)
-			if(changeSceneAnimation === null || !thisSceneCurrent) clear()
+			clear()
 
 			const ss = inventory.ss
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
 			textSize(50*ss)
 			fill(0, 0, 0)
 			ctx.textAlign = 'center'
-			text((!host || serverWorld.players.length>1 ? "Not " : "")+"Paused", width / 2, lerp(ctx.globalAlpha,-50*ss,60*ss))
-			ctx.globalAlpha = 1
+			text((!host || serverWorld.players.length>1 ? "Not " : "")+"Paused", width / 2, 60*ss)
 		}
 
 		drawScreens.options = () => {
-      if(changeSceneAnimation === null || !thisSceneCurrent) clear()
+      clear()
 		}
     drawScreens.worldSettings = () => {
-      if(changeSceneAnimation === null || !thisSceneCurrent) clear()
+      clear()
 			if(previousScreen === "creation menu") dirt()
     }
 		drawScreens["options resourcePacks"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
 			dirt()
       ctx.textAlign = 'center'
 			textSize(25)
 			fill(255)
 			text("Resource Packs", width / 2, 15)
-			ctx.globalAlpha = 1
 		}
     drawScreens["options controls"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
-      dirt()
+		  dirt()
       ctx.textAlign = 'center'
 			textSize(18)
 			fill(255)
 			text(false ? "So, I hear you want to change some controls." : "Controls", width / 2, 20)
-			ctx.globalAlpha = 1
-    }
+		}
     drawScreens["options narrator"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
-      dirt()
+		  dirt()
       ctx.textAlign = 'center'
 			const ss = inventory.ss
 			textSize(18*ss)
 			fill(255)
 			text("Narrator", width / 2, 25*ss)
-			ctx.globalAlpha = 1
-    }
+		}
     drawScreens["options help"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
-			if(changeSceneAnimation === null || thisSceneCurrent) dirt()
-			else clear()
+			dirt()
       ctx.textAlign = 'center'
 			textSize(25)
 			fill(255)
 			text("Help", width / 2, 15)
-			ctx.globalAlpha = 1
     }
     drawScreens["options languages"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
 			dirt()
       ctx.textAlign = 'center'
 			textSize(25)
 			fill(255)
 			text("Change language", width / 2, 15)
-			ctx.globalAlpha = 1
-    }
+		}
 		drawScreens["creation menu"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
 			dirt()
 			ctx.textAlign = 'center'
 			textSize(18)
 			fill(255)
-			text("Create New World", width / 2, lerp(ctx.globalAlpha,-18,2))
-			ctx.globalAlpha = 1
+			text("Create New World", width / 2, 2)
 		}
 		drawScreens["loadsave menu"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
 			dirt()
 			ctx.textAlign = 'center'
 			textSize(18)
 			fill(255)
-			text("Select World", width / 2, lerp(ctx.globalAlpha,-18,2))
-			ctx.globalAlpha = 1
+			text("Select World", width / 2, 2)
 		}
     drawScreens["broken world"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
-      dirt()
+		  dirt()
 			ctx.textAlign = 'center'
 			fill(255)
 			textSize(25)
-			text("This world is an old world.\nIt might be broken.\nAre you sure you want to load it?", width / 2, lerp(ctx.globalAlpha,-25,height / 2 - 75), 25)
-			ctx.globalAlpha = 1
-    }
+			text("This world is an old world.\nIt might be broken.\nAre you sure you want to load it?", width / 2, height / 2 - 75, 25)
+		}
     drawScreens["multiplayer menu"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
-      dirt()
+		  dirt()
 			ctx.textAlign = 'center'
 			textSize(18)
 			fill(255)
-			text("Select server", width / 2, lerp(ctx.globalAlpha,-18,20))
-			ctx.globalAlpha = 1
-    }
+			text("Select server", width / 2, 20)
+		}
     drawScreens["multiplayer connecting"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
-      dirt()
+		  dirt()
 			ctx.textAlign = 'center'
-			let offsetX = changeSceneAnimation ? (thisSceneCurrent ? (1-animationAmount)*width/4 : (animationAmount)*width/4) : 0
 			fill(255)
 			textSize(25)
-			text("Connecting...", width / 2+offsetX, height / 2 - 65)
+			text("Connecting...", width / 2, height / 2 - 65)
 			textSize(18)
-      //if(connectingProgress) text(connectingProgress, width / 2+offsetX, height / 2-18)
-			drawLoadBar(width/2+offsetX,height/2+85)
-			ctx.globalAlpha = 1
-    }
+      //if(connectingProgress) text(connectingProgress, width / 2, height / 2-18)
+			drawLoadBar(width/2,height/2+85)
+		}
     drawScreens["multiplayer lost"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
-      dirt()
+		  dirt()
 			ctx.textAlign = 'center'
-			let offsetX = changeSceneAnimation ? (thisSceneCurrent ? (1-animationAmount)*width/4 : (animationAmount)*width/4) : 0
 			fill(255)
 			textSize(25)
-			text("Connection lost!", width / 2+offsetX, height / 2 - 65)
+			text("Connection lost!", width / 2, height / 2 - 65)
       if(multiplayerError && multiplayerError.data){
         if(typeof multiplayerError.data !== "string"){
           multiplayerError.data = multiplayerError.toString()
         }
         textSize(18)
-        text(multiplayerError.data, width / 2+offsetX, height / 2-18, 18)
+        text(multiplayerError.data, width / 2, height / 2-18, 18)
       }
-			ctx.globalAlpha = 1
-    }
+		}
     drawScreens["multiplayer lost long"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
-      dirt()
+		  dirt()
       ctx.textAlign = 'center'
-			let offsetX = changeSceneAnimation ? (thisSceneCurrent ? (1-animationAmount)*width/4 : (animationAmount)*width/4) : 0
 			fill(255)
 			textSize(25)
-			text("Connection lost!", width / 2+offsetX, 15)
-			ctx.globalAlpha = 1
+			text("Connection lost!", width / 2, 15)
     }
 		drawScreens["multiplayer disconnecting"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
       dirt()
 			ctx.textAlign = 'center'
-			let offsetX = changeSceneAnimation ? (thisSceneCurrent ? (1-animationAmount)*width/4 : (animationAmount)*width/4) : 0
 			fill(255)
 			textSize(25)
-			text("Disconnecting...", width / 2+offsetX, height / 2)
-			drawLoadBar(width/2+offsetX,height/2+100)
-			ctx.globalAlpha = 1
+			text("Disconnecting...", width / 2, height / 2)
+			drawLoadBar(width/2,height/2+100)
     }
 		drawScreens.editworld = dirt
     drawScreens.marketplace = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
       dirt()
       ctx.textAlign = 'center'
 			textSize(18)
 			fill(255)
-			text("Marketplace", width / 2, lerp(ctx.globalAlpha,-18,2))
-			ctx.globalAlpha = 1
+			text("Marketplace", width / 2, 2)
     }
     drawScreens["marketplace info"] = drawScreens.marketplace
     drawScreens.downloading = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
       dirt()
 			ctx.textAlign = 'center'
-			let offsetX = changeSceneAnimation ? (thisSceneCurrent ? (1-animationAmount)*width/4 : (animationAmount)*width/4) : 0
 			fill(255)
 			textSize(25)
-			text("Downloading...", width / 2+offsetX, height / 2 - 65)
-			drawLoadBar(width/2+offsetX,height/2+20)
+			text("Downloading...", width / 2, height / 2 - 65)
+			drawLoadBar(width/2,height/2+20)
 			let prog = downloadingProgress/downloadingTotal
-			text(floor(prog*100)+"% "+formatBytes(downloadingProgress)+"/"+formatBytes(downloadingTotal), width/2+offsetX,height/2+30)
+			text(floor(prog*100)+"% "+formatBytes(downloadingProgress)+"/"+formatBytes(downloadingTotal), width/2,height/2+30)
 			drawProgressBar(width/2,height/2+70,prog)
-			ctx.globalAlpha = 1
     }
 		drawScreens.loadingResources = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
 			dirt()
 			ctx.textAlign = 'center'
-			let offsetX = changeSceneAnimation ? (thisSceneCurrent ? (1-animationAmount)*width/4 : (animationAmount)*width/4) : 0
 			fill(255)
 			textSize(25)
-			text("Loading resources...", width / 2+offsetX, height / 2 - 65)
-			drawLoadBar(width/2+offsetX,height/2+20)
+			text("Loading resources...", width / 2, height / 2 - 65)
+			drawLoadBar(width/2,height/2+20)
 			let prog = downloadingProgress/downloadingTotal
-			text(floor(prog*100)+"% "+formatBytes(downloadingProgress)+"/"+formatBytes(downloadingTotal), width/2+offsetX,height/2+30)
+			text(floor(prog*100)+"% "+formatBytes(downloadingProgress)+"/"+formatBytes(downloadingTotal), width/2,height/2+30)
 			drawProgressBar(width/2,height/2+70, (prog+initTextureProgress)*0.5)
-			ctx.globalAlpha = 1
 		}
 		/*drawScreens["packetViewer raw"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
 			dirt()
 			ctx.textAlign = 'center'
 			textSize(18)
 			fill(255)
-			text("Packet Viewer: raw", width / 2, lerp(ctx.globalAlpha,-18,2))
+			text("Packet Viewer: raw", width / 2, 2)
 			drawPacketViewerRaw()
 			if(now - pvLastUpdateSize > 1000){
 				let size = pvSize / ((now - pvLastUpdateSize)/1000)
@@ -32542,15 +32439,13 @@ p.camera.transformation.elements.set(matrix)//*/
 			ctx.textAlign = "left"
 			ctx.font = "18px thefont"
 			text("About "+pvTotalSize+" per second.",140,30)
-			ctx.globalAlpha = 1
 		}
 		drawScreens["packetViewer json"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
 			dirt()
 			ctx.textAlign = 'center'
 			textSize(18)
 			fill(255)
-			text("Packet Viewer: json", width / 2, lerp(ctx.globalAlpha,-18,2))
+			text("Packet Viewer: json", width / 2, 2)
 			if(now - pvLastUpdateSize > 1000){
 				let size = pvSize / ((now - pvLastUpdateSize)/1000)
 				pvLastUpdateSize = now
@@ -32560,34 +32455,27 @@ p.camera.transformation.elements.set(matrix)//*/
 			ctx.textAlign = "left"
 			ctx.font = "18px thefont"
 			text("About "+pvTotalSize+" per second.",140,30)
-			ctx.globalAlpha = 1
 		}*/
 		drawScreens["seed templates"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
       dirt()
       ctx.textAlign = 'center'
 			textSize(18)
 			fill(255)
-			text("Seed Templates", width / 2, lerp(ctx.globalAlpha,-18,2))
-			ctx.globalAlpha = 1
+			text("Seed Templates", width / 2, 2)
 		}
 		drawScreens.achievments = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
 			dirt()
       ctx.textAlign = 'center'
 			textSize(18)
 			fill(255)
-			text("Achievments", width / 2, lerp(ctx.globalAlpha,-18,2))
-			ctx.globalAlpha = 1
+			text("Achievments", width / 2, 2)
 		}
 		drawScreens["achievments discoveries"] = () => {
-			ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
 			dirt()
       ctx.textAlign = 'center'
 			textSize(18)
 			fill(255)
-			text("Discoveries", width / 2, lerp(ctx.globalAlpha,-18,2))
-			ctx.globalAlpha = 1
+			text("Discoveries", width / 2, 2)
 		}
 	})()
 
@@ -32626,7 +32514,7 @@ p.camera.transformation.elements.set(matrix)//*/
 
 		if(ctx.imageSmoothingEnabled) ctx.imageSmoothingEnabled = false
     if(allLoaded){
-			prevAnimationAmount = animationAmount
+			/*prevAnimationAmount = animationAmount
 			if(changeSceneAnimation !== null){
 				hoverbox.classList.add("hidden")
 				if(now - changeSceneAnimation > 500){
@@ -32660,7 +32548,7 @@ p.camera.transformation.elements.set(matrix)//*/
 						for(let i of html[screen].enter) i.style.transform = t, i.style.opacity = animationAmount
 					}
 				}
-			}
+			}*/
 			if(!performFast){
 				if((screen === "options") && beforeOptionsScreen === "main menu"){
 					if(tick)renderMainBG()
@@ -32674,7 +32562,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				}
 			}
       
-      if (autoDrawScreens.includes(screen) || changeSceneAnimation !== null) {
+      if (autoDrawScreens.includes(screen) /*|| changeSceneAnimation !== null*/) {
 				hoverbox.classList.add("hidden")
         drawScreens[screen]()
         Button.draw()

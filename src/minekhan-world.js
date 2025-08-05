@@ -17405,12 +17405,12 @@ let shapes = {
 			}
 			return arr
 		})()/*/[
-			[objectify( 0, 16,  0, 16, 16, 4*16, 0, false,false,2)], //bottom
-			[objectify( 0,  0, 16, 16, 16, 5*16, 0, false,false,2)], //top
-			[objectify(16, 16,  0, 16, 16, 0*16, 0)], //north
-			[objectify( 0, 16, 16, 16, 16, 2*16, 0)], //south
-			[objectify( 0, 16,  0, 16, 16, 3*16, 0)], //east
-			[objectify(16, 16, 16, 16, 16, 1*16, 0)]  //west
+			[objectify( 0, 16,  0, 16, 16, 4*16, 0)], //bottom
+			[objectify( 0,  0, 16, 16, 16, 5*16, 0)], //top
+			[objectify(16, 16,  0, 16, 16, 2*16, 0)], //north
+			[objectify( 0, 16, 16, 16, 16, 0*16, 0)], //south
+			[objectify( 0, 16,  0, 16, 16, 1*16, 0)], //east
+			[objectify(16, 16, 16, 16, 16, 3*16, 0)]  //west
 		],
 		texWidth:16*6//*/
 	}
