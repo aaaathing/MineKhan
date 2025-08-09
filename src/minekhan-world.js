@@ -17776,7 +17776,7 @@ If the function returns true, the things in the
 const packetDimension = ['dimension',"replacerNumber",3,["","nether","end"]]
 //const packetInv = ["inv","object",[["inv","bitArray"],["survivStr","bitArray"],[o=>o.x!==undefined,"includeIf",[["x","int"],["y","int"],["z","int"]]]]]
 const packetGameMode = ['gameMode',"replacerNumber",2,["creative","survival","hardcore","spectator"]]
-const packetSlot = [null,"object",[["id","uint"],["amount","byte"],[o=>o.durability!==undefined,"includeIf",["durability","uint"]],[o=>o.customName,"includeIf",["customName","string"]]]]
+const packetSlot = [null,"object",[["id","uint"],["amount","byte"],[o=>o.durability!==undefined,"includeIf",[["durability","uint"]]],[o=>o.customName,"includeIf",[["customName","string"]]]]]
 const packetP = [
 	['x',"double"], ['y',"double"], ['z',"double"],packetDimension, ['ry',"double"], ['rx',"double"], ['bodyRot',"double"],
 	['sneaking',"boolean"], ['username',"string"], ['harmEffect',"number",6,1],
@@ -33260,7 +33260,7 @@ window.parent.postMessage({ready:true}, "*")
 		for(let p of this.players) p.saveInv()
 		return this.playersInv
 	}
-	serverAddPlayer(c, id, username, host = false, admin = false){
+	serverAddPlayer(c, id, username, host = false, admin = false, onclose = null){
 		let p = new Player()
 		p.id = id
 		p.host = host
@@ -33688,6 +33688,7 @@ window.parent.postMessage({ready:true}, "*")
 				delete p2.posUpdated[id]
 			}
 			world.sendAll({type:"dc",data:p.id})
+			if(onclose) onclose(p)
 		}
 		p.updateLoaded = async function(){
 			for(let i=0; i<9; i++){

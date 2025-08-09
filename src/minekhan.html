@@ -5898,9 +5898,9 @@ if time is 0, it will update every time
     narratorVoice: null, // defined later
 		joystick: true,
 		language: null,
-		adjustBrightness: true,
+		adjustBrightness: false,
 		reach: 5, // Max distance player can place or break blocks
-		graphics: null, //Null means not changed yet (same as normal)
+		graphics: "morereal", //Null means not changed yet (same as normal)
 		resolution: true,
 		simulationDistance: 1
 	}
@@ -21709,14 +21709,14 @@ r 11 y  n  n  n
 						if(peerConnection.connectionState === "closed"){
 							cAnCeLcOnNectION = true
 							if(peerConnections[data.id]){
-								serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+data.data+" left. "+serverWorld.players.length+" players now.", fromServer:true})
+								//serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+data.data+" left. "+serverWorld.players.length+" players now.", fromServer:true})
 								delete peerConnections[data.id]
 							}
 						}else if(peerConnection.connectionState === "failed"){
 							cAnCeLcOnNectION = true
 							peerConnection.close()
 							if(peerConnections[data.id]){
-								serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+data.data+" left because connection failed. "+serverWorld.players.length+" players now.", fromServer:true})
+								//serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+data.data+" left because connection failed. "+serverWorld.players.length+" players now.", fromServer:true})
 								delete peerConnections[data.id]
 							}
 						}
@@ -21730,7 +21730,10 @@ r 11 y  n  n  n
 					await Promise.all([waitForDataChannelPromise,waitForUnorderDataChannelPromise])
 
 					if(cAnCeLcOnNectION) return
-					serverWorld.serverAddPlayer(new RTCClientContainer(channel,peerConnection,unorderChannel),data.id,data.username,false,data.admin)
+					let onclose = p => {
+						serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+p.username+" left. "+serverWorld.players.length+" players now.", fromServer:true})
+					}
+					serverWorld.serverAddPlayer(new RTCClientContainer(channel,peerConnection,unorderChannel),data.id,data.username,false,data.admin,onclose)
 				}else if(data.type === "iceCandidate"){
 					let from = peerConnections[data.FROM]
 					if(!from) return
@@ -28601,6 +28604,9 @@ p.camera.transformation.elements.set(matrix)//*/
 	}
 	const dirt = (textureNumber) => {
 		ctx.clearRect(0, 0, width, height) // Don't draw over the beautful dirt
+
+		gl.clearColor(0,0,0, 1.0)
+		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
 
 		use2d()
 		gl.bindBuffer(gl.ARRAY_BUFFER, dirtBuffer)
