@@ -13,7 +13,9 @@ let fs=require("fs").promises
 	let minify = (await import("minify")).minify
 	console.log("Minifying...")
 	let whereInsert = str.indexOf("//INSERT-SERVER-CODE-HERE")
-	let content = await minify.html(str.substring(0,whereInsert)+str2+str.substring(whereInsert))//,{html:{minifyJS:{compress:{keep_classnames:true}}}} //complicated because i had to look through a lot of package's code
+	str = str.substring(0,whereInsert)+str2+str.substring(whereInsert)
+	//let content = str.replace(/(?<=\n)( |\t)+/g,"").replace(/(?<=\n)\n+/g,"")
+	let content = await minify.html(str, {html:{minifyJS:{format: { semicolons: false }}, preserveLineBreaks:true,removeAttributeQuotes:false,removeRedundantAttributes:false}}) //complicated because i had to look through a lot of package's code
 	console.log("Saving")
 	await fs.writeFile(__dirname+"/index.html", content)
 })()

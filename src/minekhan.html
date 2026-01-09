@@ -5520,7 +5520,7 @@ if time is 0, it will update every time
 				if(block.rarity === "rare") txt += "\n§bRare"
 				if(block.rarity === "epic") txt += "\n§dEpic"
 			}
-			if(block.category) txt += "\n§9"+blockCategories[block.category]
+			//if(block.category) txt += "\n§9"+blockCategories[block.category]
 			if(block.type) txt += "\n§c"+blockCategories[block.type]
 			if(blockInfoIds[block.id]){
 				txt += "\n§r"+blockInfo[blockInfoIds[block.id]].data
@@ -6090,7 +6090,7 @@ if time is 0, it will update every time
 		//Actually offhand//shield:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAbUlEQVQ4y62TURJAEQhF24Y/Y/97zI/e1JXk0Uw/6h4XIWammwyLpTYeGQN0KBE7INNsHHgNpbYvcQPjQGxmQzQTIAvxAEcu9MW+AejF3wApZMTTMz4F7I6xA4QQrK0A5g/AeFMIwPFF4RJwkx12yiHWwRBgCAAAAABJRU5ErkJggg==",
 		elytra:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAGFJREFUOE9jZKAQMFKonwHDAEkFpf/4DH3+4B6KHjgHphGmAN0gdHEYH2wASDG6ychi+ORHDbjHSJ0wwBYT+GIBWQ4lHSBHJckGILsCX7yjy6EkS/TUiJ6ksclTPzORmjsBcJ+oEcgNm4wAAAAASUVORK5CYII=",
     //minekhan: "assets/images/minekhan.png",
-    panorama: "assets/images/panorama/aug-2-2025.png",
+    panorama: "assets/images/panorama/2026-01-09.png",
 		loadbar: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAAICAYAAABpsU6/AAAABGdBTUEAALGPC/xhBQAAAPpJREFUeNrt20EOgjAQBVCa9P5XRo0rkYUSOmln3iybSPiPoS2ibX/W9lltU6/iwoULFy5cuPBK6dIB/p2TCxcTCxcuXLjwWtqlAy/fiK7nWJdsvly4mF/0C68ELl8bwNbenz++Gf5hfD+Mt4vHCR2/Mf+S4wH5p+6L4w20St8GXP8SLhf6P5XLQvP/kOOb/6Zb/0K9Zsp/dm6jXa58A+gJRX6Vpy9m608u+la/5O9f99fJZi/6PxldA8gvPxfe03tHn6c+5MIruUtfCKb6bx3kt2GW30Jyt0tWVy6xucxPC65bvSD8Xrzx5JdffguSDfN52bjUehAvnf8Ba86fI1AtGCgAAAAASUVORK5CYII=",
 		autosave:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKIAAAAeCAYAAACv+sUVAAADdUlEQVR42u3av2sTYRzH8XfONOkPqrGl1F8VXRqklFIcxKGDm0Na0KlQaSeRjgrqvyAKdtOhk6KlFLFgOwm6ODk4FAdJHULpYGtKGikmJqk5hyNHr7m73B1PW5N8vxBIk+PVb57nc7nn7hLCoRKJMd3u9eXldyGkpGqU3/yE3bCll7ctf49Ozh54Q1L1FSBV+QkfxoeTQDdugFRVuJ4GuxEDXe8BasogNmqg6zlAEsQGCbSUUZoMgZQEUUrK7tDstO5x2kbOWKVU5Sdca93j9J7bekgC3TwBUpWf8P4zvtFJdDesgtQKjwS6OQKkKj9hv5iXEEqgmydAqvITchsIu8sTfibJzvBruRleLS+GF2t/gGpdvnFzVPSjanxUzpfK/FgwPbOk65kl3cteXMsIatkZfi03w6vlxVBpqfhsKsZaxdwHNQB0QE8kxipI5eHbsWlIb+ZA/+cBUjJffvMTcgCYme7jXCxmvlgoFAG49TRZ87Bu57z4ehGA8f5kYOfD+rB5OBydnGW8P+nbSSTGcDhkeHbsDBvr0PpROT4q58tPfkL7gVf34qTzObq1CABtx9st/6VQKJLO57j7fN2psQN1FtYGAJgaTAV2FtYGLBM2NZjy7eyd9L0BGu9PHkk/KsfnKOa9gukz0330tLXbRjydz5nvRaMRM917wLpz5lfjlj0+iDO/Gq/6BjrKfup5vkzodG8XAA9udlSB5cIuWjRsPgd4+GYbgB+bGUtDzebsD5CMTzDHhK4PdQKwstFigoCJpvM5AB6//Q3AjSHjNvWz91uWhsQRJ4hTleihUyUL+GSih3Q+VwUsrpRd9wxxxPHjmHdWznf9BeDC1QlGRkbIPboDwP3XaVvgWr+xGJ3btK4HxBEniGMG8WTE2CCVSpHNZvn+09hwuC/E5o7G4spfC9AVs/9NrTjiBHGq1K2tLQDOxI5VlpoWINa2S1lroVz443oxSRxx/DiWIGotEXpKq7CxSm9nxLJhrM0429GirWhAuVBybEYccfw6ZhC3ixoUd+nuiFAuFSmXiiZuPRU3kpzdLds2I444QZxKEEOfv/3SAa5cOgFo5jHfkvhoK5mskey5Txt2V9jFESeQ43iv2QChuyPM5o5G/Kyx2Jz7mPF1z1Eccbw4oVrg5XgPAF+Saa+NiCOOSscCBv4tmTjieHH+ASOfDpJpNy6QAAAAAElFTkSuQmCC",
     error:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAABhJREFUGFdj/M/w/z8jAwgyMPz/z/CfAQA5DAX/rY1o3wAAAABJRU5ErkJggg==",
@@ -7507,6 +7507,7 @@ Division: //
 				}
 				messageOverlay.innerHTML = sanitize(value)
 				messageHolder.classList.remove('command')
+				this.hints.delete(messageInput)
 			}
       messageInput.prevValue = value
     },
@@ -7673,13 +7674,12 @@ Division: //
   //messagesHolder.onmousedown = e => canvas.onmousedown(e) //make buttons work
   messageInput.onkeydown = e => {
 		let hintObj = Messages.hints.get(messageInput)
-		if(!hintObj) return
     if(e.key === "Tab"){
-      if(hintObj.hints.length) messageInput.value = hintObj.hints[hintObj.hintIdx]
+      if(hintObj && hintObj.hints.length) messageInput.value = hintObj.hints[hintObj.hintIdx]
       Messages.updateInput()
       e.preventDefault()
     }else if(e.key === "ArrowUp"){
-      if(hintObj.hints.length && !e.shiftKey){
+      if(hintObj && hintObj.hints.length && !e.shiftKey){
         hintObj.hintIdx--
         if(hintObj.hintIdx < 0) hintObj.hintIdx = hintObj.hints.length-1
         Messages.updateInput()
@@ -7693,7 +7693,7 @@ Division: //
       }
 			e.preventDefault()
     }else if(e.key === "ArrowDown"){
-      if(hintObj.hints.length && !e.shiftKey){
+      if(hintObj && hintObj.hints.length && !e.shiftKey){
         hintObj.hintIdx++
         if(hintObj.hintIdx >= hintObj.hints.length) hintObj.hintIdx = 0
         Messages.updateInput()
@@ -11972,6 +11972,7 @@ return//*/
 			}else{
       	p.camera.damagerz = amount
 			}
+			if(harmEffect <= 0) p.lastDamageHealth = 0
       p.harmEffect = harmEffect
       updateHUD = true
     }else{
@@ -12326,6 +12327,7 @@ return//*/
 		if(hitBox.pos){
 			let onclick = blockData[cblock].onclientclick
 			if(onclick && !controlMap.sneak.pressed){
+				p.punchEffect = 10
 				if(!onclick(x, y, z, p.dimension, world)){p.lastPlace = Date.now(); p.punchEffect = 10; return} //if it doesn't return true
 			}
 		}
@@ -12336,11 +12338,13 @@ return//*/
 		if(item){
 			send({type:"serverChangeBlock",x:pos?pos[0]:p2.x,y:pos?pos[1]:p2.y,z:pos?pos[2]:p2.z,dimension:p.dimension,place:true,face:hitBox.face,shift:p.sneaking,blockMode,rotate,flip})
 			p.lastPlace = Date.now()
+			p.punchEffect = 10
 			if(blockData[adjholding].onuse && pos) blockData[adjholding].onuse(x,y,z, cblock,p.dimension)
 			return
 		}
 		if(cblock && blockData[cblock].onclick){
 			p.lastPlace = Date.now()
+			p.punchEffect = 10
 			send({type:"serverChangeBlock",x,y,z,dimension:p.dimension,place:true,face:hitBox.face,shift:p.sneaking,blockMode,rotate,flip})
 			return
 		}
@@ -12386,6 +12390,7 @@ return//*/
         inventory.hotbar[inventory.hotbarSlot].amount --;
         updateHUD = true
       }*/
+		 	p.punchEffect = 10
       
       //play sound
       blockSound(predictBlock, "place", x,y,z)
@@ -17468,9 +17473,9 @@ r 11 y  n  n  n
       this.addPart("cape",part.size,part.vao,0,pix*6,pix*-3,1,1,1,0,0)
       
       this.holding = 0 //shown in the hand, it is set to the blockid for the block the player is holding
-      this.prevHolding = 0
+      this.prevHolding = null
       this.holdRot = Math.PI / -10
-      if(blockData) part = generateBlockVAO(this.holding)
+      //if(blockData) part = generateBlockVAO(this.holding)
       this.addPart("holding",part.size,part.vao,0, 0, 0, 1,1,1, 0, 0)
       
       this.walkRot = 0
@@ -32663,7 +32668,7 @@ function lookAt(x,y,z){
   p.rx = atan2(y - p.y, adjacent)
 }
 
-if (("serviceWorker" in navigator) && location.origin === "https://thingmaker.us.eu.org") {
+if (("serviceWorker" in navigator)) {
   window.addEventListener("load", function() {
     navigator.serviceWorker
       .register("/sw.js")
