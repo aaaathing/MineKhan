@@ -20666,7 +20666,7 @@ function initDefaultCommands(world){
 		CommandNode.l("title",null,"Shows text on screen. fadeIn and fadeOut and stay are miliseconds.").then(CommandNode.a("text", args => {world.sendAll({type:"title",data:args.text,fadeIn:500,fadeOut:1000,stay:2000})}).then(CommandNode.a("subtext", args => {world.sendAll({type:"title",data:args.text,sub:args.subtext,fadeIn:500,fadeOut:1000,stay:2000})}).then(CommandNode.a("color", args => {world.sendAll({type:"title",data:args.text,sub:args.subtext,color:args.color,fadeIn:500,fadeOut:1000,stay:2000})}).then(
 			CommandNode.a("fadeIn",null,"number").then(CommandNode.a("fadeOut",null,"number").then(CommandNode.a("stay",args => {world.sendAll({type:"title",data:args.text,sub:args.subtext,color:args.color,fadeIn:args.fadeIn,fadeOut:args.fadeOut,stay:args.stay})},"number")))
 		)))),
-		CommandNode.l("setBlock",null,"Set a block at specified position").then(CommandNode.a("x",null,"x").then(CommandNode.a("y",null,"y").then(CommandNode.a("z",null,"number").then(CommandNode.a("block",
+		CommandNode.l("setBlock",null,"Set a block at specified position").then(CommandNode.a("x",null,"x").then(CommandNode.a("y",null,"y").then(CommandNode.a("z",null,"z").then(CommandNode.a("block",
 		(args,pos,scope) => {
 			let block = blockIds[args.block]
 			if(block === undefined) block = parseInt(args.block)
