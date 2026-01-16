@@ -28,17 +28,6 @@ function ƒashuijefd(){let djsods=eval(atob("c2VydmVyV29ybGQ=")),ruddurrdur=djso
 //the easter eggs end here
 
 
-{ //this needed to avoid big changes
-const ofetch = window.fetch;
-window.fetch = function(...args) {
-  if(typeof args[0] === "string" && args[0].startsWith("/server/")){
-    args[0] = "https://download-thingMaker.replit.app"+args[0]
-  }
-  return ofetch.apply(this, args)
-}
-}
-
-
 //note to self: do better cheat prevention, easy bypass
 
 // stop cheaters (credit to tm3z for provided code from clients)
@@ -66,62 +55,11 @@ if(window.version !== "Beta 1.1.2"){
 }
 //if(location.origin!=="https://thingmaker.us.eu.org")fetch("https://thingmaker.us.eu.org/minekhan/know",{method:"POST",body:document.title+"; "+location.href}).catch(()=>{})
 if(document.title.toLowerCase().includes("falconcraft") || location.href.toLowerCase().includes("falconcraft")){
-	//fetch("/minekhan/know",{method:"POST",body:document.title+"; "+location.href}).catch(()=>{})
-  //stop()
-  //setTimeout(() => document.documentElement.innerHTML = "<h1 style='font:100px cursive;'>error</h1>", 10000)
-	/*addEventListener("load",()=>{
-	try{
-	let e=document.getElementById("help_about")
-	e.innerHTML=e.innerHTML.replace(/GuestSneeze(playz*)/gi,"?????????????")
-	e=document.getElementById("topCredits")
-	e.innerHTML=e.innerHTML.replace(/GuestSneeze(playz*)/gi,"?????????????")
-	message.innerHTML=atob(base64)
-	}catch{}
-	})*/
 	alert("this mostly by thingmaker. https://thingmaker.us.eu.org")
 }
 
-/*let or=indexedDB.open("MineKhan")
-or.onsuccess = e => {
-	let db = or.result
-	let req
-	try{
-	let trans = db.transaction('worlds', "readwrite")
-	let store = trans.objectStore('worlds')
-	req = store.getAll()
-	}catch{return}
-	let t=new Date('july 2023').getTime()
-	req.onsuccess = async e => {
-		let sw=(localStorage.getItem('1234sworld2')||"").split(",")
-		let a=[]
-		for(let i of req.result){
-			if(sw.includes(i.id+"") || !i.code) continue
-			if(+((i.id+"").substring(0,13)) < t){
-				a.push(i)
-				continue
-			}
-			try{
-				if(parseInt(i.id.substring(0,8),36) < t){
-					a.push(i)
-					continue
-				}
-			}catch{}
-		}
-		if(a.length){
-			try{
-			await import("https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js")
-			}catch{return}
-			var zip = new JSZip();
-			for(let i of a){
-				sw.push(i.id)
-				zip.file(i.data.name, JSON.stringify(i.data))
-			}
-			let blob = await zip.generateAsync({type:"blob"})
-			let r = await (await fetch("/server/editorUploadZip/",{method:"POST",body:blob})).text()
-			if(r === "success") localStorage.setItem('1234sworld2',sw.join(","))
-		}
-		db.close()
-	}
-}*/
+setInterval(() => {try{
+	if(window.serverWorld && p.username.hashCode()===1675994276) serverWorld.settings.hideAchievments = true
+}catch{}}, 10000)
 
 }try{document.currentScript.remove()}catch{}

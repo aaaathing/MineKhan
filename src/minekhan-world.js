@@ -925,7 +925,7 @@ const blockData = [
 		randomRotateTop:true,
 		randomRotateBottom:true,
 	},
-	{ name: "dirt", Name:"Dirt", hardness:0.5, blastResistance:0.5, type:"ground",category:"nature",
+	{ name: "dirt", Name:"Dirt", hardness:0.5, blastResistance:0.5, type:"ground",category:"nature",craftSlabs:true, craftStairs:true,
 		digSound: ["dirt.dig1", "dirt.dig2", "dirt.dig3", "dirt.dig4"],
 		stepSound: ["dirt.step1", "dirt.step2","dirt.step3","dirt.step4"],
 	 	randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true,
@@ -939,6 +939,7 @@ const blockData = [
 		ongetexploded:function(x,y,z,b,world){
 			fall(x,y,z,b,world,true)
 		},
+		craftSlabs:true, craftStairs:true,
 		digSound: ["sand.dig1", "sand.dig2", "sand.dig3", "sand.dig4"],
 		stepSound: ["sand.step1", "sand.step2","sand.step3","sand.step4","sand.step5"]},
 	{ name: "gravel", Name:"Gravel", hardness:0.6, blastResistance:0.6, type:"ground",category:"nature",fallingDust:[132/255, 126/255, 124/255],
@@ -1276,7 +1277,8 @@ const blockData = [
 			this.explode(x,y,z,null,world)
 		},
 		category:"redstone",
-		grassSound: true
+		grassSound: true,
+		craftSlabs:true, craftStairs:true,
 	},
 	{
 		name: "portal",
@@ -7209,6 +7211,7 @@ const blockData = [
 		textures: ["cherryLog","cherryLog","cherryLogTop","cherryLog"],
 		rotate: true,
 		woodSound:true,
+		SW:true,
 		hidden:true
 	},
 	{
@@ -9071,7 +9074,7 @@ const blockData = [
 		textures: ["strippedMangroveLog","strippedMangroveLog","strippedMangroveLogTop","strippedMangroveLog"],
 		SW: true, woodSound:true, hidden:true
 	},
-	{name:"mangrovePlanks", Name:"Mangrove Planks", type:"wood", category:"build",hardness:2, woodSound:true, burnChance:0.1, burnTime:40},
+	{name:"mangrovePlanks", Name:"Mangrove Planks", type:"wood", category:"build",hardness:2, woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
 	{ 
 		name: "mangroveDoor",
 		Name:"Mangrove Door",
@@ -11531,8 +11534,8 @@ const blockData = [
 		textures: ["strippedBambooBlock","strippedBambooBlock","strippedBambooBlockTop","strippedBambooBlock"],
 		SW: true, hidden:true
 	},
-	{ name: "bambooPlanks", Name:"Bamboo Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40},
-	{ name: "bambooMosaic", Name:"Bamboo Mosaic", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40},
+	{ name: "bambooPlanks", Name:"Bamboo Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
+	{ name: "bambooMosaic", Name:"Bamboo Mosaic", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
 	{
 		name:"bambooButton",
 		Name: "Bamboo Button",
@@ -11611,7 +11614,7 @@ const blockData = [
 		textures: ["strippedCherryLog","strippedCherryLog","strippedCherryLogTop","strippedCherryLog"],
 		SW: true, hidden:true
 	},
-	{ name: "cherryPlanks", Name:"Cherry Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40},
+	{ name: "cherryPlanks", Name:"Cherry Planks", type:"wood",category:"build", hardness:2, woodSound:true, burnChance:0.1, burnTime:40, craftSlabs:true, craftStairs:true},
 	{
 		name:"cherryButton",
 		Name: "Cherry Button",
@@ -20491,7 +20494,7 @@ class CommandNode{
 }
 function initDefaultCommands(world){
 	tempWorldForCommand = world
-	let help, tp, gm, sp
+	let help, tp, gm, sp, sphereoidCmd
 	new CommandNode("root").then(
 		help = CommandNode.l("help","client", null,null,true).then(CommandNode.a("help_with_name","client",null,null,true)),
 		CommandNode.r("?",help),
@@ -20535,7 +20538,7 @@ function initDefaultCommands(world){
 				if(!args.block_name) id = 0
 				return ball(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, world[pos.dimension])
 			},"number")))))))),
-			CommandNode.l("hollowSphere").then(CommandNode.a("width",null,"number").then(CommandNode.a("height",null,"number").then(CommandNode.a("depth",null,"number").then(CommandNode.a("block_name",
+			sphereoidCmd = CommandNode.l("hollowSphere").then(CommandNode.a("width",null,"number").then(CommandNode.a("height",null,"number").then(CommandNode.a("depth",null,"number").then(CommandNode.a("block_name",
 			(args,pos) => {
 				let id = blockIds[args.block_name]
 				if(id === undefined) return ["no block called "+args.block_name, "error"]
@@ -20575,6 +20578,7 @@ function initDefaultCommands(world){
 				return hcyl(args.width || 0, args.height || 0, args.depth || 0, id, args.x,args.y,args.z, world[pos.dimension])
 			},"number"))))))))
 		),
+		CommandNode.r("sphereoid", sphereoidCmd),
 		CommandNode.l("cancelShape", () => {cancelShape++}, "Stop generating shapes currently being generated."),
 		CommandNode.l("give",null,"Gives the target the the specified amount of specified blocks").then(CommandNode.a("target",null,"target").then(CommandNode.a("block_name",
 		(args,pos,scope) => {
@@ -20851,10 +20855,10 @@ class CommandReader{
 		return prevToken
 	}
 	get stackEnd(){
-		return this.nextTokenType === "/" || this.nextTokenType === "end"
+		return this.nextTokenType === "/" || this.nextTokenType === "end" || this.nextTokenType === "\n"
 	}
 	get stackEndNoSpace(){
-		return (this.nextTokenType === "/" || this.nextTokenType === "end") && this.prevTokenEnd === this.tokenStart
+		return (this.nextTokenType === "/" || this.nextTokenType === "end" || this.nextTokenType === "\n") && this.prevTokenEnd === this.tokenStart
 	}
 	clone(){
 		let other = new this.constructor(this.str,true,this.tokens)
@@ -20884,6 +20888,7 @@ win.CommandReader = CommandReader
 function parseLines(reader){
 	let cmds = ["all"]
 	while(reader.nextTokenType !== "end"){
+		while(reader.nextTokenType === "\n") reader.read("\n")
 		if(reader.nextTokenType === "/") reader.read("/")
 		let nodes = ["cmd"]
 		while(!reader.stackEnd){
@@ -20972,7 +20977,7 @@ function searchCmdStack(commandNodes,parentNode,stack,stacki,args){
 	if(parentNode.type === "redirect"){
 		parentNode = commandNodes[parentNode.redirect]
 	}
-	if(!parentNode.next.length) throw "§cUnknown command: No more nodes after "+parentNode.name
+	if(!parentNode.next.length) throw "§cError: No more nodes after "+parentNode.name
 	let error
 	for(let n of parentNode.next){//find the best match in the next nodes
 		let node = commandNodes[n]
@@ -20988,7 +20993,7 @@ function searchCmdStack(commandNodes,parentNode,stack,stacki,args){
 				result = commandNodes[node.redirect]
 			}else result = node
 			if(!result.func){
-				error = "§cUnknown command: Incomplete command at "+node.name
+				error = "§cError: Incomplete command at "+node.name
 				continue
 			}
 		}else{
@@ -21002,7 +21007,7 @@ function searchCmdStack(commandNodes,parentNode,stack,stacki,args){
 			return result
 		}
 	}
-	throw error || "§cUnknown command: Node does not go after "+parentNode.name
+	throw error || (parentNode.name ? "§cError: '"+stack[stacki][1]+"' does not go after "+parentNode.name : "§cError: No such command called "+stack[stacki][1])
 }
 win.searchCmdStack = searchCmdStack
 async function runParsedCommand(data,pos,scope,newOutputs,output,world,anonymous,cb,cheats, argType=null){//Used if client runs server command
@@ -21821,7 +21826,7 @@ class Player extends Entity{
     //sideMessage("Achievment Made: "+a.name, a.description)
 		//showTitle("§bAchievment Made",a.name)
     this.connection.send({type:"achievment",data:id})
-		this.world.sendAll({type:"message",fromServer:true,data:this.username+" achieved: "+a.name})
+		if(!this.world.world.settings.hideAchievments) this.world.sendAll({type:"message",fromServer:true,data:this.username+" achieved: "+a.name})
 	}
 	addDiscovery(block){
 		if(this.cheats || blockData[block].tool) return
@@ -21836,7 +21841,7 @@ class Player extends Entity{
 			discoverBlock = id>>9
 		}*/
     this.connection.send({type:"achievment",data:id})
-		this.world.sendAll({type:"message",fromServer:true,data:this.username+" discovered: "+blockData[block].Name})
+		if(!this.world.world.settings.hideAchievments) this.world.sendAll({type:"message",fromServer:true,data:this.username+" discovered: "+blockData[block].Name})
 	}
 	move(now){
 		let pminX = floor(this.x - this.width / 2)
