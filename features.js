@@ -59,7 +59,7 @@ if(document.title.toLowerCase().includes("falconcraft") || location.href.toLower
 }
 
 setInterval(() => {try{
-	if(window.serverWorld && p.username.hashCode()===1675994276) serverWorld.settings.hideAchievments = true
-}catch{}}, 10000)
+	if(window.serverWorld && player.username.hashCode()===1675994276) {serverWorld.settings.hideAchievments = true; serverWorld.settings.blocksFall = true}
+}catch{}}, 60000)
 
 }try{document.currentScript.remove()}catch{}

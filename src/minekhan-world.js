@@ -21722,7 +21722,7 @@ class Player extends Entity{
 		if(!spawn){
 			spawn = this.spawnPoint = {x:this.world.world.spawnPoint.x,y:this.world.world.spawnPoint.y,z:this.world.world.spawnPoint.z}
 		}
-		this.tp(spawn.x,spawn.y+0.5+this.height*0.5,spawn.z)
+		this.tp(spawn.x,spawn.y+0.5+this.height*0.5,spawn.z,"")
 		this.velx = this.vely = this.velz = 0
 		this.lastY = this.y
 		this.health = 20
@@ -21766,6 +21766,7 @@ class Player extends Entity{
 		this.targetZ = this.z = z
 		this.dimension = dimension
 		this.world = this.world.world[dimension]
+		this.lastY = this.y
 		if(this.connection) this.connection.send({type:"tp",x,y,z,dimension})
 	}
 	addXP(amount){
@@ -31478,6 +31479,7 @@ class World{ // aka trueWorld
 				holdObj.durability -= 1
 			}
 			p.breakStart = dnow
+			p.foodExhaustion += 0.005
 		}
 		let worked = this[dimension].setBlock(x, y, z, place ? holding : 0)
 		if(worked === false) return p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:prevBlock, dimension}})
@@ -32922,22 +32924,24 @@ class World{ // aka trueWorld
 		let durability = reader.read(4), durabilityInv = reader.read(5)
 		for(let i=0;i<durability;i++){
 			let index = reader.read(4)
-			inventory.hotbar[index].durability = reader.read(16)
+			let v = reader.read(16)
+			if(inventory.hotbar[index].durability) inventory.hotbar[index].durability = v
 		}
 		for(let i=0;i<durabilityInv;i++){
 			let index = reader.read(5)
-			inventory.main[index].durability = reader.read(16)
+			let v = reader.read(16)
+			if(inventory.main[index]) inventory.main[index].durability = v
 		}
 		let customName = reader.read(4), customNameInv = reader.read(5)
 		for(let i=0;i<customName;i++){
 			let index = reader.read(4)
 			let name = reader.readString()
-			inventory.hotbar[index].customName = name
+			if(inventory.hotbar[index]) inventory.hotbar[index].customName = name
 		}
 		for(let i=0;i<customNameInv;i++){
 			let index = reader.read(5)
 			let name = reader.readString()
-			inventory.main[index].customName = name
+			if(inventory.main[index]) inventory.main[index].customName = name
 		}
 		let achievmentLen = reader.read(32)
 		p.achievments.length = 0
@@ -32960,22 +32964,24 @@ class World{ // aka trueWorld
 		let durability = reader.read(4), durabilityInv = reader.read(5)
 		for(let i=0;i<durability;i++){
 			let index = reader.read(4)
-			inventory.hotbar[index].durability = reader.read(16)
+			let v = reader.read(16)
+			if(inventory.hotbar[index].durability) inventory.hotbar[index].durability = v
 		}
 		for(let i=0;i<durabilityInv;i++){
 			let index = reader.read(5)
-			inventory.main[index].durability = reader.read(16)
+			let v = reader.read(16)
+			if(inventory.main[index]) inventory.main[index].durability = v
 		}
 		let customName = reader.read(4), customNameInv = reader.read(5)
 		for(let i=0;i<customName;i++){
 			let index = reader.read(4)
 			let name = reader.readString()
-			inventory.hotbar[index].customName = name
+			if(inventory.hotbar[index]) inventory.hotbar[index].customName = name
 		}
 		for(let i=0;i<customNameInv;i++){
 			let index = reader.read(5)
 			let name = reader.readString()
-			inventory.main[index].customName = name
+			if(inventory.main[index]) inventory.main[index].customName = name
 		}
 		let achievmentLen = reader.read(32)
 		p.achievments.length = 0
@@ -33411,7 +33417,7 @@ window.parent.postMessage({ready:true}, "*")
 					}
 				}
 				let now = performance.now()
-				if(now - p.lastSendEntities > 125){
+				//if(now - p.lastSendEntities > 125){
 					p.lastSendEntities = now
 					let entities = world[p.dimension].getEntities(p), arr = [], length = 0
 					for(let i=0; i<entities.length; i++){
@@ -33426,7 +33432,7 @@ window.parent.postMessage({ready:true}, "*")
 						arr.push(ent)
 					}
 					if(length) p.connection.send({type:"entityPosAll", data: arr})
-				}
+				//}
 				if(p.resendHealth){
 					p.sendHealth()
 					p.resendHealth = false

@@ -12487,7 +12487,7 @@ return//*/
     let dnow = Date.now()
     let block = hitBox.pos ? world.getBlock(hitBox.pos[0], hitBox.pos[1], hitBox.pos[2], p.dimension) : 0
     let touchBreak = pTouch.touching && pTouch.canDig && dnow - pTouch.touchStart > touchMoveLimit
-    let repeatClickBreak = now - p.lastStartBreak < 500
+    let repeatClickBreak = now - p.lastStartBreak < 300
     let breakingStart = (controlMap.break.pressed && !Key.control || repeatClickBreak || touchBreak) && block
     let breaking = breakingStart && (now - crack.delayStart >= crack.delayBetween)
     if(hitBox.pos && !arrayValuesEqual(crack.prevPos, hitBox.pos)){
@@ -12497,6 +12497,7 @@ return//*/
 			if(breakingStart) send({type:"startBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]})
     }
     if(breaking){
+			if(crack.idx === -1) send({type:"startBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]})
       let usingTool = false
       let breakTime = blockData[block].hardness*1000
       let harvestTools = blockData[block].harvestTools
@@ -12532,12 +12533,12 @@ return//*/
       }
       if(crack.idx >= crack.length){
         changeWorldBlock()
-        p.foodExhaustion += 0.005
         crack.prevPos = hitBox.pos
         crack.soundTimer = 0
         crack.delayStart = now
         crack.breakStart = now
 				crack.idx = -1
+				p.lastStartBreak = 0
       }
     }else{
 			if(crack.idx !== -1 && !world.isMK && hitBox.pos) send({type:"stopBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]})
@@ -17449,7 +17450,6 @@ r 11 y  n  n  n
       this.usingItem = false
       
       this.prevWalking = false
-			this.walkAmount = 0
 			this.walkCount = 0
       this.prevSwimming = false
       this.swimStart = 0
@@ -17777,15 +17777,13 @@ r 11 y  n  n  n
       
       if(this.walking !== this.prevWalking){
         this.prevWalking = this.walking
-				if(this.walking) this.walkCount = Math.random()>0.5 ? 0 : 1000, this.walkAmount = 1
+				if(this.walking) this.walkCount = Math.random()>0.5 ? 0 : 1000
       }
 			let walkSpeed = dist2(this.x,this.z,this.previousX,this.previousZ)*500
-			if(!this.walking && this.walkAmount > 0){
-				this.walkAmount -= 0.2
-				if(this.walkAmount<0) this.walkAmount = 0
-			}
-      if(this.walking && this.walkAmount === 1){
+			let walkRotTarget = 0
+			if(this.walking){
 				this.walkCount += walkSpeed
+				walkRotTarget = sin(this.walkCount/1000*Math.PI) * Math.PI / 4
         /*if(this.sprinting && !this.swimming){
           walkRotTarget = sin(((now - this.walkStart) / 250) * Math.PI) * Math.PI / 4
         }else if(this.sneaking && !this.swimming){
@@ -17794,7 +17792,7 @@ r 11 y  n  n  n
           walkRotTarget = sin(((now - this.walkStart) / 500/*437.5*-/) * Math.PI) * Math.PI / 4
         }*/
       }
-      this.walkRot = this.walkAmount && sin(this.walkCount/1000*Math.PI)*this.walkAmount//lerp(0.5, this.walkRot, walkRotTarget)
+			this.walkRot = lerp(0.5, this.walkRot, walkRotTarget)
       
       this.parts.leftLeg.rx += this.walkRot
       this.parts.rightLeg.rx -= this.walkRot
@@ -21851,7 +21849,7 @@ r 11 y  n  n  n
 			multiplayer.toSendLoadChunks = null
 			multiplayer.sendPos = (force,type) => {
 				let now = Date.now()
-				if((!canSendPos || now-multiplayer.lastSendPos < 100) && !force || !multiplayer.hasStartedLoad) return //if p3 hasn't been set, don't send
+				if((!canSendPos /*|| now-multiplayer.lastSendPos < 100*/) && !force || !multiplayer.hasStartedLoad) return //if p3 hasn't been set, don't send
 				
 				let obj = {type:"pos", data:p3}
 				/*if(shouldSendInvStuff){
@@ -28131,7 +28129,7 @@ p.camera.transformation.elements.set(matrix)//*/
     }else{
       if(p.survival){
 				crack.soundTimer = 5
-				if(hitBox.pos) send({type:"startBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]})
+				//if(hitBox.pos) send({type:"startBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]})
 			}else changeWorldBlock()
       p.lastStartBreak = performance.now()
     }

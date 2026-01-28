@@ -2201,12 +2201,13 @@ attackCooldownStart=Date.now(),attackCooldownTime=a
 let i=(Date.now()-p.lastBreak)/1e3*tickSpeed
 send({type:"entInteract",data:e.id,hit:!0,cooldown:.2+((i+.5)/a)**2*.8})}function entInteract(){p.punchEffect=10
 let e=entHitbox.ent
-e&&!p.spectator&&send({type:"entInteract",data:e.id,hit:!1,cooldown:0})}function cracks(){let e=Date.now(),t=hitBox.pos?world.getBlock(hitBox.pos[0],hitBox.pos[1],hitBox.pos[2],p.dimension):0,a=pTouch.touching&&pTouch.canDig&&e-pTouch.touchStart>touchMoveLimit,i=now-p.lastStartBreak<500,s=(controlMap.break.pressed&&!Key.control||i||a)&&t,o=s&&now-crack.delayStart>=crack.delayBetween
-if(hitBox.pos&&!arrayValuesEqual(crack.prevPos,hitBox.pos)&&(crack.prevPos=hitBox.pos,crack.soundTimer=0,crack.breakStart=now,s&&send({type:"startBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]})),o){let e=!1,a=1e3*blockData[t].hardness,i=blockData[t].harvestTools
+e&&!p.spectator&&send({type:"entInteract",data:e.id,hit:!1,cooldown:0})}function cracks(){let e=Date.now(),t=hitBox.pos?world.getBlock(hitBox.pos[0],hitBox.pos[1],hitBox.pos[2],p.dimension):0,a=pTouch.touching&&pTouch.canDig&&e-pTouch.touchStart>touchMoveLimit,i=now-p.lastStartBreak<300,s=(controlMap.break.pressed&&!Key.control||i||a)&&t,o=s&&now-crack.delayStart>=crack.delayBetween
+if(hitBox.pos&&!arrayValuesEqual(crack.prevPos,hitBox.pos)&&(crack.prevPos=hitBox.pos,crack.soundTimer=0,crack.breakStart=now,s&&send({type:"startBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]})),o){-1===crack.idx&&send({type:"startBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]})
+let e=!1,a=1e3*blockData[t].hardness,i=blockData[t].harvestTools
 !0===i||i&&i.includes(holding)?(a*=1.5,holding&&blockData[holding].mineSpeed&&(a/=blockData[holding].mineSpeed,e=!0)):a*=5,holding&&blockData[holding].shears&&blockData[t].shearBreakTime&&(a=blockData[t].shearBreakTime,e=!0),p.inLiquid&&(a*=5),p.onGround||(a*=5)
 let s=map(now,crack.breakStart,crack.breakStart+a,0,1)
 if(crack.idx=floor(s*crack.length),crack.tex=crack[crack.idx],pTouch.digProg=s,crack.soundTimer++,crack.soundTimer>5)crack.soundTimer-=5,blockSound(t,"breaking",hitBox.pos[0],hitBox.pos[1],hitBox.pos[2]),blockParticles(t,hitBox.pos[0],hitBox.pos[1],hitBox.pos[2],4,"breaking",world,p.dimension,hitBox.face),p.punchEffect=10
-crack.idx>=crack.length&&(changeWorldBlock(),p.foodExhaustion+=.005,crack.prevPos=hitBox.pos,crack.soundTimer=0,crack.delayStart=now,crack.breakStart=now,crack.idx=-1)}else-1!==crack.idx&&!world.isMK&&hitBox.pos&&send({type:"stopBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]}),crack.idx=-1,crack.breakStart=now,crack.soundTimer=0,pTouch.digProg=0}function blockParticles(e,t,a,i,s,o,r=c,n,l,h){let c=r
+crack.idx>=crack.length&&(changeWorldBlock(),crack.prevPos=hitBox.pos,crack.soundTimer=0,crack.delayStart=now,crack.breakStart=now,crack.idx=-1,p.lastStartBreak=0)}else-1!==crack.idx&&!world.isMK&&hitBox.pos&&send({type:"stopBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]}),crack.idx=-1,crack.breakStart=now,crack.soundTimer=0,pTouch.digProg=0}function blockParticles(e,t,a,i,s,o,r=c,n,l,h){let c=r
 if(!performFast)for(var d=0;d<s;d++){let s=floor(rand(6)),r=t,h=a,d=i
 if("break"===o)r+=rand(-.4,.4),h+=rand(-.4,.4),d+=rand(-.4,.4)
 else if("breaking"===o)switch(l){case"top":h+=.5,r+=rand(-.5,.5),d+=rand(-.5,.5),s=1
@@ -2858,7 +2859,7 @@ const s=p.camera.transformation.elements,o=p.camera.projection,r=[o[0],0,0,0,0,o
 n.identity(),n.mult(r),n.mult(s),n.mult(i.elements),n.transpose(),i.transpose(),gl.uniform1i(glCache.uSamplerEntity,0),gl.uniform1f(glCache.uBlockLightEntity,1),gl.uniform1f(glCache.uSkylightEntity,1),gl.uniform1i(glCache.useNormalsEntity,0),gl.uniform3f(glCache.uPosEntity,p.renderX-e.x,p.renderY-e.y,p.renderZ-e.z),gl.uniformMatrix4fv(glCache.uViewEntity,!1,n.elements),gl.uniformMatrix4fv(glCache.uModelMatEntity,!1,i.elements),glExtensions.vertex_array_object.bindVertexArrayOES(this.vao),gl.drawElements(gl.TRIANGLES,6*this.faces,gl.UNSIGNED_INT,0),glExtensions.vertex_array_object.bindVertexArrayOES(null),gl.uniform1i(glCache.useNormalsEntity,1)}}class Player extends Entity{type="Player"
 constructor(e){super(0,0,0,0,0,0,0,0,2*pW,pDefaultBottomH+pTopH,2*pW,null,null,0,1/0),this.actualSize=(pDefaultBottomH+pTopH)/2
 let t=1/16
-this.lastPos=now,this.targetRx=0,this.targetRy=0,this.rx=0,this.ry=0,this.bodyRot=0,this.die=!1,this.sneaking=!1,this.walking=!1,this.sprinting=!1,this.eating=!1,this.sleeping=!1,this.sitting=!1,this.swimming=!1,this.usingItem=!1,this.prevWalking=!1,this.walkAmount=0,this.walkCount=0,this.prevSwimming=!1,this.swimStart=0
+this.lastPos=now,this.targetRx=0,this.targetRy=0,this.rx=0,this.ry=0,this.bodyRot=0,this.die=!1,this.sneaking=!1,this.walking=!1,this.sprinting=!1,this.eating=!1,this.sleeping=!1,this.sitting=!1,this.swimming=!1,this.usingItem=!1,this.prevWalking=!1,this.walkCount=0,this.prevSwimming=!1,this.swimStart=0
 let a=this.generateVAO(shapes.playerBody,0,0)
 this.addPart("body",a.size,a.vao,0,0,0,1,1,1,0,0),a=this.generateVAO(shapes.playerHead,0,0),this.addPart("head",a.size,a.vao,0,.375,0,1,1,1,0,0),a=this.generateVAO(shapes.playerLeftArm,0,0),this.addPart("leftArm",a.size,a.vao,.25,.375,0,1,1,1,0,0),a=this.generateVAO(shapes.playerRightArm,0,0),this.addPart("rightArm",a.size,a.vao,-.25,.375,0,1,1,1,0,0),a=this.generateVAO(shapes.playerLeftLeg,0,0),this.addPart("leftLeg",a.size,a.vao,.125,-.375,0,1,1,1,0,0),a=this.generateVAO(shapes.playerRightLeg,0,0),this.addPart("rightLeg",a.size,a.vao,-.125,-.375,0,1,1,1,0,0),a=this.generateVAO(shapes.cape,0,0,.25,.5),this.addPart("cape",a.size,a.vao,0,.375,-3*t,1,1,1,0,0),this.holding=0,this.prevHolding=null,this.holdRot=Math.PI/-10,this.addPart("holding",a.size,a.vao,0,0,0,1,1,1,0,0),this.walkRot=0,this.punchEffect=0,this.pOffsetry=this.offsetry=0,this.offsetZ=this.pOffsetZ=0,this.skinSet=!1,this.skinURL=null,this.skinTex=defaultSkinTexture,this.capeSet=!1,this.capeURL=null,this.capeTex=null,this.nameText=null,this.previousText=null,this.username=null,this.afk=!1,this.scale=1,this.prevScale=null,this.noExtrapolate=e}get survival(){return"survival"===this.gameMode||"hardcore"===this.gameMode}get spectator(){return"spectator"===this.gameMode}setSkin(e){if(this.skinURL&&gl.deleteTexture(this.skinTex),this.skinSet=!0,this.skinURL=e,this.skinTex=defaultSkinTexture,!e)return
 let t=new Image,a=this
@@ -2891,24 +2892,24 @@ this.parts.head.ry2-this.parts.head.pry2>Math.PI&&(this.parts.head.pry2+=Math.PI
 var i=this.parts.holding
 if(this.holding!==this.prevHolding){this.prevHolding=this.holding
 var s=generateBlockVAO(this.holding)
-i.vao=s.vao,i.size=s.size}this.parts.rightArm.rx=this.holdRot,this.parts.leftArm.rx=0,blockData[this.holding].tool?(i.x=-.125,i.y=-.75,i.z=.375,i.w=i.h=i.d=1,i.rx=Math.PI/1.25,i.ry=-.5*Math.PI):"bow"===blockData[this.holding].name?(i.x=0,i.y=-.75,i.z=0,i.w=i.h=i.d=1,i.rx=Math.PI/1.25,i.ry=-.5*Math.PI):blockData[this.holding].spyglass?(i.x=.125,i.y=-.625,i.z=0,i.w=i.h=i.d=1,i.rx=-this.holdRot,i.ry=0):blockData[this.holding].item?(i.x=0,i.y=-.6875,i.z=.25,i.w=i.h=i.d=.5,i.rx=Math.PI2,i.ry=0):this.holding?(i.x=0,i.y=-.75,i.z=3*e,i.w=i.h=i.d=.25,i.rx=0,i.ry=Math.PI/4):this.parts.rightArm.rx=0,this.walking!==this.prevWalking&&(this.prevWalking=this.walking,this.walking&&(this.walkCount=Math.random()>.5?0:1e3,this.walkAmount=1))
-let o=500*dist2(this.x,this.z,this.previousX,this.previousZ)
-if(!this.walking&&this.walkAmount>0&&(this.walkAmount-=.2,this.walkAmount<0&&(this.walkAmount=0)),this.walking&&1===this.walkAmount&&(this.walkCount+=o),this.walkRot=this.walkAmount&&sin(this.walkCount/1e3*Math.PI)*this.walkAmount,this.parts.leftLeg.rx+=this.walkRot,this.parts.rightLeg.rx-=this.walkRot,this.swimming&&this.walking){var r=(now-this.swimStart)%2e3
-if(r<750){var n=r*Math.PI2/750
-this.parts.leftArm.rz+=n,this.parts.rightArm.rz-=n}else if(r<1e3)this.parts.leftArm.rz+=Math.PI2,this.parts.rightArm.rz-=Math.PI2
-else if(r<1500){n=(500-(r-1e3))*Math.PI2/500
-var l=(r-1e3)*Math.PI2/500
-this.parts.leftArm.rx-=l,this.parts.rightArm.rx-=l,this.parts.leftArm.rz+=n,this.parts.rightArm.rz-=n}else{l=(500-(r-1500))*Math.PI2/500
-this.parts.leftArm.rx-=l,this.parts.rightArm.rx-=l}}else this.parts.leftArm.rx+=this.walkRot,this.parts.rightArm.rx-=this.walkRot
+i.vao=s.vao,i.size=s.size}this.parts.rightArm.rx=this.holdRot,this.parts.leftArm.rx=0,blockData[this.holding].tool?(i.x=-.125,i.y=-.75,i.z=.375,i.w=i.h=i.d=1,i.rx=Math.PI/1.25,i.ry=-.5*Math.PI):"bow"===blockData[this.holding].name?(i.x=0,i.y=-.75,i.z=0,i.w=i.h=i.d=1,i.rx=Math.PI/1.25,i.ry=-.5*Math.PI):blockData[this.holding].spyglass?(i.x=.125,i.y=-.625,i.z=0,i.w=i.h=i.d=1,i.rx=-this.holdRot,i.ry=0):blockData[this.holding].item?(i.x=0,i.y=-.6875,i.z=.25,i.w=i.h=i.d=.5,i.rx=Math.PI2,i.ry=0):this.holding?(i.x=0,i.y=-.75,i.z=3*e,i.w=i.h=i.d=.25,i.rx=0,i.ry=Math.PI/4):this.parts.rightArm.rx=0,this.walking!==this.prevWalking&&(this.prevWalking=this.walking,this.walking&&(this.walkCount=Math.random()>.5?0:1e3))
+let o=500*dist2(this.x,this.z,this.previousX,this.previousZ),r=0
+if(this.walking&&(this.walkCount+=o,r=sin(this.walkCount/1e3*Math.PI)*Math.PI/4),this.walkRot=lerp(.5,this.walkRot,r),this.parts.leftLeg.rx+=this.walkRot,this.parts.rightLeg.rx-=this.walkRot,this.swimming&&this.walking){var n=(now-this.swimStart)%2e3
+if(n<750){var l=n*Math.PI2/750
+this.parts.leftArm.rz+=l,this.parts.rightArm.rz-=l}else if(n<1e3)this.parts.leftArm.rz+=Math.PI2,this.parts.rightArm.rz-=Math.PI2
+else if(n<1500){l=(500-(n-1e3))*Math.PI2/500
+var h=(n-1e3)*Math.PI2/500
+this.parts.leftArm.rx-=h,this.parts.rightArm.rx-=h,this.parts.leftArm.rz+=l,this.parts.rightArm.rz-=l}else{h=(500-(n-1500))*Math.PI2/500
+this.parts.leftArm.rx-=h,this.parts.rightArm.rx-=h}}else this.parts.leftArm.rx+=this.walkRot,this.parts.rightArm.rx-=this.walkRot
 if(this.punchEffect>0){this.punchEffect-=.75,this.punchEffect<0&&(this.punchEffect=0)
-var h=this.punchEffect
-this.parts.rightArm.rx-=h*Math.PI/15,this.parts.rightArm.ry2=sin(h*Math.PI/10)*Math.PI*.25}else this.parts.rightArm.ry2=0
-var c;(this.parts.leftArm.ry2=0,this.eating&&(this.parts.rightArm.rx-=Math.PI2+sin((now-this.spawn)/125*Math.PI)/16-.5,this.parts.rightArm.ry2=Math.PI4),this.usingItem&&("bow"===blockData[this.holding].name?(this.parts.leftArm.rx=-Math.PI2,this.parts.leftArm.ry2=-Math.PI4,this.parts.rightArm.rx=-Math.PI2):blockData[this.holding].spyglass?this.parts.rightArm.rx=-Math.PI2+this.holdRot:blockData[this.holding].sword&&(this.parts.rightArm.rx=.8*-Math.PI2,this.parts.holding.ry=Math.PI,this.parts.holding.rx=Math.PI2,this.parts.holding.y=-.625,this.parts.holding.x=5*e)),this.capeTex)&&(c=this.walking?Math.PI2+sin((now-this.spawn)/200)*(Math.PI/8):(sin((now-this.spawn)/1e3)/2+.5)*(Math.PI/16),this.parts.cape.rx=lerp(.125,this.parts.cape.rx,c))
-let d=this.holding
-if(d&&blockData[d].tint){let e=world.getBiome(round(this.x),round(this.y),round(this.z),this.dimension),t=blockData[d].tint
+var c=this.punchEffect
+this.parts.rightArm.rx-=c*Math.PI/15,this.parts.rightArm.ry2=sin(c*Math.PI/10)*Math.PI*.25}else this.parts.rightArm.ry2=0
+var d;(this.parts.leftArm.ry2=0,this.eating&&(this.parts.rightArm.rx-=Math.PI2+sin((now-this.spawn)/125*Math.PI)/16-.5,this.parts.rightArm.ry2=Math.PI4),this.usingItem&&("bow"===blockData[this.holding].name?(this.parts.leftArm.rx=-Math.PI2,this.parts.leftArm.ry2=-Math.PI4,this.parts.rightArm.rx=-Math.PI2):blockData[this.holding].spyglass?this.parts.rightArm.rx=-Math.PI2+this.holdRot:blockData[this.holding].sword&&(this.parts.rightArm.rx=.8*-Math.PI2,this.parts.holding.ry=Math.PI,this.parts.holding.rx=Math.PI2,this.parts.holding.y=-.625,this.parts.holding.x=5*e)),this.capeTex)&&(d=this.walking?Math.PI2+sin((now-this.spawn)/200)*(Math.PI/8):(sin((now-this.spawn)/1e3)/2+.5)*(Math.PI/16),this.parts.cape.rx=lerp(.125,this.parts.cape.rx,d))
+let g=this.holding
+if(g&&blockData[g].tint){let e=world.getBiome(round(this.x),round(this.y),round(this.z),this.dimension),t=blockData[g].tint
 this.parts.holding.tint=t[e]||t.default}else this.parts.holding.tint=null
-var g=(this.afk?"[Inactive] ":"")+this.username
-this.username&&this.previousText!==g&&(this.previousText=g,this.nameText?this.nameText.setText(this.previousText):this.nameText=world.generateTextForEntity(this.previousText,this,1/4,null,[0,0,0,.7])),this.nameText&&(this.nameText.update(),this.nameText.dimension=this.dimension,this.nameText.x=this.x,this.nameText.y=this.y+.5*this.height+.25,this.nameText.z=this.z)}setPos(e,t,a,i,s,o){this.targetX=e,this.targetY=t,this.targetZ=a,this.velx=i,this.vely=s,this.velz=o,this.lastPos=performance.now()}setRot(e,t,a){this.targetRx=e,this.targetRy=t,this.bodyRot=a||0===a?a:t}render(){if(totalEntites++,this.hidden)return
+var u=(this.afk?"[Inactive] ":"")+this.username
+this.username&&this.previousText!==u&&(this.previousText=u,this.nameText?this.nameText.setText(this.previousText):this.nameText=world.generateTextForEntity(this.previousText,this,1/4,null,[0,0,0,.7])),this.nameText&&(this.nameText.update(),this.nameText.dimension=this.dimension,this.nameText.x=this.x,this.nameText.y=this.y+.5*this.height+.25,this.nameText.z=this.z)}setPos(e,t,a,i,s,o){this.targetX=e,this.targetY=t,this.targetZ=a,this.velx=i,this.vely=s,this.velz=o,this.lastPos=performance.now()}setRot(e,t,a){this.targetRx=e,this.targetRy=t,this.bodyRot=a||0===a?a:t}render(){if(totalEntites++,this.hidden)return
 if(performFast&&!p.thirdPerson&&(this===p.spectating||this===p))return
 renderedEntities++
 let e=(now-this.lastUpdate)/tickTime
@@ -3506,7 +3507,7 @@ else i.fromServer?Messages.add(i.data):Messages.write(i.data,i.username)},websoc
 players={},playerSkins={},playerCapes={}
 let t=!0
 multiplayerError=null,multiplayer=e,addToBottomRightList("connecting","Entering world..."),send({type:"connect",id:p.id}),send({type:"mySkin",data:p.skinURL,cape:p.capeURL}),multiplayer.mmoveX=multiplayer.mmoveY=0,multiplayer.lastSendPos=0,multiplayer.toSendLoadChunks=null,multiplayer.sendPos=(e,a)=>{let i=Date.now()
-if((!t||i-multiplayer.lastSendPos<100)&&!e||!multiplayer.hasStartedLoad)return
+if(!t&&!e||!multiplayer.hasStartedLoad)return
 let s={type:"pos",data:p3};("afk"===a||"loading"!==screen&&"netherLoading"!==screen&&"endLoading"!==screen&&performance.now()-p.lastActive>1e4)&&(s.afk=!0),t=!1,send(s),multiplayer.lastSendPos=i,multiplayer.toSendLoadChunks&&(send({type:"loadChunks",data:multiplayer.toSendLoadChunks.data,loadDistance:multiplayer.toSendLoadChunks.loadDistance,dimension:p.dimension}),multiplayer.toSendLoadChunks=null),p.spectateRemoteControl&&(multiplayer.mmoveX||multiplayer.mmoveY)&&(send({type:"remoteControl",event:"rotate",x:multiplayer.mmoveX,y:multiplayer.mmoveY},p.spectating.id),multiplayer.mmoveX=multiplayer.mmoveY=0)},multiplayer.onmessage=async e=>{const a=e.FROM
 if("connect"===e.type)send({type:"mySkin",data:p.skinURL,cape:p.capeURL})
 else if("loadSave"===e.type){addToBottomRightList("connecting","Start loading world","lime"),initBlockData(),genIcons(),initBlockEntities(),world=new World,win.world=world,world.version=version
@@ -4417,7 +4418,7 @@ let t=width/2-4.5*inventory.size+(i+.5)*inventory.size+25
 return t-=inventory.size/2,mouseX>t&&mouseY>e&&mouseX<t+inventory.size&&mouseY<e+inventory.size?(changeScene("inventory"),!0):(i=-1,t=width/2-4.5*inventory.size+(i+.5)*inventory.size+25,t-=inventory.size/2,mouseX>t&&mouseY>e&&mouseX<t+inventory.size&&mouseY<e+inventory.size?(cycleBlockShapes(),!0):void 0)}
 document.onpointerlockchange=function(){doc.pointerLockElement===canvas?doc.onmousemove=mmoved:(doc.onmousemove=trackMouse,"play"!==screen||freezeFrame||(changeScene("pause"),unpauseDelay=Date.now()+1e3))
 for(let e in Key)Key[e]=!1}
-let breakKeyPressed=()=>{if(p.punchEffect=10,entHitbox.ent?entClick():(p.survival?(crack.soundTimer=5,hitBox.pos&&send({type:"startBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]})):changeWorldBlock(),p.lastStartBreak=performance.now()),!p.spectator&&(entHitbox.ent||!hitBox.pos)){let e=rand(.5,.8)
+let breakKeyPressed=()=>{if(p.punchEffect=10,entHitbox.ent?entClick():(p.survival?crack.soundTimer=5:changeWorldBlock(),p.lastStartBreak=performance.now()),!p.spectator&&(entHitbox.ent||!hitBox.pos)){let e=rand(.5,.8)
 playSound("shoot",0,1,e),send({type:"playSound",data:"shoot",x:p.x,y:p.y,z:p.z,pitch:e})}},placeKeyPressed=()=>{p.punchEffect=10,entHitbox.ent?entInteract():(p.spyglassStart=Date.now(),holding&&newWorldBlock())},removePixelRatioChange
 function toggleView(){p.thirdPerson?"front"===p.thirdPerson?p.thirdPerson=!1:p.thirdPerson="front":p.thirdPerson=!0}function keydown(e){if(e instanceof MouseEvent&&touchScreen)return
 let t,a=!1
@@ -6650,7 +6651,7 @@ class Ta extends ba{type="Player"
 constructor(){super(0,0,0,0,0,0,0,0,2*va,Za+Sa,2*va,null,null,0,1/0,"this isn't really a VAO... but it will be overwritten")
 let e=1/16
 this.targetX=0,this.targetY=0,this.targetZ=0,this.rx=0,this.ry=0,this.dimension="",this.bodyRot=0,this.die=!1,this.cheats=!1,this.resendHealth=!1,this.resendEffects=!1,this.spawnPoint=null,this.didEndPoem=!1,this.sneaking=!1,this.walking=!1,this.sprinting=!1,this.eating=!1,this.sleeping=!1,this.sitting=!1,this.swimming=!1,this.usingItem=!1,this.prevEating=!1,this.eatStart=0,this.addPart("body",null,null,0,0,0,1,1,1,0,0),this.addPart("head",null,null,0,.375,0,1,1,1,0,0),this.addPart("leftArm",null,null,.25,.375,0,1,1,1,0,0),this.addPart("rightArm",null,null,-.25,.375,0,1,1,1,0,0),this.addPart("leftLeg",null,null,.125,-.375,0,1,1,1,0,0),this.addPart("rightLeg",null,null,-.125,-.375,0,1,1,1,0,0),this.addPart("cape",null,null,0,.375,-3*e,1,1,1,0,0),this.holding=0,this.addPart("holding",null,null,0,0,0,1,1,1,0,0),this.punchEffect=0,this.inventory={hotbar:new Array(9).fill(null),main:new Array(27).fill(null),crafting2:new Array(4),crafting3:new Array(9),craftingResult:null,craftingName:null,holding:null,anvilInput:null,anvilMaterial:null,anvilOutput:null,anvilRename:"",anvilCost:0,hotbarSlot:0,slotIds:{hotbar:[],main:[],crafting3:[],crafting2:[],craftingResult:null,furnaceInput:null,furnaceOutput:null,furnaceFuel:null,chest:[],anvilInput:null,anvilMaterial:null,anvilOutput:null,dispenser:[],hopper:[]},containerData:{}},this.achievments=[],this.username=null,this.afk=!1,this.scale=1,this.prevScale=null,this.direction=new Pi,this.crackPos=[0,0,0],this.breakStart=0}get survival(){return"survival"===this.gameMode||"hardcore"===this.gameMode}get spectator(){return"spectator"===this.gameMode}respawn(){let e=this.spawnPoint
-e||(e=this.spawnPoint={x:this.world.world.spawnPoint.x,y:this.world.world.spawnPoint.y,z:this.world.world.spawnPoint.z}),this.tp(e.x,e.y+.5+.5*this.height,e.z),this.velx=this.vely=this.velz=0,this.lastY=this.y,this.health=20,this.oxygen=20,this.food=20,this.foodSaturation=5,this.foodTimer=0,this.foodExhaustion=0,this.lastXP=0,this.XP=0,this.level=0,this.totalXP=0,this.nextLevel=0,this.lastXP=0,this.setLevel(),this.effects={},this.freezeEffect=0,this.burnTimer=0,this.dieMessage="Invalid death",this.dimension="",this.riding=null,this.hidden=!1,this.die=!1,this.harmEffect=0,this.lastDamage=0,this.lastHeal=0,this.lastBlockHarm=0,this.touchingBurnBlock=!1,this.lastLoseOxygen=0,this.lastGetOxygen=0,this.burnStart=0,this.attackedBy=null,this.attackedById=null,this.attackedByTime=0,this.lastFreezeHealth=0,this.flying=!1}tp(e,t,a,i=this.dimension){this.targetX=this.x=e,this.targetY=this.y=t,this.targetZ=this.z=a,this.dimension=i,this.world=this.world.world[i],this.connection&&this.connection.send({type:"tp",x:e,y:t,z:a,dimension:i})}addXP(e){this.lastXP=Fi,this.XP+=e,this.XP>=this.nextLevel?(this.level+=Math.floor(this.XP/this.nextLevel),this.XP=this.XP%this.nextLevel,this.world.playSound(this.x,this.y,this.z,"random.levelup"),this.setLevel()):this.world.playSound(this.x,this.y,this.z,"random.orb"),this.resendHealth=!0}setLevel(){this.level<=15?this.nextLevel=2*this.level+7:this.level<=30?this.nextLevel=5*this.level-38:this.nextLevel=9*this.level-158}calculateTotalXP(){this.level<=16?this.totalXP=this.level*this.level+6*this.level:this.level<=31?this.totalXP=this.level*this.level*2.5-40.5*this.level+360:this.level>31?this.totalXP=this.level*this.level*4.5-162.5*this.level+2220:this.totalXP=-1,-1!==this.totalXP&&(this.totalXP+=this.XP)}sendHealth(){this.connection&&this.connection.send({type:"health",health:this.health,food:this.food,foodSaturation:this.foodSaturation,oxygen:this.oxygen,burning:this.burning,freezeEffect:this.freezeEffect,XP:this.XP,level:this.level,nextLevel:this.nextLevel})}sendEffects(){this.connection&&this.connection.send({type:"effects",data:this.effects})}saveInv(){if(!this.connected)return
+e||(e=this.spawnPoint={x:this.world.world.spawnPoint.x,y:this.world.world.spawnPoint.y,z:this.world.world.spawnPoint.z}),this.tp(e.x,e.y+.5+.5*this.height,e.z,""),this.velx=this.vely=this.velz=0,this.lastY=this.y,this.health=20,this.oxygen=20,this.food=20,this.foodSaturation=5,this.foodTimer=0,this.foodExhaustion=0,this.lastXP=0,this.XP=0,this.level=0,this.totalXP=0,this.nextLevel=0,this.lastXP=0,this.setLevel(),this.effects={},this.freezeEffect=0,this.burnTimer=0,this.dieMessage="Invalid death",this.dimension="",this.riding=null,this.hidden=!1,this.die=!1,this.harmEffect=0,this.lastDamage=0,this.lastHeal=0,this.lastBlockHarm=0,this.touchingBurnBlock=!1,this.lastLoseOxygen=0,this.lastGetOxygen=0,this.burnStart=0,this.attackedBy=null,this.attackedById=null,this.attackedByTime=0,this.lastFreezeHealth=0,this.flying=!1}tp(e,t,a,i=this.dimension){this.targetX=this.x=e,this.targetY=this.y=t,this.targetZ=this.z=a,this.dimension=i,this.world=this.world.world[i],this.lastY=this.y,this.connection&&this.connection.send({type:"tp",x:e,y:t,z:a,dimension:i})}addXP(e){this.lastXP=Fi,this.XP+=e,this.XP>=this.nextLevel?(this.level+=Math.floor(this.XP/this.nextLevel),this.XP=this.XP%this.nextLevel,this.world.playSound(this.x,this.y,this.z,"random.levelup"),this.setLevel()):this.world.playSound(this.x,this.y,this.z,"random.orb"),this.resendHealth=!0}setLevel(){this.level<=15?this.nextLevel=2*this.level+7:this.level<=30?this.nextLevel=5*this.level-38:this.nextLevel=9*this.level-158}calculateTotalXP(){this.level<=16?this.totalXP=this.level*this.level+6*this.level:this.level<=31?this.totalXP=this.level*this.level*2.5-40.5*this.level+360:this.level>31?this.totalXP=this.level*this.level*4.5-162.5*this.level+2220:this.totalXP=-1,-1!==this.totalXP&&(this.totalXP+=this.XP)}sendHealth(){this.connection&&this.connection.send({type:"health",health:this.health,food:this.food,foodSaturation:this.foodSaturation,oxygen:this.oxygen,burning:this.burning,freezeEffect:this.freezeEffect,XP:this.XP,level:this.level,nextLevel:this.nextLevel})}sendEffects(){this.connection&&this.connection.send({type:"effects",data:this.effects})}saveInv(){if(!this.connected)return
 let e=this.world.world.playersInv[this.host?":host":this.username]
 e||(e=this.world.world.playersInv[this.host?":host":this.username]={}),e.survivStr=this.world.world.getSurvivStr(this).array,e.inv=this.world.world.getInv(this).array,e.version=version}addAchievment(e){let t=ke[e],a=fe[t]
 if(!a)throw new Error("No such achievment: "+e)
@@ -8126,7 +8127,7 @@ x&&x.rotate&&(l===Dt&&(n|=Dt),l===Lt&&(n|=Lt),l===Gt&&(n|=Gt)),x&&x.flip&&h===Qt
 let e=b,t=ae[b].drop,a=ae[b].dropAmount,i=ae[b].harvestTools&&(!0===ae[b].harvestTools||ae[b].harvestTools.includes(d))
 ae[b].type||(i=!0),i&&(void 0===a&&(a=1),2===a.length&&(a=round(rand(a[0],a[1]))),d&&ae[d].shears&&ae[b].dropSelfWhenSheared?ae[b].shearDropAmount&&(a=ae[b].shearDropAmount):"number"==typeof t?e=t:"function"==typeof t?e=se[t()]:Array.isArray(t)?e=t:t&&(e=se[t]),e&&(x=e,k=a))
 let o=ae[b].type
-d&&ae[d].pickaxe&&u.durability--,d&&ae[d].sword&&(u.durability-=2),d&&ae[d].shovel&&(u.durability-=1),d&&ae[d].axe&&(u.durability-=1),d&&ae[d].hoe&&"plant2"!==o&&(u.durability-=1),s.breakStart=S}if(!1===this[c].setBlock(e,t,a,i?d:0))return s.connection.send({type:"setBlock",data:{x:e,y:t,z:a,block:b,dimension:c}})
+d&&ae[d].pickaxe&&u.durability--,d&&ae[d].sword&&(u.durability-=2),d&&ae[d].shovel&&(u.durability-=1),d&&ae[d].axe&&(u.durability-=1),d&&ae[d].hoe&&"plant2"!==o&&(u.durability-=1),s.breakStart=S,s.foodExhaustion+=.005}if(!1===this[c].setBlock(e,t,a,i?d:0))return s.connection.send({type:"setBlock",data:{x:e,y:t,z:a,block:b,dimension:c}})
 if(x)if(Array.isArray(x))for(let i of x)"string"==typeof i&&(i=se[i]),this[c].addItems(e,t,a,0,0,0,i,!0,k,null,null,s.id)
 else this[c].addItems(e,t,a,0,0,0,x,!0,k,null,null,s.id)
 i?(ae[d].onplace&&ae[d].onplace(e,t,a,s,this[c]),s.survival&&u.amount--,u&&!u.amount&&(s.inventory.hotbar[s.inventory.hotbarSlot]=null)):(this[c].blockParticles(b,e,t,a,30,"break"),ae[b].onbreak&&ae[b].onbreak(e,t,a,b,v,this[c]),this[c].blockSound(b,"dig",e,t,a),s.survival&&ae[b].experience&&this[c].addEntity(new ka[xa.ExperienceOrb](e,t,a,ae[b].experience)))}entInteract(e,t,a,i){let s=ri(e,this[i.dimension])
@@ -8399,24 +8400,24 @@ i.hotbarSlot=e.read(4)
 for(let t=0;t<9;t++){let a=e.read(32),s=e.read(7)
 i.hotbar[t]=s&&{id:a,amount:s}}for(let t=0;t<27;t++){let a=e.read(32),s=e.read(7)
 i.main[t]=s&&{id:a,amount:s}}let s=e.read(4),o=e.read(5)
-for(let t=0;t<s;t++){let t=e.read(4)
-i.hotbar[t].durability=e.read(16)}for(let t=0;t<o;t++){let t=e.read(5)
-i.main[t].durability=e.read(16)}let r=e.read(4),n=e.read(5)
+for(let t=0;t<s;t++){let t=e.read(4),a=e.read(16)
+i.hotbar[t].durability&&(i.hotbar[t].durability=a)}for(let t=0;t<o;t++){let t=e.read(5),a=e.read(16)
+i.main[t]&&(i.main[t].durability=a)}let r=e.read(4),n=e.read(5)
 for(let t=0;t<r;t++){let t=e.read(4),a=e.readString()
-i.hotbar[t].customName=a}for(let t=0;t<n;t++){let t=e.read(5),a=e.readString()
-i.main[t].customName=a}let l=e.read(32)
+i.hotbar[t]&&(i.hotbar[t].customName=a)}for(let t=0;t<n;t++){let t=e.read(5),a=e.readString()
+i.main[t]&&(i.main[t].customName=a)}let l=e.read(32)
 t.achievments.length=0
 for(let a=0;a<l;a++)t.achievments.push(e.read(32))}loadInvPreBeta(e,t){let{inventory:a}=t
 a.hotbarSlot=e.read(4)
 for(let t=0;t<9;t++){let i=e.read(32),s=e.read(7)
 a.hotbar[t]=s&&{id:i,amount:s}}for(let t=0;t<117;t++){let i=e.read(32),s=e.read(7)
 a.main[t]=s&&{id:i,amount:s}}let i=e.read(4),s=e.read(5)
-for(let t=0;t<i;t++){let t=e.read(4)
-a.hotbar[t].durability=e.read(16)}for(let t=0;t<s;t++){let t=e.read(5)
-a.main[t].durability=e.read(16)}let o=e.read(4),r=e.read(5)
+for(let t=0;t<i;t++){let t=e.read(4),i=e.read(16)
+a.hotbar[t].durability&&(a.hotbar[t].durability=i)}for(let t=0;t<s;t++){let t=e.read(5),i=e.read(16)
+a.main[t]&&(a.main[t].durability=i)}let o=e.read(4),r=e.read(5)
 for(let t=0;t<o;t++){let t=e.read(4),i=e.readString()
-a.hotbar[t].customName=i}for(let t=0;t<r;t++){let t=e.read(5),i=e.readString()
-a.main[t].customName=i}let n=e.read(32)
+a.hotbar[t]&&(a.hotbar[t].customName=i)}for(let t=0;t<r;t++){let t=e.read(5),i=e.readString()
+a.main[t]&&(a.main[t].customName=i)}let n=e.read(32)
 t.achievments.length=0
 for(let a=0;a<n;a++)t.achievments.push(e.read(32))}loadOldInv(e,t){let a=e.split("|"),i=a[1].split(","),s=a[0].split(",")
 for(let e=0;e<18;e+=2)s[e]&&(t.inventory.hotbar[e/2]={id:parseInt(s[e])||0,amount:parseInt(s[e+1])||0})
@@ -8485,10 +8486,10 @@ r.setPos(i.x,i.y,i.z,i.velx,i.vely,i.velz),r.setRot(i.rx,i.ry,i.bodyRot),r.onGro
 for(let e of n.players)e!==r&&e.pos&&(e.posUpdated[t]=r.pos)
 for(let t in r.posUpdated)r.posUpdated[t]&&(e.send(r.posUpdated[t]),r.posUpdated[t]=null)
 let s=performance.now()
-if(s-r.lastSendEntities>125){r.lastSendEntities=s
-let e=n[r.dimension].getEntities(r),t=[],a=0
-for(let i=0;i<e.length;i++){let s=e[i],o=s.length
-a+o>1e4&&(r.connection.send({type:"entityPosAll",data:t}),a=0,t.length=0),a+=o,t.push(s)}a&&r.connection.send({type:"entityPosAll",data:t})}r.resendHealth&&(r.sendHealth(),r.resendHealth=!1),r.resendEffects&&(r.sendEffects(),r.resendEffects=!1),m(),e.send({type:"canSendPos"})}else if("loadChunks"===o.type)r.updateingLoadedI++,r.loadDistance=o.loadDistance,r.loadChunks=o.data,n.loadedUpdate=!0
+r.lastSendEntities=s
+let l=n[r.dimension].getEntities(r),h=[],c=0
+for(let e=0;e<l.length;e++){let t=l[e],a=t.length
+c+a>1e4&&(r.connection.send({type:"entityPosAll",data:h}),c=0,h.length=0),c+=a,h.push(t)}c&&r.connection.send({type:"entityPosAll",data:h}),r.resendHealth&&(r.sendHealth(),r.resendHealth=!1),r.resendEffects&&(r.sendEffects(),r.resendEffects=!1),m(),e.send({type:"canSendPos"})}else if("loadChunks"===o.type)r.updateingLoadedI++,r.loadDistance=o.loadDistance,r.loadChunks=o.data,n.loadedUpdate=!0
 else if("mySkin"===o.type||"particles"===o.type||"achievment"===o.type||"harmEffect"===o.type||"playSound"===o.type||"title"===o.type||"joined"===o.type)l(o)
 else if("hit"===o.type)if(o.isEntity){let e=n.entities[n[r.dimension].getEntity(o.TO)]
 e&&e.onhit(o.damage,!1,o.velx,o.velz,o.id)}else n.sendPlayer(o,o.TO)
