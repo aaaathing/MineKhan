@@ -1555,6 +1555,28 @@ With touch screen:
       gl_FragColor = vec4(mix(nightSky,mix(sky,skyBottom,horizonal),light)*brightness, 1.);
     }
   </script>
+  <script type="x-shader/vertex" id="panoramaVertexShader">
+    attribute vec3 aVertex;
+    attribute vec2 aTexture;
+    uniform mat4 uView;
+    varying vec2 vTexture;
+    void main(void) {
+      vTexture = aTexture;
+      gl_Position = uView * vec4(aVertex, 1.0);
+    }
+  </script>
+  <script type="x-shader/fragment" id="panoramaFragmentShader">
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+      precision highp float;
+    #else
+      precision mediump float;
+    #endif
+    uniform sampler2D uSampler;
+    varying vec2 vTexture;
+    void main(void) {
+      gl_FragColor = texture2D(uSampler, vTexture);
+    }
+  </script>
 	<script type="x-shader/vertex" id="entityVertexShader">
 		attribute vec3  aVertex;
 		attribute vec2  aTexture;
@@ -8295,7 +8317,7 @@ Division: //
 		)
 	}
 
-	let program3D, program2D, skyboxProgram, programEntity, programParticle, programText, programWeather, programAvgBrightness, programShadowMap
+	let program3D, program2D, skyboxProgram, programEntity, programParticle, programText, programWeather, programAvgBrightness, programShadowMap, programPanorama
 
 	let {shapes} = win
 
@@ -14099,7 +14121,7 @@ r 11 y  n  n  n
 			let max = this.sections.length * 16 - 1 + minHeight
 			let blockSpread = []
 
-			if(this.wasLit) this.unfillLight()
+			//if(this.wasLit) this.unfillLight()
 	
 			// Set virtical columns of light to level 15
 			for (let x = 0; x < 16; x++) {
@@ -28667,6 +28689,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			gl.deleteProgram(programParticle)
 			gl.deleteProgram(programText)
 			gl.deleteProgram(programWeather)
+			gl.deleteProgram(programPanorama)
 		}
 		if(programShadowMap) gl.deleteProgram(programShadowMap)
 		win.program3D = program3D = createProgram("block")
@@ -28676,8 +28699,15 @@ p.camera.transformation.elements.set(matrix)//*/
     win.programParticle = programParticle = createProgram("particle")
     win.programText = programText = createProgram("text")
 		win.programWeather = programWeather = createProgram("weather")
+		win.programPanorama = programPanorama = createProgram("panorama")
 		if(settings.graphics === "morereal") win.programShadowMap = programShadowMap = createProgram("shadowMap")
-		
+
+		gl.useProgram(programPanorama)
+		glCache.panoramaView = gl.getUniformLocation(programPanorama, "uView")
+		glCache.panoramaSampler = gl.getUniformLocation(programPanorama, "uSampler")
+		glCache.panoramaVertex = gl.getAttribLocation(programPanorama, "aVertex")
+		glCache.panoramaTexture = gl.getAttribLocation(programPanorama, "aTexture")
+
 		gl.useProgram(program2D)
 		glCache.uSampler2 = gl.getUniformLocation(program2D, "uSampler")
 		glCache.aTexture2 = gl.getAttribLocation(program2D, "aTexture")
@@ -29003,60 +29033,61 @@ p.camera.transformation.elements.set(matrix)//*/
   
 	let mainBGRot = 0, mainBGRotY = 0//-HALF_PI / 3;
 	function renderMainBG(){
-		let dnow = Date.now()
-		mainBGRot = now*0.00008//(mapClamped(mouseX/width,0.4,0.6)*2-1)*0.02
+		mainBGRot = now*0.00008
 		mainBGRotY = sin(mainBGRot*0.334323)*Math.PI4
-		
+
 		gl.clearColor(sky[0], sky[1], sky[2], 1.0)
 		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
-		//remove or add the slash to toggle comment
-		//can be: //* or /*
-		/*
-		gl.useProgram(program3D)
-		FOV(100)
-		initModelView(null, 1, 1.5, 5, -HALF_PI / 25, mainBGRot)//-HALF_PI / 3
+
+		// Disable attributes from other programs
+		gl.disableVertexAttribArray(glCache.aVertex)
+		gl.disableVertexAttribArray(glCache.aTexture)
 		gl.disableVertexAttribArray(glCache.aShadow)
 		gl.disableVertexAttribArray(glCache.aSkylight)
 		gl.disableVertexAttribArray(glCache.aBlocklight)
-		gl.vertexAttrib1f(glCache.aShadow, 1.0)
-		gl.vertexAttrib1f(glCache.aSkylight, 1.0)
-		gl.vertexAttrib1f(glCache.aBlocklight, 1.0)
+		gl.disableVertexAttribArray(glCache.aVertex2)
+		gl.disableVertexAttribArray(glCache.aTexture2)
+		gl.disableVertexAttribArray(glCache.aShadow2)
 
-		gl.uniform3f(glCache.skyColor, sky[0], sky[1], sky[2])
-		for (let i = 0; i < blocks.length; i += 4) {
-			block2(blocks[i + 0], blocks[i + 1], blocks[i + 2], blocks[i + 3])
-		}
+		// Use simple panorama shader
+		gl.useProgram(programPanorama)
 
-		gl.enableVertexAttribArray(glCache.aShadow)
-		gl.enableVertexAttribArray(glCache.aSkylight)
-		gl.enableVertexAttribArray(glCache.aBlocklight)/*/
-		use3d()
+		// Set up view matrix
 		FOV(90)
-		initModelView(null, 0, 0, 0, mainBGRotY, mainBGRot, 1,1)
-		gl.disableVertexAttribArray(glCache.aShadow)
-		gl.disableVertexAttribArray(glCache.aSkylight)
-		gl.disableVertexAttribArray(glCache.aBlocklight)
-		gl.disableVertexAttribArray(glCache.tint)
-		gl.vertexAttrib1f(glCache.aShadow, 1.0)
-		gl.vertexAttrib1f(glCache.aSkylight, 1.0)
-		gl.vertexAttrib1f(glCache.aBlocklight, 1.0)
-		gl.vertexAttrib3f(glCache.tint, 1,1,1)
-		
-		gl.uniform1i(glCache.uSampler, 4)
-		vertexAttribPointer("aVertex", program3D, "aVertex", 3, panoramaVertBuffer)
-		vertexAttribPointer("aTexture", program3D, "aTexture", 2, panoramaTexBuffer)
+		copyArr(defaultModelView, modelView)
+		rotX(modelView, mainBGRotY)
+		rotY(modelView, mainBGRot)
+		matMult()
+		transpose(matrix)
+		gl.uniformMatrix4fv(glCache.panoramaView, false, matrix)
+
+		// Bind panorama texture
+		gl.activeTexture(gl.TEXTURE4)
+		gl.bindTexture(gl.TEXTURE_2D, panoramaTexture)
+		gl.uniform1i(glCache.panoramaSampler, 4)
+
+		// Set up vertex attributes
+		gl.enableVertexAttribArray(glCache.panoramaVertex)
+		gl.bindBuffer(gl.ARRAY_BUFFER, panoramaVertBuffer)
+		gl.vertexAttribPointer(glCache.panoramaVertex, 3, gl.FLOAT, false, 0, 0)
+
+		gl.enableVertexAttribArray(glCache.panoramaTexture)
+		gl.bindBuffer(gl.ARRAY_BUFFER, panoramaTexBuffer)
+		gl.vertexAttribPointer(glCache.panoramaTexture, 2, gl.FLOAT, false, 0, 0)
+
+		// Draw panorama cube
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
 		gl.disable(gl.CULL_FACE)
-		/*gl.drawElements(gl.TRIANGLES, panoramaSize*6, gl.UNSIGNED_INT, 0)
-		gl.uniform1i(glCache.uTrans, 1)*/
 		gl.drawElements(gl.TRIANGLES, panoramaSize*6, gl.UNSIGNED_INT, 0)
-		gl.uniform1i(glCache.uTrans, 0)
 		gl.enable(gl.CULL_FACE)
-		
-		gl.enableVertexAttribArray(glCache.aShadow)
-		gl.enableVertexAttribArray(glCache.aSkylight)
-		gl.enableVertexAttribArray(glCache.aBlocklight)
-		gl.uniform1i(glCache.uSampler, 0)
-		//*/
+
+		// Clean up - disable panorama attributes and restore 2D program
+		gl.disableVertexAttribArray(glCache.panoramaVertex)
+		gl.disableVertexAttribArray(glCache.panoramaTexture)
+		gl.useProgram(program2D)
+		gl.enableVertexAttribArray(glCache.aVertex2)
+		gl.enableVertexAttribArray(glCache.aTexture2)
+		gl.enableVertexAttribArray(glCache.aShadow2)
 	}
 	async function initBackgrounds() {
 		// Home screen background
