@@ -18953,7 +18953,7 @@ function initBlockDataShapes(){
 			}
 			return !blockData[block].solid
 		},
-		spawnFlow:async function(x,y,z,world){
+		spawnFlow: function(x,y,z,world){
 			let spread = [x,y,z,8], count = 0
 			while(spread.length){
 				let [sx,sy,sz,level] = spread
@@ -18968,7 +18968,6 @@ function initBlockDataShapes(){
 					}
 				}
 				spread.splice(0,4)
-				if(!((count++)%32)) await yieldThread()
 			}
 		}
 	}
@@ -23713,6 +23712,10 @@ class Mob extends Entity{
 			this.world.sendEntityPos(this)
 			this.panick = 20
 		}
+		if(this.wet && this.burnTimer > 0) {
+			this.burnTimer = 0
+			poof(this.x,this.y-this.height/2+0.25,this.z, 8, this.dimension, this.width,0,this.depth, true)
+		}
 		this.burnTimer += this.maxBurnBlock
 		if(this.burnTimer > 16) this.burnTimer = 16
 		this.burning = this.burnTimer > 0
@@ -28314,10 +28317,10 @@ class Chunk {
 					//lava springs
 					if(random() < 0.05 && this.getBlock(i,ground,k) && this.type==="nether"){
 						let y = round(random(netherHeight))
-						if(this.getBlock(i,y,k) && !this.getBlock(i,y-1,k)){
+						/*if(this.getBlock(i,y,k) && !this.getBlock(i,y-1,k)){
 							this.setBlock(this.x+i,y,this.z+k,blockIds.Lava)
-							await blockData[blockIds.Lava].spawnFlow(this.x+i,y,this.z+k,world)
-						}
+							blockData[blockIds.Lava].spawnFlow(this.x+i,y,this.z+k,world)
+						}*/
 					}
 
 					let l
@@ -29014,7 +29017,7 @@ class Chunk {
 				){
 					let block = random(-16,y)<0 ? blockIds.Lava : blockIds.Water
 					this.setBlock(x,y,z,block)
-					await blockData[block].spawnFlow(wx,y,wz,world)
+					blockData[block].spawnFlow(wx,y,wz,world)
 				}
 			}
 			//place snow
@@ -29055,7 +29058,7 @@ class Chunk {
 							this.setBlock(i,minTop,k,blockIds.ice)
 						}else{
 							this.setBlock(i,minTop,k,blockIds.Water)
-							await blockData[blockIds.Water].spawnFlow(wx,minTop,wz,world)
+							blockData[blockIds.Water].spawnFlow(wx,minTop,wz,world)
 						}
 					}
 				}
@@ -32322,8 +32325,7 @@ class World{ // aka trueWorld
 			for (let i = 0; i < nameLen; i++) this.version += String.fromCharCode(reader.read(8))
 			if(!this.version.includes("Alpha") && !this.version.includes("Beta")) throw ""
 		}catch(e){
-			console.error(e)
-			return this.loadCrossSaveCode(data, onlyMetdata)
+			return alert(e)
 		}
 		let preBetaVersion = verMoreThan("1.1.0",this.version.replace(/(Alpha|Beta) /, ''))
 		let worldTypeBits2 = preBetaVersion ? 0 : (verMoreThan(this.version.replace(/(Alpha|Beta) /, ''),"1.1.1") ? reader.read(1) : (worldTypeBits1 ? (reader.read(1), 0) : 1-reader.read(1)))
@@ -32601,101 +32603,6 @@ class World{ // aka trueWorld
 			[i|oldSTAIR|oldEAST|oldFLIP]: blockIds[v]|STAIR|EAST|FLIP,
 			[i|oldSTAIR|oldWEST|oldFLIP]: blockIds[v]|STAIR|WEST|FLIP,
 		}), {})
-	}
-	loadCrossSaveCode(data, onlyMetdata){
-		const blockConvert = this.getBlockConvert()
-		let reader = new BitArrayReader(data)
-
-		let nameLen = reader.read(8)
-		this.name = ""
-		for (let i = 0; i < nameLen; i++) this.name += String.fromCharCode(reader.read(8))
-		this.setSeed(reader.read(32),true)
-		this.time = reader.read(32)*0+500
-
-		let inv = this.playersInv[":host"] = {}
-		inv.x = reader.read(20, true)
-		inv.y = reader.read(8)
-		inv.z = reader.read(20, true)
-		reader.skip(11)
-		reader.skip(11)
-		for (let i = 0; i < 9; i++){
-			reader.skip(16)
-		}
-		reader.skip(4)
-		reader.skip(1)
-		reader.skip(1)
-
-		this.worldType = Boolean(reader.read(1)) ? "superflat" : "alpha"
-		this.caves = reader.read(1)
-		this.trees = reader.read(1)
-		this.version = "Alpha " + [reader.read(8), reader.read(8), reader.read(8)].join(".")
-
-		if(onlyMetdata) return
-
-		let paletteLen = reader.read(16)
-		let palette = []
-		let paletteBits = BitArrayBuilder.bits(paletteLen)
-		for (let i = 0; i < paletteLen; i++) palette.push(reader.read(16))
-		for(let i=0; i<palette.length; i++){
-			if(blockConvert[palette[i]]) palette[i] = blockConvert[palette[i]]
-		}
-
-		const getIndex = [
-			(index, x, y, z) => (y + (index >> 6 & 7))*256 + (x + (index >> 3 & 7))*16 + z + (index >> 0 & 7),
-			(index, x, y, z) => (y + (index >> 6 & 7))*256 + (x + (index >> 0 & 7))*16 + z + (index >> 3 & 7),
-			(index, x, y, z) => (y + (index >> 3 & 7))*256 + (x + (index >> 6 & 7))*16 + z + (index >> 0 & 7),
-			(index, x, y, z) => (y + (index >> 0 & 7))*256 + (x + (index >> 6 & 7))*16 + z + (index >> 3 & 7),
-			(index, x, y, z) => (y + (index >> 0 & 7))*256 + (x + (index >> 3 & 7))*16 + z + (index >> 6 & 7),
-			(index, x, y, z) => (y + (index >> 3 & 7))*256 + (x + (index >> 0 & 7))*16 + z + (index >> 6 & 7)
-		]
-
-		let sectionCount = reader.read(32)
-		let chunks = {}
-		for (let i = 0; i < sectionCount; i++) {
-			let x = reader.read(16, true) * 8
-			let y = reader.read(5, false) * 8 - minHeight
-			let z = reader.read(16, true) * 8
-			let orientation = reader.read(3)
-
-			let cx = x >> 4
-			let cz = z >> 4
-
-			// Make them into local chunk coords
-			x = x !== cx * 16 ? 8 : 0
-			z = z !== cz * 16 ? 8 : 0
-
-			let ckey = `${cx},${cz}`
-			let chunk = chunks[ckey]
-			if (!chunk) {
-				chunk = {blocks:[],tags:[]}
-				chunks[ckey] = chunk
-			}
-			let runs = reader.read(8)
-			let singles = reader.read(9)
-			for (let j = 0; j < runs; j++) {
-				let index = reader.read(9)
-				let types = reader.read(9)
-				let lenSize = reader.read(4)
-				for (let k = 0; k < types; k++) {
-					let chain = reader.read(lenSize) + 1
-					let block = reader.read(paletteBits)
-					for (let l = 0; l < chain; l++) {
-						chunk.blocks[getIndex[orientation](index, x, y, z)] = palette[block]
-						index++
-					}
-				}
-			}
-			for (let j = 0; j < singles; j++) {
-				let index = reader.read(9)
-				let block = reader.read(paletteBits)
-				chunk.blocks[getIndex[orientation](index, x, y, z)] = palette[block]
-			}
-		}
-
-		this.loadFrom = chunks
-
-		this.spawnPoint.y = this.worldType === "superflat" ? 6 : (round(this.noiseProfile.noise(8 * generator.smooth, 8 * generator.smooth) * generator.height) + 2 + generator.extra)
-		Object.assign(this.settings, defaultWorldSettings)
 	}
 	loadOldSave(str, onlyMetdata){
 		let data = str.split(";")
@@ -34201,7 +34108,7 @@ class WorldDimension{
 	playSound(x,y,z, name, volume = 1, pitch = 1){
 		this.sendAll({type:"playSound", data:name, volume, pitch, x,y,z, hasPos: (typeof x === "number")})
 	}
-	poof(x,y,z,amount, w,h,d, unremote){
+	poof(x,y,z,amount,dimension, w,h,d, unremote){
 		if(!amount) amount = w*h*d*20
     if(unremote) this.sendAll({
       type:"particles",particleType:"poof",

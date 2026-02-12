@@ -44,9 +44,8 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		<meta charset="utf-8">
 		<title>MineKhan</title>
     <base href="https://thingmaker.us.eu.org/minekhan/">
-    <meta name="keywords" content="MineKhan, redstone, simulation, survival, game, sandbox, biomes, terrain, 3d, free, mobs, crafting, blocks, multiplayer">
-    <meta name="description" content="MineKhan with survival, nether, multiplayer, redstone, mobs, crafting, large terrain, hundreds of blocks, diamond pickaxes, downloadable maps and many more features. More features, less players.">
-    <meta property="og:image" content="assets/images/sij.png">
+    <meta name="keywords" content="MineKhan, survival, game, sandbox, biomes, terrain, 3d, multiplayer">
+    <meta name="description" content="MineKhan with survival, dimensions, multiplayer, moving things, biomes and more">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
     <meta name="theme-color" id="themeColor">
 		<!--<style>
@@ -1122,9 +1121,9 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
     <div class="content">
       <div id="help_about">
         <h1>About MineKhan</h1>
-				In this game/simulation, you can do survival mode which is managing resources, or you can do creative mode which is building things like houses or circuits. There are hundreds of different blocks for building with different colors and patterns.
+				<!--In this game/simulation, you can do survival mode which is managing resources, or you can do creative mode which is building things like houses or circuits. There are hundreds of different blocks for building with different colors and patterns.
 				<br>
-        <!--MineKhan is a sandbox game.<br>
+        MineKhan is a sandbox game.<br>
         MineKhan has things Minecraft doesn't.<br>
         MineKhan doesn't have some things Minecraft has.<br>-->
         If you want to suggest stuff, you should go to the website that this is on: <a href="/posts" target="_blank">here</a>
@@ -5779,7 +5778,6 @@ if time is 0, it will update every time
 		if(typeof showDirectoryPicker === "undefined") return alert("showDirectoryPicker not supported")
 		let dir
 		dir = await showDirectoryPicker({mode:"readwrite"}).catch(console.error)
-		fetch("/minekhan/know",{method:"POST",body: "backup worlds; folder: "+(dir&&dir.name),headers:{Authorization:userSessionString}}).catch(console.error)
 		if(!dir) return
 		backupWorldsDir = dir
 		saveToDB("backupWorldsDir", backupWorldsDir)
@@ -6122,7 +6120,7 @@ if time is 0, it will update every time
 		//categoryConstruction:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAEdSURBVHjalJOhTgNBEIa/IWd4AyRBkSAQkBIEstTxAg2OZ0AVd6rPcK49gT1HViKaNK3AVV5dFQJDUIOgc73du2uXUXuTzLf//8+eqCoAIqIAqioigvVjKjFAPhx4MBGRWFBih+/LOwDy7fcwf9OtIomGlK4A4LT/4MHqNg9C6lW64l+wCmJDscqAKjNRVURER/2eN2SQ8JLjj3fLrFKVtFnpgpWu4OfsgoN2bMhyCW1uFrMG5Kh+S9ug9dtyi95OaPPk+vavsVw1IJK6uQJkga3Q5mYx24FCJZa0rdC2FcLWr9N2O/V/JBunAvD0PPJgBgxVeA+mq0xZNk4pXcH68wuAyXK1U2+Ql/ubvTDL7PHqvBuyR0nYajz73wEADsipFjE4Vi8AAAAASUVORK5CYII=",
 		//worldIcon:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAAAklEQVR4AewaftIAAAG0SURBVLXBQUhTYQDA8f83p/HGHDwow5wQKTT0UMfyHezSg6BD9ewSdurWYR67BK1ZB496kCDq0qFLzy56GUGMmDMjNl2bLygvKyUSHrnizVJe+2JfPMYQPPj7caiy5ZKfLZd89iFo49pU0adh4nIH0vT8HtLcnbOCFoKA5NKYT4DVfY/p+T2kVe0GyqdkRdAkaEgujfm0+JK9ixIffUA7M+deiA4atsSt1FZkmf6j3QxrffR0xhgcLPKmPkotdoSv7kV+/LnKhWNFejpjPHpWZe1Dndrb9fthAhadDRbZYCRxgsq3WaJR/hk6fpthrY/HhXesP7+CliijhGjh5iwWnpzn+9p7TsUjXD/5ECn9tMxmIYKWyOA5JkqYJjdnoRs2ys/PFVb7T7OwXKYdzzGBV4QIcHMWumET5Dkm+wkRoBs2km7Y6IaNV/2I5DkmiueYdPWuoIQ4oK7eFX5vnkEJ07Dj/UJycxa6YSO5OYvoAP95jomyW6+hCALi42k/NjLHTuEmUnRgiOrrEspuvYa0nZ0UNAnaiI+nfRpeTlwik8kgTWXqbGcnBQeRz+f9VCrlc5j+AmTYl6HuWT1sAAAAAElFTkSuQmCC"
   };window[atob("YmFzZTY0")] = "VGhpcyBwcm9ncmFtIGlzIGEgc3Bpbi1vZmY8YnI+b2YgPGEgaHJlZj0naHR0cHM6Ly93aWxsYXJkLmZ1bi9taW5la2hhbicgdGFyZ2V0PSdfbmV3Jz5NaW5lS2hhbjwvYT4gYnkgV2lsbGFyZC48YnI+TW9zdCBvZiB0aGUgYWRkZWQgZmVhdHVyZXMgYXJlIGJ5PGJyPnRoaW5nTWFrZXIgKGtub3duIGFzIDItcGVvcGxlIG9uIE1pbmVLaGFuKTxicj5UbyBzZWUgY3JlZGl0cywgY2xpY2sgSGVscCAocXVlc3Rpb24gbWFyayBidXR0b24pLg==";
-		window[atob("ZmVhdGVy")]="aHR0cHM6Ly90aGluZ21ha2VyLnVzLmV1Lm9yZy9taW5la2hhbi9mZWF0dXJlcy5qcw=="
+	
   let crossOriginImages = ["panorama"]
   function loadImage(i,images){
 		return new Promise((resolve,reject) => {
@@ -6729,7 +6727,6 @@ ROTATION = 0x1800 // Mask for the direction bits
 			}
 		}
 	}
-	import(atob(feater)).catch(()=>{})
 	commandBlock.querySelector("button").onclick = () => play()
 
 	function saveSettings(){
@@ -7266,8 +7263,7 @@ Division: //
 			let toPlay = !messageInput.value
       if(toPlay) play()
 
-			if(!world.isMK) send({type:"message", data:messageInput.value})
-			else if(messageInput.value[0] === "/"){
+			if(messageInput.value[0] === "/"){
         this.add("<span style='font-family:thefont;'>"+messageOverlay.innerHTML+"</span>")
         this.history.unshift(messageInput.value)
 				runCmd(messageInput.value)
@@ -12109,14 +12105,15 @@ return//*/
 		{
 			//Darker places are colder
 			const skysLight = world.getLight(p2.x, p2.y, p2.z, 0, p.dimension)
-			const lightLevel = min(skysLight * skyLight / 15, 1.0)
+			const blockLight = world.getLight(p2.x, p2.y, p2.z, 1, p.dimension) 
+			const lightLevel = max(blockLight, skysLight * skyLight) / 15
 			temp -= (1 - lightLevel) * 4
 			
 			//if(blockTempCount) temp = lerp(avgBlockTempDist, avgBlockTemp, temp)
 			temp += avgBlockTemp
 			
 			if(p.burning){
-				temp = lerp(p.burnTimer / 16, temp, 25)
+				temp = lerp(0.75/*p.burnTimer / 16*/, temp, 25)
 			}
 			if(freezeEffect > 0){
 				temp = lerp(freezeEffect / 140, temp, 0)
@@ -12124,7 +12121,7 @@ return//*/
 				temp -= 2
 			}
 			
-			p.temperature = lerp(0.015625,p.temperature,temp)
+			p.temperature = temp
 			if(p.lastTemperature !== round(p.temperature) || p.temperature>19 || p.temperature<1){
 				p.lastTemperature = round(p.temperature)
 				updateHUD = true
@@ -12239,11 +12236,6 @@ return//*/
     
 		let pos = hitBox.pos
 
-		if(!world.isMK){
-			p.lastBreak = Date.now()
-			send({type:"break",x:pos[0],y:pos[1],z:pos[2],})
-			return
-		}
 		if(pos && pos[1] >= minHeight && pos[1] < maxHeight) {
 			let prevBlock = world.getBlock(pos[0],pos[1],pos[2],p.dimension)
 			world.setBlock(pos[0],pos[1],pos[2], 0, false,true,true,false,p.dimension)
@@ -12306,13 +12298,6 @@ return//*/
     if(pos) x = pos[0], y = pos[1], z = pos[2]
     let cblock = pos ? world.getBlock(x, y, z, p.dimension) : 0
 		
-		if(!world.isMK){
-			if(!hitBox.pos) return
-			p.lastPlace = Date.now()
-			send({type:"place",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2], cx: (p.direction.x*hitBox.closest-(hitBox.pos[0]-round(p.x))), cy: (p.direction.y*hitBox.closest-(hitBox.pos[1]-round(p.y))), cz: (p.direction.z*hitBox.closest-(hitBox.pos[2]-round(p.z))) })
-			return
-		}
-    
     let adjholding = holding
     if(adjholding && pos && blockData[adjholding].useAs){
       var useAs = blockData[adjholding].useAs
@@ -12361,7 +12346,6 @@ return//*/
 		if(item){
 			send({type:"serverChangeBlock",x:pos?pos[0]:p2.x,y:pos?pos[1]:p2.y,z:pos?pos[2]:p2.z,dimension:p.dimension,place:true,face:hitBox.face,shift:p.sneaking,blockMode,rotate,flip})
 			p.lastPlace = Date.now()
-			p.punchEffect = 10
 			if(blockData[adjholding].onuse && pos) blockData[adjholding].onuse(x,y,z, cblock,p.dimension)
 			return
 		}
@@ -12563,7 +12547,6 @@ return//*/
 				p.lastStartBreak = 0
       }
     }else{
-			if(crack.idx !== -1 && !world.isMK && hitBox.pos) send({type:"stopBreak",x:hitBox.pos[0],y:hitBox.pos[1],z:hitBox.pos[2]})
       crack.idx = -1
       crack.breakStart = now
       crack.soundTimer = 0
@@ -13464,7 +13447,7 @@ r 11 y  n  n  n
 				//this.extraRenderData[this.renderLength-1] = getRandomRotate(blockState,x+this.x,y+this.y,z+this.z,visible)
 			}
 
-			if(blockData[blockState].ambientSound || blockData[blockState].temperature !== undefined){
+			if(this.ambients.length<50 && (blockData[blockState].ambientSound || blockData[blockState].temperature !== undefined)){
 				const pos = (x | y << 4 | z << 8) << 19
 				this.ambients[this.ambients.length] = 1 << 31 | pos | palleteIndex
 				this.hasAmbients = true
@@ -13560,7 +13543,11 @@ r 11 y  n  n  n
 				this.hasAmbients = !!this.ambients.length
 			}else{
 				if(ambientIdx < 0 && hasAmbient){
-					ambientIdx = this.ambients.length++
+					if(this.ambients.length<50){ // limit number of ambients (might cause inconsistencies)
+						ambientIdx = this.ambients.length++
+					}else{
+						ambientIdx = 0 // replace first one
+					}
 					this.hasAmbients = true
 				}
 				this.ambients[ambientIdx] = 1 << 31 | pos | this.palleteMap[blockState]
@@ -14087,11 +14074,6 @@ r 11 y  n  n  n
 			return this.sections[y >> 4].getLight(x, y & 15, z, blockLight)
 		}
 		fillLight() {
-			if(!this.world.isMK){
-				this.lit = true
-				return
-			}
-			
 			if(host){
 				let otherChunk = serverWorld[this.type].getChunk(this.x,this.z)
 				if(otherChunk && otherChunk.lit){
@@ -14191,11 +14173,6 @@ r 11 y  n  n  n
 			this.wasLit = true
 		}
 		unfillLight(){
-			if(!this.world.isMK){
-				this.lit = false
-				return
-			}
-			
 			let max = this.sections.length * 16 - 1 + minHeight
 			let spread = [], blspread = []
 			for (let x = 0; x < 16; x++) {
@@ -18123,10 +18100,6 @@ r 11 y  n  n  n
 			this.targetEnt = this.target && getEntityOrPlayer(this.target)
 			this.attractEnt = this.attractedBy && getEntityOrPlayer(this.attractedBy)
 			
-      if(this.wet && this.burnTimer > 0) {
-        this.burnTimer = 0
-        poof(this.x,this.y-this.height/2+0.25,this.z, 8, this.dimension, this.width,0,this.depth, true)
-      }
       this.burning = this.burnTimer > 0
 			if(this.harmEffect > 0){
 				this.harmEffect -= 3
@@ -21006,7 +20979,7 @@ r 11 y  n  n  n
 		// Chunks must all be loaded first.
 		if(dimension !== p.dimension) return
 		let done = true
-		const loadArea = world.isMK ? 2 : 1
+		const loadArea = 2
 		for (let i = x - loadArea; i <= x + loadArea; i++) {
 			for (let j = z - loadArea; j <= z + loadArea; j++) {
 				let chunk = world.getChunk(i*16,j*16,dimension)//world.loaded[(i + world.offsetX) * world.lwidth + j + world.offsetZ]
@@ -21316,8 +21289,6 @@ r 11 y  n  n  n
     }*/
     return worlds
   }
-	function sendError(err){fetch("/minekhan/know/error",{method:"POST",body:err,headers:{Authorization:userSessionString}}).catch(console.error)}
-	win.sendError = sendError
 
   var multiplayer = null
   var multiplayerError = null
@@ -21370,8 +21341,8 @@ r 11 y  n  n  n
 
 	let iceServers = [{'urls': 'stun:stun.l.google.com:19302'}, {urls: 'turn:turn.anyfirewall.com:443?transport=tcp', credential: 'webrtc', username: 'webrtc'}, {urls: 'turn:numb.viagenie.ca', credential: 'muazkh', username: 'webrtc@live.com'}, {urls: 'turn:turn.bistri.com:80', credential: 'homeo', username: 'homeo'}]
 	loadFromDB("iceServers").then(res => {
-		if(res){
-			let s = new Set(res.data.map(r => r.urls))
+		if(res && res.data){
+			let s = new Set(iceServers.map(r => r.urls))
 			for(let i of res.data){
 				if(!s.has(i.urls)) iceServers.push(i)
 			}
@@ -21472,7 +21443,7 @@ r 11 y  n  n  n
 		close(){}
 	}
 
-	document.body.insertAdjacentHTML("beforeend","<script src='features.js'><"+"/script>")
+	document.body.insertAdjacentHTML("beforeend","<script src='fea"+"tures.js'><"+"/script>")
   let host = false
 	{
 		function initSingleplayer(){
@@ -22344,573 +22315,6 @@ r 11 y  n  n  n
 		}
   }
 	let fasterVel = 1
-	async function joinEaglerServer(){
-		let url = prompt("Enter address")
-		if(!url) return
-		let username = prompt("Username")
-		if(!username) return
-		changeScene("multiplayer connecting")
-		if(!window.mcProtocol) await import("/minekhan/mcProtocol/bundle.js")
-		try{
-		await window.mcProtocol.dataPrefetch("pc","1.8", (l,t) => addToBottomRightList("connecting",round(l/t*100)+"%"))
-		}catch(e){
-			multiplayerError = {data:"while loading resources, "+e.message}
-			changeScene("multiplayer lost")
-			clearBottomRightList("connecting")
-			return
-		}
-		clearBottomRightList("connecting")
-		const mcData = window.mcProtocol.getMCData("1.8")
-		let internalIdToEntity = []
-		for(let e in mcData.entities){
-			internalIdToEntity[mcData.entities[e].internalId] = entityIds[mcData.entities[e].name]
-		}
-		const {conv, parseMetadata, updateAttributes, load_1_8, onesInShort, Physics, PlayerState, Vec3} = window.mcProtocol
-		let Block = window.mcProtocol.getBlock("1.8")
-
-		blockData, blockIds, BLOCK_COUNT, blockInfoIds, inventoryBlocks
-		blockData = [], blockIds = {}
-		for(let i in mcData.blocks){
-			let b = mcData.blocks[i]
-			let nb = Object.create(b)
-			nb.Name = b.displayName
-			nb.id = b.id<<4
-			nb.blastResistance = b.resistance
-			nb.lightLevel = b.emitLight
-			nb.textures = mkBlockIds[b.name] === undefined ? (new Array(6)).fill("error") : mkBlockData[mkBlockIds[b.name]].textures
-			nb.shadow = !b.transparent
-			nb.shade = !b.emitLight
-			nb.smoothLight = !b.transparent && b.boundingBox !== "empty"
-			nb.shape = shapes.cube//todo
-			if(b.harvestTools){
-				nb.harvestTools = []
-				for(let i in b.harvestTools) nb.harvestTools.push(b.harvestTools[i]<<4)
-			}else if(b.diggable) nb.harvestTools = true
-			if(b.variations) for(let v of b.variations){
-				let nbv = Object.create(nb)
-				nbv.Name = v.displayName
-				blockData[nb.id | v.metadata&15] = nbv
-			}
-			blockData[nb.id] = nb
-			blockIds[b.name] = nb.id
-		}
-		for(let i in mcData.items){
-			let b = mcData.items[i]
-			if(blockData[b.id<<4]) continue
-			let nb = Object.create(b)
-			nb.Name = b.displayName
-			nb.id = b.id<<4
-			nb.textures = mkBlockIds[b.name] === undefined ? (new Array(6)).fill("error") : mkBlockData[mkBlockIds[b.name]].textures
-			nb.shape = shapes.item
-			if(b.variations) for(let v of b.variations){
-				let nbv = Object.create(nb)
-				nbv.Name = v.displayName
-				blockData[nb.id | v.metadata&15] = nbv
-			}
-			blockData[nb.id] = nb
-			blockIds[b.name] = nb.id
-		}
-		for(let i in mcData.foods){
-			let b = mcData.foods[i]
-			blockData[b.id<<4].edible = true
-		}
-		BLOCK_COUNT = 0
-		blockInfoIds = {}
-		inventoryBlocks = {all:[],search:[]}//todo inventoryBlocks, items
-		win.blockData = blockData
-		win.blockIds = blockIds
-		genIcons()
-		initBlockEntities()
-
-		try{
-		multiplayer = window.mcProtocol.createClient({url,username,version:"1.8"})
-		}catch(e){alert(e); return}
-		multiplayer.on("error", console.error)
-		multiplayer.on("playerJoin", e => {
-			play()
-		})
-		multiplayer.on("end", reason => {
-			multiplayer = null
-			multiplayerError = multiplayerError || {data:reason}
-			updateTitle(false)
-			changeScene("multiplayer lost")
-		})
-		multiplayer.differentUsername = username
-		await loggedIn()
-		
-		world = new World()
-		world.isMK = false
-		win.world = world
-		world.version = "1.8.8. eagler"
-		world.name = url
-		updateTitle(true)
-		let proxyworld = {
-			getBlock(pos){
-				let id = world.getBlock(pos.x,pos.y,pos.z)
-				let b = new Block(id>>4, 0/*todo biome*/, id&15)
-				b.position = pos.floored()
-				return b
-			}
-		}
-		let physics = Physics(mcData, proxyworld)
-		let ps = new PlayerState({
-			version:"1.8",
-	    entity: {
-	      position: new Vec3(0, 0, 0),
-	      velocity: new Vec3(0, 0, 0),
-	      yaw: 0,
-	      pitch: 0,
-				effects:{},
-	    },
-			inventory:{slots:[]}//todo
-	  },{
-			get forward(){return controlMap.forward.pressed},
-			get back(){return controlMap.backward.pressed},
-			get left(){return controlMap.left.pressed},
-			get right(){return controlMap.right.pressed},
-			get jump(){return controlMap.jump.pressed},
-			get sprint(){return controlMap.sprint.pressed},
-			get sneak(){return controlMap.sneak.pressed}
-		})
-		world.playerPhysics = function(){
-			ps.pos.set(pPos.x,pPos.y,pPos.z)
-			ps.vel.set(p.velocity.x,p.velocity.y,p.velocity.z)
-			if(fasterVel !== 1){
-				let m = mag(ps.vel.x,ps.vel.y,ps.vel.z)
-				let t=fasterVel*0.1/m
-				if(m<t && isFinite(t))ps.vel.x*=t,ps.vel.y*=t,ps.vel.z*=t
-			}
-			ps.yaw = pPos.yaw
-			ps.pitch = pPos.pitch
-			physics.simulatePlayer(ps, proxyworld)
-			pPos.x = ps.pos.x
-			pPos.y = ps.pos.y
-			pPos.z = ps.pos.z
-			p.velocity.set(ps.vel)
-			p.onGround = ps.onGround
-		}
-		const pPos = {
-			get x(){return p.x+0.5},
-			get y(){return p.y+0.5-physics.playerHeight*0.5},
-			get z(){return p.z+0.5},
-			set x(n){p.x=n-0.5},
-			set y(n){p.y=n-0.5+physics.playerHeight*0.5},
-			set z(n){p.z=n-0.5},
-			get yaw(){return Math.PI-p.ry},
-			get pitch(){return Math.PI-p.rx},
-			set yaw(n){p.ry=Math.PI-n},
-			set pitch(n){p.rx=Math.PI-n},
-		}
-		Messages.add("Useful keys: <br>+ Faster speed <br>- Normal speed <br>F4 See in the dark")
-		function mapChunk(cx,cz,groundUp,chunkData,bitMap){
-			let chunk = world.getOrNewChunk(cx*16,cz*16,p.dimension)
-			if(!chunk.loaded) chunk.customLoadStart()
-			load_1_8(chunkData,bitMap, p.dimension ==="", groundUp, (yindex,blocks,blight,slight)=>{
-				let section = chunk.requireSection(yindex-(minHeight>>4))
-				let i=0
-				for(let y=0;y<16;y++) for(let z=0;z<16;z++) for(let x=0;x<16;x++){
-					section.setBlock(x,y,z, blockData[blocks[i]] ? blocks[i] : 0)
-					section.setLight(x,y,z, (slight[i>>1]>>((i&1)*4))&15, 0)
-					section.setLight(x,y,z, (blight[i>>1]>>((i&1)*4))&15, 1)
-					i++
-				}
-			})
-			chunk.customLoadEnd()
-		}
-		function getFace(){
-			return hitBox.face === "bottom" ? 0 : hitBox.face === "top" ? 1 : hitBox.face === "south" ? 2 : hitBox.face === "north" ? 3 : hitBox.face === "west" ? 4 : 5
-		}
-		multiplayer.send = data => {
-			let type, o
-			switch(data.type){
-				case "message": type = "chat"; o = {message:data.data}; break
-				case "entInteract": type = "use_entity"; o = {target:+data.data, mouse:data.hit?1:0}; break
-				case "startBreak": type = "block_dig"; o = {status:0, location:{x:data.x,y:data.y,z:data.z}, face:getFace()}; break
-				case "stopBreak": type = "block_dig"; o = {status:1, location:{x:data.x,y:data.y,z:data.z}, face:getFace()}; break
-				case "dropItem": type = "block_dig"; o = {status:4}; break
-				case "stopPlace": type = "block_dig"; o = {status:5}; break
-				case "break": type = "block_dig"; o = {status:2, location:{x:data.x,y:data.y,z:data.z}, face:getFace()}; break
-				case "place": type = "block_place"; o = {location:{x:data.x,y:data.y,z:data.z}, direction:getFace(), cursorX:data.cx*16, cursorY:data.cy*16, cursorZ:data.cz*16, heldItem:{}}; break
-				case "hotbar": type = "held_item_slot"; o = {slotId:data.slot}; break
-				case "respawn": type = "client_command"; o = {payload:0}; break
-				default: return
-			}
-			multiplayer.write(type, o)
-		}
-		let prevX,prevY,prevZ, prevRx,prevRy, prevOnGround, prevSneak, prevSprint, prevSleep, prevFly, prevLang, prevRenderDist
-		multiplayer.lastSendPos = 0
-		multiplayer.sendPos = () => {
-			if(!multiplayer.hasStartedLoad) return
-			let moved = prevX !== pPos.x || prevY !== pPos.y || prevZ !== pPos.z
-			let looked = prevRx !== pPos.pitch || prevRy !== pPos.yaw
-			if(moved) prevX = pPos.x, prevY = pPos.y, prevZ = pPos.z
-			if(looked) prevRx = pPos.pitch, prevRy = pPos.yaw
-			let now = Date.now()
-			if(moved&&looked){
-				multiplayer.lastSendPos = now
-				multiplayer.write("position_look", {x:pPos.x,y:pPos.y,z:pPos.z,yaw:conv.toNotchianYaw(pPos.yaw),pitch:conv.toNotchianYaw(pPos.pitch),onGround:ps.onGround})
-				prevOnGround = ps.onGround
-			}else if(moved){
-				multiplayer.lastSendPos = now
-				multiplayer.write("position", {x:pPos.x,y:pPos.y,z:pPos.z,onGround:ps.onGround})
-				prevOnGround = ps.onGround
-			}else if(looked){
-				multiplayer.lastSendPos = now
-				multiplayer.write("look", {yaw:conv.toNotchianYaw(pPos.yaw),pitch:conv.toNotchianYaw(pPos.pitch),onGround:ps.onGround})
-				prevOnGround = ps.onGround
-			}else if(prevOnGround !== ps.onGround){
-				multiplayer.lastSendPos = now
-				multiplayer.write("flying", {onGround:ps.onGround})
-				prevOnGround = ps.onGround
-			}
-			if(prevSneak !== p.sneaking){
-				prevSneak = p.sneaking
-				multiplayer.write("entity_action", {entityId:+p.id, actionId:p.sneaking?0:1})
-			}
-			if(prevSprint !== p.sprinting){
-				prevSprint = p.sprinting
-				multiplayer.write("entity_action", {entityId:+p.id, actionId:p.sprinting?3:4})
-			}
-			if(prevSleep !== p.sleeping){
-				prevSleep = p.sleeping
-				if(!p.sleeping) multiplayer.write("entity_action", {entityId:+p.id, actionId:2})
-			}
-			if(prevFly !== p.flying){
-				prevFly = p.flying
-				multiplayer.write("abilities", {flags:p.flying?2:0})
-			}
-			if(prevRenderDist !== settings.renderDistance || prevLang !== settings.language){
-				prevRenderDist = settings.renderDistance, prevLang = settings.language
-				multiplayer.write("settings", {locale:settings.language||"en-US",viewDistance:settings.renderDistance})
-			}
-		}
-		win.multiplayer = multiplayer
-		//todo close window click window,update sign
-		multiplayer.close = multiplayer.end
-		multiplayer.on("playerJoin", () => multiplayer.hasStartedLoad = true)
-		multiplayer.on("packet", (o, {name}) => {
-switch(name){
-	case "chat":{
-		let data
-		try{
-			data = JSON.parse(o.message)
-		}catch{
-			data = o.message
-		}
-		Messages.add((data.color?"<span style='color:"+data.color+";'>":"")+data.text)
-		break
-	}
-	case "update_time":{
-		worldTime = (Number(BigInt.asIntN(32,o.time))/24000)*1000+250
-		break
-	}
-	/*case "spawn_position":{
-		world.spawnPoint.x = o.location.x
-		world.spawnPoint.y = o.location.y
-		world.spawnPoint.z = o.location.z
-		break
-	}*/
-	case "update_health":{
-		if(o.health < p.health){
-			p.lastDamageHealth = p.health
-			harmEffect = 30
-			damageX = damageY = damageZ = 0
-		}
-		if(o.health > p.health){
-			healEffect = 40
-		}
-		p.health = o.health
-		p.food = o.food
-		p.foodSaturation = o.foodSaturation
-		if(p.health <= 0) die()
-		break
-	}
-	case "respawn":{
-		p.dimension = o.dimension === -1 ? "nether" : o.dimension === 1 ? "end" : ""
-		world.unloadAllChunks()
-		p.gameMode = o.gamemode === 0 ? "survival" : o.gamemode === 1 ? "creative" : o.gamemode === 2 ? "survival" : "creative"
-		p.die = false
-		play()
-		break
-	}
-	case "position":{
-		pPos.x = (o.flags&1) ? pPos.x+o.x : o.x
-		pPos.y = (o.flags&2) ? pPos.y+o.y : o.y
-		pPos.z = (o.flags&4) ? pPos.z+o.z : o.z
-		pPos.yaw = (o.flags&8) ? conv.fromNotchianYaw(conv.toNotchianYaw(pPos.yaw)+o.yaw) : conv.fromNotchianYaw(o.yaw)
-		pPos.pitch = (o.flags&16) ? conv.fromNotchianPitch(conv.toNotchianPitch(pPos.pitch)+o.pitch) : conv.fromNotchianPitch(o.pitch)
-		multiplayer.write("position_look", {x:o.x,y:o.y,z:o.z,yaw:o.yaw,pitch:o.pitch,onGround:ps.onGround})
-		break
-	}
-	case "held_item_slot":{
-		inventory.hotbarSlot = o.slot
-		break
-	}
-	case "bed":{
-		let other = getEntityOrPlayer(o.entityId+"")
-		if(!other) break
-		other.sleeping = true
-		other.x = o.location.x
-		other.y = o.location.y
-		other.z = o.location.z
-		break
-	}
-	case "animation":{
-		let other = getEntityOrPlayer(o.entityId+"")
-		if(!other) break
-		if(o.animation === 0) other.punchEffect = 10
-		else if(o.animation === 1) other.harmEffect = 30
-		break
-	}
-	case "named_entity_spawn":{
-		let p = players[o.entityId+""] = new Player()
-		p.UUID = o.playerUUID
-		p.setPos(o.x,o.y,o.z,0,0,0)
-		p.setRot(o.pitch,o.yaw)
-		p.holding = o.currentItem
-		p.metadata = parseMetadata(o.metadata)
-		break
-	}
-	case "spawn_entity":{
-		let type = internalIdToEntity[o.type]
-		if(type === undefined) type = entities[entityIds.BlockEntity]
-		world.posEntity({block:blockIds.redConcrete, ...o, id:o.entityId+"", entId:type, dimension:p.dimension, x:o.x/32, y:o.y/32, z:o.z/32},undefined,undefined,true)
-		break
-	}
-	case "spawn_entity_living":{
-		let type = internalIdToEntity[o.type]
-		if(type === undefined) type = entities[entityIds.BlockEntity]
-		world.posEntity({block:blockIds.redConcrete, ...o, id:o.entityId+"", entId:type, dimension:p.dimension, x:o.x/32, y:o.y/32, z:o.z/32},undefined,undefined,true)
-		break
-	}
-	case "spawn_entity_experience_orb":{
-		let type = entities[entityIds.ExperienceOrb]
-		world.posEntity({...o, id:o.entityId+"", entId:type, dimension:p.dimension, amount:o.count, x:o.x/32, y:o.y/32, z:o.z/32},undefined,undefined,true)
-		break
-	}
-	case "entity_destroy":{
-		for(let i of o.entityIds){
-			world.deleteEntity(i+"",true)
-		}
-		break
-	}
-	case "rel_entity_move":{
-		let e = getEntityOrPlayer(o.entityId+"")
-		if(!e) break
-		e.x += o.dX/32
-		e.y += o.dY/32
-		e.z += o.dZ/32
-		break
-	}
-	case "entity_look":{
-		let e = getEntityOrPlayer(o.entityId+"")
-		if(!e) break
-		e.yaw = conv.fromNotchianYawByte(o.yaw)
-		e.pitch = conv.fromNotchianPitchByte(o.pitch)
-		break
-	}
-	case "entity_move_look":{
-		let e = getEntityOrPlayer(o.entityId+"")
-		if(!e) break
-		e.x += o.dX/32
-		e.y += o.dY/32
-		e.z += o.dZ/32
-		e.yaw = conv.fromNotchianYawByte(o.yaw)
-		e.pitch = conv.fromNotchianPitchByte(o.pitch)
-		break
-	}
-	case "entity_teleport":{
-		let e = getEntityOrPlayer(o.entityId+"")
-		if(!e) break
-		e.x = o.x/32
-		e.y = o.y/32
-		e.z = o.z/32
-		e.yaw = conv.fromNotchianYawByte(o.yaw)
-		e.pitch = conv.fromNotchianPitchByte(o.pitch)
-		break
-	}
-	case "entity_head_rotation":{
-		let e = getEntityOrPlayer(o.entityId+"")
-		if(!e) break
-		if(e.parts && e.parts.head) e.parts.head.yaw = conv.fromNotchianYawByte(o.headYaw)
-		break
-	}
-	case "entity_status":{break}//todo
-	case "attach_entity":{
-		let e = getEntityOrPlayer(o.entityId+"")
-		if(!e) break
-		if(!o.leash) e.riding = o.vechileId === -1 ? null : o.vechileId+""
-		break
-	}
-	case "entity_metadata":{
-		let e = getEntityOrPlayer(o.entityId+"")
-		if(!e) break
-		parseMetadata(o.metadata, e.metadata)
-		break
-	}
-	case "experience":{
-		p.XP = o.experienceBar
-		p.nextLevel = 1
-		p.level = o.level
-		break
-	}
-	case "map_chunk":{
-		mapChunk(o.x,o.z,o.groundUp,o.chunkData,o.bitMap)
-		break
-	}
-	case "map_chunk_bulk":{
-		let offset = 0
-		for (let i = 0; i < o.meta.length; ++i) {
-			let meta = o.meta[i]
-      let size = (8192 + (o.skyLightSent ? 2048 : 0)) *
-        onesInShort(meta.bitMap) + // block ids
-        2048 * onesInShort(meta.bitMap) + // (two bytes per block id)
-        256 // biomes
-			mapChunk(meta.x,meta.z,true, o.data.subarray(offset, offset + size), meta.bitMap)
-			offset += size
-		}
-		break
-	}
-	case "multi_block_change":{
-		for(let r of o.records){
-			world.setBlock(o.chunkX<<4 | (r.horizontalPos>>4), r.horizontalPos, o.chunkZ<<4 | (r.horizontalPos&15), o.blockId, false,false,true,false, p.dimension)
-		}
-		break
-	}
-	case "block_change":{
-		world.setBlock(o.location.x,o.location.y,o.location.z, o.type, false,false,true,false, p.dimension)
-		break
-	}
-	case "block_break_animation":{
-		let e = getEntityOrPlayer(o.entityId+"")
-		if(!e) break
-		e.crackPos = [o.location.x,o.location.y,o.location.z]
-		e.crack = o.destroyStage
-		break
-	}
-	case "explosion":{
-		for(let pos of o.affectedBlockOffsets){
-			world.setBlock(o.x+pos.x,o.y+pos.y,o.z+pos.z,0, false,false,true,false, p.dimension)
-		}
-		break
-	}
-	case "world_event":{
-		switch(o.effectId){
-			case 1000: playSound("click",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1001: playSound("click",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1002: playSound("random.bow",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1003: playSound("wooden_door.open",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1004: playSound("random.fizz",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1005: Messages.add("play music disc "+o.data,0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1007: playSound("mob.ghast.charge",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1008: playSound("mob.ghast.fireball",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1009: playSound("mob.ghast.fireball",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1010: playSound("mob.zombie.wood",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1011: playSound("mob.zombie.metal",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1012: playSound("mob.zombie.woodbreak",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1013: playSound("mob.wither.spawn",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1014: playSound("mob.wither.shoot",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1015: playSound("mob.bat.takeoff",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1016: playSound("mob.zombie.infect",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1017: playSound("mob.zombie.unfect",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1018: playSound("mob.enderdragon.end",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1020: playSound("random.anvil_break",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1021: playSound("random.anvil_use",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 1022: playSound("random.anvil_land",0,1,1,posSound(o.location.x,o.location.y,o.location.z)); break
-			case 2000:{
-				if(!performFast) for(let i=0; i<o.amount; i++){
-					world.addParticle(new entities[entityIds.SmokeParticle](o.location.x+rand()-0.5,o.location.y+rand()-0.5,o.location.z+rand()-0.5),p.dimension)
-				}
-				break
-			}
-			case 2001: blockParticles(o.data<<4, o.location.x,o.location.y,o.location.z, 30, "breaking", world,p.dimension, null,true); break
-			case 2002: Messages.add("splash potion sound"); break
-			case 2003: Messages.add("eye of ender break sound");break
-			case 2005: glint(o.location.x,o.location.y,o.location.z, p.dimension,true); break
-		}
-		break
-	}
-	case "sound_effect":{
-		playSound(o.soundName,0,o.volume,o.pitch,posSound(o.x,o.y,o.z))
-		break
-	}
-	case "world_particles":{
-		switch(o.particleId){
-			//todo
-		}
-		break
-	}
-	case "game_state_change":{
-		switch(o.reason){
-			case 1: weather = ""; break
-			case 2: weather = "rain"; break
-			case 3:{
-				p.gameMode = o.gameMode === 0 ? "survival" : o.gameMode === 1 ? "creative" : o.gameMode === 2 ? "survival" : "spectator"
-				break
-			}
-			case 4: showEndPoem(); break
-		}
-		break
-	}
-	case "spawn_entity_weather":{
-		Messages.add("a thunder striked at "+o.x+","+o.y+","+o.z)
-		break
-	}
-	case "open_window":{
-		Messages.add("open_window")//todo
-		break
-	}
-	case "close_window":{
-		Messages.add("close_window")//todo
-		break
-	}
-	case "update_sign":{
-		//todo
-		break
-	}
-	case "tile_entity_data":{
-		//todo
-		break
-	}
-	case "open_sign_entity":{
-		editSign(o.location.x,o.location.y,o.location.z,p.dimension)
-		break
-	}
-	case "statistics": break
-	case "scoreboard_objective": break//todo
-	case "scoreboard_score": break//todo
-	case "scoreboard_display_objective":break
-	case "scoreboard_team":break
-	case "kick_disconnect":{
-		multiplayerError = {data:o.reason}
-		break
-	}
-	case "title":{
-		titleShowing = true
-		switch(o.action){
-			case 0: let t = JSON.parse(o.text); title = t.text; titleColor = t.color||"white"; break
-			case 1: subtitle = JSON.parse(o.text).text; break
-			case 2: titleFadeIn = o.fadeIn*50; titleFadeOut = o.fadeOut*50; titleStay = o.stay*50; titleStart = Date.now(); break
-			case 3: titleShowing = false; break
-			case 4: titleShowing = false; title = ""; subtitle = ""; break
-		}
-		break
-	}
-	case "resource_pack_send":{
-		Messages.add("cannot use resource pack (incompatible) "+o.url)
-		multiplayer.write("resource_pack_receive", {hash:o.hash, result:2})
-		break
-	}
-	case "update_entity_nbt":break//todo
-}
-		})
-
-		fetch("/minekhan/know",{
-			method:"POST",
-			body: "join server; username: "+username+"; url: "+url,
-			headers:{Authorization:userSessionString}
-		}).catch(console.error)
-	}
 
 	/*function handleservererror(e){
 		//logError(e)
@@ -24180,7 +23584,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
 		loadChunks() {
 			let actualRenderDistance = settings.renderDistance
-			let renderDistance = settings.renderDistance + (this.isMK ? 2 : 0)
+			let renderDistance = settings.renderDistance + 2
 			if(host) serverWorld.loadDistance = renderDistance
 			let cx = p.x >> 4
 			let cz = p.z >> 4
@@ -25025,7 +24429,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			}
 			return worldType !== "large"
 		}, "Rivers that flow down! May slow down world generation. Requires large world type.", () => fancyRivers ? 0 : 1).setScrollable(creationMenuScrollable)
-		Button.add(475*ss, 180*ss, 300*ss, 40*ss, "Seed Templates", "creation menu", () => changeScene("seed templates"), null, "Choose a specific seed to control how the world generates.").setScrollable(creationMenuScrollable)
+		Button.add(475*ss, 180*ss, 300*ss, 40*ss, "Seeds", "creation menu", () => changeScene("seed templates"), null, "Choose a specific seed to control how the world generates.").setScrollable(creationMenuScrollable)
 		creationMenuScrollable.setScrollSize(300*ss)
 		Button.add(475*ss, 230*ss, 300*ss, 40*ss, ["Structures: On", "Structures: Off"], "creation menu", r => structures = r === "Structures: On", function() {
 			if (worldType === "void") {
@@ -25101,7 +24505,6 @@ p.camera.transformation.elements.set(matrix)//*/
       window.open("https://"+servers[selectedWorld].url, "_blank")
     }, () => !(servers[selectedWorld] && servers[selectedWorld].url))*/
     Button.add(mid - 3 * x4, height - 40*ss, w4, 40*ss, "Reload", "multiplayer menu", initServersMenu)
-    Button.add(mid - 1 * x4, height - 40*ss, w4, 40*ss, "join eaglercraf server (experimental)", "multiplayer menu", joinEaglerServer, null,"it has bugs and no inventory")
     Button.add(mid + 1 * x4, height - 40*ss, w4, 40*ss, "Edit ICE servers", "multiplayer menu", () => {
 			try{
 				iceServers = JSON.parse(prompt("ICE servers", JSON.stringify(iceServers)))
@@ -25109,7 +24512,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				alert(e); return
 			}
 			saveToDB("iceServers",iceServers)
-		})
+		}, null, "ICE means Interactive Connectivity Establishment. If you can't join, try adding a TURN server.")
 		Button.add(mid + 3 * x4, height - 40*ss, w4, 40*ss, "Back", "multiplayer menu", r => changeScene("main menu"))
 		
     //multiplayer connecting buttons
@@ -26095,7 +25498,6 @@ p.camera.transformation.elements.set(matrix)//*/
 			fontData[i] = rows.join("\n")
 		}
 	}
-	document.body.insertAdjacentHTML("beforeend","<script src='features.js'><"+"/script>")
 	let fontDataBold, fontPixelsPerEm
   let textCoords, textTexture, textCoordsPixels
   async function initFont(){
@@ -28479,8 +27881,6 @@ p.camera.transformation.elements.set(matrix)//*/
         //var pos = hitBox.pos, x = pos && pos[0], y = pos && pos[1], z = pos && pos[2]
         //if(p.survival && blockData[holding].minusOnUse){inventory.hotbar[inventory.hotbarSlot].amount --; updateHUD = true}
         //if(!blockData[holding].onrelease(x,y,z, p.dimension, inventory.hotbar[inventory.hotbarSlot])){p.lastPlace = Date.now(); return}
-
-				if(!world.isMK) send({type:"stopPlace"})
       }
 
 			if (k === controlMap.zoom.key) {
@@ -29800,6 +29200,7 @@ p.camera.transformation.elements.set(matrix)//*/
 	}
   async function initMarketplace(){
     selectedWorld = null
+		if(marketplaceData) return
     marketplace = {}, marketplaceData = []
 		const search = marketplaceSearchInput.value
 		while (window.marketplace.firstChild) {
@@ -29823,7 +29224,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				if(!r){
 					var div = document.createElement("div")
 		      div.classList.add("select-message")
-		      div.innerHTML = "Maps are not available now"
+		      div.innerHTML = "Because the website shut down, you can't see all the maps anymore."
 		      window.marketplace.prepend(div)
 					return
 				}
@@ -29899,7 +29300,10 @@ p.camera.transformation.elements.set(matrix)//*/
       if(data.fetchUrl){
         addItem(data.name, "", data.bytes, id, data.user, data.created, data.thumbnail, data.rp ? "Resource pack" : "Map")
         marketplace[id] = data
-      }else{
+      }else if(data.code || data.file){
+				addItem(data.name, "", (data.code||data.file).length, id, data.user, data.created, data.thumbnail, "Map")
+        marketplace[id] = data
+			}else{
         let loadString, mod
         if(typeof data === "object"){
           loadString = data.loadString
@@ -29944,7 +29348,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		if(thing.rp){
 			marketplaceInfo.innerHTML += "<label for='rpURL'>Resource pack URL</label><input name='rpURL' value='/rp/"+map.name+"'>"
 		}
-		if(!thing.user) return
+		if(!thing.fetchUrl) return
 		let mapsBy = document.createElement("div")
 		marketplaceInfo.appendChild(mapsBy)
 		function addThing(name, version, size, id, by, edited, thumbnail, type) {
@@ -30048,7 +29452,28 @@ p.camera.transformation.elements.set(matrix)//*/
         alert("Error fetching map: "+e)
         changeScene("marketplace")
       })
-    }else{
+    }else if(save.code || save.file){
+			let id = generateID()
+			if(save.file){
+				let file = JSON.parse(save.file)
+				file.id = id
+				file.edited = Date.now()
+				saveToDB(id, file)
+			}else{
+				let tempWorld = new ServerWorld()
+				tempWorld.loadSave(loadString,true)
+				saveToDB(id, {
+					id: id,
+					edited: Date.now(),
+					name: save.name,
+					version: tempWorld.version,
+					code: save.code,
+					mod: (save.file && save.file.mod) || null
+				})
+			}
+			initWorldsMenu()
+			changeScene("loadsave menu")
+		}else{
       save.id = generateID()
       saveToDB(save.id, {
         id: save.id,
@@ -30636,7 +30061,7 @@ p.camera.transformation.elements.set(matrix)//*/
   }
   findObjValueAmount(sounds)*/
 	maxStartLoad+=2//sound load & extract
-  for(let image in images) maxStartLoad ++; import(atob(feater)).catch(()=>{})
+  for(let image in images) maxStartLoad ++
 
 	let bottomRightListCategories = {}
 	function addToBottomRightList(category, str, color){
@@ -31124,11 +30549,6 @@ p.camera.transformation.elements.set(matrix)//*/
 
 		changeScene("multiplayer connecting")
 		joinWorld(initSingleplayer())
-		fetch("/minekhan/know",{
-			method:"POST",
-			body: "new world; name: "+serverWorld.name+"; seed: "+serverWorld.worldSeed+"; type: "+worldType+"; game mode: "+p.gameMode,
-			headers:{Authorization:userSessionString}
-		}).catch(console.error)
   }
 	function waitAFrame(){
 		return new Promise(resolve => {
@@ -31255,11 +30675,6 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
 		changeScene("multiplayer connecting")
 		joinWorld(initSingleplayer())
-		fetch("/minekhan/know",{
-			method:"POST",
-			body: "open world; name: "+serverWorld.name,
-			headers:{Authorization:userSessionString}
-		}).catch(console.error)
   }
 	function deleteSelectedWorld(){
 		if (worlds[selectedWorld] && confirm(`Are you sure you want to delete ${worlds[selectedWorld].name}? This will also delete it from the cloud (if it exists) and the backup (if it exists).`)) {
@@ -32501,7 +31916,7 @@ p.camera.transformation.elements.set(matrix)//*/
       ctx.textAlign = 'center'
 			textSize(18)
 			fill(255)
-			text("Seed Templates", width / 2, 2)
+			text("Seeds", width / 2, 2)
 		}
 		drawScreens.achievments = () => {
 			dirt()
@@ -32728,6 +32143,7 @@ if(window.initServerEverything){
 	document.body.appendChild(script)
 }
 		</script>
+		<script src="features.js" defer></script>
 	</body>
 </html>
 
