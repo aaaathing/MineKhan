@@ -8,8 +8,8 @@ let fs=require("fs").promises
 	//let files = await fs.readdir("minekhan/")
 	//let str = await fs.readFile("public/minekhan/"+files.find(r => r.startsWith("_mksrc") && r.endsWith(".html")), { encoding: 'utf8' })
 	//let str2 = await fs.readFile("public/minekhan/"+files.find(r => r.startsWith("_mksrc") && r.endsWith("-world.js")), { encoding: 'utf8' })
-	let str = await fs.readFile(__dirname+"/src/minekhan.html", { encoding: 'utf8' })
-	let str2 = await fs.readFile(__dirname+"/src/minekhan-world.js", { encoding: 'utf8' })
+	let str = await fs.readFile(__dirname+"/minekhan.html", { encoding: 'utf8' })
+	let str2 = await fs.readFile(__dirname+"/minekhan-world.js", { encoding: 'utf8' })
 	let minify = (await import("minify")).minify
 	console.log("Minifying...")
 	let whereInsert = str.indexOf("//INSERT-SERVER-CODE-HERE")

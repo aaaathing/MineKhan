@@ -1,5 +1,16 @@
 <!DOCTYPE html>
 <html lang="en-us">
+	<head>
+		<meta charset="utf-8">
+		<title>MineKhan</title>
+    <base href="https://thingmaker.us.eu.org/minekhan/">
+    <meta name="keywords" content="MineKhan, survival, game, sandbox, biomes, terrain, 3d, multiplayer">
+    <meta name="description" content="MineKhan with survival, dimensions, multiplayer, moving things, biomes and more">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <meta name="theme-color" id="themeColor">
+		<link rel="manifest" href="./manifest.json">
+		<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" id="icon">
+	</head>
 <pre id="topCredits" class='hidden'>
 @MineKhan-thingmaker version Beta 1.1.2
 
@@ -10,6 +21,7 @@ THIS IS NOT THE ORIGINAL, THE ORIGINAL IS HERE: https://willard.fun/minekhan
 This is a spin-off of MineKhan by Willard
 thingMaker's credits (not Willard's)
 	Repository: https://github.com/aaaathing/MineKhan
+	https://thingmaker.us.eu.org/minekhan/
  * This spin-off was started around spring of 2021
  * The lighting was created by Willard at https://github.com/willard21/minekhan. It has been modified to have more features.
  * Red Monster (https://www.khanacademy.org/profile/monsterred) made some shapes for the blocks
@@ -40,23 +52,6 @@ Willard's credits
 
 Chunks are kept in memory until you restart. So don't explore too far or memory usage will grow until it crashes unrecoverably.
 </pre>
-	<head>
-		<meta charset="utf-8">
-		<title>MineKhan</title>
-    <base href="https://thingmaker.us.eu.org/minekhan/">
-    <meta name="keywords" content="MineKhan, survival, game, sandbox, biomes, terrain, 3d, multiplayer">
-    <meta name="description" content="MineKhan with survival, dimensions, multiplayer, moving things, biomes and more">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-    <meta name="theme-color" id="themeColor">
-		<!--<style>
-			@font-face{
-        font-family: 'thefontmonospace';
-        src:url('Monocraft.ttf');
-      }
-    </style>-->
-		<link rel="manifest" href="./manifest.json">
-		<link rel="icon" type="image/x-icon" href="favicon.ico" id="icon">
-	</head>
 	<style>
 		body {
 			overflow: hidden; /* Hide scrollbars */
@@ -915,7 +910,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
     window.dataLayer = window.dataLayer || []
     function gtag(){dataLayer.push(arguments)}
     gtag('js', new Date())
-    gtag('config', 'G-VRNT3CCCGH', {page_title:document.title})
+    gtag('config', 'G-VRNT3CCCGH')
   </script>
 	<body>
   <div id="errorScreen" style="display:none;">
@@ -951,7 +946,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 			if(window.world) msg += " In "+world.name
 			errorData.insertAdjacentHTML('beforeend',"<br><div style='border:1px solid red; padding:8px;'>"+msg.replace(/\n/g,"<br>").replace(/ /g,"&nbsp;")+"</div>")
       errorScreen.style.display = "block"
-			if(window.sendError && errors.length<5) sendError(msg)
+			if(window.sendError) sendError(msg)
     }
     addEventListener("error", logError)
 		addEventListener("unhandledrejection", e => logError(e.reason))
@@ -968,7 +963,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 			lastCheckFrame = window.parent.raf
 			lastCheckTick = window.parent.tickid
 		},2000)*/
-    if(self !== top) logError("You must open MineKhan in a new window to work.")
+    //if(self !== top) logError("You must open MineKhan in a new window to work.")
 		if(window['%is-hammerhead%']){
 			let a=[]
 			a[a.length]=class test{ static svalue=1234 }
@@ -1185,6 +1180,7 @@ Example: /minekhan?nosound
 * H: Hyper builder
 * O: Toggle third person mode
 * U: Toggle sitting
+* F3: Show some info
 
 With keyboard and touchpad:
 * Click-with-two-fingers (or ctrl + click-with-one-finger): place block
@@ -6089,8 +6085,6 @@ if time is 0, it will update every time
       "4LZ2nZpoWkcBbg+dPUe5OtTZdZ6Kmt5RhdsuNKsUqhcxuaQ3NWr65RZ85eq1uu5uXc/zlF+/wRpvoltt6u07Wn1IIxi13r13X1UfPMSPHj95qj97/oLQtXvSXxKisD9+VdIrNiAkl2JZJq8bkGL8e1ZRF0L5FL15S1XFT9E7RMRCyeXAENI+hdC+0vdIpC6QqrJCCAlA4PV+gNT5o1MGnWUyERXDsPhTL5VRD8AOGVHAOEc2+UyUauDH9i8i6ev7+g16cr//+Cn9+m33Y/DnL6LmbBlAxC5EER/NdiS0kdgZcaKB4gdmkTdRZCLSaJImN+AEzEQL/S5CNPvW/46FhdeAlBPMw4gFPnYEgtHP/QMLi7iU40xIawAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMS0xMC0wOVQxOTo1MDowOCswMDowMPuKPhEAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjEtMTAtMDlUMTk6NTA6MDgrMDA6MDCK14atAAAAAElFTkSuQmCC"
       //splitting it because it is too long
     ].join(""),
-    freezeEffect: "assets/images/freeze_effect.png",
-    spyglassScope:"assets/images/spyglass_scope.png",
     skin:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAEc0lEQVR42u1aPWsVQRR9oIIEBBUEEbRKJGijxBAMmKcphMROSZEmCDZBOwvFNEFskkoLrdLGxiaFhU1+Qv7Tmru+s5w9e2fnfSa7zxk4zO7s3X3vnLn3zuzOdDqRcv/OlcywMHst42Ocf371uBadthcQ7t67kfGxCvDhxUIJUyUAE9b622a3Qh6wa1PjAez6fP5fCMCxr6FgJEMhMBUCcI+zNxh5A4hq8rO2r1sr0yGA5gCGkTTCoXpqcgD3PHsEyK7NXS0B7a2JcSY5e/NyZcyHywMsAt+jIaNzCLazulFZHn/QACJ8zOS1xn2hiROSJz/f2hoX495k5+DNWvb701b258u7vP71fjNvezR3PfPux7nmDRYZbY3wAHVf7kkjaoSNOMgDds0jFQoJLzQaN9HB7M7IGQkjauXlk/2CtB1bsXOzsTa7x3sWh4cK1AgBtIdAiIEef/v0QQ72AAZIeUmVPYLPz10A/BGr0fMYw7+/XikmNDa0fVxdzLF6e6ZkgyEPnsDPVAH0/NwFwKyNyasIVhtpEwE1SEMgvhfP45nh3VszJTT2bXH54X7GWFpayjE/P58j+oCTkyI8WFhrs2v6fEX0+UdHWYHDw1KI5r8xbgFAHEL0IwCTZxEmIQDno7G8fI3DAyYtwMzxcUWARnnAREPglLQXAkN7wLPFg8xgP2718+WfBdCGGuDrF3/8KIF7hodR/PGQvaHUzkSJcAG07e6Woff0IwDU70cAvm6wP3tpby9HQahHFG6p7Z59iaS2hchDgO3tf4AAbNevAB5B9Q5PACNyYWcnhx0XP9yrtU3tVQQVq0KIBMmvewLwPZMQgI9BBogRUnuN6dL9dk1dXAHyLAJjUAE0JFQETVpKqNTjIgD3vidAJfZ7SQ5AQuXaA98zlAfosQrC5+rShQCU9FiAuhDwvEffPrnm7K/vLX0Pi7EY7ycHMNSFuVfV1rPXez1SLIQnQGn06XcYHFYAzeq5B6hLyzDH9q4AZO8JoG+jHBIDe4C6tybAurxgACEmB+KeN3h23lAHG8/tQ6/jQwmwvr6eGWIzNNgpdGKjYmiSq0yEhDSTN6jbx0QYWACb3na73RKpjY2NClGzUVs7Do0Q7DkQAsTUhsOHbcwTQwJovGsOGEgAwAgpQRD37Oy4bqrMIwl6NJRTWCxu14wfSoA6/MGmk0oqqaSSSiqptLbYB9AQKl+KerPOkk0qqaSSSiqppJLKWZWRF1dlBUi/ArVOgIGX10UAXl0ey/J3WzwAU92xr/+3ygNOj9kDGhkCof0F3rqit/gaXN8PLYcPuv5/1gJ4JEP7DwzB5e06EQZZ/z9rAfA9P7TEHhPA3R3ChFWQNniACsB20fX9GCLfA6LfE8YhwCj7C0Lr+6EFD10LbIQHhBZOQ7tM2F5XeOr2AnhoZQgw6tb4Y/sCGilAKAmG9hd4rl63H6BxHuCtBnvzgVCYeDFe1/ONE2DU/QUx8rE8cO4CjLq/ILa+H8sHjRBglP0FoSFPk11of8Co//8veys80xX2vS8AAAAASUVORK5CYII=",
     endPortal:"data:image/png;base64,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"+
@@ -6456,9 +6450,7 @@ ROTATION = 0x1800 // Mask for the direction bits
         if(newScene !== "play" || loadJoined) return
 				loadJoined = true
         
-        if(websocket){
-          sendWS({type:"joined", to:multiplayer.target})
-        }else send({type:"joined", to:multiplayer.target})
+        send({type:"joined"})
         if(world.isMK) Messages.add("<span style='color:lime;'>Press t or 💬 to open chat. "+(cheats ? "Type /? for help with commands." : "")+"</span>")
 				/*if(host && !window.multiplayerMessageShown){
 					Messages.add("You should enable multiplayer which is in pause menu because multiplayer is rarely used and should be used more. "+(userInfo?"":"If it requires login, you should do that because it is needed for multiplayer.")+" Using multiplayer is also more fun.")
@@ -6923,14 +6915,11 @@ ROTATION = 0x1800 // Mask for the direction bits
 			}
 		},
 		whitelist_action: args => {
-			let func = websocket ? sendWS : send
-			if(args.whitelist_action === "enable") func({type:"whitelist",data:"enable"})
-			else if(args.whitelist_action === "disable") func({type:"whitelist",data:"disable"})
+			if(win.whitelistAction) win.whitelistAction(args.whitelist_action)
 		},
 		whitelist_username: args => {
-			let func = websocket ? sendWS : send
-			if(args.whitelist_action === "add") func({type:"whitelist",data:"add",who:args.whitelist_username})
-			else if(args.whitelist_action === "remove") func({type:"whitelist",data:"remove",who:args.whitelist_username})
+			if(!host) return Messages.add("Error: can't use whitelist.","error")
+			if(win.whitelistAction) win.whitelistAction(args.whitelist_action, args.whitelist_username)
 		},
 		online: () => {
 			if(websocket) sendWS({type:"fetchUsers"})
@@ -7226,9 +7215,8 @@ Division: //
         updateTitle()
       }
 			//this span will be moved back and forth between the chat screen
-      msg = this.format(msg)
       let span = document.createElement("span")
-			span.innerHTML = msg
+			span.innerHTML = this.format(msg)
 			span.setAttribute("dissapearTime",Date.now()+dissapearTime)
       this.array.push(span)
       this.all.push(span)
@@ -7236,8 +7224,7 @@ Division: //
         messagesAll.appendChild(this.array.shift())
       }
       if(settings.narrator){
-        this.span.innerHTML = msg
-        speak(this.span.innerText)
+        speak(span.innerText)
       }
 			let lockScroll = messagesScroll.scrollTop + messagesScroll.clientHeight + 50 > messagesScroll.scrollHeight
 			if(screen === "chat") messagesAll.appendChild(span)
@@ -7530,162 +7517,36 @@ Division: //
 			}
       messageInput.prevValue = value
     },
-    /*formatGetAttributesInString:function(str){
-      var arr = []
-      var attribute = "", value = ""
-      var inQuotes = false, quoteType = null
-      var isValue = false
-      for(var l of str){
-        if((!inQuotes || l === quoteType) && (l === "'" || l === '"')){
-          inQuotes = !inQuotes
-          quoteType = l
-          if(!inQuotes){
-            if(attribute) arr.push([attribute.toLowerCase(),value])
-            attribute = value = ""
-            isValue = false
-            quoteType = null
-          }
-        }else if(!inQuotes && l === " "){
-          if(attribute) arr.push([attribute.toLowerCase(),value.toLowerCase()])
-          attribute = value = ""
-          isValue = false
-          quoteType = null
-        }else if(!inQuotes && !(isValue && value) && l === "="){
-          isValue = true
-        }else{
-          if(isValue) value += l
-          else attribute += l
-        }
-      }
-      if(attribute) arr.push([attribute.toLowerCase(),value.toLowerCase()])
-      return arr
-    },
-    formatGetElementsInString:function(str){
-      var main = []
-      var element = {elements:main}
-      while(str){
-        var isText = true
-        if(str[0] === "<"){
-          var i = 0
-          var j = str.indexOf(">")
-          if(j === -1){
-            isText = true
-          }else if(str[i+1] === "/"){
-            var tagName = str.substring(i+2,j).toLowerCase()
-            if(tagName === element.tagName){
-              element = element.parent
-              isText = false
-            }
-          }else if(!this.formatUnparsedElements.includes(element.tagName)){
-            var preclose = (str[j-1] === "/") ? 1 : 0
-            var attributeStart = str.indexOf(" ")
-            if(attributeStart > j) attributeStart = -1
-            var tagEnd = attributeStart === -1 ? j-preclose : attributeStart+i
-            attributeStart = attributeStart === -1 ? j-preclose : attributeStart+i+1
-            var tagName = str.substring(i+1,tagEnd).toLowerCase()
-            var parent = element
-            var attributes = this.formatGetAttributesInString(str.substring(attributeStart,j-preclose))
-            element = {tagName,attributes,elements:[],parent}
-            parent.elements.push(element)
-            if(this.formatUnclosedElements.includes(tagName) || preclose){
-              element = parent
-            }
-            isText = false
-          }
-          if(!isText) str = str.substring(j+1,str.length)
-        }
-        if(isText){
-          var i = str.substring(1,str.length).indexOf("<")
-          if(i === -1) i = str.length
-          else i++
-          let str2 = str.substring(0,i)
-          if(!this.formatUnparsedElements.includes(element.tagName)) str2 = str2.replace(/</g,"&lt;").replace(/>/g,"&gt;")
-          element.elements.push(str2)
-          str = str.substring(i,str.length)
-        }
-      }
-      return main
-    },
-    formatSafeElements: ["h1","h2","h3","h4","h5","h6","p","img","video","audio","a","ul","ol","li","pre","code","br","b","i","big","center","small","span","strike","strong","sub","sup","table","tbody","td","tfoot","th","thead","tr","hr","button"],
-    formatSafeAttributes: ["align","alt","width","height","href","src","media","title","style","target","controls","loop"],
-		formatEvalAttributes: ["onclick","onmousemove","onmousedown","onmouseup","onmouseover","onmouseout","onmouseenter","onmouseleave","onmousewheel","onwheel"],
-    formatUnclosedElements: ["img","br","hr"],
-    formatUnparsedElements: ["pre","code"],
-    formatConvertToSafeHtml:function(elements,addTo){
-			for(var e of elements){
-				if(typeof e === "string"){
-					addTo.insertAdjacentHTML("beforeend",e)
-					continue
-				}else if(e instanceof HTMLElement){
-					addTo.appendChild(e)
-					continue
-				}
-				if(!this.formatSafeElements.includes(e.tagName)) e.tagName = "span"
-				let element = document.createElement(e.tagName)
-				addTo.appendChild(element)
-				for(let a of e.attributes){
-					if(this.formatEvalAttributes.includes(a[0])){
-						try{
-							JSON.parse(a[1])
-						}catch{continue}
-						element.setAttribute(a[0],"safeEval("+a[1]+")")
-						continue
-					}
-					if(!this.formatSafeAttributes.includes(a[0])) continue
-					element.setAttribute(a[0],a[1])
-				}
-				if(this.formatUnclosedElements.includes(e.tagName)) continue
-				this.formatConvertToSafeHtml(e.elements,element)
-			}
-			return addTo
-    },*/
-		formatAttrcb(name,value,el){
-			if(HTMLEvalAttributes.has(name)){
-				try{
-					JSON.parse(value)
-				}catch{
-					return
-				}
-				el.setAttribute(name,"safeEval("+value+")")
-				return true
-			}
-		},
-		formatElcb(el){
-			for(let n of el.childNodes){
-				if(n.nodeType === Node.TEXT_NODE){
-					let str = n.textContent.replace(/\n/g,"<br>")
-					if(str.includes("§")){
-		        let arr = str.split("§")
-		        let res = arr[0], spans = 0
-		        for(let i=1; i<arr.length; i++){
-		          let s = arr[i], code = s[0]
-		          let style
-							if(code === "l") style = "font-weight:bold;"
-							if(code === "o") style = "font-style:italic;"
-							else if(code === "r"){
-								style = ""
-							  res += "</span>".repeat(spans)
-								spans = 0
-							}else style = "color:"+colors.css[code]+";"
-		          s = s.substring(1)
-		          res += "<span style='"+style+"'>"+s
-							spans++
-		        }
-		        res += "</span>".repeat(spans)
-		        replaceWithEl.innerHTML = res
-      			n.replaceWith(...replaceWithEl.childNodes)
-		      }
-				}
-			}
-		},
+		
     format(str){
-      //str = this.formatConvertToSafeHtml(this.formatGetElementsInString(str),document.createElement("div")).innerHTML
-			str = makeHTMLSafe(str,this.formatAttrcb,this.formatElcb)
+			str = str.replace(/\n/g,"<br>")
+			if(str.includes("§")){
+				let arr = str.split("§")
+				let res = arr[0], spans = 0
+				for(let i=1; i<arr.length; i++){
+					let s = arr[i], code = s[0]
+					let style
+					if(code === "l") style = "font-weight:bold;"
+					if(code === "o") style = "font-style:italic;"
+					else if(code === "r"){
+						style = ""
+						res += "</span>".repeat(spans)
+						spans = 0
+					}else style = "color:"+colors.css[code]+";"
+					s = s.substring(1)
+					res += "<span style='"+style+"'>"+s
+					spans++
+				}
+				res += "</span>".repeat(spans)
+				str = res
+			}
       if(userInfo ? userInfo.profanityFilter : true) for(var obj of this.remove){ //remove bad words
         str = str.replace(obj.replace, obj.with)//"<span style='color:red; background:black;'>"+obj.with+"</span>")
       } //if you change this change it at canvas text
-      
-      return str
+
+			if(this.span.setHTML) this.span.setHTML(str)
+			else return makeHTMLSafe(str)
+			return this.span.innerHTML
     }
   }
   window.Messages = Messages
@@ -7776,7 +7637,7 @@ Division: //
   }
   win.customMenu = customMenu
   function die(){
-    if(screen === "dead" || screen === "temporary dead" || screen === "loading" || screen === "netherLoading" || screen === "endLoading") return
+    if(screen === "dead" || screen === "temporary dead" ) return
     /*hitSound()
     calculateTotalXP()
     if(p.survival && p.dimension !== "end"){
@@ -11568,10 +11429,10 @@ return//*/
 	}
   
   const ambientDist = 16
-  let blockTempCount = 0, avgBlockTemp = 0
+  //let blockTempCount = 0, avgBlockTemp = 0
   function updateAmbient(){ //todo: some sounds have different distances you can hear it from
-    blockTempCount = 0
-    avgBlockTemp = 0
+    //blockTempCount = 0
+    //avgBlockTemp = 0
 		for(let i in currentAmbientPanner) currentAmbientPanner[i].isCloseEnough = false
 
 		if(!performFast){
@@ -11607,9 +11468,10 @@ return//*/
 					}
 					if(block && (blockObj.temperature || blockObj.temperature === 0) && dist < 5){
 						let amount = 1-dist/5
-						avgBlockTemp += (blockObj.temperature-p.temperature)*amount
+						p.temperature += (blockObj.temperature-p.temperature) * amount*0.125
+						/*avgBlockTemp += (blockObj.temperature-p.temperature)*amount
 						//avgBlockTempDist += dist/5
-						blockTempCount += amount
+						blockTempCount += amount*/
 					}
 				}
 			}
@@ -11630,7 +11492,7 @@ return//*/
         playSound(blockObj.ambientSound, 0, 1, null, v, null, true, (source, gainNode, volume) => {currentAmbient[i] = gainNode; currentAmbient[i].source = source; currentAmbient[i].originalVolume = volume/settings.volume})
       }
     }
-    avgBlockTemp /= (blockTempCount||1)
+    //avgBlockTemp /= (blockTempCount||1)
   }
   
   let updtPlayer = function(){
@@ -12110,22 +11972,25 @@ return//*/
 			temp -= (1 - lightLevel) * 4
 			
 			//if(blockTempCount) temp = lerp(avgBlockTempDist, avgBlockTemp, temp)
-			temp += avgBlockTemp
+			//temp += avgBlockTemp
+			
+			p.temperature += (temp-p.temperature)*0.125
 			
 			if(p.burning){
-				temp = lerp(0.75/*p.burnTimer / 16*/, temp, 25)
+				p.temperature += (25-p.temperature)*0.75
 			}
 			if(freezeEffect > 0){
-				temp = lerp(freezeEffect / 140, temp, 0)
+				p.temperature += (0-p.temperature)*(freezeEffect / 140)
 			}else if(wet){
-				temp -= 2
+				p.temperature += ((temp-2)-p.temperature)*0.25
 			}
-			
-			p.temperature = temp
-			if(p.lastTemperature !== round(p.temperature) || p.temperature>19 || p.temperature<1){
-				p.lastTemperature = round(p.temperature)
-				updateHUD = true
-			}
+		}
+
+    updateAmbient()
+		
+		if(p.lastTemperature !== round(p.temperature) || p.temperature>19 || p.temperature<1){
+			p.lastTemperature = round(p.temperature)
+			updateHUD = true
 		}
     
     var b = world.getBiome(p2.x,p2.y,p2.z, p.dimension)
@@ -12146,7 +12011,6 @@ return//*/
     }
 		prevInLiquid = inLiquid
     if(p.health < 5) updateHUD = true //for hearts shaking
-    updateAmbient()
 
 		if(!cheats && blockMode) blockMode = CUBE
 
@@ -18211,8 +18075,7 @@ r 11 y  n  n  n
         this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
 				this.parts.head.ry = 0
       }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
+        let x = this.path[0], y = this.path[1], z = this.path[2]
         let yaw = angleOf(x,z,this.x,this.z)
         this.parts.head.ry = -(this.yaw - yaw)
         if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
@@ -18278,8 +18141,7 @@ r 11 y  n  n  n
         this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
 				this.parts.head.ry = 0
       }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
+        let x = this.path[0], y = this.path[1], z = this.path[2]
         let yaw = angleOf(x,z,this.x,this.z)
         this.parts.head.ry = -(this.yaw - yaw)
         if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
@@ -18347,8 +18209,7 @@ r 11 y  n  n  n
         this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
 				this.parts.head.ry = 0
       }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
+        let x = this.path[0], y = this.path[1], z = this.path[2]
         let yaw = angleOf(x,z,this.x,this.z)
         this.parts.head.ry = -(this.yaw - yaw)
         if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
@@ -18437,8 +18298,7 @@ r 11 y  n  n  n
         this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
 				this.parts.head.ry = 0
       }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
+        let x = this.path[0], y = this.path[1], z = this.path[2]
         let yaw = angleOf(x,z,this.x,this.z)
         this.parts.head.ry = -(this.yaw - yaw)
         if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
@@ -18540,8 +18400,7 @@ r 11 y  n  n  n
         this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
 				this.parts.head.ry = 0
       }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
+        let x = this.path[0], y = this.path[1], z = this.path[2]
         let yaw = angleOf(x,z,this.x,this.z)
         this.parts.head.ry = -(this.yaw - yaw)
         if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
@@ -18622,8 +18481,7 @@ r 11 y  n  n  n
         this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
 				this.parts.head.ry = 0
       }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
+        let x = this.path[0], y = this.path[1], z = this.path[2]
         let yaw = angleOf(x,z,this.x,this.z)
         this.parts.head.ry = -(this.yaw - yaw)
         if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
@@ -18753,8 +18611,7 @@ r 11 y  n  n  n
         this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
 				this.parts.head.ry = 0
       }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
+        let x = this.path[0], y = this.path[1], z = this.path[2]
         let yaw = angleOf(x,z,this.x,this.z)
         this.parts.head.ry = -(this.yaw - yaw)
         if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
@@ -18839,8 +18696,7 @@ r 11 y  n  n  n
         this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
 				this.parts.head.ry = 0
       }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
+        let x = this.path[0], y = this.path[1], z = this.path[2]
         let yaw = angleOf(x,z,this.x,this.z)
         this.parts.head.ry = -(this.yaw - yaw)
         if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
@@ -18969,8 +18825,7 @@ r 11 y  n  n  n
         this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
 				this.parts.head.ry = 0
       }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
+        let x = this.path[0], y = this.path[1], z = this.path[2]
         let yaw = angleOf(x,z,this.x,this.z)
         this.parts.head.ry = -(this.yaw - yaw)
         if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
@@ -19063,8 +18918,7 @@ r 11 y  n  n  n
         this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
 				this.parts.head.ry = 0
       }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
+        let x = this.path[0], y = this.path[1], z = this.path[2]
         let yaw = angleOf(x,z,this.x,this.z)
         this.parts.head.ry = -(this.yaw - yaw)
         if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
@@ -19138,8 +18992,7 @@ r 11 y  n  n  n
         this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
 				this.parts.head.ry = 0
       }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
+        let x = this.path[0], y = this.path[1], z = this.path[2]
         let yaw = angleOf(x,z,this.x,this.z)
         this.parts.head.ry = -(this.yaw - yaw)
         if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
@@ -19231,8 +19084,7 @@ r 11 y  n  n  n
         this.parts.head.rx = Math.PId - atan2(y - (this.y+this.parts.head.y), adjacent)
 				this.parts.head.ry = 0
       }else if(this.path){
-        let i = this.path.length - 3
-        let x = this.path[i], y = this.path[i+1], z = this.path[i+2]
+        let x = this.path[0], y = this.path[1], z = this.path[2]
         let yaw = angleOf(x,z,this.x,this.z)
         this.parts.head.ry = -(this.yaw - yaw)
         if(this.parts.head.ry - this.parts.head.pry > Math.PI) this.parts.head.pry += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
@@ -20975,6 +20827,13 @@ r 11 y  n  n  n
 		let dy2 = p.z - c2.z - 8
 		return dx1 * dx1 + dy1 * dy1 - (dx2 * dx2 + dy2 * dy2)
 	}
+	function sortChunksSquare(c1, c2) { //Sort the list of chunks based on distance from the player
+		let dx1 = p.x - c1.x - 8
+		let dy1 = p.z - c1.z - 8
+		let dx2 = p.x - c2.x - 8
+		let dy2 = p.z - c2.z - 8
+		return max(abs(dx1),abs(dy1)) - max(abs(dx2),abs(dy2))
+	}
 	function fillReqs(x, z, dimension) {
 		// Chunks must all be loaded first.
 		if(dimension !== p.dimension) return
@@ -20990,6 +20849,21 @@ r 11 y  n  n  n
 				if (world.isMK && !chunk.lit && i >= x - 1 && i <= x + 1 && j >= z - 1 && j <= z + 1) {
 					if(!world.lightingQueue.includes(chunk)) world.lightingQueue.push(chunk)
 					done = false
+				}
+			}
+		}
+		return done
+	}
+	function fillReqsLighting(x, z, dimension) {
+		// Chunks must all be loaded first.
+		if(dimension !== p.dimension) return
+		let done = true
+		for (let i = x - 1; i <= x + 1; i++) {
+			for (let j = z - 1; j <= z + 1; j++) {
+				let chunk = world.getChunk(i*16,j*16,dimension)//world.loaded[(i + world.offsetX) * world.lwidth + j + world.offsetZ]
+				if (!chunk || !chunk.loaded){
+					done = false
+					continue
 				}
 			}
 		}
@@ -21240,7 +21114,7 @@ r 11 y  n  n  n
 				if(data.users){
 					for(let i of data.users){
 						if(i.hub === "minekhan" && i.username !== "getWorlds"){
-							let w = i.world = {id: i.username, name:"Pinging...", version:"", host:"", players:[]}
+							let w = i.world = {id: i.username, name:"", version:"", host:"", players:[], ping:null}
 							users[i.username] = i
 							worlds.push(w)
 							if(addWorldCallback) addWorldCallback(w)
@@ -21250,7 +21124,10 @@ r 11 y  n  n  n
 				}else if(data.type === "pong" && users[data.FROM]){
 					let w = users[data.FROM].world
 					Object.assign(w, data.data)
+					w.ping = true
 					if(addWorldCallback) addWorldCallback(w)
+				}else if(data.auth === "FAILED"){
+					alert("connection failed: "+data.REASON)
 				}
 			}
 			setTimeout(() => getWorldsWs.close(), 10000)
@@ -21339,7 +21216,13 @@ r 11 y  n  n  n
 	}
 	const {unorderedPackets} = win
 
-	let iceServers = [{'urls': 'stun:stun.l.google.com:19302'}, {urls: 'turn:turn.anyfirewall.com:443?transport=tcp', credential: 'webrtc', username: 'webrtc'}, {urls: 'turn:numb.viagenie.ca', credential: 'muazkh', username: 'webrtc@live.com'}, {urls: 'turn:turn.bistri.com:80', credential: 'homeo', username: 'homeo'}]
+	let iceServers = [
+		{'urls': 'stun:stun.l.google.com:19302'},
+		{urls: "turn:turn.jami.net?transport=tcp",username: "ring",credential: "ring"},
+		{urls:"turn:stun.ppzhilian.com?transport=tcp",username:"bshu",credential:"bshu1211"},
+		{urls:"turn:turn.wildfirechat.net:3478?transport=tcp",username:"wfchat",credential:"wfchatpwd"},
+		{urls: ["turn:stun.evan-brass.net?transport=tcp","turns:stun.evan-brass.net:443?transport=tcp"],username: "guest",credential: "password"},
+	]
 	loadFromDB("iceServers").then(res => {
 		if(res && res.data){
 			let s = new Set(iceServers.map(r => r.urls))
@@ -21350,6 +21233,8 @@ r 11 y  n  n  n
 	})
 	class RTCClientContainer{
 		constructor(channel,connection,unorderChannel){
+			this.onclose = emptyFunc
+			this.onmessage = emptyFunc
 			this.channel = channel
 			this.connection = connection
 			this.unorderChannel = unorderChannel
@@ -21386,6 +21271,8 @@ r 11 y  n  n  n
 	}
 	class MessagePortContainer{
 		constructor(port){
+			this.onclose = emptyFunc
+			this.onmessage = emptyFunc
 			this.port = port
 			port.onmessage = e => this.onmessage(e.data)
 			port.onclose = e => {
@@ -21443,7 +21330,7 @@ r 11 y  n  n  n
 		close(){}
 	}
 
-	document.body.insertAdjacentHTML("beforeend","<script src='fea"+"tures.js'><"+"/script>")
+	import("."+"/"+"fea"+"ture"+"s.j"+"s")
   let host = false
 	{
 		function initSingleplayer(){
@@ -21531,10 +21418,12 @@ r 11 y  n  n  n
 						}else if(data.type === "error" && !data.FROM){
 							multiplayerError = data
 							console.warn("Multiplayer error!",data.data)
+						}else if(data.auth === "FAILED"){
+							alert("connection failed: "+data.REASON)
 						}
 					}
 					websocket.onclose = () => {
-						if(connection) connection.close()
+						if(connection) {} //connection.close()
 						else{
 							peerConnection.close()
 							cAnCeLcOnNectION = true
@@ -21620,6 +21509,7 @@ r 11 y  n  n  n
 					}
 					connection = new RTCClientContainer(channel,peerConnection,unorderChannel)
 					connection.target = target
+					websocket.close()
 					resolve()
 				})()
 				/*function switchToWs(){
@@ -21635,7 +21525,10 @@ r 11 y  n  n  n
 		function disableMultiplayer(){
 			for(let p of serverWorld.players.slice()){
 				//if(c instanceof RTCClientContainer){
-				if(!p.host) p.connection.close()
+				if(!p.host){
+					p.connection.send({type:"error",data:"Server closed. (disabled mulitplayer)"})
+					p.connection.close()
+				}
 			}
 			websocket.doNtREcOnnecT = true
 			websocket.close()
@@ -21674,14 +21567,14 @@ r 11 y  n  n  n
 				}*/
 				let data = JSON.parse(e.data)
 				if(data.type === "offer"){
-					if(!data.id) return
+					if(!data.id || data.username.length > 25) return
 					serverWorld.sendAll({type:"message",data:"<span style='color:lightgreen;'>"+data.username+" is connecting. "+(serverWorld.players.length+1)+" players now.", fromServer:true})
 					let peerConnection = new RTCPeerConnection({iceServers})
 					peerConnections[data.id] = peerConnection
 
 					peerConnection.addEventListener('icecandidate', event => {
 						if (event.candidate) {
-							sendWS({type:"iceCandidate", data: event.candidate, to:data.FROM})
+							sendWS({type:"iceCandidate", data: event.candidate, toS:data.sID})
 						}
 					})
 
@@ -21723,15 +21616,21 @@ r 11 y  n  n  n
 					peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
 					const answer = await peerConnection.createAnswer();
 					await peerConnection.setLocalDescription(answer);
-					sendWS({type:"answer", answer, to:data.FROM})
+					sendWS({type:"answer", answer, toS:data.sID})
 
 					await Promise.all([waitForDataChannelPromise,waitForUnorderDataChannelPromise])
 
 					if(cAnCeLcOnNectION) return
-					let onclose = p => {
-						serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+p.username+" left. "+serverWorld.players.length+" players now.", fromServer:true})
+					let c = new RTCClientContainer(channel,peerConnection,unorderChannel)
+					if(whitelist && !whitelist.includes(data.username)){
+						c.send({type:"error",data:"oops, You are not in the whitelist for this server."})
+						c.close()
+						serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+p.username+" is not in the whitelist.", fromServer:true})
+						return
 					}
-					serverWorld.serverAddPlayer(new RTCClientContainer(channel,peerConnection,unorderChannel),data.id,data.username,false,data.admin,onclose)
+					let onclose = p => serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+p.username+" left. "+serverWorld.players.length+" players now.", fromServer:true})
+					let onjoined = p => serverWorld.sendAll({type:"message",data:"<span style='color:lightgreen;'>"+p.username+" joined.", fromServer:true})
+					serverWorld.serverAddPlayer(c,data.id,data.username,false,data.admin,onclose,onjoined)
 				}else if(data.type === "iceCandidate"){
 					let from = peerConnections[data.FROM]
 					if(!from) return
@@ -21746,9 +21645,9 @@ r 11 y  n  n  n
 					serverWorld.serverAddPlayer(wsConnections[data.id],data.id,data.username,false,data.admin)
 				}else if(data.type === "nextWsConnection"){
 					nextWsConnection = data.data
-				}*/else if(data.type === "joined"){
+				}else if(data.type === "joined"){
 					serverWorld.sendAll({type:"message",data:"<span style='color:lightgreen;'>"+serverWorld.players.find(r => r.id === data.FROM).username+" joined.", fromServer:true})
-				}/*else if(data.type === "dc"){
+				}else if(data.type === "dc"){
 					serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+data.data+" left. "+serverWorld.players.length+" players now.", fromServer:true})
 					if(peerConnections[data.id]){
 						peerConnections[data.id].close()//Make sure its closed to prevent hacks
@@ -21776,10 +21675,11 @@ r 11 y  n  n  n
 					sendWS({
 						type:"pong",
 						id:data.id,
-						to:data.FROM,
+						toS:data.sID,
 						data:{
-							name: world.name, version,
-							host:p.username, players: serverWorld.players.map(r => r.username)
+							name: world.name, version:version+" - "+location.href,
+							host:p.username, players: serverWorld.players.map(r => r.username),
+							whitelist, banned
 						}
 					})
 				}else if(data.type === "message" && !data.FROM){
@@ -21803,6 +21703,8 @@ r 11 y  n  n  n
 						res = e
 					}
 					//send({type:"evalRes",data:res,error:error})
+				}else if(data.auth === "FAILED"){
+					alert("connection failed: "+data.REASON)
 				}
 			}
 			websocket.onclose = () => {
@@ -21810,7 +21712,7 @@ r 11 y  n  n  n
 					websocket = null
 					//websocketError = {data:"Disconnected from server, you may re-enable multiplayer."}
 					//alert("Multiplayer connection lost!\n"+websocketError.data)
-					if(inWorld) setTimeout(() => enableMultiplayer(), 1000)
+					if(inWorld) setTimeout(() => enableMultiplayer(), 5000)
 				}else websocket = null
 			}
 		}
@@ -22105,6 +22007,7 @@ r 11 y  n  n  n
 					if(data.data&256){
 						let info
 						if(blockInfo[blockInfoIds[data.data>>9]]) info = blockInfo[blockInfoIds[data.data>>9]].data
+						discoverTime = 200, discoverBlock = data.data>>9
    					sideMessage("Discovery Made: "+blockData[data.data>>9].Name, info)
 					}else{
 						let a = achievementTypes[data.data]
@@ -22151,7 +22054,7 @@ r 11 y  n  n  n
 					p.gameMode = data.gameMode
 					if(p.spectator){
 						p.flying = true
-						p.spectating = data.spectating || null
+						p.spectating = data.spectating && getEntityOrPlayer(data.spectating) || null
 						p.spectateRemoteControl = data.spectateRemoteControl || false
 						p.riding = null
 					}
@@ -22276,6 +22179,7 @@ r 11 y  n  n  n
 				/*if(e && e.code && e.code !== 1000 && e.code !== 1001){
 					console.warn("WebSocket closed with code: "+e.code,e.reason)
 				}*/
+				setTimeout(() => clearBottomRightList("connecting"), 1000)
 			}
 		}
 		win.initMultiplayer = initMultiplayer
@@ -22312,6 +22216,32 @@ r 11 y  n  n  n
 				type:"unban",
 				data: username
 			})
+		}
+		win.whitelistAction = (action,username) => {
+			if(action === "enable") {
+				whitelist = []
+				for(let p of serverWorld.players.slice()){
+					if(!p.host) {
+						p.connection.send({type:"error",data:"Whitelist was enabled."})
+						p.connection.close()
+					}
+				}
+				serverWorld.sendAll({type:"message",data:"Whitelist enabled.", fromServer:true})
+			}else if(action === "disable") {
+				whitelist = null
+				serverWorld.sendAll({type:"message",data:"Whitelist disabled.", fromServer:true})
+			}else if(action === "add") {
+				if(!whitelist.includes(username)){
+					whitelist.push(username)
+					serverWorld.sendAll({type:"message",data: username+" was added to the whitelist.", fromServer:true})
+				}
+			}else if(action === "remove") {
+				let idx = whitelist.indexOf(username)
+				if(idx !== -1) {
+					whitelist.splice(idx,1)
+					serverWorld.sendAll({type:"message",data: username+" was removed from the whitelist.", fromServer:true})
+				}
+			}
 		}
   }
 	let fasterVel = 1
@@ -23075,7 +23005,7 @@ r 11 y  n  n  n
 				this.lastChunk = chunk
 				this.lastDimension = p.dimension
 				this.loadChunks()
-				this.chunkGenQueue.sort(sortChunks)
+				this.chunkGenQueue.sort(sortChunksSquare)
 			}
       
 			sleepCount = 0, sleepTotal = 0
@@ -23174,7 +23104,9 @@ r 11 y  n  n  n
 				if (!doneWork && this.lightingQueue.length) {
 					for(let i=0; i<this.lightingQueue.length && !doneWork; i++){
 						let chunk = this.lightingQueue[i]
-						chunk.fillLight()
+						if(fillReqsLighting(chunk.x >> 4, chunk.z >> 4, chunk.type)){
+							chunk.fillLight()
+						}
 						if(chunk.lit){
 							this.lightingQueue.splice(i,1)
 							i--
@@ -23456,7 +23388,7 @@ r 11 y  n  n  n
 			for(let i in players){
 				let player = players[i]
 				if(player.dimension === p.dimension){
-					if(player.crack > -1 && player.survival){
+					if(player.crack > -1){
 						let pos = player.crackPos
 						crack.entity.x = pos[0]
 						crack.entity.y = pos[1]
@@ -23652,7 +23584,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			}
 			this.sortedChunks.sort(sortChunks)
 
-			this.neededChunks.sort(sortChunks)
+			this.neededChunks.sort(sortChunksSquare)
 			this.neededChunkCoords.length = 0
 			for(let i=0; i<this.neededChunks.length; i++){
 				const {x, z} = this.neededChunks[i]
@@ -24347,13 +24279,13 @@ p.camera.transformation.elements.set(matrix)//*/
     }, () => preVersion && !(userInfo&&userInfo.admin))
     Button.add(width / 2, height / 2 + 70*ss, 400*ss, 40*ss, "Marketplace", "main menu", r => {marketplaceCategory = null; marketplaceSearch.value = ""; changeScene("marketplace")})
 		Button.add(width / 2 - 105*ss, height / 2 + 160*ss, 190*ss, 40*ss, "Options", "main menu", r => changeScene("options"))
-    Button.add(width / 2 + 105*ss, height / 2 + 160*ss, 190*ss, 40*ss, "Quit", "main menu", r => {
+    Button.add(width / 2 + 105*ss, height / 2 + 160*ss, 190*ss, 40*ss, ["Quit","Download/unblock"], "main menu", r => {
       if(window.opener !== null || window.history.length === 1){
         close()
       }else{
-        location.href = "/"
+        location.href = "offdown.html"
       }
-    })
+    }, null,null, () => (window.opener !== null || window.history.length === 1)?0:1)
     Button.add(width / 2 - 235*ss, height / 2 + 160*ss, 40*ss, 40*ss, "?", "main menu", r => changeScene("options help"), null, "Help")
     Button.add(width / 2 + 235*ss, height / 2 + 160*ss, 40*ss, 40*ss, "🌐", "main menu", r => changeScene("options languages"), null, "Languages")
     
@@ -24507,12 +24439,12 @@ p.camera.transformation.elements.set(matrix)//*/
     Button.add(mid - 3 * x4, height - 40*ss, w4, 40*ss, "Reload", "multiplayer menu", initServersMenu)
     Button.add(mid + 1 * x4, height - 40*ss, w4, 40*ss, "Edit ICE servers", "multiplayer menu", () => {
 			try{
-				iceServers = JSON.parse(prompt("ICE servers", JSON.stringify(iceServers)))
+				iceServers = JSON.parse(prompt("ICE servers\nFind free TURN servers: https://github.com/search?q=%22urls%3A+%5C%22turn%3A%22&type=code", JSON.stringify(iceServers)))
 			}catch(e){
 				alert(e); return
 			}
 			saveToDB("iceServers",iceServers)
-		}, null, "ICE means Interactive Connectivity Establishment. If you can't join, try adding a TURN server.")
+		}, null, "ICE means Interactive Connectivity Establishment. <br>If you can't join, try adding a TURN server.")
 		Button.add(mid + 3 * x4, height - 40*ss, w4, 40*ss, "Back", "multiplayer menu", r => changeScene("main menu"))
 		
     //multiplayer connecting buttons
@@ -24624,10 +24556,13 @@ p.camera.transformation.elements.set(matrix)//*/
 				await loggedIn()
 				enableMultiplayer()
 			}
-		}, () => !host || preVersion && !(userInfo&&userInfo.admin), () => "Enabling multiplayer enables others to join. Use whitelist command to allow only some people to join. /whitelist enable /whitelist add username1234", () => websocket ? 1 : 0)
+		}, () => !host || preVersion && !(userInfo&&userInfo.admin), () => win.emt||"Allows other people to join. <br><br><small>also, please be nice to everyone, even people who don't like to talk or interact.</small> <br><br><span style='color:lightblue'>Use whitelist for private servers. Type these in chat to use whitelist:<br><small>/whitelist enable<br>/whitelist add \"username1234\"</small></span> ⬅ <small>put other people's username here</small> ", () => websocket ? 1 : 0)
     Button.add(width/2-110*ss, height / 2 + 75*ss, 200*ss, 40*ss, "Invite", "pause", r => {
       savebox.classList.remove("hidden")
-			savebox.value = "https://thingmaker.us.eu.org/minekhan/?target="+world.id
+			let url = new URL(location.href)
+			url.searchParams.clear()
+			url.searchParams.set("target",world.id)
+			savebox.value = url.href
 		}, () => !websocket, () => "Invite someone to this world if it is multiplayer.")
     //Button.add(width/2+110*ss, height / 2 + -125*ss, 200*ss, 40*ss, "Packet Viewer", "pause", r => changeScene("packetViewer raw"), null, "View data from multiplayer packets.")
     Button.add(width/2+110*ss, height / 2 + -125*ss, 200*ss, 40*ss, "Achievments", "pause", r => changeScene("achievments"), () => cheats)
@@ -26250,7 +26185,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		let tex = textureCoords[textureMap[name]]
 		ctx.drawImage(textureImageCanvas, round(tex[0]*textureSize),round(tex[1]*textureH), round((tex[2]-tex[0])*textureSize),round((tex[5]-tex[1])*textureH), x,y,w,h)
 	}
-	let debugLines = [], showDebug = -1
+	let debugLines = [], showDebug = 0
 	function hud() {
 		gl.clearColor(0, 0, 0, 0)
 		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
@@ -26282,7 +26217,7 @@ p.camera.transformation.elements.set(matrix)//*/
       ctx.fillStyle = "black"
       ctx.fillRect(0,0,width,height)
       ctx.clearRect(w2 - size2, h2 - size2, size, size)
-      drawImage("spyglassScope", w2 - size2, h2 - size2, size, size)
+      //drawImage("spyglassScope", w2 - size2, h2 - size2, size, size)
     }
 
 		// Crosshair
@@ -26472,12 +26407,12 @@ p.camera.transformation.elements.set(matrix)//*/
       }
     }
     
-    if(freezeEffect > 0){
+    /*if(freezeEffect > 0){
       let opacity = freezeEffect / 140
       ctx.globalAlpha = opacity
       drawImage("freezeEffect",0,0,width,height)
       ctx.globalAlpha = 1
-    }
+    }*/
     
     if(inventory.showName > 0){
       ctx.globalAlpha = inventory.showName > 1 ? 1 : inventory.showName
@@ -26502,7 +26437,6 @@ p.camera.transformation.elements.set(matrix)//*/
     ctx.font = 16*ss+"px thefont"
 
 		debugLines.length = 0
-		if(showDebug === -1) debugLines.push("Press F3 to show debug")
 
 		if (p.autoBreak) {
 			debugLines.push("Super breaker enabled")
@@ -26510,6 +26444,7 @@ p.camera.transformation.elements.set(matrix)//*/
     if (p.autoBuild) {
 			debugLines.push("Hyper builder enabled")
 		}
+		if(showDebug){
 		{
 			let closest = Infinity
 			let cname = "No one"
@@ -26560,8 +26495,8 @@ p.camera.transformation.elements.set(matrix)//*/
 				updateHUD = true
 			}
 		}
-
-		if(showDebug === 1){
+		}
+		if(showDebug === 2){
 			debugLines.push(
 				"Average Frame Time: " + analytics.displayedFrameTime + "ms",
 				"Worst Frame Time: " + analytics.displayedwFrameTime + "ms",
@@ -26571,7 +26506,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				"Rendered Entities: " + renderedEntities.toLocaleString() + " / " + totalEntites.toLocaleString(),
 				"Generated Chunks: " + (host ? serverWorld.generatedChunks : "unknown")
 			)
-		}else if(showDebug === 2){
+		}else if(showDebug === 3){
 			debugLines.push(
 				"Dimension: "+p.dimension,
 				"Biome: "+world.getBiome(p2.x,p2.y,p2.z,p.dimension),
@@ -26580,7 +26515,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				"Sky light source: "+world.getLight(p2.x,p2.y,p2.z,2,p.dimension)
 			)
 		}
-		debugLines.push("TPS: " + analytics.tps, "FPS: " + analytics.fps)
+		if(showDebug) debugLines.push("TPS: " + analytics.tps, "FPS: " + analytics.fps)
 		ctx.textAlign = 'left'
 		text(debugLines.join("\n"), 5, height - 5, 16*ss, 3)
 		ctx.textAlign = 'right'
@@ -27787,8 +27722,6 @@ p.camera.transformation.elements.set(matrix)//*/
 					if(item) item.animation = 1.5
 					updateHUD = true
 					p.punchEffect = 10
-				}else{
-					send({type:"dropItem"})
 				}
 			}
 
@@ -27809,8 +27742,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				}
 			}
 			if (k === "f3") {
-				if(showDebug === -1) showDebug = 1
-				else showDebug = (showDebug + 1) % 3
+				showDebug = (showDebug + 1) % 4
 				updateHUD = true
 			}
 			if(k === "f4"){
@@ -29116,17 +29048,18 @@ p.camera.transformation.elements.set(matrix)//*/
         else if(server.ping > 200) y = -14
         else y = 0
         div.innerHTML += "<div class='ping'>"+server.ping+" ms <div class='img' style='background-position:0 "+y+"px;'></div></div>"
-      }else if(server.ping === "timeout"){
+      }else if(server.ping === true){
+			}else if(server.ping === "timeout"){
         div.innerHTML += "<div class='ping'>Ping timed out <div class='img' style='background-position:0 -70px;'></div></div>"
       }else{
         div.innerHTML += "<div class='ping'>Pinging...</div>"
       }
-			if(thumbnail) div.innerHTML += "<img class='thumbnail' src='" + thumbnail + "'></div>"
+			if(thumbnail) div.innerHTML += "<img class='thumbnail' src='" + sanitize(thumbnail) + "'></div>"
 			div.innerHTML += "<strong>" + Messages.format(name)+ "</strong>" + br
       if(external) div.innerHTML += Messages.format(server.description) + br
-      else div.innerHTML += "Hosted by "+host + br
+      else div.innerHTML += "Hosted by "+sanitize(host) + br
       if(players) div.innerHTML += players.length+" player"+(players.length===1 ? "" : "s")+" online"+br
-			div.innerHTML += version + br
+			div.innerHTML += sanitize(version) + br
 			if (whitelist) div.innerHTML += "Whitelisted" + br
 			
       servers[id] = server
@@ -29461,14 +29394,13 @@ p.camera.transformation.elements.set(matrix)//*/
 				saveToDB(id, file)
 			}else{
 				let tempWorld = new ServerWorld()
-				tempWorld.loadSave(loadString,true)
+				tempWorld.loadSave(save.code,true)
 				saveToDB(id, {
 					id: id,
 					edited: Date.now(),
 					name: save.name,
 					version: tempWorld.version,
 					code: save.code,
-					mod: (save.file && save.file.mod) || null
 				})
 			}
 			initWorldsMenu()
@@ -29752,12 +29684,6 @@ p.camera.transformation.elements.set(matrix)//*/
     }
     loadSounds(sounds)
     loadMusicObj(music)
-    
-    {
-//! ZzFXM (v2.0.3) | (C) Keith Clark | MIT | https://github.com/keithclark/ZzFXM
-//win.zzfx=((...z)=>zzfxP(zzfxG(...z))),win.zzfxP=((...z)=>{let t=zzfxX.createBufferSource(),f=zzfxX.createBuffer(z.length,z[0].length,zzfxR);return z.map((z,t)=>f.getChannelData(t).set(z)),t.buffer=f,t.connect(zzfxX.destination),t.start(),t}),win.zzfxG=((z=1,t=.05,f=220,a=0,x=0,e=.1,n=0,h=1,M=0,r=0,R=0,i=0,o=0,s=0,u=0,c=0,d=0,l=1,b=0,m=0)=>{let P,X,g=2*Math.PI,C=M*=500*g/zzfxR**2,p=(0<u?1:-1)*g/4,w=f*=(1+2*t*Math.random()-t)*g/zzfxR,A=[],B=0,G=0,I=0,V=1,k=0,D=0,S=0;for(a=99+zzfxR*a,b*=zzfxR,x*=zzfxR,e*=zzfxR,d*=zzfxR,r*=500*g/zzfxR**3,u*=g/zzfxR,R*=g/zzfxR,i*=zzfxR,o=zzfxR*o|0,X=a+b+x+e+d|0;I<X;A[I++]=S)++D%(100*c|0)||(S=n?1<n?2<n?3<n?Math.sin((B%g)**3):Math.max(Math.min(Math.tan(B),1),-1):1-(2*B/g%2+2)%2:1-4*Math.abs(Math.round(B/g)-B/g):Math.sin(B),S=(o?1-m+m*Math.sin(2*Math.PI*I/o):1)*(0<S?1:-1)*Math.abs(S)**h*z*zzfxV*(I<a?I/a:I<a+b?1-(I-a)/b*(1-l):I<a+b+x?l:I<X-d?(X-I-d)/e*l:0),S=d?S/2+(d>I?0:(I<X-d?1:(X-I)/d)*A[I-d|0]/2):S),B+=(P=(f+=M+=r)*Math.sin(G*u-p))-P*s*(1-1e9*(Math.sin(I)+1)%2),G+=P-P*s*(1-1e9*(Math.sin(I)**2+1)%2),V&&++V>i&&(f+=R,w+=R,V=0),!o||++k%o||(f=w,M=C,V=V||1);return A}),win.zzfxV=.3,win.zzfxR=44100,win.zzfxX=audioCtx;
-//win.zzfxM=(n,f,t,e=125)=>{let l,o,z,r,g,h,x,a,u,c,d,i,m,p,G,M=0,R=[],b=[],j=[],k=0,q=0,s=1,v={},w=zzfxR/e*60>>2;for(;s;k++)R=[s=a=d=m=0],t.map((e,d)=>{for(x=f[e][k]||[0,0,0],s|=!!f[e][k],G=m+(f[e][0].length-2-!a)*w,p=d==t.length-1,o=2,r=m;o<x.length+p;a=++o){for(g=x[o],u=o==x.length+p-1&&p||c!=(x[0]||0)|g|0,z=0;z<w&&a;z++>w-99&&u?i+=(i<1)/99:0)h=(1-i)*R[M++]/2||0,b[r]=(b[r]||0)-h*q+h,j[r]=(j[r++]||0)+h*q+h;g&&(i=g%1,q=x[1]||0,(g|=0)&&(R=v[[c=x[M=0]||0,g]]=v[[c,g]]||(l=[...n[c]],l[2]*=2**((g-12)/12),g>0?zzfxG(...l):[])))}m=G});return[b,j]}
-    }
   }
 	let tempSoundSources = []
   function playSound(name, start, volume, pitch, panner, onend, loop, getSourceFunc){ //some code from https://www.html5rocks.com/en/tutorials/webaudio/intro/
@@ -30302,9 +30228,9 @@ p.camera.transformation.elements.set(matrix)//*/
 			}
 			let br = "<br>"
 			div.innerHTML = ""
-			if(pack.thumbnail) div.innerHTML += "<img class='thumbnail' src='" + pack.thumbnail + "'>"
+			if(pack.thumbnail) div.innerHTML += "<img class='thumbnail' src='" + sanitize(pack.thumbnail) + "'>"
 			div.innerHTML += "<strong>" + Messages.format(pack.name) + "</strong>" + br +
-			"Version "+Messages.format(pack.version)+br
+			"Version "+sanitize(pack.version)+br
 			if(!defaultResourcePacks.includes(pack.url) && host) addButton(div,"Uninstall",e => {
 				uninstallResourcePack(pack.url).then(() => div.remove())
 			})
@@ -30923,7 +30849,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			}
 			updatePerformFast()
 		}
-		if(savedUpdates){
+		/*if(savedUpdates){
 			fetch("updatesAfter/"+savedUpdates).then(r => r.text()).then(async r => {
 				if(r){
 					window.updates.classList.remove('hidden')
@@ -30935,7 +30861,7 @@ p.camera.transformation.elements.set(matrix)//*/
 					window.updates.insertAdjacentHTML("beforeend","<br>"+r
 					/*.replace(/-- (.*)\n/g, (_,$1) => {
 						return "-- "+(new Date(+$1).toLocaleDateString(undefined,{year: "numeric", month: "long", day: "numeric"}))+"\n"
-					})*/.replace(/\n/g,"<br>"))
+					})* /.replace(/\n/g,"<br>"))
 					let btn = doc.createElement("button")
 					btn.innerHTML = "Close"
 					btn.onclick = async function(){
@@ -30973,16 +30899,18 @@ p.camera.transformation.elements.set(matrix)//*/
 `
 					window.updates.appendChild(div)
 				}
-			}*/
+			}* /
 		}else{
 			fetch("updatesAfter/null").then(r => r.text()).then(async r => {
 				let last = r.lastIndexOf("-- "), lastEnd = r.indexOf("\n",last)
 				await saveToDB("lastUpdate",+r.substring(last+3,lastEnd))
 			}).catch(console.error)
-		}
+		}*/
 		if(unsupported.length) alert("Unfortunately, these are unsupported: "+unsupported.join(", "))
 		
+		try{
     if (window.parent.tickid) clearTimeout(window.parent.tickid)
+		}catch(e){console.error(e)}
 		tickLoop()
 
 		everythingInited = true
@@ -31341,10 +31269,10 @@ p.camera.transformation.elements.set(matrix)//*/
 				ctx.textAlign = "center"
 				fill(255)
 				textSize(80*x)
-				text("You discovered",width/2,20)
-				text("blockName."+discoverBlock,width/2,height-100)
+				text("You discovered",width/2,height/2-inventory.size*x*4)
+				text("blockName."+discoverBlock,width/2,height/2+inventory.size*x*3)
 				if(!blockData[discoverBlock])throw new Error("no block "+discoverBlock+" from discover")
-				drawIcon(width/2, height/2, discoverBlock, null, null, x*10)
+				drawIcon(width/2, height/2, discoverBlock, null, null, x*5)
 				ctx.globalAlpha = 1
 				updateHUD = true
 			}
@@ -31960,7 +31888,10 @@ p.camera.transformation.elements.set(matrix)//*/
 		now = performance.now()
 		analytics.totalTickTime += now - tickStart
     tick = true
-    window.parent.tickid = setTimeout(tickLoop, max(tickTime - (now - tickStart),10))
+		let tickid = setTimeout(tickLoop, max(tickTime - (now - tickStart),10))
+		try{
+    window.parent.tickid = tickid
+		}catch{}
     lastTick = now
   }
 	function renderLoop() {
@@ -32056,11 +31987,14 @@ p.camera.transformation.elements.set(matrix)//*/
 		analytics.frames++
 		analytics.totalFrameTime += performance.now() - frameStart
 		analytics.worstFrameTime = max(performance.now() - frameStart, analytics.worstFrameTime)
-		win.raf = requestAnimationFrame(renderLoop)
+		let raf = requestAnimationFrame(renderLoop)
+		try{
+		window.parent.raf = raf
+		}catch{}
 	}
 	return function(){
 		if(initEverything){
-			initEverything().then(() => win.raf = requestAnimationFrame(renderLoop))
+			initEverything().then(() => renderLoop())
 			initEverything = null //Only run once
 			return
 		}else renderLoop()
@@ -32097,10 +32031,12 @@ function timeLoop(){
 	window.parent.raf = requestAnimationFrame(timeLoop)
 }*/
 
+try{
 if (window.parent.raf) {
 	window.cancelAnimationFrame(window.parent.raf)
 	console.log("Canceled", window.parent.raf)
 }
+}catch(e){console.error(e)}
 //document.querySelector("#hideCountdown").onclick = () => hide = true
 //timeLoop()
 
@@ -32125,6 +32061,7 @@ function scrollToEl(id){
   var el = document.getElementById(id)
   if(el) el.scrollIntoView()
 }
+
 //INSERT-SERVER-CODE-HERE
 if(window.initServerEverything){
 	window.init = MineKhan()
@@ -32143,7 +32080,6 @@ if(window.initServerEverything){
 	document.body.appendChild(script)
 }
 		</script>
-		<script src="features.js" defer></script>
 	</body>
 </html>
 

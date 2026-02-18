@@ -1,14 +1,34 @@
 <!DOCTYPE html>
-<h1>offline</h1>
-<button onclick="download()">Start downloading</button>
+<title>Untitled</title>
+<base>
+<style>button,a{border:none;display:block;padding:24px;margin:16px;cursor:pointer;}</style>
+<button onclick="download('index.html','khan.html')">Download minekhan</button>
+<button onclick="download('live-servers.html','list.html')">Download live list of servers</button>
+<button onclick="downloadThisPage()">Download this page (offdown.html)</button>
+<button onclick="openAboutBlank()">Open minekhan with about:blank</button>
 <script>
-  async function download(){
+  let base = document.baseURI||location.href
+  async function download(href,download){
     //let data = await (await fetch("/minekhan")).arrayBuffer()
     //let version = (new TextDecoder().decode(data.slice(0,50))).match(/@[A-Za-z0-9 \.]*/)[0]
     let a = document.createElement("a")
-    a.href = "/minekhan"
-    a.download = "minekhan.html"
+    a.href = URL.createObjectURL(await(await fetch(href)).blob())
+    a.download = download
+    a.click()
+  }
+  async function downloadThisPage(){
+    let a = document.createElement("a")
+    a.href = URL.createObjectURL(new Blob(["<!DOCTYPE html>"+document.documentElement.outerHTML.replace("<base>","<base href='"+base+"'>")]))
+    a.download = "offdown.html"
     a.click()
   }
   addEventListener("error",e=>alert(e.message))
+  function openAboutBlank(){
+    const win = window.open("about:blank", "_blank");
+    fetch("index.html").then(response => response.text()).then(html => {
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+    })
+  }
 </script>

@@ -102,6 +102,13 @@
       }
       onresize()
 
+      let span = document.createElement("span")
+      function format(str){
+        if(span.setHTML) span.setHTML(str)
+        else span.textContent = str
+        return span.innerHTML
+      }
+
       function updateList(toUpdate){
         for(let v of toUpdate){
 					if(!v.el){
@@ -124,7 +131,8 @@
             for(let j in v.banned) html += format(j)+", "
             html = html.substring(0,html.length-2) + "<br>"
           }
-          if(v.whitelist) html += v.whitelist.length+" players whitelisted: "+format(v.whitelist.join(", "))
+          if(v.whitelist) html += v.whitelist.length+" players whitelisted: "+format(v.whitelist.join(", "))+"<br>"
+          if(v.version) html += v.version+"<br>"
 					v.el.innerHTML = html
         }
         players = 0
@@ -158,12 +166,12 @@
 			function initWs(){
 				ws = new WebSocket("wss://cloud.achex.ca")
 				function sendupdate(){
-					ws.send(JSON.stringify({auth:"getWorlds"}))
-					ws.send(JSON.stringify({joinHub:"minekhan"}))
 					ws.send(JSON.stringify({serverstat:true}))
 					ws.send(JSON.stringify({toH:"minekhan",type:"ping"}))
 				}
 				ws.onopen = () => {
+					ws.send(JSON.stringify({auth:"getWorlds"}))
+					ws.send(JSON.stringify({joinHub:"minekhan"}))
 					setInterval(sendupdate, 5000)
 					sendupdate()
 				}

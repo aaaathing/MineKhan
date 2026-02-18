@@ -149,6 +149,32 @@ function xyArrayHas(arr,arr2,x,y,z,arrLen=arr.length,arr2Len=arr2&&arr2.length){
 		}
 	}
 }
+function heapPush(heap, item) {
+	heap.push(item)
+	let i = heap.length - 1
+	while (i > 0) {
+		const p = (i - 1) >> 1
+		if (heap[p][0] > heap[i][0]) { const t = heap[p]; heap[p] = heap[i]; heap[i] = t; i = p }
+		else break
+	}
+}
+function heapPop(heap) {
+	const top = heap[0], last = heap.pop()
+	if (heap.length > 0) {
+		heap[0] = last
+		let i = 0
+		while (true) {
+			const l = 2*i+1, r = 2*i+2
+			let s = i
+			if (l < heap.length && heap[l][0] < heap[s][0]) s = l
+			if (r < heap.length && heap[r][0] < heap[s][0]) s = r
+			if (s !== i) { const t = heap[i]; heap[i] = heap[s]; heap[s] = t; i = s }
+			else break
+		}
+	}
+	return top
+}
+
 //from https://stackoverflow.com/questions/1344500/efficient-way-to-insert-a-number-into-a-sorted-array-of-numbers
 function insertSorted(array, value) {
 	let low = 0,
@@ -1169,6 +1195,8 @@ const blockData = [
 		type:"rock1",
 		category:"decoration",
 		lightLevel: 15,
+		drop: "glowstoneDust",
+		dropAmount: 4,
 		glassSound: true,
 		shadow:false,
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true
@@ -3375,6 +3403,7 @@ const blockData = [
 		name:"furnace",
 		Name:"Furnace",
 		textures: ["furnaceTop","furnaceTop","furnaceSide","furnaceFront","furnaceSide","furnaceSide"],
+		type:"rock1", hardness:5, blastResistance:6,
 		rotate: true,
 		tagBits: null,
 		hasContents:function(tags){return tags&&tags.furnace},
@@ -3479,6 +3508,7 @@ const blockData = [
 		name:"blastFurnace",
 		Name:"Blast Furnace",
 		textures: ["blastFurnaceTop","blastFurnaceTop","blastFurnaceSide","blastFurnaceFront","blastFurnaceSide","blastFurnaceSide"],
+		type:"rock1", hardness:5, blastResistance:6,
 		rotate: true,
 		category:"items",
 	},
@@ -3486,6 +3516,7 @@ const blockData = [
 		name:"smoker",
 		Name:"Smoker",
 		textures: ["smokerBottom","smokerTop","smokerSide","smokerFront","smokerSide","smokerSide"],
+		type:"rock1", hardness:5, blastResistance:6,
 		rotate: true,
 		category:"items",
 	},
@@ -6725,6 +6756,7 @@ const blockData = [
 		texturesSWOpen:fillTextureArray(["barrelSide","barrelSide","barrelTopOpen","barrelSide"]),
 		texturesDown:fillTextureArray(["barrelTop","barrelBottom","barrelSide"]),
 		texturesDownOpen:fillTextureArray(["barrelTopOpen","barrelBottom","barrelSide"]),
+		hardness:2,
 		woodSound:true,
 		barrel:true,
 		category:"items",
@@ -6985,6 +7017,7 @@ const blockData = [
 		textures:/*"christmasChestSide",//*/"chest",//christmas
 		transparent:true,
 		chest:true,
+		hardness:2, woodSound:true,
 		tagBits: null,
 		hasContents:function(tags){return tags&&tags.contents},
 		setContents:function(x,y,z,world){
@@ -7294,7 +7327,7 @@ const blockData = [
 		item:true,
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			var pd = p.direction
-			world.addEntity(new entities[entityIds.SlingshotShot](p.x,p.y,p.z,pd.x,pd.y,pd.z))
+			world.addEntity(new entities[entityIds.SlingshotShot](p.x+pd.x,p.y+pd.y,p.z+pd.z,pd.x,pd.y,pd.z))
 		},
 		useAnywhere:true,
 		stackSize:1,
@@ -10286,6 +10319,8 @@ const blockData = [
 		downTextures:fillTextureArray(["dropperFrontVertical","furnaceTop","furnaceTop"]),
 		stoneSound:true,
 		category:"redstone",
+		hardness:3.5,
+		type:"rock2",
 		tagBits: null,
 		hasContents:function(tags){return tags&&tags.contents},
 		setContents:function(x,y,z,world){
@@ -11238,7 +11273,7 @@ const blockData = [
 					outputHTML = ""
 					for(let i=0; i<output.length; i+=2){
 						if(i) outputHTML += "<br>"
-						outputHTML += Messages.format(output[i])
+						outputHTML += output[i]
 					}
 					world.setTagByName(x,y,z,"output",outputHTML,false)
 					let target
@@ -11272,6 +11307,11 @@ const blockData = [
 					if(output && output[output.length-1] === "error") target |= FLIP
 					if(block !== target) world.setBlock(x,y,z,target,false,false,false,true)
 				}).then(() => world.setTagByName(x,y,z,"running",false,false))
+				.catch(e => {
+					world.setTagByName(x,y,z,"running",false,false)
+					world.setTagByName(x,y,z,"output",e,false)
+					throw e
+				})
 			}
 		},
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
@@ -12194,7 +12234,18 @@ const blockData = [
 		solid: true,
 		transparent: true,
 		cullFace: "same",
-	}
+	},
+	{
+		name:"gun",
+		item:true,
+		serveronuse: (x,y,z, block,world,face,item,p) => {
+			var pd = p.direction
+			world.addEntity(new entities[entityIds.SlingshotShot](p.x+pd.x,p.y+pd.y,p.z+pd.z,pd.x,pd.y,pd.z))
+		},
+		useAnywhere:true,
+		stackSize:1,
+		category:"tools"
+	},
 ];
 const BLOCK_COUNT = blockData.length
 console.log(BLOCK_COUNT," blocks on server side")
@@ -12412,7 +12463,7 @@ function initBlockData(){
 		data.pistonPull = data.pistonPull !== undefined ? data.pistonPull : true
 
 		if(breakTypes[data.type]) data.harvestTools = breakTypes[data.type]
-		if(handBreakable.includes(data.type)) data.harvestTools = true
+		if(!data.type || handBreakable.includes(data.type)) data.harvestTools = true
 	}
 
   blockData.forEach(block => {
@@ -20611,7 +20662,7 @@ function initDefaultCommands(world){
 					if(i.type === "Player"){
 						i.health = 0
 						i.damage(1,pos.username+" killed "+(args.target === "@a" ? "everyone" : args.target)+" with the kill command.")
-					}else{
+					}else if(i.id){
 						world[i.dimension].deleteEntity(i.id)
 					}
 				}
@@ -20626,7 +20677,7 @@ function initDefaultCommands(world){
 					if(i.type === "Player"){
 						i.health = 0
 						i.damage(1,args.message)
-					}else{
+					}else if(i.id){
 						world[i.dimension].deleteEntity(i.id)
 					}
 				}
@@ -20646,13 +20697,13 @@ function initDefaultCommands(world){
 			(args,pos) => {
 				if(isNaN(args.x) || isNaN(args.y) || isNaN(args.z)) return ["x y z must be number","error"]
 				let arr = parseTarget(args.target,pos,world[pos.dimension])
-				for(let e of arr) e.tp(args.x,args.y,args.z)
+				for(let e of arr) if(e.tp) e.tp(args.x,args.y,args.z)
 			}, "z"))),
 			CommandNode.a("to_target",
 			(args,pos) => {
 				let arr = parseTarget(args.target,pos,world[pos.dimension]), to = parseTarget(args.to_target,pos,world[pos.dimension])[0]
 				if(!to) return ["No such target: "+args.target,"error"]
-				for(let e of arr) e.tp(to.x,to.y,to.z)
+				for(let e of arr) if(e.tp) e.tp(to.x,to.y,to.z,to.dimension)
 			},"target")
 		)),
 		CommandNode.r("tp",tp),
@@ -20896,7 +20947,7 @@ function parseLines(reader){
 		}
 		if(reader.stackEndNoSpace) nodes.stackEndNoSpace = true
 		else nodes.nextTokenStart = reader.tokenStart
-		cmds.push(nodes)
+		if(nodes.length>1) cmds.push(nodes)
 	}
 	return cmds
 }
@@ -21547,6 +21598,7 @@ class Entity {
 		this.x = x
 		this.y = y
 		this.z = z
+
 	}
 	update() {
 		this.updateVelocity(now)
@@ -21716,12 +21768,12 @@ class Player extends Entity{
 	}
 	get survival(){return this.gameMode==="survival"||this.gameMode==="hardcore"}
 	get spectator(){return this.gameMode==="spectator"}
-	respawn(){
+	setDefaults(){
     let spawn = this.spawnPoint
 		if(!spawn){
 			spawn = this.spawnPoint = {x:this.world.world.spawnPoint.x,y:this.world.world.spawnPoint.y,z:this.world.world.spawnPoint.z}
 		}
-		this.tp(spawn.x,spawn.y+0.5+this.height*0.5,spawn.z,"")
+		this.x = spawn.x, this.y = spawn.y+0.5+this.height*0.5, this.z = spawn.z
 		this.velx = this.vely = this.velz = 0
 		this.lastY = this.y
 		this.health = 20
@@ -21759,6 +21811,10 @@ class Player extends Entity{
 		this.lastFreezeHealth = 0
 		this.flying = false
 	}
+	respawn(){
+		this.setDefaults()
+		this.tp(this.x,this.y,this.z,"")
+	}
 	tp(x,y,z,dimension=this.dimension){
 		this.targetX = this.x = x
 		this.targetY = this.y = y
@@ -21766,7 +21822,7 @@ class Player extends Entity{
 		this.dimension = dimension
 		this.world = this.world.world[dimension]
 		this.lastY = this.y
-		if(this.connection) this.connection.send({type:"tp",x,y,z,dimension})
+		if(this.connection) this.connection.send({type:"tp",x,y,z,dimension}), this.confirmPos = true
 	}
 	addXP(amount){
     this.lastXP = now
@@ -22000,6 +22056,8 @@ class Player extends Entity{
 						this.world.addItems(this.x,this.y,this.z,0,0,0,i.id,true,i.amount,i.durability,i.customName,this.id)
 					}
 				}
+				this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds.rawBeef,true,1,null,this.username+" Meat",this.id)
+				if(Math.random()>0.9) this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds.redStain,true,1,null,null,this.id)
 				this.inventory.hotbar.fill(null)
 				this.inventory.main.fill(null)
 				this.calculateTotalXP()
@@ -22883,12 +22941,19 @@ entities[entities.length] = class SlingshotShot extends BlockEntity{
 		
 		var collided = entCollided(this)
 		if(collided){
-			if(entPlayerCollided) collided.damage(5,collided.username+" got killed by a slingshot.",false,null,this.previousX,this.previousY,this.previousZ)
+			if(entPlayerCollided) collided.damage(5,collided.username+" got shot.",false,null,this.previousX,this.previousY,this.previousZ)
 			else if(collided.damage) collided.damage(5)
 			this.canDespawn = true
 		}
 		
 		this.canFacePlayer = true
+	}
+	updateVelocity(now) {
+		this.vely += -0.005
+		let drag = 0.99
+		this.velz += (this.velz * drag - this.velz)
+		this.velx += (this.velx * drag - this.velx)
+		this.vely += (this.vely * drag - this.vely)
 	}
 	move(now) {
 		let pminX = floor(this.x - this.width / 2)
@@ -23331,155 +23396,111 @@ class Mob extends Entity{
 		this.lastPathFind = 0
 		this.blockAtFeet = 0
 	}
-	findPath(fx,fy,fz,x,y,z){
-		let spreaded = [], spreadAt = [fx,fy,fz,null] //x y z parent
-		let spreadAtIndexes = [null]//points at parent node
-		let maxDist = 40, dist, dx, dy, dz, dd
-		let sx = fx, sy = fy, sz = fz, xDir, yDir, zDir, cy
-		let f = this.canFly
-		let closestIdx, closestIdxDist = Infinity
-		while(spreadAt.length && max(abs(sx-x),abs(sy-y),abs(sz-z)) > 0){
-			sx = spreadAt[spreadAt.length-4]
-			sy = spreadAt[spreadAt.length-3]
-			sz = spreadAt[spreadAt.length-2]
-			let closestDist = Infinity
-			xDir = yDir = zDir = 0
-			if(max(abs(sx-fx),abs(sy-fy),abs(sz-fz)) > maxDist && spreaded.length > 1000) return
-			{
-				dx = 1, dz = 0
-				let ci = this.world.getBlock(sx+dx,sy-1,sz+dz)
-				let a = blockData[this.world.getBlock(sx+dx,sy+1,sz+dz)].solid, b = blockData[this.world.getBlock(sx+dx,sy,sz+dz)].solid, c = blockData[ci].solid, d = blockData[this.world.getBlock(sx+dx,sy-2,sz+dz)].solid
-				dy = 1, dist = abs(sx+dx-x)+abs(sz+dz-z)+abs(sy+dy-y)
-				if((b||f) && !a && dist<closestDist && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz
-				dy = 0, dist = abs(sx+dx-x)+abs(sz+dz-z)+abs(sy+dy-y)
-				if((c || blockData[ci].liquid || f) && !(b || blockData[this.world.getBlock(sx+dx,sy,sz+dz)].liquid) && dist<closestDist && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz
-				dy = -1, dist = abs(sx+dx-x)+abs(sz+dz-z)+abs(sy+dy-y)
-				if((d||f) && !c && dist<closestDist && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz
-			}
-			{
-				dx = -1, dz = 0
-				let ci = this.world.getBlock(sx+dx,sy-1,sz+dz)
-				let a = blockData[this.world.getBlock(sx+dx,sy+1,sz+dz)].solid, b = blockData[this.world.getBlock(sx+dx,sy,sz+dz)].solid, c = blockData[ci].solid, d = blockData[this.world.getBlock(sx+dx,sy-2,sz+dz)].solid
-				dy = 1, dist = abs(sx+dx-x)+abs(sz+dz-z)+abs(sy+dy-y)
-				if((b||f) && !a && dist<closestDist && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz
-				dy = 0, dist = abs(sx+dx-x)+abs(sz+dz-z)+abs(sy+dy-y)
-				if((c || blockData[ci].liquid || f) && !(b || blockData[this.world.getBlock(sx+dx,sy,sz+dz)].liquid) && dist<closestDist && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz
-				dy = -1, dist = abs(sx+dx-x)+abs(sz+dz-z)+abs(sy+dy-y)
-				if((d||f) && !c && dist<closestDist && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz
-			}
-			{
-				dx = 0, dz = 1
-				let ci = this.world.getBlock(sx+dx,sy-1,sz+dz)
-				let a = blockData[this.world.getBlock(sx+dx,sy+1,sz+dz)].solid, b = blockData[this.world.getBlock(sx+dx,sy,sz+dz)].solid, c = blockData[ci].solid, d = blockData[this.world.getBlock(sx+dx,sy-2,sz+dz)].solid
-				dy = 1, dist = abs(sx+dx-x)+abs(sz+dz-z)+abs(sy+dy-y)
-				if((b||f) && !a && dist<closestDist && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz
-				dy = 0, dist = abs(sx+dx-x)+abs(sz+dz-z)+abs(sy+dy-y)
-				if((c || blockData[ci].liquid || f) && !(b || blockData[this.world.getBlock(sx+dx,sy,sz+dz)].liquid) && dist<closestDist && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz
-				dy = -1, dist = abs(sx+dx-x)+abs(sz+dz-z)+abs(sy+dy-y)
-				if((d||f) && !c && dist<closestDist && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz
-			}
-			{
-				dx = 0, dz = -1
-				let ci = this.world.getBlock(sx+dx,sy-1,sz+dz)
-				let a = blockData[this.world.getBlock(sx+dx,sy+1,sz+dz)].solid, b = blockData[this.world.getBlock(sx+dx,sy,sz+dz)].solid, c = blockData[ci].solid, d = blockData[this.world.getBlock(sx+dx,sy-2,sz+dz)].solid
-				dy = 1, dist = abs(sx+dx-x)+abs(sz+dz-z)+abs(sy+dy-y)
-				if((b||f) && !a && dist<closestDist && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz
-				dy = 0, dist = abs(sx+dx-x)+abs(sz+dz-z)+abs(sy+dy-y)
-				if((c || blockData[ci].liquid || f) && !(b || blockData[this.world.getBlock(sx+dx,sy,sz+dz)].liquid) && dist<closestDist && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz
-				dy = -1, dist = abs(sx+dx-x)+abs(sz+dz-z)+abs(sy+dy-y)
-				if((d||f) && !c && dist<closestDist && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz
-			}
-			let above = blockData[this.world.getBlock(sx,sy+1,sz)], below = blockData[this.world.getBlock(sx,sy-1,sz)]
-			dist = abs(sx-x)+abs(sz-z)+abs(sy+1-y)
-			if(above.ladder && dist < closestDist && !xyArrayHas(spreaded,spreadAt,sx,sy+1,sz)) closestDist = dist, xDir = 0, yDir = 1, zDir = 0
-			dist = abs(sx-x)+abs(sz-z)+abs(sy-1-y)
-			if(below.ladder && dist < closestDist && !xyArrayHas(spreaded,spreadAt,sx,sy-1,sz)) closestDist = dist, xDir = 0, yDir = -1, zDir = 0
-			if(this.canClimb){
-				let b = blockData[this.world.getBlock(sx+1,sy,sz)].solid || blockData[this.world.getBlock(sx-1,sy,sz)].solid || blockData[this.world.getBlock(sx,sy,sz+1)].solid || blockData[this.world.getBlock(sx,sy,sz-1)].solid,
-				a2 = blockData[this.world.getBlock(sx,sy+1,sz)].solid,
-				b2 = blockData[this.world.getBlock(sx,sy,sz)].solid
-				dist = abs(sx-x)+abs(sz-z)+abs(sy+1-y)
-				if(!a2 && !b2 && b && dist < closestDist && !xyArrayHas(spreaded,spreadAt,sx,sy+1,sz)) closestDist = dist, xDir = 0, yDir = 1, zDir = 0
-			}
-			if(this.canFly){
-				let a2 = blockData[this.world.getBlock(sx,sy+1,sz)].solid,
-				b2 = blockData[this.world.getBlock(sx,sy,sz)].solid
-				dist = abs(sx-x)+abs(sz-z)+abs(sy+1-y)
-				if(!a2 && !b2 && dist < closestDist && !xyArrayHas(spreaded,spreadAt,sx,sy+1,sz)) closestDist = dist, xDir = 0, yDir = 1, zDir = 0
+	findPath(fx, fy, fz, x, y, z) {
+		const canFly = this.canFly, canClimb = this.canClimb
+		if (max(abs(fx-x), abs(fy-y), abs(fz-z)) > 40) return null
+
+		// Entity bounding box in block units
+		const hw = max(0, ceil((this.width  - 1) / 2))  // extra blocks ±x
+		const hd = max(0, ceil((this.depth  - 1) / 2))  // extra blocks ±z
+		const bh = ceil(this.height)                     // blocks tall
+		const world = this.world
+
+		// A* with binary min-heap. Integer keys: 7 bits per axis relative to start, offset +64
+		const open = [], visited = new Set(), gScore = new Map(), parent = new Map()
+		const sk = 64 | (64 << 7) | (64 << 14)  // encode(fx,fy,fz): each relative coord = 0+64
+
+		gScore.set(sk, 0)
+		parent.set(sk, sk)  // sentinel: start points to itself
+		heapPush(open, [abs(fx-x) + abs(fy-y) + abs(fz-z), 0, fx, fy, fz])
+
+		let bestKey = sk, bestDist = abs(fx-x) + abs(fy-y) + abs(fz-z)
+
+		while (open.length > 0) {
+			const [, g, cx, cy, cz] = heapPop(open)
+			const ck = (cx-fx+64) | ((cy-fy+64) << 7) | ((cz-fz+64) << 14)
+			if (visited.has(ck)) continue
+			visited.add(ck)
+
+			const d = abs(cx-x) + abs(cy-y) + abs(cz-z)
+			if (d < bestDist) { bestDist = d; bestKey = ck }
+			if (d === 0) break
+			if (visited.size > 2000 || max(abs(cx-fx), abs(cy-fy), abs(cz-fz)) > 40) continue
+
+			const ng = g + 1
+			// 4 horizontal directions: jump up, same level, step down
+			for (let di = 0; di < 4; di++) {
+				const dx = di === 0 ? 1 : di === 1 ? -1 : 0
+				const dz = di === 2 ? 1 : di === 3 ? -1 : 0
+				const nx = cx+dx, nz = cz+dz
+				const cross = abs((nx-fx)*(z-fz) - (nz-fz)*(x-fx)) * 0.001
+				if ((this.pathStepSolid(world, nx, cy,   nz, hw, hd) || canFly) && this.pathCanOccupy(world, nx, cy+1, nz, hw, hd, bh))
+					this.pathInsert(open, visited, gScore, parent, (nx-fx+64)|((cy+1-fy+64)<<7)|((nz-fz+64)<<14), ck, ng, nx, cy+1, nz, x, y, z, cross)
+				if ((this.pathHasGround(world, nx, cy,   nz, hw, hd) || canFly) && this.pathCanOccupy(world, nx, cy,   nz, hw, hd, bh))
+					this.pathInsert(open, visited, gScore, parent, (nx-fx+64)|((cy-fy+64)<<7)|((nz-fz+64)<<14),   ck, ng, nx, cy,   nz, x, y, z, cross)
+				if ((this.pathHasGround(world, nx, cy-1, nz, hw, hd) || canFly) && this.pathCanOccupy(world, nx, cy-1, nz, hw, hd, bh))
+					this.pathInsert(open, visited, gScore, parent, (nx-fx+64)|((cy-1-fy+64)<<7)|((nz-fz+64)<<14), ck, ng, nx, cy-1, nz, x, y, z, cross)
 			}
 
-			/*dist = abs(sx+1-x)+abs(sz-z)
-			if(dist < closestDist){
-				dx = 1, dy = 0, dz = 0, dd = false, cy = Infinity
-				let a = blockData[this.world.getBlock(sx+dx,sy+1,sz+dz)].solid, b = blockData[this.world.getBlock(sx+dx,sy,sz+dz)].solid, c = blockData[this.world.getBlock(sx+dx,sy-1,sz+dz)].solid, d = blockData[this.world.getBlock(sx+dx,sy-2,sz+dz)].solid
-				if((b||f) && !a && abs(sy+1-fy) < cy) dy = 1, dd = true, cy = abs(sy-1-fy)
-				if((c || blockData[this.world.getBlock(sx+dx,sy-1,sz+dz)].liquid || f) && !(b || blockData[this.world.getBlock(sx+dx,sy,sz+dz)].liquid) && abs(sy-fy) < cy) dy = 0, dd = true, cy = abs(sy-1-fy)
-				if((d||f) && !c && abs(sy-1-fy) < cy) dy = -1, dd = true, cy = abs(sy-1-fy)
-				if(dd && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz, closestY = cy
+			// Vertical: ladders, climbing, flying — precompute canOccupy(up) once
+			const cross0 = abs((cx-fx)*(z-fz) - (cz-fz)*(x-fx)) * 0.001
+			const canUp = this.pathCanOccupy(world, cx, cy+1, cz, hw, hd, bh)
+			if (blockData[world.getBlock(cx, cy+1, cz)].ladder && canUp)
+				this.pathInsert(open, visited, gScore, parent, (cx-fx+64)|((cy+1-fy+64)<<7)|((cz-fz+64)<<14), ck, ng, cx, cy+1, cz, x, y, z, cross0)
+			if (blockData[world.getBlock(cx, cy-1, cz)].ladder && this.pathCanOccupy(world, cx, cy-1, cz, hw, hd, bh))
+				this.pathInsert(open, visited, gScore, parent, (cx-fx+64)|((cy-1-fy+64)<<7)|((cz-fz+64)<<14), ck, ng, cx, cy-1, cz, x, y, z, cross0)
+			if (canClimb) {
+				const adjSolid = blockData[world.getBlock(cx+1,cy,cz)].solid || blockData[world.getBlock(cx-1,cy,cz)].solid ||
+					blockData[world.getBlock(cx,cy,cz+1)].solid || blockData[world.getBlock(cx,cy,cz-1)].solid
+				if (adjSolid && canUp)
+					this.pathInsert(open, visited, gScore, parent, (cx-fx+64)|((cy+1-fy+64)<<7)|((cz-fz+64)<<14), ck, ng, cx, cy+1, cz, x, y, z, cross0)
 			}
-			dist = abs(sx-1-x)+abs(sz-z)
-			if(dist < closestDist){
-				dx = -1, dy = 0, dz = 0, dd = false, cy = Infinity
-				let a = blockData[this.world.getBlock(sx+dx,sy+1,sz+dz)].solid, b = blockData[this.world.getBlock(sx+dx,sy,sz+dz)].solid, c = blockData[this.world.getBlock(sx+dx,sy-1,sz+dz)].solid, d = blockData[this.world.getBlock(sx+dx,sy-2,sz+dz)].solid
-				if((b||f) && !a && abs(sy+1-fy) < cy) dy = 1, dd = true, cy = abs(sy-1-fy)
-				if((c || blockData[this.world.getBlock(sx+dx,sy-1,sz+dz)].liquid || f) && !(b || blockData[this.world.getBlock(sx+dx,sy,sz+dz)].liquid) && abs(sy-fy) < cy) dy = 0, dd = true, cy = abs(sy-1-fy)
-				if((d||f) && !c && abs(sy-1-fy) < cy) dy = -1, dd = true, cy = abs(sy-1-fy)
-				if(dd && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz, closestY = cy
-			}
-			dist = abs(sx-x)+abs(sz+1-z)
-			if(dist < closestDist){
-				dx = 0, dy = 0, dz = 1, dd = false, cy = Infinity
-				let a = blockData[this.world.getBlock(sx+dx,sy+1,sz+dz)].solid, b = blockData[this.world.getBlock(sx+dx,sy,sz+dz)].solid, c = blockData[this.world.getBlock(sx+dx,sy-1,sz+dz)].solid, d = blockData[this.world.getBlock(sx+dx,sy-2,sz+dz)].solid
-				if((b||f) && !a && abs(sy+1-fy) < cy) dy = 1, dd = true, cy = abs(sy-1-fy)
-				if((c || blockData[this.world.getBlock(sx+dx,sy-1,sz+dz)].liquid || f) && !(b || blockData[this.world.getBlock(sx+dx,sy,sz+dz)].liquid) && abs(sy-fy) < cy) dy = 0, dd = true, cy = abs(sy-1-fy)
-				if((d||f) && !c && abs(sy-1-fy) < cy) dy = -1, dd = true, cy = abs(sy-1-fy)
-				if(dd && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz, closestY = cy
-			}
-			dist = abs(sx-x)+abs(sz-1-z)
-			if(dist < closestDist){
-				dx = 0, dy = 0, dz = -1, dd = false, cy = Infinity
-				let a = blockData[this.world.getBlock(sx+dx,sy+1,sz+dz)].solid, b = blockData[this.world.getBlock(sx+dx,sy,sz+dz)].solid, c = blockData[this.world.getBlock(sx+dx,sy-1,sz+dz)].solid, d = blockData[this.world.getBlock(sx+dx,sy-2,sz+dz)].solid
-				if((b||f) && !a && abs(sy+1-fy) < cy) dy = 1, dd = true, cy = abs(sy-1-fy)
-				if((c || blockData[this.world.getBlock(sx+dx,sy-1,sz+dz)].liquid || f) && !(b || blockData[this.world.getBlock(sx+dx,sy,sz+dz)].liquid) && abs(sy-fy) < cy) dy = 0, dd = true, cy = abs(sy-1-fy)
-				if((d||f) && !c && abs(sy-1-fy) < cy) dy = -1, dd = true, cy = abs(sy-1-fy)
-				if(dd && !xyArrayHas(spreaded,spreadAt,sx+dx,sy+dy,sz+dz)) closestDist = dist, xDir = dx, yDir = dy, zDir = dz, closestY = cy
-			}
-			if(!isFinite(closestDist) && this.canClimb){
-				let b = blockData[this.world.getBlock(sx+1,sy,sz)].solid || blockData[this.world.getBlock(sx-1,sy,sz)].solid || blockData[this.world.getBlock(sx,sy,sz+1)].solid || blockData[this.world.getBlock(sx,sy,sz-1)].solid,
-				a2 = blockData[this.world.getBlock(sx,sy+1,sz)].solid,
-				b2 = blockData[this.world.getBlock(sx,sy,sz)].solid
-				if(!a2 && !b2 && b && abs(sy+1-fy) < closestY && !xyArrayHas(spreaded,spreadAt,sx,sy+1,sz)) yDir = 1, closestY = abs(sy+1-fy), closestDist = abs(sx-x)+abs(sz-z)
-			}else if(!isFinite(closestDist) && this.canFly){
-				let a2 = blockData[this.world.getBlock(sx,sy+1,sz)].solid,
-				b2 = blockData[this.world.getBlock(sx,sy,sz)].solid
-				if(!a2 && !b2 && abs(sy+1-fy) < closestY && !xyArrayHas(spreaded,spreadAt,sx,sy+1,sz)) yDir = 1, closestY = abs(sy+1-fy), closestDist = abs(sx-x)+abs(sz-z)
-			}else if(!isFinite(closestDist)){
-				let above = blockData[this.world.getBlock(sx,sy+1,sz)], below = blockData[this.world.getBlock(sx,sy-1,sz)]
-				if(above.ladder && abs(sy+1-fy) < closestY && !xyArrayHas(spreaded,spreadAt,sx,sy+1,sz)) yDir = 1, closestY = abs(sy+1-fy), closestDist = abs(sx-x)+abs(sz-z)
-				if(below.ladder && abs(sy-1-fy) < closestY && !xyArrayHas(spreaded,spreadAt,sx,sy-1,sz)) yDir = -1, closestY = abs(sy-1-fy), closestDist = abs(sx-x)+abs(sz-z)
-			}*/
-			if(spreadAtIndexes[spreadAtIndexes.length-1] === null){//if not already in spreaded
-				spreadAtIndexes[spreadAtIndexes.length-1] = spreaded.length
-				spreaded.push(sx,sy,sz, spreadAtIndexes.length>1 ? spreadAtIndexes[spreadAtIndexes.length-2] : null)
-				let fromDist = max(abs(sx-x),abs(sy-y),abs(sz-z))
-				if(fromDist<closestIdxDist){
-					closestIdxDist = fromDist
-					closestIdx = spreadAtIndexes[spreadAtIndexes.length-1]
-				}
-			}
-			if(isFinite(closestDist)) spreadAt.push(sx+xDir,sy+yDir,sz+zDir, null), spreadAtIndexes.push(null)
-			else spreadAt.pop(), spreadAt.pop(), spreadAt.pop(), spreadAt.pop(), spreadAtIndexes.pop()
+			if (canFly && canUp)
+				this.pathInsert(open, visited, gScore, parent, (cx-fx+64)|((cy+1-fy+64)<<7)|((cz-fz+64)<<14), ck, ng, cx, cy+1, cz, x, y, z, cross0)
 		}
-		if(sx === fx && sy === fy && sz === fz) return null
-		let i = closestIdx, path = [sz+zDir,sy+yDir,sx+xDir]//[sz+zDir,sy+yDir,sx+xDir,sz,sy,sx]
-		while(path.length < 85){
-			i = spreaded[i+3]
-			if(i) path.push(spreaded[i+2],spreaded[i+1],spreaded[i])
-			else break
+
+		if (bestKey === sk) return null
+		// Decode integer keys back to absolute coords, then reverse start→goal
+		const path = []
+		let k = bestKey
+		while (k !== sk && path.length < 84) {
+			path.push(fx + (k & 0x7F) - 64, fy + ((k >> 7) & 0x7F) - 64, fz + ((k >> 14) & 0x7F) - 64)
+			k = parent.get(k) ?? sk
 		}
-		path.reverse()
 		return path
 	}
+	// A* pathfinding helpers — defined at module level to avoid closure allocation per call
+	// Encode (nx,ny,nz) relative to start as a single integer (7 bits each, offset +64, range ±63)
+	pathCanOccupy(world, nx, ny, nz, hw, hd, bh) {
+		for (let ddx = -hw; ddx <= hw; ddx++)
+			for (let ddz = -hd; ddz <= hd; ddz++)
+				for (let ddy = 0; ddy < bh; ddy++)
+					if (blockData[world.getBlock(nx+ddx, ny+ddy, nz+ddz)].solid) return false
+		return true
+	}
+	pathHasGround(world, nx, ny, nz, hw, hd) {
+		for (let ddx = -hw; ddx <= hw; ddx++)
+			for (let ddz = -hd; ddz <= hd; ddz++) {
+				const blk = blockData[world.getBlock(nx+ddx, ny-1, nz+ddz)]
+				if (blk.solid || blk.liquid) return true
+			}
+		return false
+	}
+	pathStepSolid(world, nx, ny, nz, hw, hd) {
+		for (let ddx = -hw; ddx <= hw; ddx++)
+			for (let ddz = -hd; ddz <= hd; ddz++)
+				if (blockData[world.getBlock(nx+ddx, ny, nz+ddz)].solid) return true
+		return false
+	}
+	pathInsert(open, visited, gScore, parent, nk, ck, ng, nx, ny, nz, x, y, z, cross) {
+		if (visited.has(nk)) return
+		const eg = gScore.get(nk)
+		if (eg !== undefined && ng >= eg) return
+		gScore.set(nk, ng)
+		parent.set(nk, ck)
+		heapPush(open, [ng + abs(nx-x) + abs(ny-y) + abs(nz-z) + cross, ng, nx, ny, nz])
+	}
+
 	randomPath(){
 		let x = round(this.x+rand(-10,10))
 		let z = round(this.z+rand(-10,10))
@@ -23506,14 +23527,14 @@ class Mob extends Entity{
 			}
 			if(i > 0) this.path.splice(0,i) //get rid of the part that it wont go to
 			*/
-			let [x,y,z] = this.path
+			let x = this.path[this.path.length-3], y = this.path[this.path.length-2], z = this.path[this.path.length-1]
 			let yaw = angleOf(x,z,this.x,this.z)
 			this.spinTarget = yaw
 			if(this.yaw - yaw > Math.PI) yaw += Math.PId //prevent weird thing happening when rotation was 0 but is now 360
 			if(this.yaw - yaw < -Math.PI) yaw -= Math.PId
 			let d = max(min(yaw - this.yaw, 0.3),-0.3)
 			this.yaw += d
-			let distToPath = max(abs(this.x-x),abs(this.z-z),abs(this.y-this.height/2-y)), goingVertical = x === this.path[3] && z === this.path[5]
+			let distToPath = max(abs(this.x-x),abs(this.z-z),abs(this.y-this.height/2-y)), goingVertical = x === this.path[this.path.length-6] && z === this.path[this.path.length-4]
 			let speed = this.panick > 0 ? 0.08 : (this.target ? 0.03 : 0.02)
 			if(!goingVertical || distToPath > 1){//if going up, don't move unless too far
 				this.velx += sin(this.yaw) * speed
@@ -23528,7 +23549,7 @@ class Mob extends Entity{
 				}
 			}
 			if(distToPath < 1){
-				this.path.splice(0,3)
+				this.path.pop(), this.path.pop(), this.path.pop()
 			}
 			this.walking = true
 		}else{
@@ -23595,7 +23616,7 @@ class Mob extends Entity{
 				this.lastPathFind = now
 				let path = this.findPath(round(this.x),round(this.y-this.height/2),round(this.z),round(follow.x),y,round(follow.z))
 				if(path){
-					path.splice(0,3)
+					path.pop(), path.pop(), path.pop()
 					this.path = path
 				}
 			}
@@ -24328,7 +24349,7 @@ entities[entities.length] = class Wolf extends Mob{
 				this.lastPathFind = now
 				let path = this.findPath(round(this.x),round(this.y-this.height/2),round(this.z),round(owner.x),round(owner.y),round(owner.z))
 				if(path){
-					path.splice(0,3)
+					path.pop(), path.pop(), path.pop()
 					this.path = path
 				}
 			}
@@ -30109,12 +30130,12 @@ function maxDist(x, z, x2, z2) {
 let chunkPlayerDistArr = []
 let sortChunkPX = 0
 let sortChunkPZ = 0
-function sortChunks(c1, c2) { //Sort the list of chunks based on distance from the player
+function sortChunksSquare(c1, c2) { //Sort the list of chunks based on distance from the player
 	let dx1 = sortChunkPX - c1.x - 8
 	let dy1 = sortChunkPZ - c1.z - 8
 	let dx2 = sortChunkPX - c2.x - 8
 	let dy2 = sortChunkPZ - c2.z - 8
-	return dx1 * dx1 + dy1 * dy1 - (dx2 * dx2 + dy2 * dy2)
+	return max(abs(dx1),abs(dy1)) - max(abs(dx2),abs(dy2))
 }
 const {
 	seedHash,
@@ -31516,7 +31537,7 @@ class World{ // aka trueWorld
 		let holdObj = p.inventory.hotbar[p.inventory.hotbarSlot]
 		let block = blockData[holdObj ? holdObj.id : 0]
 		if(hit){
-			if(!ent.damage) return
+			if(!ent.onhit&&!ent.damage) return
 			let atime = (typeof block.attackTime === "number") ? block.attackTime : 5
 			let attackDamage = (block && block.attackDamage) || 1
 			let damage, critical
@@ -31532,7 +31553,7 @@ class World{ // aka trueWorld
 				}
 			}else{
 				let pd = p.direction
-				ent.damage(damage,pd.x/2,0.5,pd.z/2)
+				ent.onhit(damage,false,pd.x/2,pd.z/2,p.id)
 			}
 			if(block.pickaxe){
 				holdObj.durability -= 2
@@ -32052,7 +32073,7 @@ class World{ // aka trueWorld
 					}
 				}
 			}
-			this.chunkGenQueue.push(...chunkPlayerDistArr.sort(sortChunks))
+			this.chunkGenQueue.push(...chunkPlayerDistArr.sort(sortChunksSquare))
 		}
 	}
 	tickUpdates(world,now){
@@ -32360,7 +32381,7 @@ class World{ // aka trueWorld
 				inv.survivStr = reader.readToArrayBits(survivLength)
 				let asdf = new Player()
 				asdf.world = this[""]
-				asdf.respawn()
+				asdf.setDefaults()
 				this.loadSurvivStr(new BitArrayReader(inv.survivStr,true),preBetaVersion,asdf)
 				this.cheats = asdf.cheats
 				this.gameMode = asdf.survival ? "survival" : "creative"
@@ -32832,7 +32853,7 @@ class World{ // aka trueWorld
 		for(let i=0;i<durability;i++){
 			let index = reader.read(4)
 			let v = reader.read(16)
-			if(inventory.hotbar[index].durability) inventory.hotbar[index].durability = v
+			if(inventory.hotbar[index]) inventory.hotbar[index].durability = v
 		}
 		for(let i=0;i<durabilityInv;i++){
 			let index = reader.read(5)
@@ -32850,10 +32871,21 @@ class World{ // aka trueWorld
 			let name = reader.readString()
 			if(inventory.main[index]) inventory.main[index].customName = name
 		}
-		let achievmentLen = reader.read(32)
-		p.achievments.length = 0
-		for(let i=0;i<achievmentLen;i++){
-			p.achievments.push(reader.read(32))
+		let bit = reader.bit
+		try{
+			let achievmentLen = reader.read(32)
+			p.achievments.length = 0
+			for(let i=0;i<achievmentLen;i++){
+				p.achievments.push(reader.read(32))
+			}
+		}catch(e){
+			if(!(e instanceof RangeError)) throw e
+			reader.bit = bit
+			let achievmentLen = reader.read(8)
+			p.achievments.length = 0
+			for(let i=0;i<achievmentLen;i++){
+				p.achievments.push(reader.read(8))
+			}
 		}
 	}
 	loadInvPreBeta(reader,p){
@@ -32872,7 +32904,7 @@ class World{ // aka trueWorld
 		for(let i=0;i<durability;i++){
 			let index = reader.read(4)
 			let v = reader.read(16)
-			if(inventory.hotbar[index].durability) inventory.hotbar[index].durability = v
+			if(inventory.hotbar[index]) inventory.hotbar[index].durability = v
 		}
 		for(let i=0;i<durabilityInv;i++){
 			let index = reader.read(5)
@@ -32890,10 +32922,10 @@ class World{ // aka trueWorld
 			let name = reader.readString()
 			if(inventory.main[index]) inventory.main[index].customName = name
 		}
-		let achievmentLen = reader.read(32)
+		let achievmentLen = reader.read(8)
 		p.achievments.length = 0
 		for(let i=0;i<achievmentLen;i++){
-			p.achievments.push(reader.read(32))
+			p.achievments.push(reader.read(8))
 		}
 	}
 	loadOldInv(str,p){
@@ -33178,7 +33210,7 @@ window.parent.postMessage({ready:true}, "*")
 		for(let p of this.players) p.saveInv()
 		return this.playersInv
 	}
-	serverAddPlayer(c, id, username, host = false, admin = false, onclose = null){
+	serverAddPlayer(c, id, username, host = false, admin = false, onclose = null, onjoined = null){
 		let p = new Player()
 		p.id = id
 		p.host = host
@@ -33191,6 +33223,8 @@ window.parent.postMessage({ready:true}, "*")
 		}
 		p.lastSendEntities = 0
 		p.updateingLoadedI = 0
+		p.lastChunk = ","
+		p.lastDimension = ""
 		p.inventory.slotMapPlace = new Map()
 		p.inventory.slotMapIdx = new Map()
 		p.inventory.prevSlots = []
@@ -33204,6 +33238,7 @@ window.parent.postMessage({ready:true}, "*")
 			}
 		}
 		c.onmessage = async function(data){
+			if(world.onmessage && world.onmessage(data,p)) return
 			if(data.type === "connect"){
 				username = p.username = username || data.username
 				await Promise.all(world.loadPromises)
@@ -33212,7 +33247,7 @@ window.parent.postMessage({ready:true}, "*")
 				p.cheats = world.cheats//will be overwritten if inv exists
 				p.gameMode = world.gameMode
 
-				p.respawn()
+				p.setDefaults()
 				let inv = world.playersInv[host ? ":host" : username]
 				if(inv){//older stuff
 					let preBetaVersion = inv.version && verMoreThan("1.1.0",inv.version.replace(/(Alpha|Beta) /, ''))
@@ -33235,12 +33270,12 @@ window.parent.postMessage({ready:true}, "*")
 							world.loadSurvivStr(new BitArrayReader(inv.survivStr), preBetaVersion, p)
 						}catch(e){
 							console.error(e)
-							p.cheats = world.cheats
+							p.cheats = world.cheats // change them back
 							p.gameMode = world.gameMode
 							p.spawnPoint.x = world.spawnPoint.x
 							p.spawnPoint.y = world.spawnPoint.y
 							p.spawnPoint.z = world.spawnPoint.z
-							p.respawn()
+							p.setDefaults()
 						}
 					}
 					if(inv.x !== undefined){
@@ -33281,8 +33316,18 @@ window.parent.postMessage({ready:true}, "*")
 				p.setRot(p.rx,p.ry,p.bodyRot,true)
 				p.sendEffects()
 				sendOthers(data)
+			}else if(data.type === "joined"){
+				if(onjoined) onjoined(p)
 			}else if(data.type === "pos"){
 				let pos = data.data
+				let canPos = true
+				if(p.confirmPos){
+					//if(max(abs(pos.x-p.x),abs(pos.y-p.y),abs(pos.z-p.z))<10)
+					if(pos.dimension === p.dimension){
+						p.confirmPos = false
+					}else canPos = false
+				}
+				if(canPos){
 				p.setPos(pos.x,pos.y,pos.z,pos.velx,pos.vely,pos.velz)
 				p.setRot(pos.rx, pos.ry, pos.bodyRot)
 				p.onGround = pos.onGround
@@ -33316,6 +33361,7 @@ window.parent.postMessage({ready:true}, "*")
 				p.pos = data
 				for(let p2 of world.players){
 					if(p2 !== p && p2.pos) p2.posUpdated[id] = p.pos
+				}
 				}
 				for(let u in p.posUpdated){
 					if(p.posUpdated[u]){
@@ -33354,14 +33400,8 @@ window.parent.postMessage({ready:true}, "*")
 				p.updateingLoadedI++
 				p.loadDistance = data.loadDistance
 				p.loadChunks = data.data
-				world.loadedUpdate = true
-			}else if(data.type === "mySkin" || data.type === "particles" || data.type === "achievment" || data.type === "harmEffect" || data.type === "playSound" || data.type === "title" || data.type === "joined"){
+			}else if(data.type === "mySkin" || data.type === "particles" || data.type === "playSound"){
 				sendOthers(data)
-			}else if(data.type === "hit"){
-				if(data.isEntity){
-					let ent = world.entities[world[p.dimension].getEntity(data.TO)]
-					if(ent) ent.onhit(data.damage,false, data.velx,data.velz, data.id)
-				}else world.sendPlayer(data,data.TO)
 			}else if(data.type === "message"){
 				data.fromServer = false
 				data.username = username
@@ -33456,7 +33496,7 @@ window.parent.postMessage({ready:true}, "*")
 							let change = nitem ? pitem.amount-nitem.amount : pitem.amount
 							let d = p.direction
 							let place = inventory.slotMapPlace.get(data.idxs[0])
-							if(p.survival || place !== "holding" && p.cheats) world[p.dimension].addItems(p.x, p.y, p.z, d.x/4, d.y/4, d.z/4, pitem.id, false, change,pitem.durability,pitem.customName,p.id)
+							if(p.survival || place !== "holding" && p.cheats) world[p.dimension].addItems(p.x, p.y, p.z, d.x/2, d.y/2, d.z/2, pitem.id, false, change,pitem.durability,pitem.customName,p.id)
 							break check
 						}
 					}
@@ -33622,6 +33662,15 @@ window.parent.postMessage({ready:true}, "*")
 				}
 			}
 
+			let maxChunkX = (p.x >> 4) + p.loadDistance
+			let maxChunkZ = (p.z >> 4) + p.loadDistance
+			let chunk = maxChunkX + "," + maxChunkZ
+			if (chunk !== p.lastChunk || p.dimension !== p.lastDimension) {
+				p.lastChunk = chunk
+				p.lastDimension = p.dimension
+				world.loadedUpdate = true
+			}
+
 			if(this.updateingLoaded || p.doingPortal) return
 			let id = this.updateingLoadedI
 			this.updateingLoaded = true
@@ -33630,6 +33679,8 @@ window.parent.postMessage({ready:true}, "*")
 				let x = p.loadChunks[i], z = p.loadChunks[i+1]
 				let chunk = world[p.dimension].getChunk(x*16,z*16)
 				if(chunk && chunk.canSendClient){
+					p.loadChunks.splice(i,2)
+					i -= 2
 					if(host) c.send({type:"chunkData",x,z})
 					else c.send({
 						type:"chunkData",
@@ -33641,8 +33692,6 @@ window.parent.postMessage({ready:true}, "*")
 						caveY:chunk.caveY,
 						caveBiomes:chunk.caveBiomes
 					})
-					p.loadChunks.splice(i,2)
-					i -= 2
 				}
 			}
 			this.updateingLoaded = false
