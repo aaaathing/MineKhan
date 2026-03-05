@@ -1,6 +1,6 @@
 "use strict"
 
-const version = "Beta 1.1.3"
+const version = "Beta 1.1.2"
 let win, isNode = false
 try{
 	win = window
@@ -1375,16 +1375,16 @@ const blockData = [
 						world.setBlock(x+1,y-5,z,blockIds.obsidian)
 						//layer2
 						world.setBlock(x-2,y-4,z,blockIds.obsidian)
-						world.setBlock(x-1,y-4,z,blockIds.portal|NORTH)
-						world.setBlock(x,y-4,z,blockIds.portal|NORTH)
+						world.setBlock(x-1,y-4,z,blockIds.portal|PORTAL|NORTH)
+						world.setBlock(x,y-4,z,blockIds.portal|PORTAL|NORTH)
 						world.setBlock(x+1,y-4,z,blockIds.obsidian)
 						world.setBlock(x-2,y-3,z,blockIds.obsidian)
-						world.setBlock(x-1,y-3,z,blockIds.portal|NORTH)
-						world.setBlock(x,y-3,z,blockIds.portal|NORTH)
+						world.setBlock(x-1,y-3,z,blockIds.portal|PORTAL|NORTH)
+						world.setBlock(x,y-3,z,blockIds.portal|PORTAL|NORTH)
 						world.setBlock(x+1,y-3,z,blockIds.obsidian)
 						world.setBlock(x-2,y-2,z,blockIds.obsidian)
-						world.setBlock(x-1,y-2,z,blockIds.portal|NORTH)
-						world.setBlock(x,y-2,z,blockIds.portal|NORTH)
+						world.setBlock(x-1,y-2,z,blockIds.portal|PORTAL|NORTH)
+						world.setBlock(x,y-2,z,blockIds.portal|PORTAL|NORTH)
 						world.setBlock(x+1,y-2,z,blockIds.obsidian)
 						//layer5
 						world.setBlock(x-2,y-1,z,blockIds.obsidian)
@@ -1398,16 +1398,16 @@ const blockData = [
 						world.setBlock(x,y-5,z+1,blockIds.obsidian)
 						//layer2
 						world.setBlock(x,y-4,z-2,blockIds.obsidian)
-						world.setBlock(x,y-4,z-1,blockIds.portal|EAST)
-						world.setBlock(x,y-4,z,blockIds.portal|EAST)
+						world.setBlock(x,y-4,z-1,blockIds.portal|PORTAL|EAST)
+						world.setBlock(x,y-4,z,blockIds.portal|PORTAL|EAST)
 						world.setBlock(x,y-4,z+1,blockIds.obsidian)
 						world.setBlock(x,y-3,z-2,blockIds.obsidian)
-						world.setBlock(x,y-3,z-1,blockIds.portal|EAST)
-						world.setBlock(x,y-3,z,blockIds.portal|EAST)
+						world.setBlock(x,y-3,z-1,blockIds.portal|PORTAL|EAST)
+						world.setBlock(x,y-3,z,blockIds.portal|PORTAL|EAST)
 						world.setBlock(x,y-3,z+1,blockIds.obsidian)
 						world.setBlock(x,y-2,z-2,blockIds.obsidian)
-						world.setBlock(x,y-2,z-1,blockIds.portal|EAST)
-						world.setBlock(x,y-2,z,blockIds.portal|EAST)
+						world.setBlock(x,y-2,z-1,blockIds.portal|PORTAL|EAST)
+						world.setBlock(x,y-2,z,blockIds.portal|PORTAL|EAST)
 						world.setBlock(x,y-2,z+1,blockIds.obsidian)
 						//layer5
 						world.setBlock(x,y-1,z-2,blockIds.obsidian)
@@ -2407,7 +2407,6 @@ const blockData = [
 			}else if(block !== this.id) world.setBlock(x,y,z,this.id,false,false,false,true)
 			return minSize
 		},
-		tick: function(block,x,y,z,world){this.update(x,y,z,world)},
 		onplace: function(x,y,z, player,world){
 			this.update(x,y,z,world)
 		}
@@ -2464,17 +2463,17 @@ const blockData = [
 		solid:false,
 		onupdate:function(x,y,z,b,world,sx,sy,sz){
 			var fx = x, fz = z
-			switch(b&ROTATION){
-				case NORTH:
+			switch(b){
+				case this.id | WALLFLAT | NORTH:
 					fz++
 					break
-				case SOUTH:
+				case this.id | WALLFLAT | SOUTH:
 					fz--
 					break
-				case EAST:
+				case this.id | WALLFLAT | EAST:
 					fx++
 					break
-				case WEST:
+				case this.id | WALLFLAT | WEST:
 					fx--
 					break
 			}
@@ -2569,8 +2568,7 @@ const blockData = [
 		inLiquid:2,
 		ambientSound:"liquid.lava",
 		getLevelDifference:function(level,dimension){return dimension === "nether" ? level-1 : level-2},
-		tick:function(block,x,y,z,world){
-			if(!world.world.settings.fireSpreads) return
+		tick:function(x,y,z,world){
 			blockData[blockIds.fire].spread(x,y,z,world)
 		},
 		onupdate:function(x,y,z,b,world,sx,sy,sz){
@@ -2594,6 +2592,10 @@ const blockData = [
 			if(!world.world.settings.blocksFall) return
 			var me = this
 			world.setTimeout(() => me.flow(x,y,z,world), tickTime*(world.dimension === "nether" ? 10 : 30), x,y,z)
+		},
+		getY:function(x,y,z){
+			var block = world.getBlock(x,y,z)
+			return (min((this.getLevel(block))*2,14.5)/16)-0.5
 		},
 		onspawnflow:function(x,y,z,world){
 			const under = world.getBlock(x,y-1,z)
@@ -5838,8 +5840,6 @@ const blockData = [
 		name:"endStone",
 		Name:"End Stone",
 		category:"nature",
-		type:"rock1",
-		hardness:5, blastResistance:6, stoneSound:true,
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true
 	},
 	
@@ -6289,8 +6289,7 @@ const blockData = [
 			var block = this.getAttached(x,y,z,b,true,world)
 			if(!block || !blockData[block].solid && !blockData[block].liquid) world.setBlock(x,y,z,0,false,false,false,false)
 		},
-		tick:function(block,x,y,z,world){
-			if(!world.world.settings.fireSpreads) return
+		tick:function(x,y,z,world){
 			var block = world.getBlock(x,y,z)
 			var attached = this.getAttached(x,y,z,block,false,world)
 			var ax = attached[1], ay = attached[2], az = attached[3]
@@ -6391,7 +6390,7 @@ const blockData = [
 				}
 			}
 			for(let i=0; i<spread.length; i+=4){
-				world.setBlock(spread[i],spread[i+1],spread[i+2],blockIds.portal|EAST)
+				world.setBlock(spread[i],spread[i+1],spread[i+2],blockIds.portal|PORTAL|EAST)
 			}
 			return true
 		},
@@ -6423,7 +6422,7 @@ const blockData = [
 				}
 			}
 			for(let i=0; i<spread.length; i+=4){
-				world.setBlock(spread[i],spread[i+1],spread[i+2],blockIds.portal|NORTH)
+				world.setBlock(spread[i],spread[i+1],spread[i+2],blockIds.portal|PORTAL|NORTH)
 			}
 			return true
 		},
@@ -6774,7 +6773,7 @@ const blockData = [
 			data = data.contents
 			for(var i=0; i<data.length; i++){
 				if(data[i]){
-					world.addItem(x,y,z,0,0,0,data[i], true)
+					world.addItem(x,y,z,0,0,0,data, true)
 				}
 			}
 		},
@@ -7032,7 +7031,7 @@ const blockData = [
 			data = data.contents
 			for(var i=0; i<data.length; i++){
 				if(data[i]){
-					world.addItem(x,y,z,0,0,0,data[i], true)
+					world.addItem(x,y,z,0,0,0,data, true)
 				}
 			}
 		},
@@ -8994,7 +8993,7 @@ const blockData = [
 			ent.world.playSound(x,y,z,"portal.travel")
 			if(ent.type === "Player"){
 				ent.addAchievment("Into the End")
-				if(ent.dimension === "" && !ent.didEndPoem /*&& !ent.cheats*/){
+				if(ent.dimension === "" && !ent.didEndPoem && !ent.cheats){
 					ent.didEndPoem = true
 					ent.connection.send({type:"doEndPoem"})
 				}
@@ -9216,15 +9215,13 @@ const blockData = [
 		Name:"Mud Bricks",
 		category:"build",
 		hardness:1.5,
-		craftSlabs:true, craftStairs:true
 	},
 	{
 		name:"packedMud",
 		Name:"Packed Mud",
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true,
 		category:"build",
-		hardness:1,
-		craftSlabs:true, craftStairs:true
+		hardness:1
 	},
 	{
 		name:"reinforcedDeepslate",
@@ -9694,7 +9691,7 @@ const blockData = [
 					target |= LANTERN
 					break
 				case id | LANTERN:
-					if(add) world.addItems(x,y,z+0.5,0,0,0,blockIds.boneMeal,true, 1)
+					if(add) world.addItem(x,y,z+0.5,0,0,0,blockIds.boneMeal,true, 1)
 			}
 			holdObj.amount--
 			if(add) world.setBlock(x,y,z,target)
@@ -10338,7 +10335,7 @@ const blockData = [
 			data = data.contents
 			for(var i=0; i<data.length; i++){
 				if(data[i]){
-					world.addItem(x,y,z,0,0,0,data[i], true)
+					world.addItem(x,y,z,0,0,0,data, true)
 				}
 			}
 		},
@@ -10427,7 +10424,7 @@ const blockData = [
 			data = data.contents
 			for(var i=0; i<data.length; i++){
 				if(data[i]){
-					world.addItem(x,y,z,0,0,0,data[i], true)
+					world.addItem(x,y,z,0,0,0,data[i].id, true, data[i].amount, data[i].durability, data[i].customName)
 				}
 			}
 		},
@@ -11511,6 +11508,10 @@ const blockData = [
 			var me = this
 			world.setTimeout(() => me.flow(x,y,z,world), tickTime*5, x,y,z)
 		},
+		getY:function(x,y,z){
+			var block = world.getBlock(x,y,z)
+			return (min((this.getLevel(block) || (block ? 8 : 0))*2,14.5)/16)-0.5
+		},
 	},
 	{
 		name: "oilBucket",
@@ -12142,7 +12143,6 @@ const blockData = [
 			let pos = movePositionByFace(face,x,y,z)
 			let ent = new entities[entityIds.Minecart](pos[0],pos[1],pos[2])
 			world.addEntity(ent)
-			item.amount--
 		},
 	},
 	{
@@ -12235,7 +12235,7 @@ const blockData = [
 		textures: ["dirt","dirtPathTop","dirtPathSide","dirtPathSide","dirtPathSide","dirtPathSide"],
 		solid: true,
 		transparent: true,
-		hardness:0.5, blastResistance:0.5
+		cullFace: "same",
 	},
 	{
 		name:"gun",
@@ -12243,41 +12243,14 @@ const blockData = [
 		serveronuse: (x,y,z, block,world,face,item,p) => {
 			var pd = p.direction
 			world.addEntity(new entities[entityIds.SlingshotShot](p.x+pd.x,p.y+pd.y,p.z+pd.z,pd.x,pd.y,pd.z))
-			item.durability--
 		},
 		useAnywhere:true,
 		stackSize:1,
-		tool:true,
-		category:"tools",
-		durability:10,
+		category:"tools"
 	},
-	{ name: "dirtBall", textures:"podzolTop", shapeName:"ball", hardness:0.5, blastResistance:0.5, transparent:true,shadow:false,smoothLight:false,category:"nature"},
-	{ name:"leather", Name:"Leather", item:true, category:"misc" },
-	{ name:"leatherHelmet", Name:"Leather Cap", item:true, armor:true, equipmentSlot:"helmet", defense:1, durability:55, stackSize:1, material:"leather", equipmentTexture:"leather" },
-	{ name:"leatherChestplate", Name:"Leather Tunic", item:true, armor:true, equipmentSlot:"chestplate", defense:3, durability:80, stackSize:1, material:"leather", equipmentTexture:"leather" },
-	{ name:"leatherLeggings", Name:"Leather Pants", item:true, armor:true, equipmentSlot:"leggings", defense:2, durability:75, stackSize:1, material:"leather", equipmentTexture:"leather", leggings:true },
-	{ name:"leatherBoots", Name:"Leather Boots", item:true, armor:true, equipmentSlot:"boots", defense:1, durability:65, stackSize:1, material:"leather", equipmentTexture:"leather" },
-	{ name:"ironHelmet", Name:"Iron Helmet", item:true, armor:true, equipmentSlot:"helmet", defense:2, durability:165, stackSize:1, material:"ironIngot", equipmentTexture:"iron" },
-	{ name:"ironChestplate", Name:"Iron Chestplate", item:true, armor:true, equipmentSlot:"chestplate", defense:6, durability:240, stackSize:1, material:"ironIngot", equipmentTexture:"iron" },
-	{ name:"ironLeggings", Name:"Iron Leggings", item:true, armor:true, equipmentSlot:"leggings", defense:5, durability:225, stackSize:1, material:"ironIngot", equipmentTexture:"iron", leggings:true },
-	{ name:"ironBoots", Name:"Iron Boots", item:true, armor:true, equipmentSlot:"boots", defense:2, durability:195, stackSize:1, material:"ironIngot", equipmentTexture:"iron" },
-	{ name:"goldenHelmet", Name:"Golden Helmet", item:true, armor:true, equipmentSlot:"helmet", defense:2, durability:77, stackSize:1, material:"goldIngot", equipmentTexture:"gold" },
-	{ name:"goldenChestplate", Name:"Golden Chestplate", item:true, armor:true, equipmentSlot:"chestplate", defense:5, durability:112, stackSize:1, material:"goldIngot", equipmentTexture:"gold" },
-	{ name:"goldenLeggings", Name:"Golden Leggings", item:true, armor:true, equipmentSlot:"leggings", defense:3, durability:105, stackSize:1, material:"goldIngot", equipmentTexture:"gold", leggings:true },
-	{ name:"goldenBoots", Name:"Golden Boots", item:true, armor:true, equipmentSlot:"boots", defense:1, durability:91, stackSize:1, material:"goldIngot", equipmentTexture:"gold" },
-	{ name:"diamondHelmet", Name:"Diamond Helmet", item:true, armor:true, equipmentSlot:"helmet", defense:3, durability:363, stackSize:1, material:"diamond", equipmentTexture:"diamond" },
-	{ name:"diamondChestplate", Name:"Diamond Chestplate", item:true, armor:true, equipmentSlot:"chestplate", defense:8, durability:528, stackSize:1, material:"diamond", equipmentTexture:"diamond" },
-	{ name:"diamondLeggings", Name:"Diamond Leggings", item:true, armor:true, equipmentSlot:"leggings", defense:6, durability:495, stackSize:1, material:"diamond", equipmentTexture:"diamond", leggings:true },
-	{ name:"diamondBoots", Name:"Diamond Boots", item:true, armor:true, equipmentSlot:"boots", defense:3, durability:429, stackSize:1, material:"diamond", equipmentTexture:"diamond" },
-	{ name:"chainmailHelmet", Name:"Chainmail Helmet", item:true, armor:true, equipmentSlot:"helmet", defense:2, durability:165, stackSize:1, material:"chain", equipmentTexture:"chainmail" },
-	{ name:"chainmailChestplate", Name:"Chainmail Chestplate", item:true, armor:true, equipmentSlot:"chestplate", defense:5, durability:240, stackSize:1, material:"chain", equipmentTexture:"chainmail" },
-	{ name:"chainmailLeggings", Name:"Chainmail Leggings", item:true, armor:true, equipmentSlot:"leggings", defense:4, durability:225, stackSize:1, material:"chain", equipmentTexture:"chainmail", leggings:true },
-	{ name:"chainmailBoots", Name:"Chainmail Boots", item:true, armor:true, equipmentSlot:"boots", defense:1, durability:195, stackSize:1, material:"chain", equipmentTexture:"chainmail" },
-	{ name:"netheriteHelmet", Name:"Netherite Helmet", item:true, armor:true, equipmentSlot:"helmet", defense:3, toughness:3, durability:407, stackSize:1, material:"netheriteIngot", equipmentTexture:"netherite" },
-	{ name:"netheriteChestplate", Name:"Netherite Chestplate", item:true, armor:true, equipmentSlot:"chestplate", defense:8, toughness:3, durability:592, stackSize:1, material:"netheriteIngot", equipmentTexture:"netherite" },
-	{ name:"netheriteLeggings", Name:"Netherite Leggings", item:true, armor:true, equipmentSlot:"leggings", defense:6, toughness:3, durability:555, stackSize:1, material:"netheriteIngot", equipmentTexture:"netherite", leggings:true },
-	{ name:"netheriteBoots", Name:"Netherite Boots", item:true, armor:true, equipmentSlot:"boots", defense:3, toughness:3, durability:481, stackSize:1, material:"netheriteIngot", equipmentTexture:"netherite" },
-	{ name:"elytra", Name:"Elytra", item:true, wings:true, equipmentSlot:"back", stackSize:1, durability:432, rarity:"epic", equipmentTexture:"equipment_elytra" }
+	{ name: "bedrockBricks", Name:"Bedrock Bricks", textures:"bricks", hardness:1000, blastResistance:3600000, stoneSound:true, pistonPush:false, pistonPull:false, hidden:true},
+	{ name: "bedrockPressurePlate", Name: "Bedrock Pressure Plate", textures: "bedrock", pressurePlate: true, hardness:1000, blastResistance:3600000, category:"redstone" },
+	{ name: "bedrockButton", Name: "Bedrock Button", textures:"bedrock", button:true, transparent: true, shadow:false, hardness:1000, blastResistance:3600000, category:"redstone" },
 ];
 const BLOCK_COUNT = blockData.length
 console.log(BLOCK_COUNT," blocks on server side")
@@ -12952,34 +12925,7 @@ const crafts = {
 	"ironIngot,air,ironIngot,ironIngot,ironIngot,ironIngot":{name:"minecart",shaped:true},
 	"ironIngot,air,ironIngot,ironIngot,stick,ironIngot,ironIngot,air,ironIngot":{name:"rail",amount:16},
 	"goldIngot,air,goldIngot,goldIngot,stick,goldIngot,goldIngot,redstone,goldIngot":{name:"poweredRail",amount:16},
-	"corn,bowl":{name:"popcornBowl",shapeless:true},
-	// Armor recipes
-	"leather,leather,leather,leather,air,leather,air,air,air":{name:"leatherHelmet"},
-	"leather,air,leather,leather,leather,leather,leather,leather,leather":{name:"leatherChestplate"},
-	"leather,leather,leather,leather,air,leather,leather,air,leather":{name:"leatherLeggings"},
-	"air,air,air,leather,air,leather,leather,air,leather":{name:"leatherBoots"},
-	"ironIngot,ironIngot,ironIngot,ironIngot,air,ironIngot,air,air,air":{name:"ironHelmet"},
-	"ironIngot,air,ironIngot,ironIngot,ironIngot,ironIngot,ironIngot,ironIngot,ironIngot":{name:"ironChestplate"},
-	"ironIngot,ironIngot,ironIngot,ironIngot,air,ironIngot,ironIngot,air,ironIngot":{name:"ironLeggings"},
-	"air,air,air,ironIngot,air,ironIngot,ironIngot,air,ironIngot":{name:"ironBoots"},
-	"goldIngot,goldIngot,goldIngot,goldIngot,air,goldIngot,air,air,air":{name:"goldenHelmet"},
-	"goldIngot,air,goldIngot,goldIngot,goldIngot,goldIngot,goldIngot,goldIngot,goldIngot":{name:"goldenChestplate"},
-	"goldIngot,goldIngot,goldIngot,goldIngot,air,goldIngot,goldIngot,air,goldIngot":{name:"goldenLeggings"},
-	"air,air,air,goldIngot,air,goldIngot,goldIngot,air,goldIngot":{name:"goldenBoots"},
-	"diamond,diamond,diamond,diamond,air,diamond,air,air,air":{name:"diamondHelmet"},
-	"diamond,air,diamond,diamond,diamond,diamond,diamond,diamond,diamond":{name:"diamondChestplate"},
-	"diamond,diamond,diamond,diamond,air,diamond,diamond,air,diamond":{name:"diamondLeggings"},
-	"air,air,air,diamond,air,diamond,diamond,air,diamond":{name:"diamondBoots"},
-	"chain,chain,chain,chain,air,chain,air,air,air":{name:"chainmailHelmet"},
-	"chain,air,chain,chain,chain,chain,chain,chain,chain":{name:"chainmailChestplate"},
-	"chain,chain,chain,chain,air,chain,chain,air,chain":{name:"chainmailLeggings"},
-	"air,air,air,chain,air,chain,chain,air,chain":{name:"chainmailBoots"},
-	"diamondHelmet,netheriteIngot":{name:"netheriteHelmet",shapeless:true},
-	"diamondChestplate,netheriteIngot":{name:"netheriteChestplate",shapeless:true},
-	"diamondLeggings,netheriteIngot":{name:"netheriteLeggings",shapeless:true},
-	"diamondBoots,netheriteIngot":{name:"netheriteBoots",shapeless:true},
-
-	"dirt":{name:"packedMud",shapeless:true},
+	"corn,bowl":{name:"popcornBowl",shapeless:true}
 }
 for (let i = 1; i < BLOCK_COUNT; ++i){
 	const block = blockData[i]
@@ -13105,19 +13051,6 @@ function getBlockId(name){
 	if(name.endsWith("|STAIR")) id |= STAIR
 	return id
 }
-function randomTrim(item,others){
-	for(let i in others){
-		if(others[i] && others[i].trim){
-			item.trim = others[i].trim
-			item.trim_material = others[i].trim_material
-			return
-		}
-	}
-	let t=["bolt","coast","dune","eye","flow","host","raiser","rib","sentry","shaper","silence","snout","spire","tide","vex","ward","wayfinder","wild"]
-	let m=["amethyst","copper","diamond","emerald","gold","iron","lapis","netherite","quartz","redstone","resin"]
-	item.trim = t[floor(Math.random()*t.length)]
-	item.trim_material = m[floor(Math.random()*m.length)]
-}
 const achievementTypes = [
 	//dont change order, because it may cause problems with loading
 	{
@@ -13208,6 +13141,76 @@ for(let i=0; i<achievementTypes.length; i++){
 }
 win.achievmentIds = achievmentIds, win.achievementTypes = achievementTypes
 
+//add something to inventory
+function newInvItem(p, data){
+	if(typeof data === "number") data = {id:data, amount:1}
+	//look for empty slot
+	let {inventory} = p
+	for(let i=0; i<inventory.hotbar.length; i++){
+		if(inventory.hotbar[i] && inventory.hotbar[i].id === data.id && (!inventory.hotbar[i].customName && !data.customName || inventory.hotbar[i].customName === data.customName) && inventory.hotbar[i].amount < blockData[inventory.hotbar[i].id].stackSize){
+			inventory.hotbar[i].amount ++
+			return true
+		}
+	}
+	for(let i=0; i<inventory.main.length; i++){
+		if(inventory.main[i] && inventory.main[i].id === data.id && (!inventory.main[i].customName && !data.customName || inventory.main[i].customName === data.customName) && inventory.main[i].amount < blockData[inventory.main[i].id].stackSize){
+			inventory.main[i].amount ++;
+			return true
+		}
+	}
+	for(let i=0; i<inventory.hotbar.length; i++){
+		if(!inventory.hotbar[i]){
+			inventory.hotbar[i] = {...data}
+			if(i === inventory.hotbarSlot){
+				inventory.showName = 1.5
+			}
+			return true
+		}
+	}
+	for(let i=0; i<inventory.main.length; i++){
+		if(!inventory.main[i]){
+			inventory.main[i] = {...data}
+			return true
+		}
+	}
+	return false
+}
+function minusOneItem(p,id){
+	let {inventory} = p
+	for(let i=0; i<inventory.hotbar.length; i++){
+		if(inventory.hotbar[i] && inventory.hotbar[i].id === id){
+			if(p.survival){
+				inventory.hotbar[i].amount--
+				if(!inventory.hotbar[i].amount) inventory.hotbar[i] = null
+			}
+			return true
+		}
+	}
+	for(let i=0; i<inventory.main.length; i++){
+		if(inventory.main[i] && inventory.main[i].id === id){
+			if(p.survival){
+				inventory.main[i].amount--
+				if(!inventory.main[i].amount) inventory.main[i] = null
+			}
+			return true
+		}
+	}
+	return false
+}
+function hasItem(p,id){
+	let {inventory} = p
+	for(let i=0; i<inventory.hotbar.length; i++){
+		if(inventory.hotbar[i] && inventory.hotbar[i].id === id){
+			return true
+		}
+	}
+	for(let i=0; i<inventory.main.length; i++){
+		if(inventory.main[i] && inventory.main[i].id === id){
+			return true
+		}
+	}
+	return false
+}
 
 /*Format for jigsaw
 {
@@ -13935,10 +13938,10 @@ let shapes = {
 		cull: {
 			top: 0,
 			bottom: 3,
-			north: 1,
-			south: 1,
-			east: 1,
-			west: 1
+			north: 3,
+			south: 3,
+			east: 3,
+			west: 3
 		},
 	},
 	none: {
@@ -16757,140 +16760,64 @@ let shapes = {
 	},*/
 	playerBody:{
 		verts:[
-			[objectify(4,2,6,8,4,28,16),objectify(3.5,1.5,5.5,9,5,28,32,false,false,false,8,4)],
-			[objectify(4,14,10,8,4,20,16),objectify(3.5,14.5,10.5,9,5,20,32,false,false,false,8,4)],
-			[objectify(12,14,10,8,12,20,20),objectify(12.5,14.5,10.5,9,13,20,36,false,false,false,8,12)],
-			[objectify(4,14,6,8,12,32,20),objectify(3.5,14.5,5.5,9,13,32,36,false,false,false,8,12)],
-			[objectify(12,14,6,4,12,28,20),objectify(12.5,14.5,5.5,5,13,28,36,false,false,false,4,12)],
-			[objectify(4,14,10,4,12,16,20),objectify(3.5,14.5,10.5,5,13,16,36,false,false,false,4,12)]
+			[objectify(4,2,6,8,4,28,16),objectify(3.75,1.75,5.75,8.5,4.5,28,32,false,false,false,8,4)],
+			[objectify(4,14,10,8,4,20,16),objectify(3.75,14.25,10.25,8.5,4.5,20,32,false,false,false,8,4)],
+			[objectify(12,14,10,8,12,20,20),objectify(12.25,14.25,10.25,8.5,12.5,20,36,false,false,false,8,12)],
+			[objectify(4,14,6,8,12,32,20),objectify(3.75,14.25,5.75,8.5,12.5,32,36,false,false,false,8,12)],
+			[objectify(12,14,6,4,12,28,20),objectify(12.25,14.25,5.75,4.5,12.5,28,36,false,false,false,4,12)],
+			[objectify(4,14,10,4,12,16,20),objectify(3.75,14.25,10.25,4.5,12.5,16,36,false,false,false,4,12)]
 		]
 	},
 	playerHead:{
 		verts:[
-			[objectify(4,8,4,8,8,16,0),objectify(3,6,3,10,10,48,0,false,false,false,8,8)],
-			[objectify(4,16,12,8,8,8,0),objectify(3,17,13,10,10,40,0,false,false,false,8,8)],
-			[objectify(12,16,12,8,8,8,8),objectify(13,17,13,10,10,40,8,false,false,false,8,8)],
-			[objectify(4,16,4,8,8,24,8),objectify(3,17,3,10,10,56,8,false,false,false,8,8)],
-			[objectify(12,16,4,8,8,16,8),objectify(13,17,3,10,10,48,8,false,false,false,8,8)],
-			[objectify(4,16,12,8,8,0,8),objectify(3,17,13,10,10,32,8,false,false,false,8,8)]
+			[objectify(4,8,4,8,8,16,0),objectify(3.75,7.75,3.75,8.5,8.5,48,0,false,false,false,8,8)],
+			[objectify(4,16,12,8,8,8,0),objectify(3.75,16.25,12.25,8.5,8.5,40,0,false,false,false,8,8)],
+			[objectify(12,16,12,8,8,8,8),objectify(12.25,16.25,12.25,8.5,8.5,40,8,false,false,false,8,8)],
+			[objectify(4,16,4,8,8,24,8),objectify(3.75,16.25,3.75,8.5,8.5,56,8,false,false,false,8,8)],
+			[objectify(12,16,4,8,8,16,8),objectify(12.25,16.25,3.75,8.5,8.5,48,8,false,false,false,8,8)],
+			[objectify(4,16,12,8,8,0,8),objectify(3.75,16.25,12.25,8.5,8.5,32,8,false,false,false,8,8)]
 		]
 	},
 	playerLeftArm:{
 		verts:[
-			[objectify(8,-4,6,4,4,40,48),objectify(7.5,-4.5,5.5,5,5,56,48, false,false,false,4,4)],
-			[objectify(8,8,10,4,4,36,48),objectify(7.5,8.5,10.5,5,5,52,48, false,false,false,4,4)],
-			[objectify(12,8,10,4,12,36,53),objectify(12.5,8.5,10.5,5,13,52,52, false,false,false,4,12)],
-			[objectify(8,8,6,4,12,44,52),objectify(7.5,8.5,5.5,5,13,60,52, false,false,false,4,12)],
-			[objectify(12,8,6,4,12,32,52),objectify(12.5,8.5,5.5,5,13,48,52, false,false,false,4,12)],
-			[objectify(8,8,10,4,12,40,52),objectify(7.5,8.5,10.5,5,13,56,52, false,false,false,4,12)]
+			[objectify(8,-4,6,4,4,40,48),objectify(7.75,-4.25,5.75,4.5,4.5,56,48, false,false,false,4,4)],
+			[objectify(8,8,10,4,4,36,48),objectify(7.75,8.25,10.25,4.5,4.5,52,48, false,false,false,4,4)],
+			[objectify(12,8,10,4,12,36,53),objectify(12.25,8.25,10.25,4.5,12.5,52,52, false,false,false,4,12)],
+			[objectify(8,8,6,4,12,44,52),objectify(7.75,8.25,5.75,4.5,12.5,60,52, false,false,false,4,12)],
+			[objectify(12,8,6,4,12,32,52),objectify(12.25,8.25,5.75,4.5,12.5,48,52, false,false,false,4,12)],
+			[objectify(8,8,10,4,12,40,52),objectify(7.75,8.25,10.25,4.5,12.5,56,52, false,false,false,4,12)]
 		]
 	},
 	playerRightArm:{
 		verts:[
-			[objectify(4,-4,6,4,4,48,16),objectify(3.5,-4.5,5.5,5,5,48,32, false,false,false,4,4)],
-			[objectify(4,8,10,4,4,44,16),objectify(3.5,8.5,10.5,5,5,44,32, false,false,false,4,4)],
-			[objectify(8,8,10,4,12,44,20),objectify(8.5,8.5,10.5,5,13,44,36, false,false,false,4,12)],
-			[objectify(4,8,6,4,12,52,20),objectify(3.5,8.5,5.5,5,13,52,36, false,false,false,4,12)],
-			[objectify(8,8,6,4,12,40,20),objectify(8.5,8.5,5.5,5,13,40,36, false,false,false,4,12)],
-			[objectify(4,8,10,4,12,48,20),objectify(3.5,8.5,10.5,5,13,48,36, false,false,false,4,12)]
+			[objectify(4,-4,6,4,4,48,16),objectify(3.75,-4.25,5.75,4.5,4.5,48,32, false,false,false,4,4)],
+			[objectify(4,8,10,4,4,44,16),objectify(3.75,8.25,10.25,4.5,4.5,44,32, false,false,false,4,4)],
+			[objectify(8,8,10,4,12,44,20),objectify(8.25,8.25,10.25,4.5,12.5,44,36, false,false,false,4,12)],
+			[objectify(4,8,6,4,12,52,20),objectify(3.75,8.25,5.75,4.5,12.5,52,36, false,false,false,4,12)],
+			[objectify(8,8,6,4,12,40,20),objectify(8.25,8.25,5.75,4.5,12.5,40,36, false,false,false,4,12)],
+			[objectify(4,8,10,4,12,48,20),objectify(3.75,8.25,10.25,4.5,12.5,48,36, false,false,false,4,12)]
 		]
 	},
 	playerLeftLeg:{
 		verts:[
-			[objectify(6,-4,6,4,4,24,48),objectify(5.5,-4.5,5.5,5,5,8,48, false,false,false,4,4)],
-			[objectify(6,8,10,4,4,20,48),objectify(5.5,8.5,10.5,5,5,4,48, false,false,false,4,4)],
-			[objectify(10,8,10,4,12,20,52),objectify(10.5,8.5,10.5,5,13,4,52, false,false,false,4,12)],
-			[objectify(6,8,6,4,12,28,52),objectify(5.5,8.5,5.5,5,13,12,52, false,false,false,4,12)],
-			[objectify(10,8,6,4,12,24,52),objectify(10.5,8.5,5.5,5,13,0,52, false,false,false,4,12)],
-			[objectify(6,8,10,4,12,16,52),objectify(5.5,8.5,10.5,5,13,8,52, false,false,false,4,12)]
+			[objectify(6,-4,6,4,4,24,48),objectify(5.75,-4.25,5.75,4.5,4.5,8,48, false,false,false,4,4)],
+			[objectify(6,8,10,4,4,20,48),objectify(5.75,8.25,10.25,4.5,4.5,4,48, false,false,false,4,4)],
+			[objectify(10,8,10,4,12,20,52),objectify(10.25,8.25,10.25,4.5,12.5,4,52, false,false,false,4,12)],
+			[objectify(6,8,6,4,12,28,52),objectify(5.75,8.25,5.75,4.5,12.5,12,52, false,false,false,4,12)],
+			[objectify(10,8,6,4,12,24,52),objectify(10.25,8.25,5.75,4.5,12.5,0,52, false,false,false,4,12)],
+			[objectify(6,8,10,4,12,16,52),objectify(5.75,8.25,10.25,4.5,12.5,8,52, false,false,false,4,12)]
 		]
 	},
 	playerRightLeg:{
 		verts:[
-			[objectify(6,-4,6,4,4,8,16),objectify(5.5,-4.5,5.5,5,5,8,32, false,false,false,4,4)],
-			[objectify(6,8,10,4,4,4,16),objectify(5.5,8.5,10.5,5,5,4,32, false,false,false,4,4)],
-			[objectify(10,8,10,4,12,4,20),objectify(10.5,8.5,10.5,5,13,4,36, false,false,false,4,12)],
-			[objectify(6,8,6,4,12,12,20),objectify(5.5,8.5,5.5,5,13,12,36, false,false,false,4,12)],
-			[objectify(10,8,6,4,12,8,20),objectify(10.5,8.5,5.5,5,13,0,36, false,false,false,4,12)],
-			[objectify(6,8,10,4,12,0,20),objectify(5.5,8.5,10.5,5,13,8,36, false,false,false,4,12)]
+			[objectify(6,-4,6,4,4,8,16),objectify(5.75,-4.25,5.75,4.5,4.5,8,32, false,false,false,4,4)],
+			[objectify(6,8,10,4,4,4,16),objectify(5.75,8.25,10.25,4.5,4.5,4,32, false,false,false,4,4)],
+			[objectify(10,8,10,4,12,4,20),objectify(10.25,8.25,10.25,4.5,12.5,4,36, false,false,false,4,12)],
+			[objectify(6,8,6,4,12,12,20),objectify(5.75,8.25,5.75,4.5,12.5,12,36, false,false,false,4,12)],
+			[objectify(10,8,6,4,12,8,20),objectify(10.25,8.25,5.75,4.5,12.5,0,36, false,false,false,4,12)],
+			[objectify(6,8,10,4,12,0,20),objectify(5.75,8.25,10.25,4.5,12.5,8,36, false,false,false,4,12)]
 		]
 	},
-	// Armor overlay shapes — 0.5px larger than inner skin on each side
-	// texWidth/texHeight=64/32 matches the equipment_humanoid_* texture format
-	// UV coords are in 64x32 armor texture pixel space
-	// Faces: [bottom, top, north(front), south(back), east(right), west(left)]
-	equipment_humanoid_helmet:{texWidth:64,texHeight:32,verts:[
-		[objectify(3, 7,  3, 10,10, 16,0, false,false,false, 8,8)], // bottom
-		[objectify(3,17, 13, 10,10,  8,0, false,false,false, 8,8)], // top
-		[objectify(13,17, 13, 10,10,  8,8, false,false,false, 8,8)], // front
-		[objectify(3,17, 3, 10,10, 24,8, false,false,false, 8,8)], // back
-		[objectify(13,17, 3, 10,10, 16,8, false,false,false, 8,8)], // right
-		[objectify(3,17, 13, 10,10,  0,8, false,false,false, 8,8)], // left
-	]},
-	equipment_humanoid_chestplate:{texWidth:64,texHeight:32,verts:[
-		[objectify(3, 1,  5, 10,6, 28,16, false,false,false, 8,4)], // bottom
-		[objectify(3,15, 11, 10,6, 20,16, false,false,false, 8,4)], // top
-		[objectify(13,15, 11, 10,14, 20,20, false,false,false, 8,12)], // front
-		[objectify(3,15, 5, 10,14, 32,20, false,false,false, 8,12)], // back
-		[objectify(13,15, 5, 6,14, 16,20, false,false,false, 4,12)], // right
-		[objectify(3,15, 11, 6,14, 28,20, false,false,false, 4,12)], // left
-	]},
-	equipment_humanoid_leftArm:{texWidth:64,texHeight:32,verts:[
-		[objectify(7,-5,  5, 6,6, 48,16, false,true,false, 4,4)], // bottom
-		[objectify(7, 9, 11, 6,6, 44,16, false,true,false, 4,4)], // top
-		[objectify(13, 9, 11, 6,14, 44,20, true,false,false, 4,12)], // front
-		[objectify(7, 9, 5, 6,14, 52,20, true,false,false, 4,12)], // back
-		[objectify(13, 9, 5, 6,14, 40,20, false,false,false, 4,12)], // right (inner for left arm)
-		[objectify(7, 9, 11, 6,14, 48,20, true,false,false, 4,12)], // left (outer for left arm)
-	]},
-	equipment_humanoid_rightArm:{texWidth:64,texHeight:32,verts:[
-		[objectify(3,-5,  5, 6,6, 48,16, true,false,false, 4,4)], // bottom
-		[objectify(3, 9, 11, 6,6, 44,16, true,false,false, 4,4)], // top
-		[objectify(9, 9,  11, 6,14, 44,20, false,false,false, 4,12)], // front
-		[objectify(3, 9, 5, 6,14, 52,20, false,false,false, 4,12)], // back
-		[objectify(9, 9,  5, 6,14, 48,20, false,false,false, 4,12)], // right (outer)
-		[objectify(3, 9, 11, 6,14, 40,20, true,false,false, 4,12)], // left (inner)
-	]},
-	equipment_humanoid_waist:{texWidth:64,texHeight:32,verts:[
-		[], // bottom
-		[], // top
-		[objectify(12.5, 14.5, 10.5, 9,13,  20,20, false,false,false, 8,12)], // front
-		[objectify(3.5, 14.5,  5.5, 9,13, 32,20, false,false,false, 8,12)], // back
-		[objectify(12.5, 14.5,  5.5, 5,13,  16,20, false,false,false, 4,12)], // right
-		[objectify(3.5, 14.5, 10.5, 5,13, 28,20, false,false,false, 4,12)], // left
-	]},
-	equipment_humanoid_leftLeg:{texWidth:64,texHeight:32,verts:[
-		[objectify(5.5,-4.5,  5.5, 5,5,  8,16, false,true,false, 4,4)], // bottom
-		[objectify(5.5, 8.5, 10.5, 5,5,  4,16, false,true,false, 4,4)], // top
-		[objectify(10.5, 8.5, 10.5, 5,13,  4,20, true,false,false, 4,12)], // front
-		[objectify(5.5, 8.5, 5.5, 5,13, 12,20, true,false,false, 4,12)], // back
-		[objectify(10.5, 8.5, 5.5, 5,13,  8,20, false,false,false, 4,12)], // right
-		[objectify(5.5, 8.5, 10.5, 5,13,  0,20, true,false,false, 4,12)], // left
-	]},
-	equipment_humanoid_rightLeg:{texWidth:64,texHeight:32,verts:[
-		[objectify(5.5,-4.5,  5.5, 5,5,  8,16, true,false,false, 4,4)], // bottom
-		[objectify(5.5, 8.5, 10.5, 5,5,  4,16, true,false,false, 4,4)], // top
-		[objectify(10.5, 8.5, 10.5, 5,13,  4,20, false,false,false, 4,12)], // front
-		[objectify(5.5, 8.5, 5.5, 5,13, 12,20, false,false,false, 4,12)], // back
-		[objectify(10.5, 8.5, 5.5, 5,13,  0,20, false,false,false, 4,12)], // right
-		[objectify(5.5, 8.5, 10.5, 5,13,  8,20, true,false,false, 4,12)], // left
-	]},
-	equipment_humanoid_leftBoot:{texWidth:64,texHeight:32,verts:[
-		[objectify(5,-5,  5, 6,6,  8,16, false,true,false, 4,4)], // bottom
-		[objectify(5, 9, 11, 6,6,  4,16, false,true,false, 4,4)], // top
-		[objectify(11, 9, 11, 6,14,  4,20, true,false,false, 4,12)], // front
-		[objectify(5, 9, 5, 6,14, 12,20, true,false,false, 4,12)], // back
-		[objectify(11, 9, 5, 6,14,  8,20, false,false,false, 4,12)], // right
-		[objectify(5, 9, 11, 6,14,  0,20, true,false,false, 4,12)], // left
-	]},
-	equipment_humanoid_rightBoot:{texWidth:64,texHeight:32,verts:[
-		[objectify(5,-5,  5, 6,6,  8,16, true,false,false, 4,4)], // bottom
-		[objectify(5, 9, 11, 6,6,  4,16, true,false,false, 4,4)], // top
-		[objectify(11, 9, 11, 6,14,  4,20, false,false,false, 4,12)], // front
-		[objectify(5, 9, 5, 6,14, 12,20, false,false,false, 4,12)], // back
-		[objectify(11, 9, 5, 6,14,  0,20, false,false,false, 4,12)], // right
-		[objectify(5, 9, 11, 6,14,  8,20, true,false,false, 4,12)], // left
-	]},
 	cape:{
 		verts:[
 			[objectify(3,-8,8,10,1,11,0)],
@@ -16901,22 +16828,6 @@ let shapes = {
 			[objectify(3,8,9,1,16,21,1)]
 		]
 	},
-	elytraLeft:{texWidth:64,texHeight:32,verts:[
-		[objectify(-2,-12, 7, 10, 2,  34, 0, true,false,false, 10, 2)], // bottom
-		[objectify(-2,  8, 9, 10, 2,  24, 0, true,true,false, 10, 2)], // top
-		[objectify(8, 8, 7, 10,20,  36, 2, true,false,false, 10,20)], // front
-		[objectify(-2,  8, 7, 10,20,  36, 2, false,false,false, 10,20)], // back
-		[objectify(8, 8, 7,  2,20,  34, 2, false,false,false,  2,20)], // right (inner)
-		[objectify(-2,  8, 9,  2,20,  22, 2, false,false,false,  2,20)], // left (outer)
-	]},
-	elytraRight:{texWidth:64,texHeight:32,verts:[
-		[objectify(8,-12, 7, 10, 2,  34, 0, false,false,false, 10, 2)], // bottom
-		[objectify(8,  8, 9, 10, 2,  24, 0, false,true,false, 10, 2)], // top
-		[objectify(18, 8, 7, 10,20,  36, 2, false,false,false, 10,20)], // front
-		[objectify(8,  8, 7, 10,20,  36, 2, true,false,false, 10,20)], // back
-		[objectify(18, 8, 7,  2,20,  22, 2, true,false,false,  2,20)], // right (outer)
-		[objectify(8,  8, 9,  2,20,  34, 2, true,false,false,  2,20)], // left (inner)
-	]},
 	/*cube2: {
 		verts: [
 			[objectify(0,0,0,16,16,0,0),objectify(8,4,8,16,16,0,0)],
@@ -17562,29 +17473,7 @@ let shapes = {
 			[objectify(16, 16, 16, 16, 16, 3*16, 0)]  //west
 		],
 		texWidth:16*6//*/
-	},
-	ball: {
-		verts: (function(){
-			var arr = [[],[],[],[],[],[]]
-			const res = 4, res2=res/2, fs=16/res
-			function norm(x,y,z){
-				x-=res2,y-=res2,z-=res2
-				let mag = Math.sqrt(x*x+y*y+z*z)
-				return [x/mag*8+8,y/mag*8+8,z/mag*8+8]
-			}
-			for(let x=0;x<res;x++)for(let y=0;y<res;y++){
-				arr[0].push(customFace(...norm(x,0,y),...norm((x+1),0,y),...norm((x+1),0,(y+1)),...norm(x,0,(y+1)), (res-1-x)*fs,y*fs,fs,fs))
-				arr[1].push(customFace(...norm(x,res,res-y),...norm((x+1),res,res-y),...norm((x+1),res,res-(y+1)),...norm(x,res,res-(y+1)), (res-1-x)*fs,y*fs,fs,fs))
-				arr[2].push(customFace(...norm(res-x,res-y,res),...norm(res-(x+1),res-y,res),...norm(res-(x+1),res-(y+1),res),...norm(res-x,res-(y+1),res), (res-1-x)*fs,y*fs,fs,fs))
-				arr[3].push(customFace(...norm(x,res-y,0),...norm((x+1),res-y,0),...norm((x+1),res-(y+1),0),...norm(x,res-(y+1),0), (res-1-x)*fs,y*fs,fs,fs))
-				arr[4].push(customFace(...norm(res,res-y,x),...norm(res,res-y,(x+1)),...norm(res,res-(y+1),(x+1)),...norm(res,res-(y+1),x), (res-1-x)*fs,y*fs,fs,fs))
-				arr[5].push(customFace(...norm(0,res-y,res-x),...norm(0,res-y,res-(x+1)),...norm(0,res-(y+1),res-(x+1)),...norm(0,res-(y+1),res-x), (res-1-x)*fs,y*fs,fs,fs))
-			}
-			
-			return arr
-		})(),
-		cull: {top: 0, bottom: 0, north: 0, south: 0, east: 0, west: 0},
-	},
+	}
 }
 win.shapes = shapes
 
@@ -17680,7 +17569,7 @@ let defaultWorldSettings = {
 	fireSpreads: true,
 	weatherCycle: true,
 	mobSpawning: true,
-	autosave: true,
+	autosave: true
 }
 let worldSettingKeys = Object.keys(defaultWorldSettings)
 win.defaultWorldSettings = defaultWorldSettings
@@ -17979,13 +17868,13 @@ function makeBinarySerializer(commonKeys = [], prependVersion = undefined) {
 			}
 		} else if (typeof v === 'string') {
 			const enc = textEncoder.encode(v)
-			bab.add(34, 8); writeVarint(bab, enc.length); bab.appendArray(enc)
+			bab.add(6, 8); writeVarint(bab, enc.length); bab.appendArray(enc)
 		} else if (Array.isArray(v)) {
-			bab.add(91, 8); writeVarint(bab, v.length)
+			bab.add(7, 8); writeVarint(bab, v.length)
 			for (let i = 0; i < v.length; i++) writeValue(bab, v[i])
 		} else if (typeof v === 'object') {
 			const entries = Object.entries(v).filter(([, val]) => val !== undefined)
-			bab.add(123, 8); writeVarint(bab, entries.length)
+			bab.add(8, 8); writeVarint(bab, entries.length)
 			for (const [k, val] of entries) { writeKey(bab, k); writeValue(bab, val) }
 		}
 	}
@@ -17997,19 +17886,19 @@ function makeBinarySerializer(commonKeys = [], prependVersion = undefined) {
 		if (t === 3)  return true
 		if (t === 4)  return readVarint(reader)
 		if (t === 5)  return reader.readDouble()
-		if (t === 34 || t === 6) {
+		if (t === 6) {
 			const len = readVarint(reader)
 			if (!len) return ""
 			const arr = new Uint8Array(len)
 			for (let i = 0; i < len; i++) arr[i] = reader.read(8)
 			return textDecoder.decode(arr)
 		}
-		if (t === 91 || t === 7) {
+		if (t === 7) {
 			const len = readVarint(reader), arr = []
 			for (let i = 0; i < len; i++) arr.push(readValue(reader))
 			return arr
 		}
-		if (t === 123 || t === 8) {
+		if (t === 8) {
 			const count = readVarint(reader), obj = reuseObj || {}
 			for (let i = 0; i < count; i++) obj[readKey(reader)] = readValue(reader)
 			return obj
@@ -18128,7 +18017,7 @@ let packetTypes = [
 	["containerChangeCommandBlock",["data","string"]],
 	["startBreak",["x","int"],["y","int"],["z","int"]],
 	["containerChangeSign",["data","string"],["side","boolean"]],
-	["portalOut"], ["doEndPoem"],
+	["portalOut"], ["doEndPoem"]
 	/*["test",
 		["a",'string'],['n','number',8,4],
 		["data","array",[null,"string"]],
@@ -19433,9 +19322,7 @@ function initBlockDataShapes(){
 		torchBlock.shape = shapes.torch
 		torchBlock.drop = drop
 		lanternBlock.shape = shapes.lantern
-		lanternBlock.drop = drop
 		lanternHangBlock.shape = shapes.lanternHang
-		lanternHangBlock.drop = drop
 		beaconBlock.shape = shapes.beacon
 		beaconBlock.drop = drop
 		cactusBlock.shape = shapes.cactus
@@ -19463,8 +19350,6 @@ function initBlockDataShapes(){
 		potBlock.drop = drop
 		potCrossBlock.shape = shapes.potCross
 		potCrossBlock.drop = drop
-		potCrossBlock.randomHeight = false
-		potCrossBlock.randomOffset = false
 		cornerStairInBlock.shape = shapes.stairCornerIn
 		cornerStairInBlock.transparent = true
 		cornerStairInBlock.drop = d || (i | STAIR)
@@ -19475,8 +19360,9 @@ function initBlockDataShapes(){
 		verticalSlabBlock.transparent = true
 		verticalSlabBlock.drop = d || (i | VERTICALSLAB)
 		verticalSlabBlock.Name += " Vertical Slab"
-		if(baseBlock.crossShape) baseBlock.shape = shapes.cross
-		if(baseBlock.tallcrossShape) baseBlock.shape = shapes.tallCross
+		if(baseBlock.torch || baseBlock.chain){
+			slabBlock.drop = i
+		}
 		if(baseBlock.door){
 			var onclick = baseBlock.name === "ironDoor" ? emptyFunc : function(x,y,z,world){
 				this.toggle(x,y,z,world)
@@ -19491,7 +19377,7 @@ function initBlockDataShapes(){
 			baseBlock.onclick = onclick.bind(baseBlock)
 			baseBlock.onpowerupdate = onpowerupdate.bind(baseBlock)
 			slabBlock.shape = shapes.door2
-			slabBlock.drop = drop
+			slabBlock.drop = i
 			slabBlock.Name = "Inverted "+baseBlock.name
 		}
 		if(baseBlock.trapdoor){
@@ -19514,16 +19400,15 @@ function initBlockDataShapes(){
 		if(baseBlock.bed){
 			baseBlock.shape = shapes.bed
 			baseBlock.onclick = clickBed
-			baseBlock.drop = drop
 		}
 		if(baseBlock.rotate) baseBlock.shape = shapes.rotate
 		if(baseBlock.SW) baseBlock.shape = shapes.SW
-		if(baseBlock.cactus) potCrossBlock.shape = shapes.cactusPot, baseBlock.shape = shapes.cactus
+		if(baseBlock.cactus) potCrossBlock.shape = shapes.cactusPot
 		if(baseBlock.crop) baseBlock.shape = shapes.crop
 		if(baseBlock.tallCrop)baseBlock.shape = shapes.tallCrop
 		if(baseBlock.anvil) baseBlock.shape = shapes.anvil
 		if(baseBlock._1PixLower) baseBlock.shape = shapes._1PixLower, baseBlock.transparent = true
-		if(baseBlock.torch) slabBlock.shape = shapes.wallTorch, baseBlock.shape = shapes.torch, slabBlock.drop = drop
+		if(baseBlock.torch) slabBlock.shape = shapes.wallTorch
 		if(baseBlock.sporeBlossom) baseBlock.shape = shapes.sporeBlossom
 		if(baseBlock.azalea){
 			baseBlock.shape = shapes.azalea
@@ -19531,7 +19416,6 @@ function initBlockDataShapes(){
 			var t = baseBlock.potTex
 			potCrossBlock.textures = [t[0],t[0],t[1],t[1],t[1],t[1]]
 		}
-		if(baseBlock.pot) baseBlock.shape = shapes.pot
 		if(baseBlock.sunflower) baseBlock.shape = shapes.sunflower
 		if(baseBlock.sideCross){baseBlock.shape = shapes.sideCross; slabBlock.shape = shapes.bottomCross}
 		if(baseBlock.layers){
@@ -19641,7 +19525,6 @@ function initBlockDataShapes(){
 			baseBlock.shape = shapes.itemFrame
 			baseBlock.onclick = itemFrameOnclick
 			baseBlock.tagBits = null
-			baseBlock.drop = drop
 		}
 		if(baseBlock.name === "redstoneLamp"){
 			makeBlock(new Array(6).fill("redstoneLampOn"), shapes.cube, slabBlock)
@@ -19656,7 +19539,6 @@ function initBlockDataShapes(){
 			arr[3] = "furnaceFrontOn"
 			makeBlock(arr, shapes.rotate, slabBlock)
 			slabBlock.lightLevel = 13
-			baseBlock.drop = drop, slabBlock.drop = drop
 		}
 		if(baseBlock.name === "jungleLeaves"){
 			makeBlock(new Array(6).fill("floweringJungleLeaves"), shapes.cube, fenceBlock, null, baseBlock.Name+" with fruit")
@@ -19674,7 +19556,6 @@ function initBlockDataShapes(){
 		if(baseBlock.name === "endRod"){
 			baseBlock.shape = shapes.endRod
 			slabBlock.shape = shapes.endRodSW
-			baseBlock.drop = drop, slabBlock.drop = drop
 		}
 		if(baseBlock.fenceGate){
 			baseBlock.shape = shapes.fenceGate
@@ -19756,15 +19637,11 @@ function initBlockDataShapes(){
 			makeBlock(baseBlock.texturesOpen, shapes.cube, crossBlock, null, baseBlock.Name)
 			makeBlock(baseBlock.texturesSWOpen, shapes.SW, doorBlock, null, baseBlock.Name)
 			makeBlock(baseBlock.texturesDownOpen, shapes.cube, tallcrossBlock, null, baseBlock.Name)
-			baseBlock.drop = drop, slabBlock.drop = drop
 		}
 		if(baseBlock.chain){
-			baseBlock.shape = shapes.chain
-			baseBlock.drop = drop
 			slabBlock.shape = shapes.chainSW
 			slabBlock.textures = slabBlock.textures.slice()
 			slabBlock.textures[4] = slabBlock.textures[5] = "chainSW"
-			slabBlock.drop = drop
 		}
 		if(baseBlock.name === "beeNest" || baseBlock.name === "beehive"){
 			makeBlock(baseBlock.texturesHoney, shapes.rotate, slabBlock)
@@ -20005,14 +19882,9 @@ function initBlockDataShapes(){
 			baseBlock.shape = shapes.endPortal
 		}
 		if(baseBlock.pane){
-			baseBlock.shape = shapes.pane
-			baseBlock.drop = drop
 			var t = baseBlock.textures
 			makeBlock([t[2],t[3],t[0],t[1],t[0],t[1]], shapes.horizontalPane, slabBlock, baseBlock)
-			slabBlock.drop = drop
 		}
-		if(baseBlock.portal) baseBlock.shape = shapes.portal, baseBlock.drop = drop
-		if(baseBlock.wallFlat) baseBlock.shape = shapes.wallFlat, baseBlock.drop = drop
 		if(baseBlock.coloredRedstoneLamp){
 			makeBlock(new Array(6).fill(baseBlock.name), shapes.cube, slabBlock)
 			slabBlock.lightLevel = 15
@@ -20075,7 +19947,6 @@ function initBlockDataShapes(){
 			baseBlock.tagBits = null
 			baseBlock.onclick = signOnclick
 			stairBlock.shape = shapes.none
-			stairBlock.drop = i
 		}
 		if(baseBlock.name === "composter"){
 			baseBlock.shape = shapes.composter
@@ -20740,7 +20611,7 @@ function parseTarget(str,pos,world){
 		let a = world.world.players.slice()
 		return a
 	}else if(str === "@e"){
-		return [...world.world.entities.values()]
+		return world.world.entities.slice()
 	}else if(str === "@p"){
 		let closest = Infinity, cp = undefined
 		for(let P of world.world.players){
@@ -20755,26 +20626,6 @@ function parseTarget(str,pos,world){
 		let p = getPlayerByUsername(str,world)
 		return p ? [p] : []
 	}
-}
-function getUsage(node, arr=[], prefix="", lazy){
-	if(node.type === "literal" || node.type === "redirect"){
-		prefix += node.name+" "
-	}else if(node.type === "argument"){
-		prefix += "&lt;"+node.name+(node.argType ? ": "+node.argType : "")+"&gt; "
-	}
-	if(lazy === 2 && (node.next.length+(node.func?1:0)>1)) arr.push(prefix+"...")
-	else if(node.type === "redirect"){
-		prefix += "→ "
-		getUsage(cmds[node.redirect],arr,prefix,lazy)
-	}else{
-		if(!node.next.length || node.func){
-			arr.push(prefix)
-		}
-		for(let n of node.next){
-			getUsage(cmds[n],arr, prefix, lazy ? 2 : undefined)
-		}
-	}
-	return arr
 }
 /*
 types can be: root,literal,argument,redirect
@@ -20814,50 +20665,8 @@ class CommandNode{
 function initDefaultCommands(world){
 	tempWorldForCommand = world
 	let help, tp, gm, sp, sphereoidCmd
-	let root = new CommandNode("root").then(
-		help = CommandNode.l("help", (args,pos,scope) => {
-			let str = `
-MineKhan commands have a similar syntax to Bash.
-Use <span style='color:pink;'>/? all</span> to list all commands.
-Use <span style='color:lightgreen;'>/? command_name</span> to get information about a command.
-
-<span style='color:#5f5;'>
-<b>When typing a command:</b>
-Press tab to autofill commands. Press up and down arrow to select which one to autofill.
-Press the up or down arrow and press shift to go through the commands entered.
-
-<b>Command syntax</b>
-The capitalization of command names do not matter.
-Begin a command with a slash (/) (only required in chat).
-After, add the command name and arguments (the value).
-Spaces can be used to seperate values unless it is inside quotes.
-Surround a value with qoutes to make the spaces inside part of the value.
-You can type multiple commands by separating each by a new line or &&.
-Type $ in front of a value to acess the variable with that name.
-Comments starts with # and ends at the end of the line.
-Addition: +
-Subtraction: -
-Multiplication: *
-Division: //
-</span>
-`
-			str +=  "List of commands:<br>"
-			str += "<span style='color:lightblue'>"+getUsage(root).join("<br>")+"</span>"
-			return [str,""]
-		}, null,null,true).then(CommandNode.a("help_with_name", (args,pos,scope) => {
-			let cmd
-			for(let i of root.next){
-				if(world.commandNodes[i].name.toLowerCase() === args.help_with_name.toLowerCase()){
-					cmd = world.commandNodes[i]
-				}
-			}
-			if(cmd){
-				let str = "<h2 style='margin-bottom:0'>"+args.help_with_name+"</h2>"
-				str += getUsage(cmd).join("<br>")
-				if(cmd.info) str += "<br>Description: "+cmd.info
-				return [str,""]
-			}else return ["There is no information for "+args.help_with_name, "error"]
-		},null,null,true)),
+	new CommandNode("root").then(
+		help = CommandNode.l("help","client", null,null,true).then(CommandNode.a("help_with_name","client",null,null,true)),
 		CommandNode.r("?",help),
 		CommandNode.l("echo",null,"Outputs data.").then(CommandNode.a("data", (args,pos,scope) => [args.data+"",""], null,null,true)),
 		CommandNode.l("var",null, "Set a variable to a value. Value can be empty.").then(CommandNode.a("name").then(CommandNode.a("value",
@@ -20948,7 +20757,7 @@ Division: //
 			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(arr.length){
 				for(let i of arr){
-					if(i.newInvItem) i.newInvItem(id)
+					world[i.dimension].addItems(i.x,i.y,i.z,0,0,0,id,false,1)
 				}
 			}else return ["No such target: "+args.target,"error"]
 		},"block").then(CommandNode.a("amount",
@@ -20959,9 +20768,7 @@ Division: //
 			let arr = parseTarget(args.target,pos,world[pos.dimension])
 			if(arr.length){
 				for(let i of arr){
-					if(i.newInvItem) for(let a=0; a<amount; a++){
-						if(!i.newInvItem(id)) break
-					}
+					world[i.dimension].addItems(i.x,i.y,i.z,0,0,0,id,false,amount)
 				}
 			}else return ["No such target: "+args.target,"error"]
 		},"number")))),
@@ -21538,14 +21345,20 @@ class Entity {
 		this.glow = false
 		this.dimension = dimension
 		this.canRide = false
-		//this.hitboxWidth = this.hitboxWidth || max(this.width,this.depth)//unused
-		//this.hitboxHeight = this.hitboxHeight || this.height
+		this.hitboxWidth = this.hitboxWidth || max(this.width,this.depth)
+		this.hitboxHeight = this.hitboxHeight || this.height
 		this.rideOffsetX = 0
 		this.rideOffsetY = this.hitboxHeight/2
 		this.rideOffsetZ = 0
 		this.portalEffect = 0
 		this.portalFadeOutEffect = 0
 		this.doingPortal = 0
+		this.faces = faces || 0
+		this.targetX = x
+		this.targetY = y
+		this.targetZ = z
+		this.doInterpolate = false
+		this.lastPos = performance.now()
 	}
 	tp(x,y,z, dimension = this.dimension){
 		this.x = x
@@ -21560,7 +21373,7 @@ class Entity {
 		this.insideBlock = this.world.getBlock(round(this.x),round(this.y),round(this.z), this.dimension)
 		if(this.prevLiquid !== this.liquid){
 			this.prevLiquid = this.liquid
-			if(this.liquid && this.wet){
+			if(this.isServer && this.liquid && this.wet){
 				let pitch = (1/abs(this.y-this.previousY)*0.05+Math.random()*0.2)/((this.width+this.depth)*0.25/*0.25=average&correct width*/)
 				if(isFinite(pitch)) this.world.playSound(this.x,this.y-this.height/2,this.z,"liquid.splash",1,pitch)
 				this.world.sendAll({
@@ -21569,12 +21382,14 @@ class Entity {
         })
 			}
 		}
-		this.vely += this.gravityStength
-		let drag = this.liquid && !this.canFloat ? 0.7 : (this.onGround ? 0.8 : 0.9)
-		if(blockData[this.standingOn].slide) drag = blockData[this.standingOn].slide
-		this.velz += (this.velz * drag - this.velz)
-		this.velx += (this.velx * drag - this.velx)
-		this.vely += (this.vely * drag - this.vely)
+		if(!this.doInterpolate){
+			this.vely += this.gravityStength
+			let drag = this.liquid && !this.canFloat ? 0.7 : (this.onGround ? 0.8 : 0.9)
+			if(blockData[this.standingOn].slide) drag = blockData[this.standingOn].slide
+			this.velz += (this.velz * drag - this.velz)
+			this.velx += (this.velx * drag - this.velx)
+			this.vely += (this.vely * drag - this.vely)
+		}
 	}
 	collided(x, y, z, vx, vy, vz, block) {
 		let verts = blockData[block].shape.verts
@@ -21690,11 +21505,11 @@ class Entity {
 		for (let x = pminX; x <= pmaxX; x++) {
 			for (let y = pminY; y <= pmaxY; y++) {
 				for (let z = pminZ; z <= pmaxZ; z++) {
-					let block = this.world.getBlock(x, y, z, this.dimension)
+					let block = this.world.getBlock(x, y, z)
 					if (block && blockData[block].solid) {
 						this.contacts.add(x, y, z, block)
 					}
-					if(blockData[block].activate){
+					if(this.isServer && blockData[block].activate){
 						blockData[block].activate(x,y,z,block,this,this.world)
 					}
 					if(!inBox(this,x,y,z,1,1,1)) continue
@@ -21713,7 +21528,7 @@ class Entity {
 						var under = this.world.getBlock(x,y-1,z,this.dimension)
 						if(me.isThis(under) && under !== me.id) this.vely -= 1/128
 					}
-					if(blockData[block].ontouch){
+					if(this.isServer && blockData[block].ontouch){
 						let dist = max(abs(x-this.x),abs(z-this.z),abs(y-this.y))
 						if(dist<closestTouch){
 							closestTouch = dist
@@ -21721,7 +21536,7 @@ class Entity {
 							touchX = x, touchY = y, touchZ = z
 						}
 					}
-					if(this.ontouch) this.ontouch(x,y,z,block)
+					if(this.isServer && this.ontouch) this.ontouch(x,y,z,block)
 				}
 			}
 		}
@@ -21731,10 +21546,10 @@ class Entity {
 				this.contacts.add(e.x, e.y, e.z, e.block, e)
 			}
 		}
-		if(this.world.weather === "rain" && this.world.weatherAmount > 0.5){
+		/*if(this.world.weather === "rain" && this.world.weatherAmount > 0.5){
 			let top = this.world.getSolidTop(round(this.x),round(this.z))
 			if(this.y > top) this.wet = true
-		}
+		}*/
 
 		this.previousX = this.x
 		this.previousY = this.y
@@ -21865,7 +21680,7 @@ class Entity {
 		}else if(this.portalEffect > 0){
 			this.portalEffect -= 1.25
 		}
-		if(this.doingPortal){
+		if(this.isServer && this.doingPortal){
 			let chunk = this.world.getChunk(this.x,this.z)
 			if(chunk && chunk.allGenerated){
 				blockData[this.doingPortal].doneLoading(this,this.world)
@@ -21877,7 +21692,7 @@ class Entity {
 		let chunkX = this.x >> 4, chunkZ = this.z >> 4
 		if(this.chunkX !== chunkX || this.chunkZ !== chunkZ || this.dimension !== this.chunkDimension){
 			let oldChunk = this.world.getChunk(this.chunkX<<4,this.chunkZ<<4)
-			this.world = this.world.world[this.chunkDimension]
+			if(this.world.world) this.world = this.world.world[this.chunkDimension]
 			let chunk = this.world.getOrNewChunk(chunkX<<4,chunkZ<<4)
 			this.chunkX = chunkX
 			this.chunkZ = chunkZ
@@ -21924,26 +21739,25 @@ class Entity {
 		this.z = z
 
 	}
-	update() {
+	update(now) {
 		this.updateVelocity(now)
 		this.move(now)
 		if (now - this.spawn > this.despawns) {
 			this.canDespawn = true
 		}
 	}
-	addPart(name,size,vao,x,y,z,w,h,d,rx,ry,rz = 0,attached = null,glow = false){
-		let part =  this.parts[name] = {
+	serverUpdate() {
+		this.update(now)
+	}
+	addPart(name,shape,texture,x,y,z,w,h,d,rx,ry,rz = 0,attached = null,glow = false){
+		let part = this.parts[name] = {
 			name,
-			size,vao,
+			shape,texture,
+			size:null,vao:null,
 			x,y,z,w,h,d,rx,ry,rz,ry2:0, //x,y,z,rx,ry are relative to entity position
 			px:x,py:y,pz:z,prx:rx,pry:ry,prz:rz,
 			originalX:x, originalY:y, originalZ:z,
 			attached, glow
-		}
-		if(vao && vao.tHeVerticesBuffer){
-			part.verticesBuffer = vao.tHeVerticesBuffer
-			part.textureBuffer = vao.tHeTextureBuffer
-			part.normalBuffer = vao.tHeNormalBuffer
 		}
 		let attachChain = []
 		let part2 = part
@@ -21990,18 +21804,19 @@ class Entity {
       let velz = this.z-ent.z
       if(velx === 0 && velz === 0) return
 			let mag = sqrt(velx*velx+velz*velz)
-			let push = max(1-sqrt((velx/w3)*(velx/w3)+(velz/d3)*(velz/d3)), 0)
+			let push = 1-sqrt(velx*velx/w3+velz*velz/d3)
       velx = velx/mag*push*(w+w2)/2
       velz = velz/mag*push*(d+d2)/2
       this.velx += velx, this.velz += velz
 		}
 	}
 }
+win.Entity = Entity
 const entitySerializer = makeBinarySerializer([
 	"id","amount","entId","x","y","z","dimension","pitch","yaw","velx","vely","velz",
 	"spawnRelative",
 	"block","despawns",
-	"rx","ry",
+	"width","height","depth",
 ], 1)
 win.entitySerializer = entitySerializer
 
@@ -22014,6 +21829,9 @@ const
 	pSwimBottomH = 0.625,
 	pGravity = -0.11
 //if you add something to above, change player entity too and server side
+const playerDataSerializer = makeBinarySerializer([
+	"id","amount", "x","y","z","dimension","rx","ry",
+])
 class Player extends Entity{
 	type = "Player"
 	constructor(){
@@ -22059,12 +21877,11 @@ class Player extends Entity{
 		this.addPart("cape",null,null,0,pix*6,pix*-3,1,1,1,0,0)
 		
 		this.holding = 0 //shown in the hand, it is set to the blockid for the block the player is holding
-		this.addPart("holding",null,null,0, 0, 0, 1,1,1, 0, 0, 0, "rightArm")
+		this.addPart("holding",null,null,0, 0, 0, 1,1,1, 0, 0)
 		
 		this.punchEffect = 0
 		this.inventory = {
 			hotbar:new Array(9).fill(null), main:new Array(27).fill(null),
-			equipment:{helmet:null,chestplate:null,leggings:null,boots:null,back:null},
 			crafting2:new Array(4), crafting3:new Array(9),
 			craftingResult:null,craftingName:null,holding:null,
 			anvilInput:null,anvilMaterial:null,anvilOutput:null, anvilRename:"", anvilCost:0,
@@ -22072,7 +21889,6 @@ class Player extends Entity{
 			slotIds:{
 				hotbar:[],
 				main:[],
-				equipment:{helmet:null,chestplate:null,leggings:null,boots:null,back:null},
 				crafting3:[],
 				crafting2:[],
 				craftingResult:null,
@@ -22098,7 +21914,6 @@ class Player extends Entity{
 		this.direction = new PVector()
 		this.crackPos = [0,0,0]
 		this.breakStart = 0
-		this.reach = 5
 	}
 	get survival(){return this.gameMode==="survival"||this.gameMode==="hardcore"}
 	get spectator(){return this.gameMode==="spectator"}
@@ -22116,9 +21931,6 @@ class Player extends Entity{
     this.foodSaturation = 5
     this.foodTimer = 0
     this.foodExhaustion = 0
-		this.armorDefense = 0
-		this.armorToughness = 0
-		this.knockbackResistance = 0
 		this.lastXP = 0
 		this.XP = 0
 		this.level = 0
@@ -22152,46 +21964,43 @@ class Player extends Entity{
 		this.setDefaults()
 		this.tp(this.x,this.y,this.z,"")
 	}
-	save(){
+	getPlayerData(){
 		let {inventory} = this
-		return entitySerializer.encode({
-			x: this.x, y: this.y, z: this.z,
+		return playerDataSerializer.encode({
+			x: round(this.x), y: round(this.y), z: round(this.z),
 			dimension: this.dimension || "",
-			rx: this.rx, ry: this.ry, flying: !!this.flying||undefined, gameMode: this.gameMode,
-			health: this.health,
+			rx: this.rx, ry: this.ry, flying: !!this.flying, gameMode: this.gameMode,
+			health: round(this.health),
 			spawnPoint: this.spawnPoint,
 			food: this.food, foodSaturation: this.foodSaturation, foodExhaustion: this.foodExhaustion,
-			oxygen: this.oxygen, cheats: !!this.cheats||undefined, freezeEffect: this.freezeEffect||undefined,
-			XP: this.XP||undefined, level: this.level||undefined, didEndPoem: !!this.didEndPoem||undefined, lastY: this.lastY, scale:this.scale===1?undefined:this.scale,
-			effects: this.effects, riding: this.riding || undefined, doingPortal: this.doingPortal||undefined,
+			oxygen: this.oxygen, cheats: !!this.cheats, freezeEffect: this.freezeEffect,
+			XP: this.XP, level: this.level, didEndPoem: !!this.didEndPoem, lastY: this.lastY,
+			effects: this.effects, riding: this.riding || null, doingPortal: this.doingPortal,
 			hotbarSlot: inventory.hotbarSlot,
-			hotbar: inventory.hotbar, main: inventory.main, equipment: inventory.equipment,
+			hotbar: inventory.hotbar, main: inventory.main,
 			achievments: this.achievments,
 		})
 	}
-	load(data, world){
-		if(data[0] !== 1) return // oops, it used to be playerSerializer
-		const d = entitySerializer.decode(data)
+	loadPlayerData(data, world){
+		const d = playerDataSerializer.decode(data)
 		this.x = d.x || 0; this.y = d.y || 0; this.z = d.z || 0
 		this.dimension = d.dimension || ""
 		this.world = world[this.dimension]
 		this.rx = d.rx || 0; this.ry = d.ry || 0
-		this.flying = d.flying||false; this.gameMode = d.gameMode || "creative"
+		this.flying = d.flying; this.gameMode = d.gameMode || "creative"
 		this.health = d.health
 		if (d.spawnPoint) { this.spawnPoint.x = d.spawnPoint.x; this.spawnPoint.y = d.spawnPoint.y; this.spawnPoint.z = d.spawnPoint.z }
 		this.food = d.food; this.foodSaturation = d.foodSaturation; this.foodExhaustion = d.foodExhaustion
-		this.oxygen = d.oxygen; this.cheats = d.cheats||false; this.freezeEffect = d.freezeEffect||0
-		this.XP = d.XP||0; this.level = d.level||0; this.setLevel()
-		this.didEndPoem = d.didEndPoem||false; this.lastY = d.lastY
-		this.scale = d.scale || 1
+		this.oxygen = d.oxygen; this.cheats = d.cheats; this.freezeEffect = d.freezeEffect
+		this.XP = d.XP; this.level = d.level; this.setLevel()
+		this.didEndPoem = d.didEndPoem; this.lastY = d.lastY
 		this.effects = d.effects || {}
 		this.riding = d.riding || null; this.doingPortal = d.doingPortal || 0
 		let {inventory} = this
 		inventory.hotbarSlot = d.hotbarSlot || 0
-		inventory.hotbar = d.hotbar
-		inventory.main = d.main
-		if(d.equipment) inventory.equipment = d.equipment
-		this.achievments = d.achievments
+		if (d.hotbar) for (let i = 0; i < d.hotbar.length; i++) inventory.hotbar[i] = d.hotbar[i] || null
+		if (d.main) for (let i = 0; i < d.main.length; i++) inventory.main[i] = d.main[i] || null
+		if (d.achievments) { this.achievments.length = 0; this.achievments.push(...d.achievments) }
 	}
 	tp(x,y,z,dimension=this.dimension){
 		this.targetX = this.x = x
@@ -22246,7 +22055,7 @@ class Player extends Entity{
 		if(!this.connected) return
 		let inv = this.world.world.playersInv[this.host ? ":host" : this.username]
 		if(!inv) inv = this.world.world.playersInv[this.host ? ":host" : this.username] = {}
-		inv.data = this.save()
+		inv.data = this.getPlayerData()
 		delete inv.survivStr; delete inv.inv
 		inv.version = version //this.world.world.version
 	}
@@ -22280,76 +22089,6 @@ class Player extends Entity{
 	setGameMode(mode){
 		this.gameMode = mode
 		this.connection.send({type:"gameMode",gameMode:this.gameMode})
-	}
-	//add something to inventory
-	newInvItem(data){
-		if(typeof data === "number") data = {id:data, amount:1}
-		//look for empty slot
-		let {inventory} = this
-		for(let i=0; i<inventory.hotbar.length; i++){
-			if(inventory.hotbar[i] && inventory.hotbar[i].id === data.id && (!inventory.hotbar[i].customName && !data.customName || inventory.hotbar[i].customName === data.customName) && inventory.hotbar[i].amount < blockData[inventory.hotbar[i].id].stackSize){
-				inventory.hotbar[i].amount ++
-				return true
-			}
-		}
-		for(let i=0; i<inventory.main.length; i++){
-			if(inventory.main[i] && inventory.main[i].id === data.id && (!inventory.main[i].customName && !data.customName || inventory.main[i].customName === data.customName) && inventory.main[i].amount < blockData[inventory.main[i].id].stackSize){
-				inventory.main[i].amount ++;
-				return true
-			}
-		}
-		for(let i=0; i<inventory.hotbar.length; i++){
-			if(!inventory.hotbar[i]){
-				inventory.hotbar[i] = {...data, amount:1}
-				if(i === inventory.hotbarSlot){
-					inventory.showName = 1.5
-				}
-				return true
-			}
-		}
-		for(let i=0; i<inventory.main.length; i++){
-			if(!inventory.main[i]){
-				inventory.main[i] = {...data, amount:1}
-				return true
-			}
-		}
-		return false
-	}
-	minusOneItem(id){
-		let {inventory} = this
-		for(let i=0; i<inventory.hotbar.length; i++){
-			if(inventory.hotbar[i] && inventory.hotbar[i].id === id){
-				if(this.survival){
-					inventory.hotbar[i].amount--
-					if(!inventory.hotbar[i].amount) inventory.hotbar[i] = null
-				}
-				return true
-			}
-		}
-		for(let i=0; i<inventory.main.length; i++){
-			if(inventory.main[i] && inventory.main[i].id === id){
-				if(this.survival){
-					inventory.main[i].amount--
-					if(!inventory.main[i].amount) inventory.main[i] = null
-				}
-				return true
-			}
-		}
-		return false
-	}
-	hasItem(id){
-		let {inventory} = this
-		for(let i=0; i<inventory.hotbar.length; i++){
-			if(inventory.hotbar[i] && inventory.hotbar[i].id === id){
-				return true
-			}
-		}
-		for(let i=0; i<inventory.main.length; i++){
-			if(inventory.main[i] && inventory.main[i].id === id){
-				return true
-			}
-		}
-		return false
 	}
 	move(now){
 		let pminX = floor(this.x - this.width / 2)
@@ -22491,7 +22230,7 @@ class Player extends Entity{
 			}
 		}
 	}
-	update(){
+	serverUpdate(){
 		if(this.harmEffect > 0){
 			this.harmEffect -= 3
 		}
@@ -22507,11 +22246,6 @@ class Player extends Entity{
 					if(i){
 						this.world.addItem(this.x,this.y,this.z,0,0,0,i,true,this.id)
 					}
-				}
-				for(let slot in this.inventory.equipment){
-					let i = this.inventory.equipment[slot]
-					if(i) this.world.addItem(this.x,this.y,this.z,0,0,0,i,true,this.id)
-					this.inventory.equipment[slot] = null
 				}
 				this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds.rawBeef,true,1,null,this.username+" Meat",this.id)
 				if(Math.random()>0.9) this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds.redStain,true,1,null,null,this.id)
@@ -22709,9 +22443,6 @@ class Player extends Entity{
 			}
 			this.oxygen = 20
 		}
-		if(this.gliding && this.inventory.equipment.back && this.inventory.equipment.back.id && blockData[this.inventory.equipment.back.id].wings){
-			this.lastY = this.y
-		}
 		if(this.onGround){
 			let fall = (this.lastY - this.y) / this.scale
 			this.lastY = this.y
@@ -22746,7 +22477,7 @@ class Player extends Entity{
 				if(this.survival && holdObj){
 					holdObj.amount --
 					if(!holdObj.amount) this.inventory.hotbar[this.inventory.hotbarSlot] = null
-					if(holdBlockData.eatResult && !this.newInvItem(blockIds[holdBlockData.eatResult])) {
+					if(holdBlockData.eatResult && !newInvItem(this,blockIds[holdBlockData.eatResult])) {
 						this.world.addItems(this.x,this.y,this.z,0,0,0,blockIds[holdBlockData.eatResult])
 					}
 				}
@@ -22757,7 +22488,7 @@ class Player extends Entity{
 		}else this.prevEating = false
 		if(this.usingItem){
 			let holdObj = this.inventory.hotbar[this.inventory.hotbarSlot]
-			if(holdBlockData.name === "bow" && this.hasItem(blockIds.arrow)){
+			if(holdBlockData.name === "bow" && hasItem(this,blockIds.arrow)){
         let pull = holdObj.pulling || 0
         let start = holdObj.pullStart || 0
         if(pull < 3 && now - start > 500){
@@ -22779,9 +22510,9 @@ class Player extends Entity{
       }
 		}else{
 			let holdObj = this.inventory.hotbar[this.inventory.hotbarSlot]
-			if(holdBlockData.name === "bow" && holdObj.pulling && this.hasItem(blockIds.arrow)){
+			if(holdBlockData.name === "bow" && holdObj.pulling && hasItem(this,blockIds.arrow)){
 				if(!holdObj.pulling) return true
-				if(this.minusOneItem(blockIds.arrow)){
+				if(minusOneItem(this,blockIds.arrow)){
 					let pd = this.direction
 					let i = holdObj.pulling / 3
 					this.world.addEntity(new entities[entityIds.Arrow](this.x+pd.x,this.y+pd.y,this.z+pd.z,pd.x*i,pd.y*i,pd.z*i,this.id),false,this.dimension)
@@ -22791,17 +22522,6 @@ class Player extends Entity{
 				holdObj.id = holdBlockData.id
 			}
 		}
-		this.armorDefense = 0, this.armorToughness = 0, this.knockbackResistance = 0
-		for(let slot in this.inventory.equipment){
-			let item = this.inventory.equipment[slot]
-			if(item && blockData[item.id]){
-				this.armorDefense += blockData[item.id].defense || 0
-				this.armorToughness += blockData[item.id].toughness || 0
-				this.knockbackResistance += blockData[item.id].knockbackResistance || 0
-				if(blockData[item.id].durability>100 && blockData[item.id].armor && !item.trim) randomTrim(item,this.inventory.equipment) // putting this here because its hard to add the recipes
-			}
-		}
-		this.knockbackResistance = Math.min(1, this.knockbackResistance)
 		for(let i in this.effects){
 			let e = this.effects[i]
 			e.time--
@@ -22830,7 +22550,7 @@ class Player extends Entity{
 		}else if(this.eating || this.usingItem && blockData[this.holding].spyglass){
 		}else if(this.sitting){
 			this.height = this.sitHeight
-		}else if(this.swimming || this.gliding){
+		}else if(this.swimming){
 			this.height = this.swimHeight
 		}else if(!this.sprinting){
 			this.height = this.defaultHeight
@@ -22886,24 +22606,6 @@ class Player extends Entity{
 		}*/
 
     let prev = amount
-    if(type !== "drown" && type !== "freeze"){
-      if(this.armorDefense > 0){
-        let epf = Math.min(20, Math.max(this.armorDefense/5, this.armorDefense - 4*amount/(this.armorToughness+8)))
-        amount *= (1 - epf/25)
-      }
-      let durDmg = Math.max(1, Math.floor(prev / 4))
-      for(let slot in this.inventory.equipment){
-        let item = this.inventory.equipment[slot]
-        if(item && blockData[item.id]){
-          if(item.durability === undefined) item.durability = blockData[item.id].durability
-          item.durability -= durDmg
-          if(item.durability <= 0){
-						this.inventory.equipment[slot] = null
-						this.world.playSound(this.x,this.y,this.z,"random.break")
-					}
-        }
-      }
-    }
     if(this.harmEffect > 0){
       //when your red, you are immune to most damage
       if(amount > this.lastDamage){
@@ -22922,11 +22624,6 @@ class Player extends Entity{
 			velx /= mag, velz /= mag
 			vely = 0.5
 			if(!velx && !velz) velx = velz = 0//possible NaN
-		}
-		if(this.knockbackResistance){
-			velx *= 1 - this.knockbackResistance
-			vely *= 1 - this.knockbackResistance
-			velz *= 1 - this.knockbackResistance
 		}
 		if(attackedBy){
 			this.attackedBy = attackedBy.username || attackedBy.name
@@ -22969,12 +22666,12 @@ class Player extends Entity{
 		if(this.connection) this.connection.send({type:"damage",x,y,z,lastHealth:prevHealth,velx,vely,velz})
   }
 }
+win.Player = Player
 entities[entities.length] = class Item extends Entity {
 	static name2 = "Item"
 	constructor(x, y, z, velx, vely, velz, data, autoSetVel, from) {
 		super(x, y, z, 0, 0, velx, vely, velz, 0.25, 0.25, 0.25, null, null, 0, 300000/*1500000*/)
 		this.data = data
-		if(typeof data !== "object") throw new Error("data should be object")
 		this.from = from || undefined
 		this.gravityStength = -0.07
 		this.noHitbox = true
@@ -22995,8 +22692,6 @@ entities[entities.length] = class Item extends Entity {
 		let comeCloser = xDist > -hRange && xDist < hRange && yDist > -0.75 && yDist < 2.3 && zDist > -hRange && zDist < hRange
 		if(comeCloser){
 			this.moveTowards(e.x, Math.min(Math.max(this.y, e.y - e.height*0.5),e.y+e.height*0.5), e.z, hRange,2.3,hRange, 3)
-			this.comingCloser = true
-			if(this.pickupStart && now-this.pickupStart>500) return true // do it after a half second if it takes too long to come closer
 		}
 		/*if(pickup){
 			var dist = dist3(this.x, this.y, this.z, p.x, p.y, p.z)
@@ -23006,7 +22701,7 @@ entities[entities.length] = class Item extends Entity {
 		let w = e.width*0.5
 		return xDist > -w && xDist < w && yDist > 0 && yDist < e.height && zDist > -w && zDist < w
 	}
-	update() {
+	serverUpdate() {
 		this.updateVelocity(now)
 		this.move(now)
 		
@@ -23019,8 +22714,6 @@ entities[entities.length] = class Item extends Entity {
 			this.previousYaw -= Math.PId
 		}
 		
-		let prevComingCloser = this.comingCloser
-		this.comingCloser = false
 		let pickup
 		if(now - this.spawn > 1000){
 			for(var P of this.world.world.players){
@@ -23029,9 +22722,6 @@ entities[entities.length] = class Item extends Entity {
 				}
 			}
 		}
-		if(this.comingCloser){
-			if(!prevComingCloser) this.pickupStart = now
-		}else this.pickupStart = null
 		
 		let d = 3/4
 		var stackSize = blockData[this.data.id].stackSize
@@ -23061,7 +22751,7 @@ entities[entities.length] = class Item extends Entity {
 		
 		if(pickup){
 			let pickuped = false
-			while(this.data.amount > 0 && pickup.newInvItem(this.data)){
+			while(this.data.amount > 0 && newInvItem(pickup, this.data)){
 				this.data.amount--
 				pickuped = true
 			}
@@ -23119,7 +22809,7 @@ let BlockEntity = entities[entities.length] = class BlockEntity extends Entity{
 		if(this.block === blockID) return
 		this.block = blockID
 	}
-	update() {
+	serverUpdate() {
 		this.updateVelocity(now)
 		this.move(now)
 		if (now - this.spawn > this.despawns) {
@@ -23161,6 +22851,7 @@ let BlockEntity = entities[entities.length] = class BlockEntity extends Entity{
 		}
 	}
 }
+win.BlockEntity = BlockEntity
 
 let PrimedTNT = entities[entities.length] = class PrimedTNT extends BlockEntity{
 	static name2 = "PrimedTNT"
@@ -23180,7 +22871,7 @@ let PrimedTNT = entities[entities.length] = class PrimedTNT extends BlockEntity{
 		var x = round(this.x), y = round(this.y), z = round(this.z)
 		this.world.explode(x,y,z,4, this.liquid || !this.world.world.settings.tntExplode, this.dimension)
 	}
-	update() {
+	serverUpdate() {
 		this.updateVelocity(now)
 		this.move(now)
 		
@@ -23231,7 +22922,7 @@ entities[entities.length] = class PrimedUnTNT extends PrimedTNT{
 }
 entities[entities.length] = class MovingBlock extends BlockEntity{
 	static name2 = "MovingBlock"
-	noRemoteDelete = true
+	//noRemoteDelete = true
 	constructor(block,x,y,z,mx,my,mz,despawns, solidWhenDone = false, tags = null){
 		super(block, x,y,z)
 		this.sx = x //s stands for start
@@ -23246,7 +22937,8 @@ entities[entities.length] = class MovingBlock extends BlockEntity{
 		this.canStandOn = true
 		this.endAs = null
 	}
-	update() {
+	setPos(){}
+	serverUpdate() {
 		if (this.lastUpdate - this.spawn >= this.despawns) {
 			this.canDespawn = true
 			if(this.solidWhenDone){
@@ -23257,7 +22949,9 @@ entities[entities.length] = class MovingBlock extends BlockEntity{
 				if(this.tags) this.world.setTags(round(this.x),round(this.y),round(this.z), this.tags)
 			}
 		}
-		
+		this.update(now)
+	}
+	update(now){
 		this.previousX = this.x
 		this.previousY = this.y
 		this.previousZ = this.z
@@ -23281,7 +22975,7 @@ entities[entities.length] = class BlockDisplay extends BlockEntity{
 		this.height = h
 		this.depth = d
 	}
-	update() {}
+	serverUpdate() {}
 }
 entities[entities.length] = class EnderPearl extends BlockEntity{
 	static name2 = "EnderPearl"
@@ -23295,7 +22989,7 @@ entities[entities.length] = class EnderPearl extends BlockEntity{
 		
 		this.gravityStength = -0.04
 	}
-	update() {
+	serverUpdate() {
 		this.updateVelocity(now)
 		this.move(now)
 		if (now - this.spawn > this.despawns) {
@@ -23327,7 +23021,7 @@ entities[entities.length] = class Snowball extends BlockEntity{
 		
 		this.gravityStength = -0.04
 	}
-	update() {
+	serverUpdate() {
 		this.updateVelocity(now)
 		this.move(now)
 		if(now - this.spawn > 250){
@@ -23364,7 +23058,7 @@ entities[entities.length] = class SmallFireball extends BlockEntity{
 		
 		this.gravityStength = -0.07
 	}
-	update() {
+	serverUpdate() {
 		this.updateVelocity(now)
 		this.move(now)
 		if(now - this.spawn > 250){
@@ -23403,7 +23097,7 @@ entities[entities.length] = class Egg extends BlockEntity{
 		
 		this.gravityStength = -0.07
 	}
-	update() {
+	serverUpdate() {
 		this.updateVelocity(now)
 		this.move(now)
 		var collided = entCollided(this)
@@ -23436,7 +23130,7 @@ entities[entities.length] = class SlingshotShot extends BlockEntity{
 		this.facesPlayer = true
 		this.gravityStength = -0.02
 	}
-	update() {
+	serverUpdate() {
 		this.updateVelocity(now)
 		this.move(now)
 		if (now - this.spawn > this.despawns && this.onGround) {
@@ -23577,7 +23271,7 @@ entities[entities.length] = class Arrow extends Entity{
 		this.velx += (this.velx * drag - this.velx)
 		this.vely += (this.vely * drag - this.vely)
 	}
-	update(){
+	serverUpdate(){
 		let pvelx = this.velx
 		let pvely = this.vely
 		let pvelz = this.velz
@@ -23622,7 +23316,7 @@ entities[entities.length] = class Arrow extends Entity{
 			}
 		}else{
 			let collided = entCollided(this)
-			if(entPlayerCollided && !collided.spectator && collided.newInvItem(blockIds.arrow)) this.canDespawn = true
+			if(entPlayerCollided && !collided.spectator && newInvItem(collided,blockIds.arrow)) this.canDespawn = true
 		}
 		
 		this.yaw = Math.PId - (atan2(this.velz, this.velx) + Math.PI2 + Math.PI)
@@ -23651,7 +23345,7 @@ entities[entities.length] = class ExperienceOrb extends Entity{
 		}
 		return dist < 0.5
 	}
-	update(){
+	serverUpdate(){
 		let pickup
 		for(let p of this.world.world.players){
 			if(!p.hidden && !p.die && p.dimension === this.dimension){
@@ -23693,7 +23387,7 @@ entities[entities.length] = class Minecart extends Entity{
 		this.standingOn = this.world.getBlock(round(this.x), floor(this.y-this.height/2), round(this.z), this.dimension)
 		if(this.prevLiquid !== this.liquid){
 			this.prevLiquid = this.liquid
-			if(this.liquid && this.wet){
+			if(this.isServer && this.liquid && this.wet){
 				let pitch = (1/abs(this.y-this.previousY)*0.05+Math.random()*0.2)/((this.width+this.depth)*0.25/*0.25=average&correct width*/)
 				if(isFinite(pitch)) this.world.playSound(this.x,this.y-this.height/2,this.z,"liquid.splash",1,pitch)
 				this.world.sendAll({
@@ -23710,7 +23404,7 @@ entities[entities.length] = class Minecart extends Entity{
 		this.velx += (this.velx * drag - this.velx)
 		this.vely += (this.vely * yDrag - this.vely)
 	}
-	update() {
+	update(now) {
 		let railX = round(this.x), railY = round(this.y), railZ = round(this.z)
 		let onBlock = this.world.getBlock(railX,railY,railZ,this.dimension)
 		if(!blockData[onBlock].rail){
@@ -23719,12 +23413,14 @@ entities[entities.length] = class Minecart extends Entity{
 		}
 
 		this.updateVelocity(now)
+		if(this.isServer){
 		for(let P of this.world.world.players){
 			if(!P.hidden && !P.die && P.dimension === this.dimension && P.riding !== this.id) this.pushByMob(P)
 		}
 		this.world.getEntitiesNear(this.x,this.y,this.z, 16, nearEntityArray)
 		for(let ent of nearEntityArray){
 			if(ent.pushes && ent !== this && ent.dimension === this.dimension && ent.riding !== this.id) this.pushByMob(ent)
+		}
 		}
 		let {velx, vely, velz} = this
 		let speed = sqrt(velx*velx+velz*velz+vely*vely)*2
@@ -24201,7 +23897,7 @@ class Mob extends Entity{
 			if(data.damageUp > this.maxDamageBlock) this.maxDamageBlock = data.damageUp
 		}
 	}
-	mobUpdate(now) {
+	serverMobUpdate(now) {
 		this.maxBurnBlock = this.maxDamageBlock = 0
 		this.updateVelocity(now)
 		this.move(now)
@@ -24339,13 +24035,11 @@ class Mob extends Entity{
 		if(this.panick > 0) this.panick--
 	}
 	updateAlways(){
-		if(!this.world.world.settings.mobSpawning) return
 		let canDespawn = true
 		for(let p of this.world.world.players){
 			if(max(abs(this.x-p.x),abs(this.y-p.y),abs(this.z-p.z)) <= 48) canDespawn = false
-			if(!this.hostile && max(abs(this.x-p.x),abs(this.y-p.y),abs(this.z-p.z)) <= p.loadDistance*16) canDespawn = false
 		}
-		if(this.name || this.owner) canDespawn = false
+		if(this.name) canDespawn = false
 		if(!canDespawn) this.despawnStart = now
 		else if (now - this.despawnStart > this.despawns) {
 			this.canDespawn = true
@@ -24381,7 +24075,7 @@ class Mob extends Entity{
 		setTarget:if(this.hostile){
 			if(this.owner){
 				let owner = getPlayerByUsername(this.owner,this.world)
-				if(owner && from === owner.username) break setTarget
+				if(from === owner.username) break setTarget
 			}
 			this.target = from || null
 		}
@@ -24400,9 +24094,10 @@ class Mob extends Entity{
 		this.effects[name] = {level, time, showParticles}
 	}
 }
+win.Mob = Mob
 entities[entities.length] = class Cow extends Mob{
 	static name2 = "Cow"
-	drop = [blockIds.rawBeef, blockIds.leather]
+	drop = [blockIds.rawBeef]
 	dropAmount = [1,3]
 	saySound = ["cow.say1","cow.say2","cow.say3","cow.say4"]
 	stepSound = ["cow.step1","cow.step2","cow.step3","cow.step4"]
@@ -24413,17 +24108,18 @@ entities[entities.length] = class Cow extends Mob{
 		var pix = 1/16
 		this.offsetY = pix*9.5
 		
-		this.addPart("frontRightLeg",null,null,pix*-4,pix*-8,pix*7,1,1,1,0,0)
-		this.addPart("frontLeftLeg",null,null,pix*4,pix*-8,pix*7,1,1,1,0,0)
-		this.addPart("backRightLeg",null,null,pix*-4,pix*-8,pix*-6,1,1,1,0,0)
-		this.addPart("backLeftLeg",null,null,pix*4,pix*-8,pix*-6,1,1,1,0,0)
-		this.addPart("head",null,null,0,0,pix*9,1,1,1,0,0)
-		
+		this.bodyShape = "cowBody"; this.bodyTexture = "cow"
+		this.addPart("frontRightLeg",shapes.cowLeg,"cow",pix*-4,pix*-8,pix*7,1,1,1,0,0)
+		this.addPart("frontLeftLeg",shapes.cowLeg,"cow",pix*4,pix*-8,pix*7,1,1,1,0,0)
+		this.addPart("backRightLeg",shapes.cowLeg,"cow",pix*-4,pix*-8,pix*-6,1,1,1,0,0)
+		this.addPart("backLeftLeg",shapes.cowLeg,"cow",pix*4,pix*-8,pix*-6,1,1,1,0,0)
+		this.addPart("head",shapes.cowHead,"cow",0,0,pix*9,1,1,1,0,0)
+
 		this.health = 10
 		this.attracts = [blockIds.wheat]
 	}
-	update(){
-		this.mobUpdate(now)
+	serverUpdate(){
+		this.serverMobUpdate(now)
 	}
 	onclick(holding){
 		if(holding && holding.id === blockIds.bucket) holding.id = blockIds.milkBucket
@@ -24441,17 +24137,18 @@ entities[entities.length] = class Pig extends Mob{
 		super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, null,null, null, 300000)
 		var pix = 1/16
 		this.offsetY = pix*6
-		this.addPart("frontRightLeg",null,null,pix*-3,pix*-8,pix*5,1,1,1,0,0)
-		this.addPart("frontLeftLeg",null,null,pix*3,pix*-8,pix*5,1,1,1,0,0)
-		this.addPart("backRightLeg",null,null,pix*-3,pix*-8,pix*-7,1,1,1,0,0)
-		this.addPart("backLeftLeg",null,null,pix*3,pix*-8,pix*-7,1,1,1,0,0)
-		this.addPart("head",null,null,0,pix*-2,pix*10,1,1,1,0,0)
-		
+		this.bodyShape = "pigBody"; this.bodyTexture = "pig"
+		this.addPart("frontRightLeg",shapes.pigLeg,"pig",pix*-3,pix*-8,pix*5,1,1,1,0,0)
+		this.addPart("frontLeftLeg",shapes.pigLeg,"pig",pix*3,pix*-8,pix*5,1,1,1,0,0)
+		this.addPart("backRightLeg",shapes.pigLeg,"pig",pix*-3,pix*-8,pix*-7,1,1,1,0,0)
+		this.addPart("backLeftLeg",shapes.pigLeg,"pig",pix*3,pix*-8,pix*-7,1,1,1,0,0)
+		this.addPart("head",shapes.pigHead,"pig",0,pix*-2,pix*10,1,1,1,0,0)
+
 		this.health = 10
 		this.attracts = [blockIds.carrot, blockIds.potato]
 	}
-	update(){
-		this.mobUpdate(now)
+	serverUpdate(){
+		this.serverMobUpdate(now)
 	}
 }
 entities[entities.length] = class Creeper extends Mob{
@@ -24466,11 +24163,12 @@ entities[entities.length] = class Creeper extends Mob{
 		super(x, y, z, 0, 0, 0, 0, 0, 0.5, 26/16, 0.5, null,null, null, 300000)
 		var pix = 1/16
 		this.offsetY = pix*-1
-		this.addPart("frontRightLeg",null,null,pix*-2,pix*-6,pix*4,1,1,1,0,0)
-		this.addPart("frontLeftLeg",null,null,pix*2,pix*-6,pix*4,1,1,1,0,0)
-		this.addPart("backRightLeg",null,null,pix*-2,pix*-6,pix*-4,1,1,1,0,0)
-		this.addPart("backLeftLeg",null,null,pix*2,pix*-6,pix*-4,1,1,1,0,0)
-		this.addPart("head",null,null,0,pix*10,0,1,1,1,0,0)
+		this.bodyShape = "creeperBody"; this.bodyTexture = "creeper"
+		this.addPart("frontRightLeg",shapes.pigLeg,"creeper",pix*-2,pix*-6,pix*4,1,1,1,0,0)
+		this.addPart("frontLeftLeg",shapes.pigLeg,"creeper",pix*2,pix*-6,pix*4,1,1,1,0,0)
+		this.addPart("backRightLeg",shapes.pigLeg,"creeper",pix*-2,pix*-6,pix*-4,1,1,1,0,0)
+		this.addPart("backLeftLeg",shapes.pigLeg,"creeper",pix*2,pix*-6,pix*-4,1,1,1,0,0)
+		this.addPart("head",shapes.creeperHead,"creeper",0,pix*10,0,1,1,1,0,0)
 		
 		this.health = 10
 		this.hostile = true
@@ -24484,8 +24182,8 @@ entities[entities.length] = class Creeper extends Mob{
 		var x = round(this.x), y = round(this.y), z = round(this.z)
 		this.world.explode(x,y,z,3, this.liquid || !this.world.world.settings.tntExplode, this.dimension)
 	}
-	update(){
-		this.mobUpdate(now)
+	serverUpdate(){
+		this.serverMobUpdate(now)
 
 		let d = this.targetEnt && max(abs(this.targetEnt.x-this.x),abs(this.targetEnt.y-this.y),abs(this.targetEnt.z-this.z))
 		if(this.targetEnt && d<=this.minFollowDist){
@@ -24533,11 +24231,11 @@ entities[entities.length] = class Sheep extends Mob{
 		super(x, y, z, 0, 0, 0, 0, 0, 1, 1, 1, null,null, 0, 300000, "vao")
 		var pix = 1/16
 		this.offsetY = pix*7
-		this.addPart("frontRightLeg",null,null,pix*-3,pix*-3,pix*5,1,1,1,0,0)
-		this.addPart("frontLeftLeg",null,null,pix*3,pix*-3,pix*5,1,1,1,0,0)
-		this.addPart("backRightLeg",null,null,pix*-3,pix*-3,pix*-7,1,1,1,0,0)
-		this.addPart("backLeftLeg",null,null,pix*3,pix*-3,pix*-7,1,1,1,0,0)
-		this.addPart("head",null,null,0,pix*4,pix*10,1,1,1,0,0)
+		this.addPart("frontRightLeg",null,"sheepCombined",pix*-3,pix*-3,pix*5,1,1,1,0,0)
+		this.addPart("frontLeftLeg",null,"sheepCombined",pix*3,pix*-3,pix*5,1,1,1,0,0)
+		this.addPart("backRightLeg",null,"sheepCombined",pix*-3,pix*-3,pix*-7,1,1,1,0,0)
+		this.addPart("backLeftLeg",null,"sheepCombined",pix*3,pix*-3,pix*-7,1,1,1,0,0)
+		this.addPart("head",null,"sheepCombined",0,pix*4,pix*10,1,1,1,0,0)
 		this.health = 10
 		this.fur = true
 		this.eating = 0
@@ -24590,9 +24288,15 @@ entities[entities.length] = class Sheep extends Mob{
 			this.world.sendEntityPos(this)
 			this.world.blockParticles(this.standingOn,round(this.x),floor(this.y-this.height/2)+0.5,round(this.z),30, "break")
 		}
+		if(this.fur !== this.prevFur){
+			this.bodyShape = this.fur ? shapes.sheepBodyFur : shapes.sheepBody
+      this.parts.frontLeftLeg.shape = this.parts.frontRightLeg.shape = this.parts.backLeftLeg.shape = this.parts.backRightLeg.shape = this.fur ? shapes.sheepLegFur : shapes.sheepLeg
+      this.parts.head.shape = this.fur ? shapes.sheepHeadFur : shapes.sheepHead
+			this.willUpdateShape = true
+		}
 	}
-	update(){
-		this.mobUpdate(now)
+	serverUpdate(){
+		this.serverMobUpdate(now)
 	}
 }
 entities[entities.length] = class Chicken extends Mob{
@@ -24606,11 +24310,12 @@ entities[entities.length] = class Chicken extends Mob{
 		var pix = 1/16
 		super(x, y, z, 0, 0, 0, 0, 0, 0.5, pix*11, 0.5, null,null, null, 300000)
 		this.offsetY = pix*2.5
-		this.addPart("leftWing",null,null,pix*3.5,pix*3,0,1,1,1,0,0)
-		this.addPart("rightWing",null,null,pix*-3.5,pix*3,0,1,1,1,0,0)
-		this.addPart("rightLeg",null,null,pix*-1.5,pix*-3,0,1,1,1,0,0)
-		this.addPart("leftLeg",null,null,pix*1.5,pix*-3,0,1,1,1,0,0)
-		this.addPart("head",null,null,0,pix*4,pix*4.5,1,1,1,0,0)
+		this.bodyShape = "chickenBody"; this.bodyTexture = "chicken"
+		this.addPart("leftWing",shapes.chickenWing,"chicken",pix*3.5,pix*3,0,1,1,1,0,0)
+		this.addPart("rightWing",shapes.chickenWing,"chicken",pix*-3.5,pix*3,0,1,1,1,0,0)
+		this.addPart("rightLeg",shapes.chickenLeg,"chicken",pix*-1.5,pix*-3,0,1,1,1,0,0)
+		this.addPart("leftLeg",shape.chickenLeg,"chicken",pix*1.5,pix*-3,0,1,1,1,0,0)
+		this.addPart("head",shapes.chickenHead,"chicken",0,pix*4,pix*4.5,1,1,1,0,0)
 		
 		this.health = 4
 		this.attracts = [blockIds.beetrootSeeds, blockIds.tomatoSeeds, blockIds.pumpkinSeeds, blockIds.melonSeeds, blockIds.wheatSeeds]
@@ -24621,8 +24326,8 @@ entities[entities.length] = class Chicken extends Mob{
 			this.world.playSound(this.x,this.y,this.z, "chicken.plop")
 		}
 	}
-	update(){
-		this.mobUpdate(now)
+	serverUpdate(){
+		this.serverMobUpdate(now)
 
 		if(this.vely < 0){
 			this.vely *= 0.5
@@ -24644,12 +24349,13 @@ entities[entities.length] = class Zombie extends Mob{
 		super(x, y, z, 0, 0, 0, 0, 0, 1, 2, 1, null,null, null, 300000)
 		var pix = 1/16
 		this.offsetY = pix*2
-		this.addPart("rightLeg",null,null,pix*-2,pix*-6,0,1,1,1,0,0)
-		this.addPart("leftLeg",null,null,pix*2,pix*-6,0,1,1,1,0,0)
-		this.addPart("rightArm",null,null,pix*-6,pix*6,pix*0,1,1,1,0,0)
-		this.addPart("leftArm",null,null,pix*6,pix*6,pix*0,1,1,1,0,0)
-		this.addPart("head",null,null,0,pix*10,0,1,1,1,0,0)
-		
+		this.bodyShape = "zombieBody"; this.bodyTexture = "zombie"
+		this.addPart("rightLeg",shapes.zombieLeg,"zombie",pix*-2,pix*-6,0,1,1,1,0,0)
+		this.addPart("leftLeg",shapes.zombieLeg,"zombie",pix*2,pix*-6,0,1,1,1,0,0)
+		this.addPart("rightArm",shapes.zombieArm,"zombie",pix*-6,pix*6,pix*0,1,1,1,0,0)
+		this.addPart("leftArm",shapes.zombieArm,"zombie",pix*6,pix*6,pix*0,1,1,1,0,0)
+		this.addPart("head",shapes.zombieHead,"zombie",0,pix*10,0,1,1,1,0,0)
+
 		this.health = 20
 		this.hostile = true
 		this.minFollowDist = 1
@@ -24659,8 +24365,8 @@ entities[entities.length] = class Zombie extends Mob{
 		this.maxAttackCooldown = 20
 	}
 	killMessage(username){return username+" died from some small punches from a Zombie."}
-	update(){
-		this.mobUpdate(now)
+	serverUpdate(){
+		this.serverMobUpdate(now)
 		if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0)*this.world.world.skyLight > 11){
 			this.burnTimer += 0.2
 		}
@@ -24680,11 +24386,12 @@ entities[entities.length] = class Skeleton extends Mob{
 		super(x, y, z, 0, 0, 0, 0, 0, 0.75, 2, 0.75, null,null, null, 300000)
 		var pix = 1/16
 		this.offsetY = pix*2
-		this.addPart("rightLeg",null,null,pix*-2,pix*-6,0,1,1,1,0,0)
-		this.addPart("leftLeg",null,null,pix*2,pix*-6,0,1,1,1,0,0)
-		this.addPart("rightArm",null,null,pix*-5,pix*6,pix*0,1,1,1,0,0)
-		this.addPart("leftArm",null,null,pix*5,pix*6,pix*0,1,1,1,0,0)
-		this.addPart("head",null,null,0,pix*10,0,1,1,1,0,0)
+		this.bodyShape = "skeletonBody"; this.bodyTexture = "skeleton"
+		this.addPart("rightLeg",shapes.skeletonLeg,"skeleton",pix*-2,pix*-6,0,1,1,1,0,0)
+		this.addPart("leftLeg",shapes.skeletonLeg,"skeleton",pix*2,pix*-6,0,1,1,1,0,0)
+		this.addPart("rightArm",shapes.skeletonArm,"skeleton",pix*-5,pix*6,pix*0,1,1,1,0,0)
+		this.addPart("leftArm",shapes.skeletonArm,"skeleton",pix*5,pix*6,pix*0,1,1,1,0,0)
+		this.addPart("head",shapes.creeperHead,"skeleton",0,pix*10,0,1,1,1,0,0)
 		this.addPart("holding",null,null,0,0,0,1,1,1,0,0,undefined,"rightArm") //changed later
 		
 		this.health = 20
@@ -24704,8 +24411,8 @@ entities[entities.length] = class Skeleton extends Mob{
 			//this.world.sendAllInChunk({type:"entEvent",event:"mobAttack",id:this.id},this.chunkX,this.chunkZ,this.chunkDimension)
 		}
 	}
-	update(){
-		this.mobUpdate(now)
+	serverUpdate(){
+		this.serverMobUpdate(now)
 		if(!this.liquid && this.world.getLight(round(this.x), round(this.y), round(this.z), 0)*this.world.world.skyLight > 11){
 			this.burnTimer += 0.2
 		}
@@ -24722,18 +24429,22 @@ entities[entities.length] = class Spider extends Mob{
 	constructor(x,y,z,cave){
 		let s = cave ? 0.7 : 1
 		super(x, y, z, 0, 0, 0, 0, 0, s, s, s, null,null, null, 300000)
+		this.noScale = false
 		var pix = 1/16
 		this.offsetY = pix*2
 		let legRot = Math.PI/8
-		this.addPart("rightLeg0",null,null,pix*-3,0,0,1,1,1,0,0,legRot)
-		this.addPart("rightLeg1",null,null,pix*-3,0,0,1,1,1,0,0,legRot)
-		this.addPart("rightLeg2",null,null,pix*-3,0,0,1,1,1,0,0,legRot)
-		this.addPart("rightLeg3",null,null,pix*-3,0,0,1,1,1,0,0,legRot)
-		this.addPart("leftLeg0",null,null,pix*3,0,0,1,1,1,0,0,-legRot)
-		this.addPart("leftLeg1",null,null,pix*3,0,0,1,1,1,0,0,-legRot)
-		this.addPart("leftLeg2",null,null,pix*3,0,0,1,1,1,0,0,-legRot)
-		this.addPart("leftLeg3",null,null,pix*3,0,0,1,1,1,0,0,-legRot)
-		this.addPart("head",null,null,0,0,pix*7,1,1,1,0,0)
+		let tex = cave ? "caveSpider" : "spider"
+		this.bodyShape = shapes.spiderBody; this.bodyTexture = tex
+		this.addPart("rightLeg0",shape.spiderLeg,tex,pix*-3,0,0,1,1,1,0,0,legRot)
+		this.addPart("rightLeg1",shape.spiderLeg,tex,pix*-3,0,0,1,1,1,0,0,legRot)
+		this.addPart("rightLeg2",shape.spiderLeg,tex,pix*-3,0,0,1,1,1,0,0,legRot)
+		this.addPart("rightLeg3",shape.spiderLeg,tex,pix*-3,0,0,1,1,1,0,0,legRot)
+		this.addPart("leftLeg0",shape.spiderLeg,tex,pix*3,0,0,1,1,1,0,0,-legRot)
+		this.addPart("leftLeg1",shape.spiderLeg,tex,pix*3,0,0,1,1,1,0,0,-legRot)
+		this.addPart("leftLeg2",shape.spiderLeg,tex,pix*3,0,0,1,1,1,0,0,-legRot)
+		this.addPart("leftLeg3",shape.spiderLeg,tex,pix*3,0,0,1,1,1,0,0,-legRot)
+		this.addPart("head",shapes.spiderHead,tex,0,0,pix*7,1,1,1,0,0)
+		this.addPart("eyes",shapes.spiderHead,"spiderEyes",0,0,0,1,1,1,0,0,0,"head",true)
 		
 		this.fur = !!cave
 		this.defaultName = cave ? "Cave Spider" : "Spider"
@@ -24747,14 +24458,6 @@ entities[entities.length] = class Spider extends Mob{
 		this.maxAttackCooldown = 20
 	}
 	killMessage(username){return username+" died from a tiny little spider."}
-	update(){
-		this.mobUpdate(now)
-
-		if(this.prevWalking !== this.walking){
-			this.prevWalking = this.walking
-			this.walkStart = now
-		}
-	}
 }
 entities[entities.length] = class Wolf extends Mob{
 	static name2 = "Wolf"
@@ -24762,13 +24465,13 @@ entities[entities.length] = class Wolf extends Mob{
 	constructor(x,y,z){
 		super(x, y, z, 0, 0, 0, 0, 0, 0.6, 0.8, 0.6, null,null, null, Infinity, "vao")
 		var pix = 1/16
-		this.addPart("head",null,null,0,0,pix*10,1,1,1,0,0)
-		this.addPart("frontRightLeg",null,null,pix*-1.5,pix*-3,pix*5,1,1,1,0,0)
-		this.addPart("frontLeftLeg",null,null,pix*1.5,pix*-3,pix*5,1,1,1,0,0)
-		this.addPart("backRightLeg",null,null,pix*-1.5,pix*-3,pix*-6,1,1,1,0,0)
-		this.addPart("backLeftLeg",null,null,pix*1.5,pix*-3,pix*-6,1,1,1,0,0)
-		this.addPart("tail",null,null,0,0,pix*-8,1,1,1,Math.PI2,0)
-		this.addPart("collar",null,null,0,0,pix*6.1,1,1,1,0,0)
+		this.addPart("head",shapes.wolfHead,null,0,0,pix*10,1,1,1,0,0)
+		this.addPart("frontRightLeg",shapes.wolfLeg,null,pix*-1.5,pix*-3,pix*5,1,1,1,0,0)
+		this.addPart("frontLeftLeg",shapes.wolfLeg,null,pix*1.5,pix*-3,pix*5,1,1,1,0,0)
+		this.addPart("backRightLeg",shapes.wolfLeg,null,pix*-1.5,pix*-3,pix*-6,1,1,1,0,0)
+		this.addPart("backLeftLeg",shapes.wolfLeg,null,pix*1.5,pix*-3,pix*-6,1,1,1,0,0)
+		this.addPart("tail",shapes.wolfTail,null,0,0,pix*-8,1,1,1,Math.PI2,0)
+		this.addPart("collar",shapes.wolfBody,null,0,0,pix*6.1,1,1,1,0,0)
 		
 		this.health = 8
 		this.hostile = true
@@ -24863,14 +24566,14 @@ entities[entities.length] = class Wolf extends Mob{
 		}
 		if(owner && !owner.die && !owner.hidden){
 			if(owner.attackedById && this.target !== owner.attackedById){
-				if(getEntityOrPlayer(owner.attackedById,this.world)) this.target = owner.attackedById
+				this.target = owner.attackedById
 				this.world.sendEntityPos(this)
 				//send({type:"entEvent",event:"wolfTarget",id:this.id, data:this.target})
 			}
 		}
 	}
-	update(){
-		this.mobUpdate(now)
+	serverUpdate(){
+		this.serverMobUpdate(now)
 		let pix = 1 / 16
 		if(!this.target && !this.tame){
 			this.world.getEntitiesNear(this.x,this.y,this.z, 16, nearEntityArray)
@@ -24882,6 +24585,13 @@ entities[entities.length] = class Wolf extends Mob{
 				}
 			}
 			if(ctarget) this.target = ctarget
+		}
+		if(this.prevTarget !== this.target || this.prevTame !== this.tame){
+			let tex = this.target ? "wolfAngry" : (this.tame ? "wolfTame" : "wolf")
+			this.bodyTexture = tex
+      this.parts.frontLeftLeg.texture = this.parts.frontRightLeg.texture = this.parts.backLeftLeg.texture = this.parts.backRightLeg.texture = tex
+      this.parts.head.texture = tex
+			this.willUpdateShape = true
 		}
 	}
 }
@@ -24897,7 +24607,19 @@ entities[entities.length] = class Blaze extends Mob{
 	constructor(x,y,z){
 		var pix = 1/16
 		super(x, y, z, 0, 0, 0, 0, 0, 1, pix*22, 1, null,null, null, 300000)
-		this.addPart("head",null,null,0,pix*10,0,1,1,1,0,0)
+		this.addPart("head",shapes.creeperHead,"blaze",0,pix*10,0,1,1,1,0,0)
+		this.addPart("thingy1_0",shapes.blazeThingy,"blaze",0,pix*8,0,1,1,1,0,0)
+		this.addPart("thingy1_1",shapes.blazeThingy,"blaze",0,pix*8,0,1,1,1,0,0)
+		this.addPart("thingy1_2",shapes.blazeThingy,"blaze",0,pix*8,0,1,1,1,0,0)
+		this.addPart("thingy1_3",shapes.blazeThingy,"blaze",0,pix*8,0,1,1,1,0,0)
+		this.addPart("thingy2_0",shapes.blazeThingy,"blaze",0,pix*6,0,1,1,1,0,0)
+		this.addPart("thingy2_1",shapes.blazeThingy,"blaze",0,pix*6,0,1,1,1,0,0)
+		this.addPart("thingy2_2",shapes.blazeThingy,"blaze",0,pix*6,0,1,1,1,0,0)
+		this.addPart("thingy2_3",shapes.blazeThingy,"blaze",0,pix*6,0,1,1,1,0,0)
+		this.addPart("thingy3_0",shapes.blazeThingy,"blaze",0,pix*-2,0,1,1,1,0,0)
+		this.addPart("thingy3_1",shapes.blazeThingy,"blaze",0,pix*-2,0,1,1,1,0,0)
+		this.addPart("thingy3_2",shapes.blazeThingy,"blaze",0,pix*-2,0,1,1,1,0,0)
+		this.addPart("thingy3_3",shapes.blazeThingy,"blaze",0,pix*-2,0,1,1,1,0,0)
 		
 		this.health = 20
 		this.hostile = true
@@ -24924,8 +24646,8 @@ entities[entities.length] = class Blaze extends Mob{
 			}
 		}
 	}
-	update(){
-		this.mobUpdate(now)
+	serverUpdate(){
+		this.serverMobUpdate(now)
 		if(this.burnTimer) this.burnTimer = 0
 
 		if(this.targetEnt && this.attackCooldown > 0 && this.attackCooldown < 100) this.burning = true
@@ -24938,11 +24660,12 @@ entities[entities.length] = class Enderman extends Mob{
 		super(x, y, z, 0, 0, 0, 0, 0, 0.75, 3, 0.75, null,null, null, 300000)
 		let pix = 1/16
 		this.offsetY = pix*13
-		this.addPart("rightLeg",null,null,pix*-2,pix*-6,0,1,1,1,0,0)
-		this.addPart("leftLeg",null,null,pix*2,pix*-6,0,1,1,1,0,0)
-		this.addPart("rightArm",null,null,pix*-4,pix*6,pix*0,1,1,1,0,0)
-		this.addPart("leftArm",null,null,pix*4,pix*6,pix*0,1,1,1,0,0)
-		this.addPart("head",null,null,0,pix*10,0,1,1,1,0,0)
+		this.addPart("rightLeg",shapes.endermanLeg,"enderman",pix*-2,pix*-6,0,1,1,1,0,0)
+		this.addPart("leftLeg",shapes.endermanLeg,"enderman",pix*2,pix*-6,0,1,1,1,0,0)
+		this.addPart("rightArm",shapes.endermanLeg,"enderman",pix*-4,pix*6,pix*0,1,1,1,0,0)
+		this.addPart("leftArm",shapes.endermanLeg,"enderman",pix*4,pix*6,pix*0,1,1,1,0,0)
+		this.addPart("head",shapes.creeperHead,"enderman",0,pix*10,0,1,1,1,0,0)
+		this.addPart("eyes",shapes.creeperHead,"enderman",0,0,0,1,1,1,0,0,0,"head",true)
 		
 		this.health = 40
 		this.hostile = true
@@ -24953,8 +24676,8 @@ entities[entities.length] = class Enderman extends Mob{
 		this.maxAttackCooldown = 20
 	}
 	killMessage(username){return username+" died from Enderman."}
-	update(){
-		this.mobUpdate(now)
+	serverUpdate(){
+		this.serverMobUpdate(now)
 		if(this.wet){
 			if(now - this.lastBlockDamage > 1000){
 				this.lastBlockDamage = now
@@ -24975,9 +24698,10 @@ entities[entities.length] = class TextDisplay extends Entity{
 		this.background = background || [0,0,0,0]
 		this.glow = glow || false
 		this.size = size
+		this.offsetX = this.offsetZ = 0
 	}
 	setText(t){this.text = t}
-	update() {
+	serverUpdate() {
 		this.lastUpdate = now
 		this.previousX = this.x
 		this.previousY = this.y
@@ -25901,8 +25625,13 @@ class Section {
 				}
 			}
 			if(i<40){
-				if(block.tick){
+				if(block.name === "fire" || block.name === "Lava"){
+					if(this.world.world.settings.fireSpreads) block.tick(x,y,z,this.world)
+				}else if(block.tick){
 					block.tick(block,x,y,z,this.world)
+				}
+				if(block.beacon){
+					block.update(x,y,z,this.world)
 				}
 			}
 		}
@@ -28657,7 +28386,7 @@ class Chunk {
 		const type = this.type
 		worldGenArray.clear() //generate extras like vines
 
-		if(this.world.customChunkPopulate && !this.world.customChunkPopulate(this)){
+		if(this.world.world.customChunkPopulate && !this.world.world.customChunkPopulate(this)){
 		}else if((world.world.worldType === "alpha" || world.world.worldType === "island" || (world.world.worldType === "superflat" && trees)) && type === ""){
 			const flowers = this.allFlowers
 			const clayReplaceable = [blockIds.dirt, blockIds.stone, blockIds.gravel]
@@ -28675,7 +28404,7 @@ class Chunk {
 
 					//let nb = getNetherBiome(biome)
 					let b = biomes[this.biomes[k * 16 + i]]
-					if (trees && random() < 0.005 && type === "" && (b === "a_field" || b === "plains") && this.getBlock(i, ground, k) === blockIds.grass) {
+					if (trees && random() < 0.01 && type === "" && (b === "a_field" || b === "plains") && this.getBlock(i, ground, k) === blockIds.grass) {
 						this.spawnSmallTree(i,ground,k,wx,wz)
 					}
 					
@@ -28890,82 +28619,58 @@ class Chunk {
 			if(!this.x && !this.z){//center
 				let top = this.tops[0]
 				//pillar
-				world.spawnBlock(0,top+1,0,blockIds.bedrock, true)
-				world.spawnBlock(0,top+2,0,blockIds.bedrock, true)
-				world.spawnBlock(0,top+3,0,blockIds.bedrock, true)
+				world.spawnBlock(0,top+1,0,blockIds.bedrock,"end")
+				world.spawnBlock(0,top+2,0,blockIds.bedrock,"end")
+				world.spawnBlock(0,top+3,0,blockIds.bedrock,"end")
 				//torches
-				world.spawnBlock(0,top+2,-1,blockIds.torch|SLAB|NORTH, true)
-				world.spawnBlock(0,top+2,1,blockIds.torch|SLAB|SOUTH, true)
-				world.spawnBlock(-1,top+2,0,blockIds.torch|SLAB|EAST, true)
-				world.spawnBlock(1,top+2,0,blockIds.torch|SLAB|WEST, true)
+				world.spawnBlock(0,top+2,-1,blockIds.torch|SLAB|NORTH,"end")
+				world.spawnBlock(0,top+2,1,blockIds.torch|SLAB|SOUTH,"end")
+				world.spawnBlock(-1,top+2,0,blockIds.torch|SLAB|EAST,"end")
+				world.spawnBlock(1,top+2,0,blockIds.torch|SLAB|WEST,"end")
 				//base
-				world.spawnBlock(-1,top,-1,blockIds.bedrock, true)
-				world.spawnBlock(-1,top,0,blockIds.bedrock, true)
-				world.spawnBlock(-1,top,1,blockIds.bedrock, true)
-				world.spawnBlock(0,top,-1,blockIds.bedrock, true)
-				world.spawnBlock(0,top,0,blockIds.bedrock, true)
-				world.spawnBlock(0,top,1,blockIds.bedrock, true)
-				world.spawnBlock(1,top,-1,blockIds.bedrock, true)
-				world.spawnBlock(1,top,0,blockIds.bedrock, true)
-				world.spawnBlock(1,top,1,blockIds.bedrock, true)
+				world.spawnBlock(-1,top,-1,blockIds.bedrock,"end")
+				world.spawnBlock(-1,top,0,blockIds.bedrock,"end")
+				world.spawnBlock(-1,top,1,blockIds.bedrock,"end")
+				world.spawnBlock(0,top,-1,blockIds.bedrock,"end")
+				world.spawnBlock(0,top,0,blockIds.bedrock,"end")
+				world.spawnBlock(0,top,1,blockIds.bedrock,"end")
+				world.spawnBlock(1,top,-1,blockIds.bedrock,"end")
+				world.spawnBlock(1,top,0,blockIds.bedrock,"end")
+				world.spawnBlock(1,top,1,blockIds.bedrock,"end")
 
-				world.spawnBlock(-1,top,-2,blockIds.bedrock, true)
-				world.spawnBlock(0,top,-2,blockIds.bedrock, true)
-				world.spawnBlock(1,top,-2,blockIds.bedrock, true)
-				world.spawnBlock(-1,top,2,blockIds.bedrock, true)
-				world.spawnBlock(0,top,2,blockIds.bedrock, true)
-				world.spawnBlock(1,top,2,blockIds.bedrock, true)
-				world.spawnBlock(2,top,-1,blockIds.bedrock, true)
-				world.spawnBlock(2,top,0,blockIds.bedrock, true)
-				world.spawnBlock(2,top,1,blockIds.bedrock, true)
-				world.spawnBlock(-2,top,-1,blockIds.bedrock, true)
-				world.spawnBlock(-2,top,0,blockIds.bedrock, true)
-				world.spawnBlock(-2,top,1,blockIds.bedrock, true)
+				world.spawnBlock(-1,top,-2,blockIds.bedrock,"end")
+				world.spawnBlock(0,top,-2,blockIds.bedrock,"end")
+				world.spawnBlock(1,top,-2,blockIds.bedrock,"end")
+				world.spawnBlock(-1,top,2,blockIds.bedrock,"end")
+				world.spawnBlock(0,top,2,blockIds.bedrock,"end")
+				world.spawnBlock(1,top,2,blockIds.bedrock,"end")
+				world.spawnBlock(2,top,-1,blockIds.bedrock,"end")
+				world.spawnBlock(2,top,0,blockIds.bedrock,"end")
+				world.spawnBlock(2,top,1,blockIds.bedrock,"end")
+				world.spawnBlock(-2,top,-1,blockIds.bedrock,"end")
+				world.spawnBlock(-2,top,0,blockIds.bedrock,"end")
+				world.spawnBlock(-2,top,1,blockIds.bedrock,"end")
 				
 				//side
-				world.spawnBlock(-1,top+1,-3,blockIds.bedrock, true)
-				world.spawnBlock(0,top+1,-3,blockIds.bedrock, true)
-				world.spawnBlock(1,top+1,-3,blockIds.bedrock, true)
-				world.spawnBlock(-1,top+1,3,blockIds.bedrock, true)
-				world.spawnBlock(0,top+1,3,blockIds.bedrock, true)
-				world.spawnBlock(1,top+1,3,blockIds.bedrock, true)
-				world.spawnBlock(-3,top+1,-1,blockIds.bedrock, true)
-				world.spawnBlock(-3,top+1,0,blockIds.bedrock, true)
-				world.spawnBlock(-3,top+1,1,blockIds.bedrock, true)
-				world.spawnBlock(3,top+1,-1,blockIds.bedrock, true)
-				world.spawnBlock(3,top+1,0,blockIds.bedrock, true)
-				world.spawnBlock(3,top+1,1,blockIds.bedrock, true)
+				world.spawnBlock(-1,top+1,-3,blockIds.bedrock,"end")
+				world.spawnBlock(0,top+1,-3,blockIds.bedrock,"end")
+				world.spawnBlock(1,top+1,-3,blockIds.bedrock,"end")
+				world.spawnBlock(-1,top+1,3,blockIds.bedrock,"end")
+				world.spawnBlock(0,top+1,3,blockIds.bedrock,"end")
+				world.spawnBlock(1,top+1,3,blockIds.bedrock,"end")
+				world.spawnBlock(-3,top+1,-1,blockIds.bedrock,"end")
+				world.spawnBlock(-3,top+1,0,blockIds.bedrock,"end")
+				world.spawnBlock(-3,top+1,1,blockIds.bedrock,"end")
+				world.spawnBlock(3,top+1,-1,blockIds.bedrock,"end")
+				world.spawnBlock(3,top+1,0,blockIds.bedrock,"end")
+				world.spawnBlock(3,top+1,1,blockIds.bedrock,"end")
 				//side corners
-				world.spawnBlock(-2,top+1,-2,blockIds.bedrock, true)
-				world.spawnBlock(2,top+1,-2,blockIds.bedrock, true)
-				world.spawnBlock(-2,top+1,2,blockIds.bedrock, true)
-				world.spawnBlock(2,top+1,2,blockIds.bedrock, true)
+				world.spawnBlock(-2,top+1,-2,blockIds.bedrock,"end")
+				world.spawnBlock(2,top+1,-2,blockIds.bedrock,"end")
+				world.spawnBlock(-2,top+1,2,blockIds.bedrock,"end")
+				world.spawnBlock(2,top+1,2,blockIds.bedrock,"end")
 
-				//portal
-				world.spawnBlock(-1,top+1,-1,blockIds.endPortal, true)
-				world.spawnBlock(-1,top+1,0,blockIds.endPortal, true)
-				world.spawnBlock(-1,top+1,1,blockIds.endPortal, true)
-				world.spawnBlock(0,top+1,-1,blockIds.endPortal, true)
-				world.spawnBlock(0,top+1,0,blockIds.endPortal, true)
-				world.spawnBlock(0,top+1,1,blockIds.endPortal, true)
-				world.spawnBlock(1,top+1,-1,blockIds.endPortal, true)
-				world.spawnBlock(1,top+1,0,blockIds.endPortal, true)
-				world.spawnBlock(1,top+1,1,blockIds.endPortal, true)
-
-				world.spawnBlock(-1,top+1,-2,blockIds.endPortal, true)
-				world.spawnBlock(0,top+1,-2,blockIds.endPortal, true)
-				world.spawnBlock(1,top+1,-2,blockIds.endPortal, true)
-				world.spawnBlock(-1,top+1,2,blockIds.endPortal, true)
-				world.spawnBlock(0,top+1,2,blockIds.endPortal, true)
-				world.spawnBlock(1,top+1,2,blockIds.endPortal, true)
-				world.spawnBlock(2,top+1,-1,blockIds.endPortal, true)
-				world.spawnBlock(2,top+1,0,blockIds.endPortal, true)
-				world.spawnBlock(2,top+1,1,blockIds.endPortal, true)
-				world.spawnBlock(-2,top+1,-1,blockIds.endPortal, true)
-				world.spawnBlock(-2,top+1,0,blockIds.endPortal, true)
-				world.spawnBlock(-2,top+1,1,blockIds.endPortal, true)
-
-				world.spawnBlock(0,top+4,0,blockIds.oakSign, true)
+				world.spawnBlock(0,top+4,0,blockIds.oakSign,"end")
 				const text = atob("QmV3YXJlIHRoZQpvbmUgdGhhdApyb2xscy4=")
 				world.setTags(0, top+4, 0, {rot:0,text,text2:text}, true,true)
 			}
@@ -29926,7 +29631,7 @@ class Chunk {
 			}
 		}
 		if(this.allGenerated) for (let [i,entity] of this.entities) {
-			entity.update()
+			entity.serverUpdate()
 			if (entity.canDespawn || (entity.y <= minEntityY)) {
 				world.deleteEntity(i)
 			}
@@ -30513,7 +30218,7 @@ function putItemInContainer(x,y,z,data,lazy,world){
 			tags.contents[i] = {...data,amount:1}
 			if(!lazy) world.setTags(x,y,z,tags)
 			return true
-		}else if(tags.contents[i].id === data.id && (!tags.contents[i].customName && !data.customName || tags.contents[i].customName === data.customName) && tags.contents[i].amount < blockData[data.id].stackSize){
+		}else if(tags.contents[i].id === data.id && (!tags.contents[i].customName && !data.customName || tags.contents[i].customName === data.customName) && tags.contents[i].amount < blockData[id].stackSize){
 			tags.contents[i].amount++
 			if(!lazy) world.setTags(x,y,z,tags)
 			return true
@@ -30605,7 +30310,11 @@ function getEntityOrPlayer(id,world){
 	for(let p of world.world.players){
 		if(p.id === id) return p
 	}
-	return world.world.entities.get(id)
+	for(let i=0; i<world.world.entities.length; i++){
+		if(world.world.entities[i].id === id){
+			return world.world.entities[i]
+		}
+	}
 }
 function getPlayerByUsername(username2,world){
 	for(let p of world.world.players){
@@ -31648,7 +31357,7 @@ class World{ // aka trueWorld
 		this[""] = new WorldDimension(this,"")
 		this["nether"] = new WorldDimension(this,"nether")
 		this["end"] = new WorldDimension(this,"end")
-		this.entities = new Map()
+		this.entities = []
 		this.spawnPoint = {
 			x:8,z:8,y:70,
 			landProg:0
@@ -31767,12 +31476,12 @@ class World{ // aka trueWorld
       if(p.liquid) breakTime *= 5
 			if(!p.onGround) breakTime *= 5
 		}
-		if(dimension !== p.dimension || breakTime !== undefined && (p.crackPos[0] !== x || p.crackPos[1] !== y || p.crackPos[2] !== z || dnow-p.breakStart<breakTime-250) || dist3(p.x,p.y,p.z,x,y,z)>p.reach+1){
+		if(dimension !== p.dimension || breakTime !== undefined && (p.crackPos[0] !== x || p.crackPos[1] !== y || p.crackPos[2] !== z || dnow-p.breakStart<breakTime-250)){
 			return p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:prevBlock, dimension}})
 		}
 		if(place){//placed
 			let cblock = this[dimension].getBlock(ox,oy,oz)
-			if(this.event("click", {player:p, x:ox,y:oy,z:oz, block:cblock, holding, holdObj})) return
+			if(this.event("click", {player:p, x,y,z, block:cblock, holding, holdObj})) return
 			if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
 			if(blockData[cblock].onclick && !shift){
 				if(!blockData[cblock].onclick(ox,oy,oz,this[dimension],p,holdObj)){
@@ -31849,6 +31558,8 @@ class World{ // aka trueWorld
         if(onPot && blockIds[blockData[holding].name+"Pot"]){
           holding = blockIds[blockData[holding].name+"Pot"]
           blockMode = POTCROSS
+        }else{
+          blockMode = CROSS
         }
       }
       if(blockData[holding].sideCross){
@@ -31858,10 +31569,14 @@ class World{ // aka trueWorld
           blockMode = SLAB
         }else blockMode = CROSS
       }
+      if(blockData[holding].tallcrossShape){
+        blockMode = TALLCROSS
+      }
       if(blockData[holding].door && blockMode !== SLAB){
         blockMode = DOOR
       }
-			if(blockData[holding].torch || blockData[holding].chain || blockData[holding].name === "endRod" || blockData[holding].redstoneTorch || blockData[holding].name === "hopper"){
+      if(blockData[holding].torch){
+        blockMode = TORCH
         if(side) blockMode = SLAB
       }
       if(blockData[holding].lantern){
@@ -31871,8 +31586,21 @@ class World{ // aka trueWorld
           blockMode = LANTERN
         }
       }
+      if(blockData[holding].beacon){
+        blockMode = BEACON
+      }
+      if(blockData[holding].cactus && blockMode !== POTCROSS){
+        blockMode = CACTUS
+      }
       if(blockData[holding].pane){
         if(side) blockMode = SLAB
+        else blockMode = PANE
+      }
+      if(blockData[holding].portal){
+        blockMode = PORTAL
+      }
+      if(blockData[holding].wallFlat){
+        blockMode = WALLFLAT
       }
       if(blockData[holding].trapdoor){
         if(side){
@@ -31881,13 +31609,33 @@ class World{ // aka trueWorld
           blockMode = TRAPDOOR
         }
       }
+      if(blockData[holding].chain){
+        if(side)blockMode = SLAB
+        else blockMode = CHAIN
+      }
       if(blockData[holding].button){
         blockMode = BUTTON
+      }
+      if(blockData[holding].pot){
+        blockMode = POT
+      }
+      
+      if(blockData[holding].name === "endRod"){
+        if(side){
+          blockMode = SLAB
+        }else{
+          blockMode = CUBE
+        }
       }
       
       if(blockData[holding].barrel || blockData[holding].commandBlock){
         if(side) blockMode = SLAB
         else if(face === "bottom") blockMode = STAIR
+        else blockMode = CUBE
+      }
+      
+      if(blockData[holding].redstoneTorch){
+        if(side) blockMode = SLAB
         else blockMode = CUBE
       }
       
@@ -31920,6 +31668,10 @@ class World{ // aka trueWorld
       if(blockData[holding].name === "dropper" || blockData[holding].name === "dispenser"){
         if(face === "top") blockMode = SLAB
         else if(face === "bottom") blockMode = STAIR
+        else blockMode = CUBE
+      }
+      if(blockData[holding].name === "hopper"){
+        if(side) blockMode = SLAB
         else blockMode = CUBE
       }
 			if(blockData[holding].coralFan){
@@ -31974,8 +31726,8 @@ class World{ // aka trueWorld
         }
 				holding = holding&isCube
       }
-			if(!blockData[holding]) throw new Error("no block holding: "+holding+" blockMode: "+blockMode)
-			let shape = blockData[holding|blockMode] && blockData[holding|blockMode].shape
+			if(!blockData[holding|blockMode]) throw new Error("no block holding: "+holding+" blockMode: "+blockMode)
+			let shape = holding && blockData[holding|blockMode].shape
 			if (shape && shape.rotate){
 				if(rotate === SOUTH) blockMode |= SOUTH
 				if(rotate === EAST) blockMode |= EAST
@@ -31984,7 +31736,7 @@ class World{ // aka trueWorld
 			if (shape && shape.flip){
 				if(flip === FLIP) blockMode |= FLIP
 			}
-			if(blockData[holding|blockMode]) holding |= blockMode
+			holding |= blockMode
 		}
 		if(this.event("changeblock", {player:p, x,y,z,place,face,shift,blockMode,rotate,flip,holding, prevBlock})){
 			// stop change block
@@ -32068,7 +31820,7 @@ class World{ // aka trueWorld
 	}
 	entInteract(id,hit,cooldown,p){
 		let ent = getEntityOrPlayer(id,this[p.dimension])
-		if(!ent || dist3(p.x,p.y,p.z,ent.x,ent.y,ent.z)>p.reach+1) return
+		if(!ent) return
 		let holdObj = p.inventory.hotbar[p.inventory.hotbarSlot]
 		let block = blockData[holdObj ? holdObj.id : 0]
 		if(hit){
@@ -32117,7 +31869,11 @@ class World{ // aka trueWorld
 	}
 
 	getEntity(id){
-		return this.entities.get(id)
+		for(var i=0; i<this.entities.length; i++){
+			if(this.entities[i].id === id){
+				return i
+			}
+		}
 	}
 	// for older version
 	static entityPacketType = [
@@ -32143,19 +31899,18 @@ class World{ // aka trueWorld
 		[ent=>ent.type==="Minecart","includeIf",[["harmEffect","number",6,1],["health","double"]]],
 		["doingPortal","uint"]
 	]
-	getEntPos(ent,now, forMultiplayer){
+	getEntPos(ent,now, remote){
 		const t = ent.type
 		const obj = {
 			id: ent.id, entId: ent.entId,
 			x: ent.x, y: ent.y, z: ent.z, dimension: ent.dimension || "",
 			pitch: ent.pitch, yaw: ent.yaw,
 			velx: ent.velx, vely: ent.vely, velz: ent.velz,
-			spawnRelative: now - ent.spawn, doingPortal: ent.doingPortal||undefined,
+			spawnRelative: now - ent.spawn, doingPortal: ent.doingPortal,
 		}
-		if ("amount" in ent) obj.amount = ent.amount
-		if ("block" in ent) obj.block = ent.block
-		if ("from" in ent) obj.from = ent.from
-		if (t === "Item") { obj.data = ent.data }
+		if (t === "ExperienceOrb") obj.amount = ent.amount
+		if (ent instanceof BlockEntity) obj.block = ent.block
+		if (t === "Item") { obj.from = ent.from; obj.data = ent.data }
 		if (t === "BlockEntity") obj.solidOnGround = ent.solidOnGround
 		if (t === "MovingBlock") {
 			obj.sx = ent.sx; obj.sy = ent.sy; obj.sz = ent.sz
@@ -32167,42 +31922,33 @@ class World{ // aka trueWorld
 			obj.color = ent.color; obj.background = ent.background; obj.glow = ent.glow
 		}
 		if (ent.mob) {
-			obj.harmEffect = ent.harmEffect||undefined; obj.health = ent.health
-			obj.burning = ent.burning||undefined; obj.burnTimer = ent.burnTimer||undefined
+			obj.harmEffect = ent.harmEffect; obj.health = ent.health
+			obj.burning = ent.burning; obj.burnTimer = ent.burnTimer
 			obj.oxygen = ent.oxygen; obj.spinTarget = ent.spinTarget
 			if (ent.path) obj.path = ent.path
 			if ("fur" in ent) obj.fur = ent.fur
 			if ("color" in ent) obj.color = ent.color
-			obj.eating = ent.eating||undefined; obj.target = ent.target||undefined
-			obj.tame = ent.tame||undefined; obj.sitting = ent.sitting||undefined
-			obj.owner = ent.owner||undefined; obj.holding = ent.holding||undefined; obj.attractedBy = ent.attractedBy||undefined
+			obj.eating = ent.eating; obj.target = ent.target
+			obj.tame = ent.tame; obj.sitting = ent.sitting
+			obj.owner = ent.owner; obj.holding = ent.holding; obj.attractedBy = ent.attractedBy
 			if (t === "Sheep") obj.wool = ent.wool
 			if (t === "Creeper") { obj.explodeAmount = ent.explodeAmount; obj.timerStartRelative = now - ent.timerStart }
-			obj.attackCooldown = ent.attackCooldown||undefined; obj.effects = ent.effects
+			obj.attackCooldown = ent.attackCooldown; obj.effects = ent.effects
 		}
 		if (t === "BlockDisplay") { obj.width = ent.width; obj.height = ent.height; obj.depth = ent.depth }
 		if (t === "Minecart") { obj.harmEffect = ent.harmEffect; obj.health = ent.health }
 		return entitySerializer.encode(obj)
 	}
-	posEntity(p, m, preBetaVersion){
-		if (typeof p === "string") {
-			try { p = new BitArrayReader(atoarr(p), true) } catch(e) { return }
-		}
-		if (p instanceof Uint8Array) return p = entitySerializer.decode(p)
-		else if (!(p instanceof BitArrayReader)) return
-		// data[0]===1 means new entitySerializer format packed into a BitArrayReader (from chunk load)
-		else if (p.data[0] === 1 && !preBetaVersion) p = entitySerializer.decode(p.data)
-		// data[0]===0 means current packetToBitArray format (transition compat)
-		else if (p.data[0] === 0 && !preBetaVersion) p = bitArrayToPacket(p, World.entityPacketType)
-		else return this.posEntityOldBab(p, m, preBetaVersion)
-		
+	_posEntityApply(p, m){
 		const entType = entityOrder[p.entId]
 		let now = performance.now()
-		let ent = this.entities.get(p.id)
-		if(!ent){
+		let ent = this.entities[this.getEntity(p.id)]
+		if(ent){
+			if(entType === "TextDisplay" && ent.text !== p.text) ent.setText(p.text)
+		}else{
 			ent = entities[p.entId]
 			switch(entType){
-				case "Item": ent = new ent(p.x,p.y,p.z,p.velx,p.vely,p.velz,p.data||{id:p.block,amount:p.amount,durability:p.durability,customName:p.name},false); break
+				case "Item": ent = new ent(p.x,p.y,p.z,p.velx,p.vely,p.velz,p.data||{id:p.block,amount:p.amount,durability:p.durability},false); break
 				case "BlockEntity": ent = new ent(p.block,p.x,p.y,p.z,p.solidOnGround); break
 				case "PrimedTNT": case "PrimedSuperTNT": case "PrimedUltraTNT": case "PrimedUnTNT": ent = new ent(p.x,p.y,p.z); break
 				case "MovingBlock": ent = new ent(p.block,p.sx,p.sy,p.sz,p.mx,p.my,p.mz,p.despawns,p.solidWhenDone); break
@@ -32227,38 +31973,49 @@ class World{ // aka trueWorld
 		ent.dimension = p.dimension
 		if(!ent.facesPlayer){ ent.yaw = p.yaw; ent.pitch = p.pitch }
 		ent.spawn = now - p.spawnRelative
-		if(p.from) ent.from = p.from
+		if("from" in ent) ent.from = p.from
 		if(p.data){
 			if(ent.data.amount !== p.data.amount) ent.willUpdateShape = true
 			Object.assign(ent.data,p.data)
 		}
 		if(p.name) ent.name = p.name
-		ent.doingPortal = p.doingPortal||0
+		ent.doingPortal = p.doingPortal
 		if(ent.mob){
-			ent.harmEffect = p.harmEffect||0; ent.health = p.health
-			ent.burning = p.burning||false; ent.burnTimer = p.burnTimer||0
+			ent.harmEffect = p.harmEffect; ent.health = p.health
+			ent.burning = p.burning; ent.burnTimer = p.burnTimer
 			ent.oxygen = p.oxygen; ent.spinTarget = p.spinTarget
 			ent.path = p.path || null
-			if(p.fur) ent.fur = p.fur
-			if(p.color) ent.color = p.color
-			if(p.eating) ent.eating = p.eating
+			if("fur" in ent) ent.fur = p.fur
+			if("color" in ent) ent.color = p.color
+			if("eating" in ent) ent.eating = p.eating
 			ent.target = p.target
 			if(entType === "Sheep") ent.wool = p.wool
-			if(p.tame) ent.tame = p.tame
-			if(p.sitting) ent.sitting = p.sitting
-			if(p.owner) ent.owner = p.owner
-			ent.holding = p.holding; ent.attractedBy = p.attractedBy||null
+			if("tame" in ent) ent.tame = p.tame
+			if("sitting" in ent) ent.sitting = p.sitting
+			if("owner" in ent) ent.owner = p.owner
+			ent.holding = p.holding; ent.attractedBy = p.attractedBy
 			if(entType === "Creeper"){ ent.explodeAmount = p.explodeAmount; ent.timerStart = now - p.timerStartRelative }
-			ent.attackCooldown = p.attackCooldown||0
+			ent.attackCooldown = p.attackCooldown
 			ent.effects = p.effects
 		}else if(ent.type === "BlockDisplay"){
 			ent.width = p.width; ent.height = p.height; ent.depth = p.depth
 		}else if(ent.type === "Minecart"){
 			ent.harmEffect = p.harmEffect; ent.health = p.health
 		}
-		if(entType === "TextDisplay" && ent.text !== p.text) ent.setText(p.text)
 		ent.updateChunk()
 		return ent
+	}
+	posEntity(p, m, preBetaVersion){
+		if (typeof p === "string") {
+			try { p = new BitArrayReader(atoarr(p), true) } catch(e) { return }
+		}
+		if (p instanceof Uint8Array) return this._posEntityApply(entitySerializer.decode(p), m)
+		if (!(p instanceof BitArrayReader)) return
+		// data[0]===1 means new entitySerializer format packed into a BitArrayReader (from chunk load)
+		if (p.data[0] === 1 && !preBetaVersion) return this._posEntityApply(entitySerializer.decode(p.data), m)
+		// data[0]===0 means current packetToBitArray format (transition compat)
+		if (p.data[0] === 0 && !preBetaVersion) return this._posEntityApply(bitArrayToPacket(p, this.constructor.entityPacketType), m)
+		return this.posEntityOldBab(p, m, preBetaVersion)
 	}
 	posEntityOldBab(p, m, preBetaVersion){
 		let now = performance.now()
@@ -32266,6 +32023,8 @@ class World{ // aka trueWorld
 		let id = ""
 		for (let i = 0; i < nameLen; i++) id += String.fromCharCode(p.read(8))
 		const type = p.read(8)
+		let i = this.getEntity(id)
+		let ent
 		const entType = entityOrder[type]
 		const x = p.read(24,true)/16, y = p.read(preBetaVersion?12:15,true)/16, z = p.read(24,true)/16
 		let dimension = p.read(3)
@@ -32348,15 +32107,15 @@ class World{ // aka trueWorld
 			var health = p.read(16)
 		}
 
-		let ent = this.entities.get(id)
-		if(ent){
+		if(i || i===0){
+			ent = this.entities[i]
 			if(entType === "TextDisplay" && ent.text !== text) ent.setText(text)
 			if(entType === "Item" && ent.amount !== amount) ent.amount = amount, ent.willUpdateShape = true
 		}else{
 			ent = entities[type]
 			switch(entType){
 				case "Item":
-					ent = new ent(x, y, z, velx, vely, velz, {id:block,amount,durability:durability||undefined,customName:name}, false)
+					ent = new ent(x, y, z, velx, vely, velz, block, false, amount, durability||null, null)
 					break
 				case "BlockEntity":
 					ent = new ent(block, x,y,z, solidOnGround)
@@ -32548,7 +32307,7 @@ class World{ // aka trueWorld
 		if(this.settings.dayNightCycle){
 			if(allSleeping){
 				this.time += 6.25
-			}else this.time += 1000/20/60/20 //20 minutes
+			}else this.time += 0.125
 		}
 		if(this.settings.weatherCycle){
 			this.nextWeather -= allSleeping ? 6.25 : 0.125
@@ -32579,7 +32338,7 @@ class World{ // aka trueWorld
 		else if(time >= 800 || time <= 200) this.skyLight = 0
 		else this.skyLight = 1
 		for(let i in this.players){
-			this.players[i].update()
+			this.players[i].serverUpdate()
 			this.players[i].updateLoaded()
 		}
 
@@ -32596,7 +32355,7 @@ class World{ // aka trueWorld
 		for (let c of this.loadedNear) {
 			c.tick()
 		}
-		for(let ent of this.entities.values()){
+		for(let ent of this.entities){
 			if(ent.updateAlways) ent.updateAlways()
 		}
 		
@@ -33091,7 +32850,6 @@ class World{ // aka trueWorld
 		if(worldType === 3) this.worldType = "void"
 		this.caves = options >> 4 & 1
 		this.trees = options >> 5 & 1
-		if(this.worldType === "superflat") this.trees = this.caves = false // old versions don't have these in superflat (they may be on due to bug)
 		this.gameMode = (options >> 6 & 1) ? "survival" : "creative"
 		this.cheats = this.gameMode === "creative"
 
@@ -33473,9 +33231,9 @@ class World{ // aka trueWorld
 		this.sendAll({type:"resourcePacks",activeResourcePacks:this.activeResourcePacks})
 	}
 	
-	/*loadMod(code){
+	loadMod(code){
 		this.mod = code
-		if(this.modContainer){
+		/*if(this.modContainer){
 			this.modContainer.contentWindow.postMessage({close:true})
 			this.modContainer.remove()
 		}
@@ -33526,8 +33284,9 @@ window.parent.postMessage({ready:true}, "*")
 					mod.contentWindow.postMessage({id:data.id,data:safeGlobalFunctions[data.action](...data.data)},"*")
 				}
 			}
-		})
-	}*/
+		})*/
+		new Function("world", code)(this)
+	}
 
 	/*getSurvivStr(p){
 		let bab = new BitArrayBuilder()
@@ -33689,7 +33448,17 @@ window.parent.postMessage({ready:true}, "*")
 			if(inv){
 				let preBetaVersion = inv.version && verMoreThan("1.1.0",inv.version.replace(/(Alpha|Beta) /, ''))
 				if(inv.data && inv.data.length){
-					p.load(inv.data, world)
+					try{
+						p.loadPlayerData(inv.data, world)
+					}catch(e){
+						console.error(e)
+						p.cheats = world.cheats
+						p.gameMode = world.gameMode
+						p.spawnPoint.x = world.spawnPoint.x
+						p.spawnPoint.y = world.spawnPoint.y
+						p.spawnPoint.z = world.spawnPoint.z
+						p.setDefaults()
+					}
 				}
 				// legacy fallback
 				if(typeof inv.inv === "string"){
@@ -33771,11 +33540,11 @@ window.parent.postMessage({ready:true}, "*")
 				let pos = data.data
 				let canPos = true
 				if(p.confirmPos){
-					if(pos.dimension === p.dimension && max(abs(pos.x-p.x),abs(pos.y-p.y),abs(pos.z-p.z))<4){
+					//if(max(abs(pos.x-p.x),abs(pos.y-p.y),abs(pos.z-p.z))<10)
+					if(pos.dimension === p.dimension){
 						p.confirmPos = false
 					}else canPos = false
 				}
-				let posBack = {}
 				if(canPos){
 				p.setPos(pos.x,pos.y,pos.z,pos.velx,pos.vely,pos.velz)
 				p.setRot(pos.rx, pos.ry, pos.bodyRot)
@@ -33797,18 +33566,16 @@ window.parent.postMessage({ready:true}, "*")
 				p.usingItem = pos.usingItem
 				p.spectating = pos.spectating
 				p.afk = data.afk
+				p.scale = pos.scale
 				p.riding = pos.riding
 				p.flying = pos.flying
-				p.gliding = pos.gliding
 				pos.username = username
+				pos.burning = p.burning
+				pos.holding = p.holding
+				pos.die = p.die
 				pos.crackPos = p.crackPos
 				pos.dimension = p.dimension
-				posBack.burning = pos.burning = p.burning
-				posBack.holding = pos.holding = p.holding
-				posBack.die = pos.die = p.die
-				posBack.scale = pos.scale = p.scale
-				posBack.equipment = pos.equipment = p.inventory.equipment
-				posBack.hidden = pos.hidden = p.hidden
+				pos.hidden = p.hidden
 				data.FROM = p.id
 				p.pos = data
 				for(let p2 of world.players){
@@ -33847,8 +33614,7 @@ window.parent.postMessage({ready:true}, "*")
 					p.resendEffects = false
 				}
 				updateContainer()
-				c.send({type:"pos",data:posBack})
-				//c.send({type:"canSendPos"})
+				c.send({type:"canSendPos"})
 			}else if(data.type === "loadChunks"){
 				p.updateingLoadedI++
 				p.loadDistance = data.loadDistance
@@ -33870,8 +33636,8 @@ window.parent.postMessage({ready:true}, "*")
 			}*/else if(data.type === "serverChangeBlock"){
 				try{
 				world.serverChangeBlock(data.x,data.y,data.z,data.place,p,data.face,data.shift,data.blockMode,data.rotate,data.flip)
-				}catch(e){e.message+="\nholding: "+JSON.stringify(p.inventory.hotbar[p.inventory.hotbarSlot]);if(win.logError)logError(e)}
-			}/*else if(data.type === "entityPos"){
+				}catch(e){e.message+="\nholding: "+JSON.stringify(p.inventory.hotbar[p.inventory.hotbarSlot]);throw e}
+			}else if(data.type === "entityPos"){
 				let ent = world.posEntity(new BitArrayReader(data.data, true), true)
 				return world[p.dimension].deleteEntity(ent.id)
 				//sendOthers(data)
@@ -33951,14 +33717,14 @@ window.parent.postMessage({ready:true}, "*")
 							let change = nitem ? pitem.amount-nitem.amount : pitem.amount
 							let d = p.direction
 							let place = inventory.slotMapPlace.get(data.idxs[0])
-							if(p.survival || place !== "holding" && p.cheats) world[p.dimension].addItem(p.x, p.y+p.height/2, p.z, d.x/2, d.y/2, d.z/2, {...pitem, amount:change}, false,p.id)
+							if(p.survival || place !== "holding" && p.cheats) world[p.dimension].addItem(p.x, p.y, p.z, d.x/2, d.y/2, d.z/2, {...pitem, amount:change}, false,p.id)
 							break check
 						}
 					}
 					let nmap = new Map(), pmap = new Map()//new, previous
 					for(let i=0; i<data.data.length; i++){//check for correctness
 						let nitem = data.data[i]
-						if(nitem && (nitem.amount > blockData[nitem.id].stackSize || nitem.amount<=0)) return updateContainer(true)
+						if(nitem && nitem.amount > blockData[nitem.id].stackSize) return updateContainer(true)
 						let pitem = getSlot(data.idxs[i])
 						if(nitem){
 							let nname = nitem.id+"|"+(nitem.customName||"")
@@ -33969,8 +33735,8 @@ window.parent.postMessage({ready:true}, "*")
 							pmap.set(pname,(pmap.get(pname)||0)+pitem.amount)
 						}
 						let place = inventory.slotMapPlace.get(data.idxs[i])
+						if((place === "craftingResult" || place === "furnaceOutput" || place === "anvilOutput") && nitem) return updateContainer(true)//cant put things in this slot
 						if(place === "anvilOutput" && inventory.anvilCost>p.level && p.survival) return updateContainer(true)
-						if(place === "equipment" && nitem && blockData[nitem.id].equipmentSlot !== inventory.slotMapIdx.get(data.idxs[i])) return updateContainer(true)
 					}
 					if(p.survival && !compareMaps(nmap,pmap)) return updateContainer(true)
 					/*for(let i=0; i<data.data.length; i++){//check for correctness
@@ -33987,16 +33753,12 @@ window.parent.postMessage({ready:true}, "*")
 					}
 					if(toTotal !== reqTotal) return orderInvSlots()*/
 				}
-				if(world.event("containerchange", {player:p, data})) return updateContainer(true)
-				let craftUpdate, craftRes, anvilUpdate, anvilIn, anvilOut, toHolding
+				if(world.event("containerchange", {player:p, data})) return
+				let craftUpdate, craftRes, anvilUpdate, anvilIn, anvilOut
 				for(let i=0; i<data.data.length; i++){
 					let prev = getSlot(data.idxs[i])
-					let place = inventory.slotMapPlace.get(data.idxs[i])
 					setSlot(data.idxs[i], data.data[i])
-					if(place === "craftingResult" || place === "furnaceOutput" || place === "anvilOutput"){
-						toHolding = data.data[i]
-						setSlot(data.idxs[i], null, true) // set it again but without updating prevSlot
-					}
+					let place = inventory.slotMapPlace.get(data.idxs[i])
 					if(place === "crafting2" || place === "crafting3"){
 						craftUpdate = true
 					}
@@ -34006,11 +33768,6 @@ window.parent.postMessage({ready:true}, "*")
 						if(place === "anvilInput") anvilIn = true
 						if(place === "anvilOutput" && prev) anvilOut = prev
 					}
-				}
-				if(toHolding){
-					let d = p.direction
-					if(inventory.holding) world[p.dimension].addItem(p.x, p.y+p.height/2, p.z, d.x/2, d.y/2, d.z/2, toHolding, false,p.id)
-					else inventory.holding = toHolding
 				}
 				if(craftUpdate) updateCraftingGrid()
 				if(craftRes){//decrease amount
@@ -34077,7 +33834,7 @@ window.parent.postMessage({ready:true}, "*")
 			}else if(data.type === "containerChangeSign"){
 				let {containerData} = p.inventory
 				world[containerData.dimension].setTagByName(containerData.x,containerData.y,containerData.z,data.side?"text2":"text",data.data)
-				world.event("signchange", {...containerData, player:p, data})
+				world.event("signchange", {player:p, data})
 			}else if(data.type === "entInteract"){
 				world.entInteract(data.data,data.hit,data.cooldown,p)
 			}else if(data.type === "respawn"){
@@ -34188,7 +33945,6 @@ window.parent.postMessage({ready:true}, "*")
 			p.inventory.slotMapPlace.set(id,"holding"), p.inventory.slotIds.holding = id++
 			for(let i=0; i<27; i++) p.inventory.slotMapPlace.set(id,"main"), p.inventory.slotMapIdx.set(id,i), p.inventory.slotIds.main[i] = id++
 			for(let i=0; i<9; i++) p.inventory.slotMapPlace.set(id,"hotbar"), p.inventory.slotMapIdx.set(id,i), p.inventory.slotIds.hotbar[i] = id++
-			for(let slot of ["helmet","chestplate","leggings","boots","back"]) p.inventory.slotMapPlace.set(id,"equipment"), p.inventory.slotMapIdx.set(id,slot), p.inventory.slotIds.equipment[slot] = id++
 			if(currentContainer === "inventory"){
 				for(let i=0; i<4; i++) p.inventory.slotMapPlace.set(id,"crafting2"), p.inventory.slotMapIdx.set(id,i), p.inventory.slotIds.crafting2[i] = id++
 				p.inventory.slotMapPlace.set(id,"craftingResult"), p.inventory.slotIds.craftingResult = id++
@@ -34227,11 +33983,9 @@ window.parent.postMessage({ready:true}, "*")
 				return containerData.data.fuel
 			}else if(place === "chest" || place === "dispenser" || place === "hopper"){
 				return containerData.data.contents[idx]
-			}else if(place === "equipment"){
-				return p.inventory.equipment[idx]
 			}
 		}
-		function setSlot(id,item,update=false){
+		function setSlot(id,item){
 			let containerData = p.inventory.containerData
 			let place = p.inventory.slotMapPlace.get(id), idx = p.inventory.slotMapIdx.get(id)
 			if(place === "hotbar" || place === "main" || place === "crafting2" || place === "crafting3"){
@@ -34250,12 +34004,9 @@ window.parent.postMessage({ready:true}, "*")
 			}else if(place === "chest" || place === "dispenser" || place === "hopper"){
 				containerData.data.contents[idx] = item
 				world[containerData.dimension].updateTags(containerData.x,containerData.y,containerData.z)
-			}else if(place === "equipment"){
-				p.inventory.equipment[idx] = item
 			}
 			let len = p.inventory.slotMapPlace.size
 			let prevSlots = p.inventory.prevSlots
-			if(update) return
 			if(item){//prevent updating
 				prevSlots[id] = item.id
 				prevSlots[id+len] = item.amount
@@ -34427,10 +34178,10 @@ window.parent.postMessage({ready:true}, "*")
 		sendAllWorkers({deleteSeed:this.worldSeed})
 		for(let p of this.players) p.connection.close()
 		clearInterval(this.pos)
-		/*if(this.modContainer){
+		if(this.modContainer){
 			this.modContainer.contentWindow.postMessage({close:true})
 			this.modContainer.remove()
-		}*/
+		}
 	}
 }
 class WorldDimension{
@@ -34975,6 +34726,9 @@ class WorldDimension{
 	spawnBlock(x, y, z, blockID, force) {
 		//Sets a block anywhere without causing block updates around it. Only to be used in world gen.
 		
+		if(blockData[blockID].crossShape) blockID |= CROSS
+		if(blockData[blockID].tallcrossShape) blockID |= TALLCROSS
+		if(blockData[blockID].cactus) blockID |= CACTUS
 		if(blockData[blockID].randomRotateOnSpawn){
 			switch(round(hash3(x,y,z)*3)){
 				case 0:
@@ -35024,19 +34778,20 @@ class WorldDimension{
 			//host controls entities
 			this.sendEntityPos(ent)
 		}
-		this.world.entities.set(ent.id, ent)
+		this.world.entities.push(ent)
 		//if(ent.alwaysRender) this.alwaysRenderEntities.push(ent)
 		let chunk = this.getOrNewChunk(ent.chunkX<<4,ent.chunkZ<<4)
 		chunk.entities.set(ent.id, ent)
 	}
-	deleteEntity(id, remote){
-		let ent = this.world.entities.get(id)
+	deleteEntity(id, remote, i){
+		i = (i || i===0) ? i : this.world.getEntity(id)
+		let ent = this.world.entities[i]
 		if(!ent || remote && ent.noRemoteDelete) return
 		id = ent.id
 		if(!remote){
 			this.sendAllInChunk({type:"entityDelete", id}, ent.chunkX,ent.chunkZ)
 		}
-		this.world.entities.delete(id)
+		if(i || i===0) this.world.entities.splice(i, 1)
 		/*if(ent.alwaysRender){
 			let i = this.alwaysRenderEntities.indexOf(ent)
 			this.alwaysRenderEntities.splice(i,1)
@@ -35876,8 +35631,8 @@ let noise3d = function(x, y, z, add) {
 	const select = mapClamped(baseSimplexNoise(x*0.04+offsets[6], y*0.02+offsets[7], z*0.04+offsets[8]),-0.3,0.3)
 	const low = select < 1 ? baseSimplexNoise(x*0.01+offsets[0], y*0.005+offsets[1], z*0.01+offsets[2]) : 0
 	const high = select > 0 ? baseSimplexNoise(x*0.01+offsets[3], y*0.005+offsets[4], z*0.01+offsets[5]) : 0
-	//const extraDetail = baseSimplexNoise(x*0.2, y*0.02, z*0.2)*0.15
-	return lerp(select,low,high) + add
+	const extraDetail = baseSimplexNoise(x*0.2, y*0.02, z*0.2)*0.15
+	return lerp(select,low,high) + extraDetail + add
 }
 let noise2d = function(x, y, octaves = noiseProfile.octaves, id = 0) {
 	let generator = noiseProfile.generator

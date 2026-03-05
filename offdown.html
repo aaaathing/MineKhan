@@ -2,17 +2,22 @@
 <title>Untitled</title>
 <base>
 <style>button,a{border:none;display:block;padding:24px;margin:16px;cursor:pointer;}</style>
-<button onclick="download('index.html','khan.html')">Download minekhan</button>
-<button onclick="download('live-servers.html','list.html')">Download live list of servers</button>
-<button onclick="downloadThisPage()">Download this page (offdown.html)</button>
+<a href="/">Home</a>
+<button onclick="download('index.html','mk.html')">Download minekhan</button>
 <button onclick="openAboutBlank()">Open minekhan with about:blank</button>
+<button onclick="downloadThisPage()">Download this page (offdown.html)</button>
+Copy it anywhere! (do give credit)
+<br><br>
+You can press Ctrl+H in minekhan to hide the page and Ctrl+J to show it again.<br><br>
 <script>
   let base = document.baseURI||location.href
   async function download(href,download){
     //let data = await (await fetch("/minekhan")).arrayBuffer()
     //let version = (new TextDecoder().decode(data.slice(0,50))).match(/@[A-Za-z0-9 \.]*/)[0]
     let a = document.createElement("a")
-    a.href = URL.createObjectURL(await(await fetch(href)).blob())
+    let str = await(await fetch(href)).text()
+    str = str.replace("<base href>",'<base href="https://thingmaker.us.eu.org/minekhan/">')
+    a.href = URL.createObjectURL(new Blob([str]))
     a.download = download
     a.click()
   }

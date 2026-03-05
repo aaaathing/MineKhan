@@ -68,6 +68,10 @@
         display: block;
         clear:left;
       }
+      #sigstatus > span{
+        display:inline-block;
+        width:240px;
+      }
     </style>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -86,8 +90,10 @@
     <div id="bg"></div>
     
     <h1>Live list of servers</h1>
+    <div id="sigstatus"></div>
     <div id="servers"></div>
 
+    <script src="servers.js"></script>
     <script>
       var bg = document.querySelector("#bg")
       var servers = document.querySelector("#servers")
@@ -103,7 +109,7 @@
       onresize()
 
       let span = document.createElement("span")
-      function format(str){
+      function formatSimple(str){
         if(span.setHTML) span.setHTML(str)
         else span.textContent = str
         return span.innerHTML
@@ -119,8 +125,8 @@
 					let html = ""
           if(!v.players && v.users) v.players = v.users
           if(v.thumbnail) html += "<img class='thumbnail' src='" + v.thumbnail + "'>"
-          if((v.banned && typeof v.banned[username] === "string") || (v.whitelist && !v.whitelist.includes(username))) html += "<div class='lockImg'></div>"
-          html += "<b>"+format(v.name)+"</b><br>"
+          if((v.banned && typeof v.banned[username] === "string") || (v.whitelist && !v.whitelist.includes(username)) || v.multiplayerPass) html += "<div class='lockImg'></div>"
+          html += "<b>"+formatSimple(v.name)+"</b><br>"
           if(v.host) html += "Hosted by "+v.host+"<br>"
           if(v.description) html += v.description+"<br>"
           html += v.players.length+" players online: "+v.players.join(", ")+"<br>"
@@ -128,10 +134,10 @@
           for(let j in v.banned) i++
           if(i){
             html += i+" players banned: "
-            for(let j in v.banned) html += format(j)+", "
+            for(let j in v.banned) html += formatSimple(j)+", "
             html = html.substring(0,html.length-2) + "<br>"
           }
-          if(v.whitelist) html += v.whitelist.length+" players whitelisted: "+format(v.whitelist.join(", "))+"<br>"
+          if(v.whitelist) html += v.whitelist.length+" players whitelisted: "+formatSimple(v.whitelist.join(", "))+"<br>"
           if(v.version) html += v.version+"<br>"
 					v.el.innerHTML = html
         }
@@ -142,16 +148,17 @@
         document.title = worlds.length+" Servers, "+players+" Players. "+(usingUrl ? "From "+usingUrl : "")
       }
       
-      var ws, worlds, username, prevPlayers, players, usingUrl
+      var worlds, username, prevPlayers, players = 0
       function ondata(toUpdate){
+        updateList(toUpdate)
+        if(players>prevPlayers && Notification.permission === "granted"){
+          let n = new Notification('More people!', {
+            body: 'There is now more people!'
+          });
+          setTimeout(() => n.close(), 2000)
+        }
         prevPlayers = players
         //worlds = data
-        updateList(toUpdate)
-        if(!prevPlayers && players && Notification.permission === "granted"){
-          new Notification('Players online!', {
-            body: 'There is now a player online!'
-          });
-        }
       }
       /*function initWs(){
         ws = new WebSocket("wss://"+location.host+"/worlds")
@@ -163,53 +170,92 @@
       }
       initWs()*/
 			
-			function initWs(){
-				ws = new WebSocket("wss://cloud.achex.ca")
-				function sendupdate(){
-					ws.send(JSON.stringify({serverstat:true}))
-					ws.send(JSON.stringify({toH:"minekhan",type:"ping"}))
-				}
-				ws.onopen = () => {
-					ws.send(JSON.stringify({auth:"getWorlds"}))
-					ws.send(JSON.stringify({joinHub:"minekhan"}))
-					setInterval(sendupdate, 5000)
-					sendupdate()
-				}
-				let users = {}
-				ws.onmessage = msg => {
-					let data = JSON.parse(msg.data)
-					if(data.users){
-						worlds = []
-						let nextUsers = [], toUpdate = []
-						for(let i of data.users){
-							if(i.hub === "minekhan" && i.username !== "getWorlds"){
-								let w = i.world = users[i.username] && users[i.username].world
-								if(!w){
-									w = i.world = {id: i.username, name:"Pinging...", version:"Pinging...", host:"", players:[]}
-									toUpdate.push(w)
-								}
-								nextUsers[i.username] = i
-								worlds.push(w)
-							}
-						}
-						for(let i in users){
-							if(!nextUsers[i]) users[i].world.el.remove()
-						}
-						users = nextUsers
-						ondata(toUpdate)
-					}else if(data.type === "pong" && users[data.FROM]){
-						let w = users[data.FROM].world
-						Object.assign(w, data.data)
-						ondata([users[data.FROM].world])
-					}
-				}
-        ws.onerror = () => ws.close()
-        ws.onclose = function(){
-          initWs()
-        }
+		let conns = []
+		worlds = []
+		let worldMap = {} // key: sigServer+"/"+id
+
+		let sigStatus = {} // key -> {text, color}
+		const sigstatusEl = document.getElementById("sigstatus")
+		function updateStatus(){
+			sigstatusEl.innerHTML = Object.entries(sigStatus)
+				.map(([k,{text,color}])=>`<span style="color:${color}">${k}: ${text}</span>`)
+				.join(" &middot; ")
+		}
+
+		function connectToServer(key, server){
+      let closed
+			let pingInterval
+			sigStatus[key] = {text:"connecting", color:"gray"}
+			updateStatus()
+      function doPing(){
+        if(conn.list) conn.list()
+        conn.sendAll({type:"ping"})
       }
-      initWs()
+			let conn = server.connect({
+				id: "viewer_"+Date.now().toString(36),
+				onopen(){
+					sigStatus[key] = {text:"connected", color:"lightgreen"}
+					updateStatus()
+					doPing()
+					pingInterval = setInterval(doPing, 5000)
+				},
+        onlist(id){
+          if(!id.startsWith("srv") && !/*old one*/id.startsWith("player")) return
+					let w = worldMap[id]
+					if(!w){
+						w = worldMap[id] = {el:null, players:[]}
+						worlds.push(w)
+					}
+					w.seenPings = 2
+					ondata([w])
+        },
+				onmessage(data){
+					if(data.type !== "pong" || !data.FROM) return
+					let w = worldMap[data.FROM]
+					if(!w){
+						w = worldMap[data.FROM] = {el:null, players:[]}
+						worlds.push(w)
+					}
+					Object.assign(w, data.data)
+					w.seenPings = 2
+					ondata([w])
+				},
+				onclose(){
+					if(closed) return
+					closed = true
+					clearInterval(pingInterval)
+					conns = conns.filter(c=>c!==conn)
+					sigStatus[key] = {text:"disconnected", color:"orange"}
+					updateStatus()
+					setTimeout(()=>connectToServer(key, server), 5000)
+				}
+			})
+			conns.push(conn)
+		}
+
+		function initServers(){
+			for(let c of conns) c.close()
+			conns = []
+			for(let [key, server] of Object.entries(signalingServers)){
+				connectToServer(key, server)
+			}
+			// Remove worlds that stopped responding
+			setInterval(()=>{
+				let now = Date.now()
+				for(let w of worlds){
+          w.seenPings--
+          if(w.seenPings <= 0){
+            w.el?.remove()
+            worlds.splice(worlds.indexOf(w),1)
+            for(let k in worldMap) if(worldMap[k]===w) delete worldMap[k]
+          }
+				}
+				ondata([])
+			}, 5000)
+		}
+		initServers()
 			
+      let usingUrl
       /*function useUrl(url){
         usingUrl = url
         url = "https://around.thingmaker.repl.co/-?url="+encodeURIComponent(url)

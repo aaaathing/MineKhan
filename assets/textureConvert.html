@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Texture Encoder</title>
+	</head>
+    <body>
+		<style>
+			code {
+				white-space: pre-wrap;
+				background-color: lightgray;
+			}
+		</style>
+		<style>
+	.hidden {
+		display: none !important;
+	}
+	label {
+		user-select: none; /* supported by Chrome and Opera */
+		-webkit-user-select: none; /* Safari */
+		-khtml-user-select: none; /* Konqueror HTML */
+		-moz-user-select: none; /* Firefox */
+		-ms-user-select: none; /* Internet Explorer/Edge */
+	}
+</style>
+<a href="./">back</a>
+		<code id="output"></code><br>
+    <input type="checkbox" id="animated"><label for="animated">Image is an animated texture</label><br>
+    <input type="checkbox" id="rotate"><label for="rotate">Rotate image 90 degrees clockwise</label><br>
+    <input type="checkbox" id="bed"><label for="bed">Bed</label><br>
+    <label for="defaultSize">Default texture size (for animated textures):</label><input id="defaultSize" type="number" value="16"><br>
+    <label for="filter">Filter (CSS filter):</label><input id="filter"><br>
+    <label for="quality">Quality (round to nearest) to decrease unique colors:</label><input id="quality" value="1" type="number"><br>
+    Put your image here: <input type="file" id="file" multiple><br>
+    Or put github directory here: repo:<input id="repo" value="inventivetalentDev/minecraft-assets"> ref:<input id="ref" value="1.21.11"> path:<input id="path" value="assets/minecraft/textures/"> filter path (regexp):<input id="filterPath"> <input type="checkbox" id="gh">use this <br>
+    <button onclick="doEncode()">Go</button>
+		<br><br><br>
+    Or put json for old textures here: <textarea id="oldJson"></textarea>
+    <button onclick="oldTo256()">Convert old textures to base 256</button>
+    <br>
+    Or put old function here: <textarea id="func"></textarea>
+    <button onclick="funcTo256()">Convert old function to base 256</button>
+    <br>
+		<canvas id="big-canvas" width="800" height="800"></canvas>
+        <script type>
+const useOldTextures = false // If true, will filter out any selected file names not included in oldTextures
+const oldTextures = new Set([
+	"grassTop",
+	"grassSide",
+	"leaves",
+	"oakPlanks",
+	"water",
+	"hitbox",
+	"nothing",
+	"dirt",
+	"stone",
+	"oakLog",
+	"oakLogTop",
+	"bedrock",
+	"glass",
+	"cobblestone",
+	"mossyCobblestone",
+	"stoneBricks",
+	"mossyStoneBricks",
+	"bricks",
+	"coalOre",
+	"ironOre",
+	"goldOre",
+	"diamondOre",
+	"redstoneOre",
+	"lapisOre",
+	"emeraldOre",
+	"coalBlock",
+	"ironBlock",
+	"goldBlock",
+	"diamondBlock",
+	"redstoneBlock",
+	"lapisBlock",
+	"emeraldBlock",
+	"tntTop",
+	"tntSide",
+	"tntBottom",
+	"acaciaLog",
+	"acaciaLogTop",
+	"acaciaPlanks",
+	"birchLog",
+	"birchLogTop",
+	"birchPlanks",
+	"darkOakLog",
+	"darkOakLogTop",
+	"darkOakPlanks",
+	"jungleLog",
+	"jungleLogTop",
+	"junglePlanks",
+	"spruceLog",
+	"spruceLogTop",
+	"sprucePlanks",
+	"sand",
+	"gravel",
+	"blackConcrete",
+	"blackWool",
+	"blueConcrete",
+	"blueWool",
+	"brownConcrete",
+	"brownWool",
+	"cyanConcrete",
+	"cyanWool",
+	"grayConcrete",
+	"grayWool",
+	"greenConcrete",
+	"greenWool",
+	"lightBlueConcrete",
+	"lightBlueWool",
+	"lightGrayConcrete",
+	"lightGrayWool",
+	"limeConcrete",
+	"limeWool",
+	"magentaConcrete",
+	"magentaWool",
+	"orangeConcrete",
+	"orangeWool",
+	"pinkConcrete",
+	"pinkWool",
+	"purpleConcrete",
+	"purpleWool",
+	"redConcrete",
+	"redWool",
+	"whiteConcrete",
+	"whiteWool",
+	"yellowConcrete",
+	"yellowWool",
+	"bookshelf",
+	"netherBricks",
+	"redNetherBricks",
+	"netherQuartzOre",
+	"netherrack",
+	"netherWartBlock",
+	"quartzBlockBottom",
+	"quartzBlockSide",
+	"quartzBlockTop",
+	"quartzPillar",
+	"quartzPillarTop",
+	"chiseledQuartzBlock",
+	"chiseledQuartzBlockTop",
+	"chiseledStoneBricks",
+	"smoothStone",
+	"soulSand",
+	"glowstone",
+	"andesite",
+	"diorite",
+	"granite",
+	"polishedAndesite",
+	"polishedDiorite",
+	"polishedGranite",
+])
+
+const referenceCharSet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&()*+,-./:;<=>?@[]^_{|}~ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤť'
+
+// This character set is arranged to maximize the number of ASCII characters used in texture encoding. It's not very intuitive to read, though.
+// const base256CharSet = '06bAcwQÀiE&ąSÐóŋ18gPru*öGÆæĢÜĻŏŤej9x7U-ėV(ĀĪÏÙłŢpHshvÃ:ç[ùħŌèļŘ5fyoRdF.ÕCl%ćØËĿţJMD{ta,þÉÑåàĴčŖŞzZ}$;TB×|+Ąú÷NıŜÓÁûÔĂÌ_qáÊĹňľĜť4m<!ÅIÇ=ân)~Ħ]ĔĈŠO^kõWÄÈęÂKÎāĠķĮř#Û/ĵ@Ö>ĶôñXīĒëĘšòăÍġßċLğĭîÚüńŀņ3?ĆÒĉéĨäēïÝĐČðĕĩŃãÿÞíěĺĚìýøêYŉģĽŊĝįĖĊĸŇĤĞşŐİĥŒŁĲĎŎŅĬďőœōđŗŝŕĳśŔŚ2'
+const base256CharSet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEF!#$%&L(MNO)*+,-./:;<=WSTR>Q?@[]P^_{|}~ÀÁÂÃUVÄÅÆÇÈÉÊËÌÍKÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãGäåæçèéêHëìíîXïðñIòóôõö÷øùúJûüýþÿĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦYħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťZ'
+
+const base256DecodeMap = new Map()
+for (let i = 0; i < 256; i++) base256DecodeMap.set(base256CharSet[i], i)
+function encodeByte(num, pad = 1) {
+    let str = ""
+    while (num) {
+        str = base256CharSet[num & 255] + str
+        num >>>= 8
+    }
+    return str.padStart(pad, "0")
+}
+function decodeByte(str) {
+    let num = 0
+    for (let char of str) {
+        num <<= 8
+        num += base256DecodeMap.get(char)
+    }
+    return num
+}
+
+function getPixels(str, r = 255, g = 255, b = 255) {
+	const width = decodeByte(str.substr(0, 2))
+	const height = decodeByte(str.substr(2, 2))
+	const colorCount = decodeByte(str.substr(4, 1))
+	const colors = []
+	const pixels = new Uint8ClampedArray(width * height * 4)
+	let pixi = 0
+
+	for (let i = 0; i < colorCount; i++) {
+		const num = decodeByte(str.substr(5 + i * 3, 3))
+
+		let alpha = (num & 63) << 2
+		let blue  = (num >>> 6 & 63) << 2
+		let green = (num >>> 12 & 63) << 2
+		let red   = (num >>> 18 & 63) << 2
+		if (alpha >= 240) alpha = 255 // Make sure we didn't accidentally make the texture transparent
+
+		if (red === blue && red === green) {
+			red = red / 252 * r | 0
+			green = green / 252 * g | 0
+			blue = blue / 252 * b | 0
+		}
+		colors.push([ red, green, blue, alpha ])
+	}
+
+	// Special case for a texture filled with 1 pixel color
+	if (colorCount === 1) {
+		while (pixi < pixels.length) {
+			pixels[pixi + 0] = colors[0][0]
+			pixels[pixi + 1] = colors[0][1]
+			pixels[pixi + 2] = colors[0][2]
+			pixels[pixi + 3] = colors[0][3]
+			pixi += 4
+		}
+		return pixels
+	}
+
+	let bytes = []
+	for (let i = 5 + colorCount * 3; i < str.length; i++) { // Load the bit-packed index array
+		const byte = decodeByte(str[i])
+		bytes.push(byte)
+	}
+
+	const bits = Math.ceil(Math.log2(colorCount))
+	const bitMask = (1 << bits) - 1
+	let filledBits = 8
+	let byte = bytes.shift()
+	while (bytes.length || filledBits) {
+		let num = 0
+		if (filledBits >= bits) { // The entire number is inside the byte
+			num = byte >> (filledBits - bits) & bitMask
+			if (filledBits === bits && bytes.length) {
+				byte = bytes.shift()
+				filledBits = 8
+			}
+			else filledBits -= bits
+		}
+		else {
+			num = byte << (bits - filledBits) & bitMask // Only part of the number is in the byte
+			byte = bytes.shift() // Load in the next byte
+			num |= byte >> (8 - bits + filledBits) // Apply the rest of the number from this byte
+			filledBits += 8 - bits
+		}
+
+		pixels[pixi + 0] = colors[num][0]
+		pixels[pixi + 1] = colors[num][1]
+		pixels[pixi + 2] = colors[num][2]
+		pixels[pixi + 3] = colors[num][3]
+		pixi += 4
+	}
+	return pixels
+}
+
+function encodeImage(data, width, height, quality = 1) {
+	// Generate pixel array
+	let pix = []
+	for (var i = 0; i < data.length; i++) {
+		// if (i === 1024) break
+
+		const colorChannel = i & 3 // 0 = red, 1 = green, 2 = blue, 3 = alpha
+		let colorValue = data[i] >> 2 // Delete 2 bits from every color
+    if(colorChannel !== 3) colorValue = Math.round(colorValue/quality)*quality
+
+		if (colorChannel === 0) { // new color
+			pix.push(0)
+		}
+
+		const pixel = i >> 2
+		var b = pix[pixel]
+		pix[pixel] |= colorValue << ((3 - colorChannel) * 6) // Each channel is 6 bits, so pack them in in RGBA order.
+	}
+
+	// Generate string in the format `{2 char width}{2 char height}{1 char color count}{3 chars each colors}{1 char each color index}`
+	let colorSet = Array.from(new Set(pix))
+	if (colorSet.length > 256) alert(`${colorSet.length} unique colors found in this image. It's going to break.`)
+	let str = ""
+	str += encodeByte(width, 2)
+	str += encodeByte(height, 2)
+	str += encodeByte(colorSet.length)
+	for (let colorValue of colorSet) {
+		str += encodeByte(colorValue, 3)
+	}
+
+	let indeces = []
+
+	let byte = 0
+	let filledBits = 0
+	const bits = Math.ceil(Math.log2(colorSet.length))
+	for (let colorValue of pix) {
+		let num = colorSet.indexOf(colorValue)
+		indeces.push(num)
+		let openBits = 8 - filledBits
+		let extra = 0
+		if (openBits >= bits) num <<= openBits - bits // if there's room in the byte for the whole number
+		else {
+			extra = (num & (1 << (bits - openBits)) - 1) << (8 - (bits - openBits)) // Save the bits before we chop them off
+			num >>= bits - openBits
+		}
+		byte |= num
+
+		filledBits += bits
+		if (filledBits >= 8) {
+			str += encodeByte(byte)
+			byte = extra
+			filledBits -= 8
+		}
+	}
+	if (filledBits !== 0) str += encodeByte(byte)
+
+	return str
+}
+
+var bigCanvas = document.getElementById("big-canvas")
+var bigCtx = bigCanvas.getContext('2d')
+bigCtx.imageSmoothingEnabled = false
+
+function camelCase(s) {
+	return s.replace(/([-_][a-z])/ig, c => c.toUpperCase().replace(/-|_/, ''))
+}
+
+function getURL(file) {
+	const fr = new FileReader()
+	return new Promise((resolve, reject) => {
+		fr.readAsDataURL(file)
+		fr.onload = () => {
+			resolve(fr.result)
+		}
+    fr.onerror = e => {
+      reject()
+      console.error(e)
+    }
+	})
+}
+
+function getImage(url) {
+	let img = new Image
+	return new Promise((resolve, reject) => {
+		img.onload = () => {
+			resolve(img)
+		}
+    img.onerror = e => {
+      reject(img)
+      console.error(e)
+    }
+		img.crossOrigin = "anonymous"
+		img.src = url
+	})
+}
+
+function sleep(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+const fileInput = document.getElementById("file")
+const nameInput = document.getElementById("nameInput")
+async function doEncode() {
+	let json = {}
+	let canvases = []
+	let chars = ""
+  let files = [...fileInput.files]
+	if(document.getElementById("gh").checked){
+    const repoInput = document.getElementById("repo"),refInput = document.getElementById("ref"),pathInput = document.getElementById("path"),filterInput = document.getElementById("filterPath")
+		let fileList = await fetch(`https://api.github.com/repos/${repoInput.value}/contents/${pathInput.value}?ref=${refInput.value}`).then(r => r.json())
+		let filter = filterInput.value&&new RegExp(filterInput.value)
+		for(let f of fileList){
+			if(!f.name.endsWith(".png") || filter&&!filter.test(f.name)) continue
+			files.push({name:f.name,url:f.download_url})
+		}
+  }
+  let filter = document.querySelector("#filter").value
+  let defaultSize = parseInt(document.querySelector("#defaultSize").value)
+  let quality = parseInt(document.querySelector("#quality").value)
+
+	for (let file of files) {
+		if (!file.name.endsWith(".png")){
+      console.log(file.name)
+      continue
+    }
+		const name = camelCase(file.name.slice(0, -4))
+
+		if (useOldTextures && !oldTextures.has(name)) continue
+
+		oldTextures.delete(name)
+		console.log(name)
+
+		let url = file.url ? file.url : await getURL(file)
+		let img = await getImage(url)
+
+    let imgW = img.naturalWidth, imgH = img.naturalHeight
+
+    var a = 1, a2 = 1
+    if(document.querySelector("#animated").checked){
+      a = img.height / defaultSize
+      a2 = img.width / defaultSize
+      imgW = imgH = defaultSize
+    }
+    var rot = 0
+    if(document.querySelector("#rotate").checked){
+      rot = Math.PI / 2
+    }
+
+    if(document.querySelector("#bed").checked){
+      let canvas,ctx,arr=[]
+      function doStuff(add){
+        canvases.push(canvas)
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        const str = encodeImage(imageData.data, canvas.width, canvas.height, quality)
+        arr.push(str)
+        chars += str
+      }
+      function first(){canvas = document.createElement("canvas");canvas.width=imgW/4;canvas.height=imgH/4;ctx=canvas.getContext('2d')}
+
+      /*var planks = "0g0g7ĢVZĖ*HĩãWýĻWĆkZéîHÒRZ4AJ9Aî0ÿ80ùAw2cJi3ãğãğËĖaAüP2KwoÐXë1ùí_0jAŁľãŁŁŕ92ÂPAX40cùĪzSāAAā4ŁğãļłĞÀA4PQiA9cëgPNgÐ0İAĽŔÉGËĞ"
+      json[name+"Bedplanks"] = planks
+      chars += planks*/
+      first()
+      ctx.drawImage(img, 28,6,16,16, 0,0,16,16)
+      doStuff("Bedplanks")
+      
+      first()
+      ctx.drawImage(img, 6,28,16,16, 0,0,16,16)
+      doStuff("Bedbottom")
+      
+      first()
+      ctx.drawImage(img, 6,6,16,16, 0,0,16,16)
+      doStuff("Bedtop")
+
+      first()
+      ctx.drawImage(img, 50,0,12,6, 0,0,12,6)
+      doStuff("Bedlegs")
+      
+      first()
+      ctx.rotate(-Math.PI/2)
+      ctx.drawImage(img, 0,28,6,16, -6,0,6,16)
+      ctx.rotate(Math.PI)
+      ctx.drawImage(img, 22,28,6,16, 6,-16,6,16)
+      ctx.rotate(-Math.PI/2)
+      doStuff("Bedbottomsides")
+
+      first()
+      ctx.rotate(-Math.PI/2)
+      ctx.drawImage(img, 0,6,6,16, -6,0,6,16)
+      ctx.rotate(Math.PI)
+      ctx.drawImage(img, 22,6,6,16, 6,-16,6,16)
+      ctx.rotate(-Math.PI/2)
+      doStuff("Bedtopsides")
+
+      first()
+      ctx.rotate(Math.PI)
+      ctx.drawImage(img, 22,22,16,6, -16,-6,16,6)
+      ctx.drawImage(img, 6,0,16,6, -16,-12,16,6)
+      ctx.rotate(-Math.PI)
+      doStuff("Bedfrontback")
+
+      json[name+"Bed"] = arr
+    }else for(var y=0; y<a; y++){
+      for(var x=0; x<a2; x++){
+        const canvas = document.createElement("canvas")
+        canvas.width = imgW
+        canvas.height = imgH
+        // canvas.width = img.width
+        // canvas.height = img.height
+        const ctx = canvas.getContext('2d')
+        canvases.push(canvas)
+        ctx.filter = filter
+
+        ctx.translate(imgW/2,imgH/2)
+        if(rot) ctx.rotate(rot)
+        ctx.drawImage(img, x*imgW,y*imgH,imgW,imgH, -imgW/2,-imgH/2,imgW,imgH)
+        if(rot) ctx.rotate(-rot)
+        ctx.translate(-imgW/2,-imgH/2)
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        const str = encodeImage(imageData.data, canvas.width, canvas.height, quality)
+        var nameAddition = ""
+        if(rot) nameAddition += "SW"
+        if(a !== 1){
+          if(a2 !== 1){
+            nameAddition += x+(y*a2)
+          }else{
+            nameAddition += y
+          }
+        }else if(a2 !== 1){
+          nameAddition += x
+        }
+        json[name+nameAddition] = str
+        chars += str
+      }
+    }
+
+		// await sleep(16) // Animate it all fancy-like for funsies
+
+		bigCtx.clearRect(0, 0, bigCanvas.width, bigCanvas.height)
+		const perRow = Math.ceil(Math.sqrt(canvases.length))
+		let size = Math.floor(800 / perRow)
+    bigCtx.strokeStyle = "black"
+    bigCtx.lineWidth = 1
+		for (let i = 0; i < canvases.length; i++) {
+			bigCtx.drawImage(canvases[i], (i % perRow) * size, (i / perRow | 0) * size, size, size)
+      bigCtx.strokeRect((i % perRow) * size, (i / perRow | 0) * size, size, size)
+		}
+	}
+	const output = document.getElementById("output")
+	output.textContent = JSON.stringify(json, null, "\t")
+	console.log(chars.length, "Total characters")
+
+}
+
+var oldGetPixels = function(str) {
+  // var w = parseInt(str.substr(0, 2), 36)
+  // var h = parseInt(str.substr(2, 2), 36)
+  var colors = []
+  var pixels = []
+  var dCount = 0
+  for (;str[4 + dCount] === "0"; dCount++) {}
+  var ccount = parseInt(str.substr(4+dCount, dCount+1), 36)
+  for (var i = 0; i < ccount; i++) {
+    var num = parseInt(str.substr(5 + 2*dCount + i * 7, 7), 36)
+    colors.push([ num >>> 24 & 255, num >>> 16 & 255, num >>> 8 & 255, num & 255 ])
+  }
+  for (let i = 5 + 2*dCount + ccount * 7; i < str.length; i++) {
+    let num = parseInt(str[i], 36)
+    pixels.push(colors[num][0], colors[num][1], colors[num][2], colors[num][3])
+  }
+  return pixels
+};
+
+function oldTo256(){
+  var json = document.querySelector("#oldJson").value
+  json = json.replace(/(?<=[A-Za-z0-9]* *")([a-z0-9]*)(?=")/g, function($1){
+    var data = oldGetPixels($1)
+    data = encodeImage(data, 16,16)
+    return data
+  })
+  document.querySelector("#output").textContent = json
+  return json
+}
+
+function funcTo256(){
+  let func = document.querySelector("#func").value
+  let pixels = new Uint8Array(16*16*4)
+  const getPixels = oldGetPixels
+  const setPixel = function(textureNum, x, y, r, g, b, a = 255){
+    pixels[(y*16+x)*4] = r
+    pixels[(y*16+x)*4+1] = g
+    pixels[(y*16+x)*4+2] = b
+    pixels[(y*16+x)*4+3] = a
+  }
+  func = eval(func)
+  func()
+  let str = encodeImage(pixels, 16,16)
+  document.querySelector("#output").textContent = str
+}
+
+// let frameCount = 0
+// setInterval(() => {
+// 	let frames = canvas.height / canvas.width
+// 	if (frames === 1) return
+// 	let frame = Math.abs(-frameCount % (2 * frames - 2) + frames - 1)
+// 	bigCtx.clearRect(0, 0, bigCanvas.width, bigCanvas.height)
+// 	bigCtx.drawImage(canvas, 0, -400 * frame, 400, 400 * frames)
+// 	frameCount++
+// }, 100)
+        </script>
+    </body>
+</html>
