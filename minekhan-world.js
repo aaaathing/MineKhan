@@ -35099,7 +35099,7 @@ class WorldDimension{
 	addItems(x,y,z,vx,vy,vz,block,autoSetVel,amount = 1,durability,customName,from){
 		if(!block) return
 		var data = blockData[block]
-		if(!data) throw new Error("no block: "+block)
+		if(!data) return
 		while(amount){
 			var a = min(amount,data.stackSize)
 			amount -= a
@@ -35107,6 +35107,7 @@ class WorldDimension{
 		}
 	}
 	addItem(x,y,z,vx,vy,vz,data,autoSetVel,from){
+		if(data && !blockData[data.id]) return
 		this.addEntity(new entities[entityIds.Item](x, y, z, vx, vy, vz, data, autoSetVel,from))
 	}
 	addText(x,y,z,text,color = null, background = null, size = 1/2, replacerFunction){

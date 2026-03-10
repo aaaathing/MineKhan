@@ -1339,6 +1339,20 @@ world.on("changeblock", e => {
 })
 </pre>
 <hr>
+<p>This gives someone items when they join if they don't already have it.</p>
+<pre>
+world.on("join", e => {
+	// This gives apples
+	if(!e.player.hasItem(blockIds.apple)){
+		e.player.newInvItem(blockIds.apple)
+	}
+	// You can also do this. The properties can be: id, amount, durability, customName, trim
+	if(!e.player.hasItem(blockIds.cake)){
+		e.player.newInvItem({id: blockIds.cake, customName: "Strange Cake"})
+	}
+})
+</pre>
+<hr>
 <p>Here is an example of world (terrain) generation.</p>
 <pre>
 // world[""] means overworld. can also be world["nether"] or world["end"]
@@ -1377,7 +1391,7 @@ world[""].customChunkPopulate = function(chunk){
 }
 </pre>
 <hr>
-<p>This turns bricks into house spawners. Note: block can also be an item.</p>
+<p>This spawns a house when you hold a brick and click. Note: block can also be an item.</p>
 <pre>
 // Define the list of blocks
 const wallBlocks = [blockIds.quartzBlock, blockIds.bricks, blockIds.oakPlanks, blockIds.stoneBricks, blockIds.endStoneBricks, blockIds.purpurBlock, blockIds.deepslateTiles]
@@ -1431,17 +1445,38 @@ blockData[blockIds.diamondOre].drop = () => rand()&lt;0.75 ? "dirt" : "diamond"
 </pre>
 <hr>
 <p>This plays creepy sounds occasionly. Try changing it to different sounds!</p>
+<p>Note: rand() is the same as Math.random() except rand can have a range like this: rand(10) rand(1,10).</p>
 <pre>
 let lastTime = Date.now()
+let sounds = ["damage.classic_hurt","block.portal.travel","grass.step3","creeper.say4"]
 world.on("tick", () => {
 	let now = Date.now()
 	if(now - lastTime > 60000){ // Every 60 seconds. 1000 is 1 second.
 		let player = world.players[floor(rand(world.players.length))] // Choose a random player
-		// If classic_hurt is played at 0.1x speed, then it sounds kind of creepy
-		player.world.playSound(player.x,player.y,player.z, "damage.classic_hurt", 10, 0.1)
+		// If these sounds are played at 0.1x speed or less, then it sounds kind of creepy
+		player.world.playSound(player.x,player.y,player.z, sounds[floor(rand(sounds.length))], Math.random()*10, Math.random()*0.1)
+		if(Math.random()>0.9){ // Also play this sound randomly.
+			player.world.playSound(player.x,player.y,player.z, "portal.portal", 50, Math.random()*0.2)
+		}
 		lastTime = now
 	}
 })
+</pre>
+<hr>
+<p>This makes the code run when someone goes in the coordinates.</p>
+<p>It might be easier to use command blocks.</p>
+<pre>
+// This gives someone an apple when they go between 10,50,10 and 20,60,20
+world.addPortal(player => {
+	if(!player.hasItem(blockIds.apple)){
+		player.newInvItem(blockIds.apple)
+	}
+}, 10,50,10, 20,60,20, "") // Put the 2 corner coordinates and dimension here. The coordinates are in this order: x,y,z,x,y,z.
+
+// This teleports anyone that goes there
+world.addPortal(player => {
+	player.tp(100, 50, 0)
+}, 30,50,0, 40,60,10, "")
 </pre>
 			</section>
       <section id="help_wiki">
@@ -10888,7 +10923,7 @@ return//*/
         p.cOffsetZ += p.direction.z*hsize
       }*/
 
-      let intensity = 0.0625//0.09375
+      let intensity = 0.1//0.0625//0.09375
       prevViewBobIntensity = viewBobIntensity
 			 if(!p.thirdPerson && !p.sleeping){
         //view bobbing
@@ -10927,8 +10962,8 @@ return//*/
 					p.cOffsetX += s*0.5*cos(p.ry)*p.scale
 					p.cOffsetZ += s*0.5*sin(p.ry)*p.scale
 					p.cOffsetY += (1-abs(cos(angle)))*intensity*p.scale
-					p.camera.viewBobRx += (1-abs(cos(angle+0.2)))*intensity*5*Math.PI/180
-					p.camera.viewBobRz = s*3*Math.PI/180
+					p.camera.viewBobRx += (abs(cos(angle+0.2))-1)*intensity*5*Math.PI/180
+					p.camera.viewBobRz = -s*3*Math.PI/180
 					/*let angle = counter/1000*Math.PI, c = cos(angle), oy = abs(sin(angle))-1
 					p.cOffsetY += oy*intensity
 					p.cOffsetX += cos(p.ry)*c*intensity
@@ -21694,887 +21729,877 @@ r 11 y  n  n  n
 
 	import("."+"/"+"fea"+"ture"+"s.j"+"s").catch(console.error)
   let host = false
-	{
-		function initSingleplayer(){
-			const channel = new MessageChannel()
-			serverWorld.serverAddPlayer(new MessagePortContainer(channel.port2),p.id,p.username,true,userInfo&&userInfo.admin||false)
-			return new MessagePortContainer(channel.port1)
-		}
-		let external, isSafe, originalTarget
-		async function initMultiplayer(target){
-			if(preVersion && !(userInfo&&userInfo.admin)) return alert("Multiplayer is not available on this version")
-			if(multiplayer || websocket) return
-			
-			external = false, isSafe = true, originalTarget = target
-			host = false
-			external = servers[target].external
-			if(external){
-				isSafe = servers[target].safe
-				let pwd
-				let d = await fetch('/getExternalServerSession/'+encodeURIComponent(target),{headers:{Authorization:userSessionString}}).then(r => r.json()).catch(() => null)
-				if(!d){
-					multiplayerError = {data:"failed to get session"}
+	
+	function initSingleplayer(){
+		const channel = new MessageChannel()
+		serverWorld.serverAddPlayer(new MessagePortContainer(channel.port2),p.id,p.username,true,userInfo&&userInfo.admin||false)
+		return new MessagePortContainer(channel.port1)
+	}
+	let external, isSafe, originalTarget
+	async function initMultiplayer(target){
+		if(preVersion && !(userInfo&&userInfo.admin)) return alert("Multiplayer is not available on this version")
+		if(multiplayer || websocket) return
+		
+		external = false, isSafe = true, originalTarget = target
+		host = false
+		external = servers[target].external
+		if(external){
+			isSafe = servers[target].safe
+			let pwd
+			let d = await fetch('/getExternalServerSession/'+encodeURIComponent(target),{headers:{Authorization:userSessionString}}).then(r => r.json()).catch(() => null)
+			if(!d){
+				multiplayerError = {data:"failed to get session"}
+				changeScene("multiplayer lost")
+				return {cAnCeLcOnNectION:true}
+			}else if(d.type === "error"){
+				multiplayerError = d
+				if(d.long){
+					centerMessage.innerHTML = d.data.replace(/\n/g,"<br>")
+					changeScene("multiplayer lost long")
+				}else{
 					changeScene("multiplayer lost")
-					return {cAnCeLcOnNectION:true}
-				}else if(d.type === "error"){
-					multiplayerError = d
-					if(d.long){
-						centerMessage.innerHTML = d.data.replace(/\n/g,"<br>")
-						changeScene("multiplayer lost long")
-					}else{
-						changeScene("multiplayer lost")
-					}
-					return {cAnCeLcOnNectION:true}
-				}else if(d.type === "session"){
-					pwd = d.data
 				}
-				target = servers[target].wsurl+"?pwd="+encodeURIComponent(pwd)
-				let ws = new WebSocket(target)
-				await new Promise(resolve => {ws.onopen = resolve})
-				return new WebSocketClientContainer(ws)
-			}else{
-				let cAnCeLcOnNectION = false
-				let sigKey = servers[target].signalingServer //|| Object.keys(signalingServers)[0]
-				let sigServer = signalingServers[sigKey]
-				addToBottomRightList("connecting","Connecting to "+sigKey)
-				let openResolve
-				let openPromise = new Promise(resolve => openResolve = resolve)
-				let cancelResolve
-				let cancelPromise = new Promise(resolve => cancelResolve = resolve)
-				let sigConn = sigServer.connect({id:"j"+p.id,
-				onopen:() => openResolve(),
-				onmessage:async data => {
-					if(!data) return
-					if(data.type === "answer"){
-						if(answered) return
-						answered = true
-						const remoteDesc = new RTCSessionDescription(data.answer)
-						await peerConnection.setRemoteDescription(remoteDesc)
-						waitForAnswerResolve()
-						addToBottomRightList("connecting","Recieved answer","yellow")
-					}else if(data.type === "iceCandidate"){
-						if(peerConnection.signalingState === "closed") return
-						try {
-							await peerConnection.addIceCandidate(data.data)
-							addToBottomRightList("connecting","Recieved ICE canidate","yellow")
-						} catch (e) {
-							reportError('Error adding received ice candidate'+e.toString())
-							console.log(e)
-						}
+				return {cAnCeLcOnNectION:true}
+			}else if(d.type === "session"){
+				pwd = d.data
+			}
+			target = servers[target].wsurl+"?pwd="+encodeURIComponent(pwd)
+			let ws = new WebSocket(target)
+			await new Promise(resolve => {ws.onopen = resolve})
+			return new WebSocketClientContainer(ws)
+		}else{
+			let cAnCeLcOnNectION = false
+			let sigKey = servers[target].signalingServer //|| Object.keys(signalingServers)[0]
+			let sigServer = signalingServers[sigKey]
+			addToBottomRightList("connecting","Connecting to "+sigKey)
+			let openResolve
+			let openPromise = new Promise(resolve => openResolve = resolve)
+			let cancelResolve
+			let cancelPromise = new Promise(resolve => cancelResolve = resolve)
+			let sigConn = sigServer.connect({id:"j"+p.id,
+			onopen:() => openResolve(),
+			onmessage:async data => {
+				if(!data) return
+				if(data.type === "answer"){
+					if(answered) return
+					answered = true
+					const remoteDesc = new RTCSessionDescription(data.answer)
+					await peerConnection.setRemoteDescription(remoteDesc)
+					waitForAnswerResolve()
+					addToBottomRightList("connecting","Recieved answer","yellow")
+				}else if(data.type === "iceCandidate"){
+					if(peerConnection.signalingState === "closed") return
+					try {
+						await peerConnection.addIceCandidate(data.data)
+						addToBottomRightList("connecting","Recieved ICE canidate","yellow")
+					} catch (e) {
+						reportError('Error adding received ice candidate'+e.toString())
+						console.log(e)
 					}
-				},
-				onclose:() => { // onclose might be called more than once
-					if(connection) {}
-					else{
-						if(peerConnection) peerConnection.close()
-						cAnCeLcOnNectION = true
-						multiplayerError = multiplayerError || {data:"WebSocket closed before RTCPeerConnection connected."}
-						cancelResolve()
-						openResolve()
-					}
-					websocket = null
 				}
+			},
+			onclose:() => { // onclose might be called more than once
+				if(connection) {}
+				else{
+					if(peerConnection) peerConnection.close()
+					cAnCeLcOnNectION = true
+					multiplayerError = multiplayerError || {data:"WebSocket closed before RTCPeerConnection connected."}
+					cancelResolve()
+					openResolve()
+				}
+			}
+			})
+
+			let pass
+			if(servers[target].multiplayerPass){
+				pass = prompt("What is the password???")
+			}
+
+			await openPromise
+
+			let connection
+
+			let peerConnection //for webrtc
+			let waitForDataChannelResolve
+			let waitForDataChannelPromise = new Promise(resolve => waitForDataChannelResolve = resolve)
+			let waitForUnorderDataChannelResolve
+			let waitForUnorderDataChannelPromise = new Promise(resolve => waitForUnorderDataChannelResolve = resolve)
+			let waitForAnswerResolve //Called in connect function
+			let waitForAnswerPromise = new Promise(resolve => waitForAnswerResolve = resolve)
+			let answered = false
+
+			if(cAnCeLcOnNectION) return {cAnCeLcOnNectION:true}
+			//addToBottomRightList("connecting","Creating RTCPeerConnection")
+			peerConnection = new RTCPeerConnection({iceServers});
+
+			let channel = peerConnection.createDataChannel("multiplayer")
+			channel.onopen = () => {waitForDataChannelResolve(); addToBottomRightList("connecting","Data channel opened: multiplayer","lime")}
+			channel.onerror = e => {multiplayerError = multiplayerError || {data:"RTC data channel error: "+e.error.errorDetail+" | "+e.error.message}}
+			channel.binaryType = "arraybuffer"
+			let unorderChannel = peerConnection.createDataChannel("unorder",{ordered:false})
+			unorderChannel.onopen = () => {waitForUnorderDataChannelResolve(); addToBottomRightList("connecting","Data channel opened: unorder","lime")}
+			unorderChannel.onerror = e => {multiplayerError = multiplayerError || {data:"RTC data channel error: "+e.error.errorDetail+" | "+e.error.message}}
+			unorderChannel.binaryType = "arraybuffer"
+
+			const offer = await peerConnection.createOffer()
+			await peerConnection.setLocalDescription(offer)
+			sigConn.send({type:"offer",id:p.id,offer,username:p.username,pass}, target)
+			addToBottomRightList("connecting","Sent offer")
+			
+			peerConnection.addEventListener('icecandidate', e => {
+				if (e.candidate) {
+					sigConn.send({type:"iceCandidate",data:e.candidate}, target)
+					addToBottomRightList("connecting","Sent ICE canidate")
+				}
+			})
+			peerConnection.addEventListener("connectionstatechange", e => {
+				if(peerConnection.connectionState === "closed"){
+					cAnCeLcOnNectION = true
+					cancelResolve()
+				}else if(peerConnection.connectionState === "failed"){
+					if(connection) connection.close()
+					peerConnection.close()
+					cAnCeLcOnNectION = true
+					/*if(!connection){
+						useWsInstead = true
+						switchToWs()
+					}else*/{
+						multiplayerError = multiplayerError || {data:"WebRTC connection failed."}
+					}
+					cancelResolve()
+				}
+			})
+			peerConnection.addEventListener("iceconnectionstatechange", e => {
+				if(peerConnection.iceconnectionState === "failed"){
+					reportError("Ice connection failed")
+				}
+			})
+			peerConnection.addEventListener("icecandidateerror", e => {
+				if(connection) return
+				if(e.errorCode === 701) addToBottomRightList("connecting","Ice candidate error, url:"+e.url+", code: "+e.errorCode+", reason: "+e.errorText,"red")
+				else{
+					reportError("Ice candidate error, url:"+e.url+", code: "+e.errorCode+", reason: "+e.errorText)
+				}
+			})
+
+			await Promise.race([Promise.all([waitForAnswerPromise,waitForDataChannelPromise,waitForUnorderDataChannelPromise]), cancelPromise])
+
+			//if(useWsInstead) return
+			if(cAnCeLcOnNectION) {
+				setTimeout(() => clearBottomRightList("connecting"), 1000)
+				return {cAnCeLcOnNectION:true}
+			}
+			connection = new RTCClientContainer(channel,peerConnection,unorderChannel)
+			connection.target = target
+			sigConn.close()
+			return connection
+		}
+	}
+	function disableMultiplayer(){
+		for(let p of serverWorld.players.slice()){
+			//if(c instanceof RTCClientContainer){
+			if(!p.host){
+				p.connection.send({type:"error",data:"Server closed. (disabled mulitplayer)"})
+				p.connection.close()
+			}
+		}
+		for(let c of sigConns.values()) c.close()
+		sigConns = null
+	}
+	win.disableMultiplayer = disableMultiplayer
+	let sigConns = null
+	function enableMultiplayer(){//For host only
+		if(preVersion && !(userInfo&&userInfo.admin)) return alert("Multiplayer is not available on this version")
+		if(sigConns) return
+		let peerConnections = {}
+		sigConns = new Map()
+
+		function openForServer(key, server){
+			if(sigConns.get(key)) return
+			let sigConn = server.connect({id:"srv"+p.id,
+			onmessage:async data => {
+			if(!sigConns || !data) return
+			if(data.type === "offer"){
+				if(!data.id) return
+				let rejected
+				if(data.username.length > 25) rejected = "Username too long"
+				let badChars = data.username.match(/[^-_ \p{L}\p{N}]/ug)
+				if(badChars) rejected = "Username can not have: "+badChars.join(" ")
+				if(whitelist && !whitelist.includes(data.username)){
+					rejected = "oops, You are not in the whitelist for this server."
+					serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+data.username+" is not in the whitelist.", fromServer:true})
+				}
+				if(multiplayerPass && data.pass !== multiplayerPass) rejected = "Wrong password."
+
+				if(!rejected) serverWorld.sendAll({type:"message",data:"<span style='color:lightgreen;'>"+data.username+" is connecting. "+(serverWorld.players.length+1)+" players now.", fromServer:true})
+				let peerConnection = new RTCPeerConnection({iceServers})
+				peerConnections[data.id] = peerConnection
+
+				peerConnection.addEventListener('icecandidate', event => {
+					if (event.candidate) {
+						sigConn.send({type:"iceCandidate",data:event.candidate}, data.FROM)
+					}
 				})
 
-				let pass
-				if(servers[target].multiplayerPass){
-					pass = prompt("What is the password???")
-				}
-
-				await openPromise
-
-				let connection
-
-				let peerConnection //for webrtc
+				let channel, unorderChannel
 				let waitForDataChannelResolve
 				let waitForDataChannelPromise = new Promise(resolve => waitForDataChannelResolve = resolve)
 				let waitForUnorderDataChannelResolve
 				let waitForUnorderDataChannelPromise = new Promise(resolve => waitForUnorderDataChannelResolve = resolve)
-				let waitForAnswerResolve //Called in connect function
-				let waitForAnswerPromise = new Promise(resolve => waitForAnswerResolve = resolve)
-				let answered = false
+				peerConnection.ondatachannel = e => {
+					e.channel.binaryType = "arraybuffer"
+					if(e.channel.label === "multiplayer"){
+						channel = e.channel
+						channel.onopen = waitForDataChannelResolve
+					}else if(e.channel.label === "unorder"){
+						unorderChannel = e.channel
+						unorderChannel.onopen = waitForUnorderDataChannelResolve
+					}else throw new Error("Unexpected data channel: "+e.channel.label)
+				}
 
-				if(cAnCeLcOnNectION) return {cAnCeLcOnNectION:true}
-				//addToBottomRightList("connecting","Creating RTCPeerConnection")
-				peerConnection = new RTCPeerConnection({iceServers});
-
-				let channel = peerConnection.createDataChannel("multiplayer")
-				channel.onopen = () => {waitForDataChannelResolve(); addToBottomRightList("connecting","Data channel opened: multiplayer","lime")}
-				channel.onerror = e => {multiplayerError = multiplayerError || {data:"RTC data channel error: "+e.error.errorDetail+" | "+e.error.message}}
-				channel.binaryType = "arraybuffer"
-				let unorderChannel = peerConnection.createDataChannel("unorder",{ordered:false})
-				unorderChannel.onopen = () => {waitForUnorderDataChannelResolve(); addToBottomRightList("connecting","Data channel opened: unorder","lime")}
-				unorderChannel.onerror = e => {multiplayerError = multiplayerError || {data:"RTC data channel error: "+e.error.errorDetail+" | "+e.error.message}}
-				unorderChannel.binaryType = "arraybuffer"
-
-				const offer = await peerConnection.createOffer()
-				await peerConnection.setLocalDescription(offer)
-				sigConn.send({type:"offer",id:p.id,offer,username:p.username,pass}, target)
-				addToBottomRightList("connecting","Sent offer")
-				
-				peerConnection.addEventListener('icecandidate', e => {
-					if (e.candidate) {
-						sigConn.send({type:"iceCandidate",data:e.candidate}, target)
-						addToBottomRightList("connecting","Sent ICE canidate")
-					}
-				})
+				let cAnCeLcOnNectION = false
 				peerConnection.addEventListener("connectionstatechange", e => {
 					if(peerConnection.connectionState === "closed"){
 						cAnCeLcOnNectION = true
-						cancelResolve()
+						if(peerConnections[data.id]){
+							delete peerConnections[data.id]
+						}
 					}else if(peerConnection.connectionState === "failed"){
-						if(connection) connection.close()
-						peerConnection.close()
 						cAnCeLcOnNectION = true
-						/*if(!connection){
-							useWsInstead = true
-							switchToWs()
-						}else*/{
-							multiplayerError = multiplayerError || {data:"WebRTC connection failed."}
+						peerConnection.close()
+						if(peerConnections[data.id]){
+							delete peerConnections[data.id]
 						}
-						cancelResolve()
-					}
-				})
-				peerConnection.addEventListener("iceconnectionstatechange", e => {
-					if(peerConnection.iceconnectionState === "failed"){
-						reportError("Ice connection failed")
-					}
-				})
-				peerConnection.addEventListener("icecandidateerror", e => {
-					if(connection) return
-					if(e.errorCode === 701) addToBottomRightList("connecting","Ice candidate error, url:"+e.url+", code: "+e.errorCode+", reason: "+e.errorText,"red")
-					else{
-						reportError("Ice candidate error, url:"+e.url+", code: "+e.errorCode+", reason: "+e.errorText)
 					}
 				})
 
-				await Promise.race([Promise.all([waitForAnswerPromise,waitForDataChannelPromise,waitForUnorderDataChannelPromise]), cancelPromise])
+				peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+				const answer = await peerConnection.createAnswer();
+				await peerConnection.setLocalDescription(answer);
+				sigConn.send({type:"answer",answer}, data.FROM)
 
-				//if(useWsInstead) return
-				if(cAnCeLcOnNectION) {
-					setTimeout(() => clearBottomRightList("connecting"), 1000)
-					return {cAnCeLcOnNectION:true}
+				await Promise.all([waitForDataChannelPromise,waitForUnorderDataChannelPromise])
+
+				if(cAnCeLcOnNectION) return
+				let c = new RTCClientContainer(channel,peerConnection,unorderChannel)
+
+				if(rejected){
+					c.send({type:"error",data:rejected})
+					c.close()
+					return
 				}
-				connection = new RTCClientContainer(channel,peerConnection,unorderChannel)
-				connection.target = target
-				sigConn.close()
-				return connection
+				let onclose = p => serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+p.username+" left. "+serverWorld.players.length+" players now.", fromServer:true})
+				let onjoined = p => serverWorld.sendAll({type:"message",data:"<span style='color:lightgreen;'>"+p.username+" joined.", fromServer:true})
+				serverWorld.serverAddPlayer(c,data.id,data.username,false,data.admin,onclose,onjoined)
+			}else if(data.type === "iceCandidate"){
+				let from = peerConnections[data.FROM]
+				if(!from || from.signalingState === "closed") return
+				try {
+					await from.addIceCandidate(data.data)
+				} catch (e) {
+					logError('Error adding received ice candidate'+e.toString())
+					console.log(e)
+				}
+			}else if(data.type === "ping"){
+				sigConn.send({
+					type:"pong",
+					id:data.id,
+					data:{
+						name: world.name, version:version+" - "+location.href,
+						host:p.username, players: serverWorld.players.map(r => r.username),
+						whitelist, banned, multiplayerPass:multiplayerPass?true:false,
+					}
+				}, data.FROM)
 			}
-		}
-		function disableMultiplayer(){
-			for(let p of serverWorld.players.slice()){
-				//if(c instanceof RTCClientContainer){
-				if(!p.host){
-					p.connection.send({type:"error",data:"Server closed. (disabled mulitplayer)"})
-					p.connection.close()
-				}
-			}
-			websocket.close()
-		}
-		win.disableMultiplayer = disableMultiplayer
-		function enableMultiplayer(){//For host only
-			if(preVersion && !(userInfo&&userInfo.admin)) return alert("Multiplayer is not available on this version")
-			if(websocket) return
-			let peerConnections = {}
-			let sigConns = new Map()
-			let doNotReconnect = false
-
-			function openForServer(key, server){
-				if(sigConns.get(key)) return
-				let sigConn = server.connect({id:"srv"+p.id,
-				onmessage:async data => {
-				if(doNotReconnect || !data) return
-				if(data.type === "offer"){
-					if(!data.id) return
-					let rejected
-					if(data.username.length > 25) rejected = "Username too long"
-					let badChars = data.username.match(/[^-_ \p{L}\p{N}]/ug)
-					if(badChars) rejected = "Username can not have: "+badChars.join(" ")
-					if(whitelist && !whitelist.includes(data.username)){
-						rejected = "oops, You are not in the whitelist for this server."
-						serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+data.username+" is not in the whitelist.", fromServer:true})
-					}
-					if(multiplayerPass && data.pass !== multiplayerPass) rejected = "Wrong password."
-
-					if(!rejected) serverWorld.sendAll({type:"message",data:"<span style='color:lightgreen;'>"+data.username+" is connecting. "+(serverWorld.players.length+1)+" players now.", fromServer:true})
-					let peerConnection = new RTCPeerConnection({iceServers})
-					peerConnections[data.id] = peerConnection
-
-					peerConnection.addEventListener('icecandidate', event => {
-						if (event.candidate) {
-							sigConn.send({type:"iceCandidate",data:event.candidate}, data.FROM)
-						}
-					})
-
-					let channel, unorderChannel
-					let waitForDataChannelResolve
-					let waitForDataChannelPromise = new Promise(resolve => waitForDataChannelResolve = resolve)
-					let waitForUnorderDataChannelResolve
-					let waitForUnorderDataChannelPromise = new Promise(resolve => waitForUnorderDataChannelResolve = resolve)
-					peerConnection.ondatachannel = e => {
-						e.channel.binaryType = "arraybuffer"
-						if(e.channel.label === "multiplayer"){
-							channel = e.channel
-							channel.onopen = waitForDataChannelResolve
-						}else if(e.channel.label === "unorder"){
-							unorderChannel = e.channel
-							unorderChannel.onopen = waitForUnorderDataChannelResolve
-						}else throw new Error("Unexpected data channel: "+e.channel.label)
-					}
-
-					let cAnCeLcOnNectION = false
-					peerConnection.addEventListener("connectionstatechange", e => {
-						if(peerConnection.connectionState === "closed"){
-							cAnCeLcOnNectION = true
-							if(peerConnections[data.id]){
-								delete peerConnections[data.id]
-							}
-						}else if(peerConnection.connectionState === "failed"){
-							cAnCeLcOnNectION = true
-							peerConnection.close()
-							if(peerConnections[data.id]){
-								delete peerConnections[data.id]
-							}
-						}
-					})
-
-					peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-					const answer = await peerConnection.createAnswer();
-					await peerConnection.setLocalDescription(answer);
-					sigConn.send({type:"answer",answer}, data.FROM)
-
-					await Promise.all([waitForDataChannelPromise,waitForUnorderDataChannelPromise])
-
-					if(cAnCeLcOnNectION) return
-					let c = new RTCClientContainer(channel,peerConnection,unorderChannel)
-
-					if(rejected){
-						c.send({type:"error",data:rejected})
-						c.close()
-						return
-					}
-					let onclose = p => serverWorld.sendAll({type:"message",data:"<span style='color:orange;'>"+p.username+" left. "+serverWorld.players.length+" players now.", fromServer:true})
-					let onjoined = p => serverWorld.sendAll({type:"message",data:"<span style='color:lightgreen;'>"+p.username+" joined.", fromServer:true})
-					serverWorld.serverAddPlayer(c,data.id,data.username,false,data.admin,onclose,onjoined)
-				}else if(data.type === "iceCandidate"){
-					let from = peerConnections[data.FROM]
-					if(!from || from.signalingState === "closed") return
-					try {
-						await from.addIceCandidate(data.data)
-					} catch (e) {
-						logError('Error adding received ice candidate'+e.toString())
-						console.log(e)
-					}
-				}else if(data.type === "ping"){
-					sigConn.send({
-						type:"pong",
-						id:data.id,
-						data:{
-							name: world.name, version:version+" - "+location.href,
-							host:p.username, players: serverWorld.players.map(r => r.username),
-							whitelist, banned, multiplayerPass:multiplayerPass?true:false,
-						}
-					}, data.FROM)
-				}
-				},
-				onclose:() => { // onclose might be called more than once
+			},
+			onclose:() => { // onclose might be called more than once
+				if(sigConns && inWorld){
 					if(!sigConns.get(key)) return
 					sigConns.delete(key)
-					if(!doNotReconnect && inWorld){
-						if(sigConns.size){
-							setTimeout(() => {if(inWorld) openForServer(key, server)}, 10*60*1000)
-						}else{
-							setTimeout(() => {
-								if(inWorld) for(let [key,server] of Object.entries(signalingServers)) openForServer(key,server)
-							}, 5000)
-						}
-					}else if(!sigConns.size){
-						websocket = null
+					if(sigConns.size){
+						setTimeout(() => {if(inWorld) openForServer(key, server)}, 60*1000)
+					}else{
+						setTimeout(() => {
+							if(inWorld) for(let [key,server] of Object.entries(signalingServers)) openForServer(key,server)
+						}, 5000)
 					}
 				}
-				})
-				sigConns.set(key, sigConn)
 			}
-			win.sigConns = sigConns
+			})
+			sigConns.set(key, sigConn)
+		}
+		win.sigConns = sigConns
 
-			for(let [key,server] of Object.entries(signalingServers)){
-				openForServer(key,server)
+		for(let [key,server] of Object.entries(signalingServers)){
+			openForServer(key,server)
+		}
+	}
+	function joinWorld(connection){
+		if(!connection) return
+		if(connection.cAnCeLcOnNectION) return changeScene("multiplayer lost")
+		players = {}, playerSkins = {}, playerCapes = {} //empty
+		let canSendPos = true //if internet is slow, don't send positions too fast because it will slow down the connection
+		multiplayerError = null
+		multiplayer = connection
+		addToBottomRightList("connecting","Entering world...")
+		send({
+			type:"connect",
+			id: p.id
+		})
+		send({type:"mySkin", data:p.skinURL, cape:p.capeURL})
+
+		/*let invStuff = {}
+		let shouldSendInvStuff = false
+		multiplayer.sendInvStuff = () => {
+			if(inWorld){
+				invStuff.inv = world.getInv().array
+				invStuff.survivStr = world.getSurvivStr().array
+				shouldSendInvStuff = true
+			}e
+		}
+		multiplayer.pos = setInterval(multiplayer.sendInvStuff, 10000)*/
+		multiplayer.mmoveX = multiplayer.mmoveY = 0
+		multiplayer.lastSendPos = 0
+		multiplayer.toSendLoadChunks = null
+		multiplayer.sendPos = (force,type) => {
+			let now = Date.now()
+			if((!canSendPos /*|| now-multiplayer.lastSendPos < 100*/) && !force || !multiplayer || !multiplayer.hasStartedLoad) return //if p3 hasn't been set, don't send
+			
+			let obj = {type:"pos", data:{
+				x:p.x,
+				y:p.y,
+				z:p.z,
+				dimension:p.dimension,
+				ry:p.ry,
+				rx:p.rx,
+				bodyRot:p.bodyRot,
+				sneaking:p.sneaking,
+				harmEffect:harmEffect,
+				crackPos:hitBox.pos,
+				crack:crack.idx,
+				walking:p.walking,
+				eating:p.eating,
+				sprinting:p.sprinting,
+				punchEffect:p.punchEffect,
+				sleeping:p.sleeping,
+				sitting:p.sitting,
+				swimming:p.swimming,
+				usingItem:p.usingItem,
+				spectating:p.spectating && p.spectating.id || null,
+				velx:p.velocity.x,
+				vely:p.velocity.y,
+				velz:p.velocity.z,
+				riding:p.riding,
+				onGround:p.onGround,
+				flying:p.flying,
+				gliding:p.gliding,
+			}}
+			/*if(shouldSendInvStuff){
+				obj.inv = invStuff
+				shouldSendInvStuff = false
+			}*/
+			if(type === "afk" || screen !== "loading" && screen !== "netherLoading" && screen !== "endLoading" && performance.now() - p.lastActive > 10000){
+				obj.afk = true
 			}
-			websocket = {
-				send(){},
-				close(){
-					doNotReconnect = true
-					for(let c of sigConns.values()) c.close()
-				}
+			canSendPos = false
+			send(obj)
+			multiplayer.lastSendPos = now
+			if(multiplayer.toSendLoadChunks){
+				send({type:"loadChunks",data:multiplayer.toSendLoadChunks.data,loadDistance:multiplayer.toSendLoadChunks.loadDistance,dimension:p.dimension})
+				multiplayer.toSendLoadChunks = null
+			}
+			if(p.spectateRemoteControl && (multiplayer.mmoveX || multiplayer.mmoveY)){
+				send({type:"remoteControl",event:"rotate",x:multiplayer.mmoveX,y:multiplayer.mmoveY},p.spectating.id)
+				multiplayer.mmoveX = multiplayer.mmoveY = 0
 			}
 		}
-		function joinWorld(connection){
-			if(!connection) return
-			if(connection.cAnCeLcOnNectION) return changeScene("multiplayer lost")
-			players = {}, playerSkins = {}, playerCapes = {} //empty
-			let canSendPos = true //if internet is slow, don't send positions too fast because it will slow down the connection
-			multiplayerError = null
-			multiplayer = connection
-			addToBottomRightList("connecting","Entering world...")
-			send({
-				type:"connect",
-				id: p.id
-			})
-			send({type:"mySkin", data:p.skinURL, cape:p.capeURL})
+		multiplayer.onmessage = async data => {
+			/*const arr = new Uint8Array(msg.data)
+			const packet = bitArrayToPacket(arr)
+			if(screen === "packetViewer raw") packetViewerAdd(arr)
+			else if(screen === "packetViewer json") packetViewerAddJSON(packet,arr)*/
+			const author = data.FROM //should be the id
+			
+			if(data.type === "connect"){
+				send({type:"mySkin", data:p.skinURL, cape:p.capeURL})
+			}else if(data.type === "loadSave"){
+				addToBottomRightList("connecting","Start loading world","lime")
+				initBlockData()
+				genIcons()
+				initBlockEntities()
+				world = new World()
+				win.world = world
+				world.version = version
+				let preBetaVersion = verMoreThan("1.1.0",data.version.replace(/(Alpha|Beta) /, ''))
+				weather = data.weather
+				worldTime = data.time
+				prevWeatherAmount = weatherAmount = slowWeatherAmount = weather ? 1 : 0
+				p.flying = data.flying
+				p.autoBreak = p.autoPlace = false
+				p.sleeping = false
 
-			/*let invStuff = {}
-			let shouldSendInvStuff = false
-			multiplayer.sendInvStuff = () => {
-				if(inWorld){
-					invStuff.inv = world.getInv().array
-					invStuff.survivStr = world.getSurvivStr().array
-					shouldSendInvStuff = true
-				}e
-			}
-			multiplayer.pos = setInterval(multiplayer.sendInvStuff, 10000)*/
-			multiplayer.mmoveX = multiplayer.mmoveY = 0
-			multiplayer.lastSendPos = 0
-			multiplayer.toSendLoadChunks = null
-			multiplayer.sendPos = (force,type) => {
-				let now = Date.now()
-				if((!canSendPos /*|| now-multiplayer.lastSendPos < 100*/) && !force || !multiplayer || !multiplayer.hasStartedLoad) return //if p3 hasn't been set, don't send
-				
-				let obj = {type:"pos", data:{
-					x:p.x,
-					y:p.y,
-					z:p.z,
-					dimension:p.dimension,
-					ry:p.ry,
-					rx:p.rx,
-					bodyRot:p.bodyRot,
-					sneaking:p.sneaking,
-					harmEffect:harmEffect,
-					crackPos:hitBox.pos,
-					crack:crack.idx,
-					walking:p.walking,
-					eating:p.eating,
-					sprinting:p.sprinting,
-					punchEffect:p.punchEffect,
-					sleeping:p.sleeping,
-					sitting:p.sitting,
-					swimming:p.swimming,
-					usingItem:p.usingItem,
-					spectating:p.spectating && p.spectating.id || null,
-					velx:p.velocity.x,
-					vely:p.velocity.y,
-					velz:p.velocity.z,
-					riding:p.riding,
-					onGround:p.onGround,
-					flying:p.flying,
-					gliding:p.gliding,
-				}}
-				/*if(shouldSendInvStuff){
-					obj.inv = invStuff
-					shouldSendInvStuff = false
+				world.id = external ? originalTarget : data.id
+				world.name = data.name
+				world.saveId = data.saveId
+
+				autosaveTimer = null
+				lastAutosave = performance.now()
+				saving = false
+
+				/*if(data.stringChunks){
+					let length = 0
+					for(let i=0; i<data.stringChunks; i++) length += loadSaveChunks[i].length
+					data.data = new Uint8Array(length)
+					let idx = 0
+					for(let i=0; i<data.stringChunks; i++){
+						data.data.set(loadSaveChunks[i], idx)
+						idx += loadSaveChunks[i].length
+					}
+				}
+				if (data.data) {
+					try {
+						world.loadSave(data.data)
+					}catch(e) {
+						alert("Unable to load save code. Error: "+e)
+						console.error(e)
+						return
+					}
 				}*/
-				if(type === "afk" || screen !== "loading" && screen !== "netherLoading" && screen !== "endLoading" && performance.now() - p.lastActive > 10000){
-					obj.afk = true
-				}
-				canSendPos = false
-				send(obj)
-				multiplayer.lastSendPos = now
-				if(multiplayer.toSendLoadChunks){
-					send({type:"loadChunks",data:multiplayer.toSendLoadChunks.data,loadDistance:multiplayer.toSendLoadChunks.loadDistance,dimension:p.dimension})
-					multiplayer.toSendLoadChunks = null
-				}
-				if(p.spectateRemoteControl && (multiplayer.mmoveX || multiplayer.mmoveY)){
-					send({type:"remoteControl",event:"rotate",x:multiplayer.mmoveX,y:multiplayer.mmoveY},p.spectating.id)
-					multiplayer.mmoveX = multiplayer.mmoveY = 0
-				}
-			}
-			multiplayer.onmessage = async data => {
-				/*const arr = new Uint8Array(msg.data)
-				const packet = bitArrayToPacket(arr)
-				if(screen === "packetViewer raw") packetViewerAdd(arr)
-				else if(screen === "packetViewer json") packetViewerAddJSON(packet,arr)*/
-				const author = data.FROM //should be the id
-				
-				if(data.type === "connect"){
-					send({type:"mySkin", data:p.skinURL, cape:p.capeURL})
-				}else if(data.type === "loadSave"){
-					addToBottomRightList("connecting","Start loading world","lime")
-					initBlockData()
-					genIcons()
-					initBlockEntities()
-					world = new World()
-					win.world = world
-					world.version = version
-					let preBetaVersion = verMoreThan("1.1.0",data.version.replace(/(Alpha|Beta) /, ''))
-					weather = data.weather
-					worldTime = data.time
-					prevWeatherAmount = weatherAmount = slowWeatherAmount = weather ? 1 : 0
-					p.flying = data.flying
-					p.autoBreak = p.autoPlace = false
-					p.sleeping = false
-
-					world.id = external ? originalTarget : data.id
-					world.name = data.name
-					world.saveId = data.saveId
-
-					autosaveTimer = null
-					lastAutosave = performance.now()
-					saving = false
-
-					/*if(data.stringChunks){
-						let length = 0
-						for(let i=0; i<data.stringChunks; i++) length += loadSaveChunks[i].length
-						data.data = new Uint8Array(length)
-						let idx = 0
-						for(let i=0; i<data.stringChunks; i++){
-							data.data.set(loadSaveChunks[i], idx)
-							idx += loadSaveChunks[i].length
-						}
-					}
-					if (data.data) {
-						try {
-							world.loadSave(data.data)
-						}catch(e) {
-							alert("Unable to load save code. Error: "+e)
+				//p.x = data.x
+				//p.z = data.z
+				//p.y = data.y//round(data.spawnPointY+0.5+p.height*0.5)
+				//p.dimension = ""
+				p.riding = null
+				//setHotbar([0,0,0,0,0,0,0,0,0])
+				//clearInv()
+				inventory.currentContainer = null
+				achievments = data.achievments
+				p.gameMode = data.gameMode//default game mode
+				cheats = data.cheats
+				/*if(data.inv){
+					if(data.inv.inv && data.inv.inv.length){
+						try{
+							world.loadInv(new BitArrayReader(data.inv.inv))
+						}catch(e){
 							console.error(e)
-							return
 						}
-					}*/
-					//p.x = data.x
-					//p.z = data.z
-					//p.y = data.y//round(data.spawnPointY+0.5+p.height*0.5)
-					//p.dimension = ""
-					p.riding = null
-					//setHotbar([0,0,0,0,0,0,0,0,0])
-					//clearInv()
-					inventory.currentContainer = null
-					achievments = data.achievments
-					p.gameMode = data.gameMode//default game mode
-					cheats = data.cheats
-					/*if(data.inv){
-						if(data.inv.inv && data.inv.inv.length){
-							try{
-								world.loadInv(new BitArrayReader(data.inv.inv))
-							}catch(e){
-								console.error(e)
-							}
-						}
-						if(data.inv.survivStr && data.inv.survivStr.length){
-							try{
-								world.loadSurvivStr(new BitArrayReader(data.inv.survivStr,true),preBetaVersion)
-							}catch(e){
-								console.error(e)
-							}
-						}
-						//old still used by external servers and certain save codes
-						if(data.inv.x !== undefined){
-						  p.x = data.inv.x
-						  p.y = data.inv.y
-						  p.z = data.inv.z
-						}
-					}*/
-					inventory.hotbarSlot = data.hotbarSlot
-					loadJoined = false
-					p.die = false
-					portalFadeOutEffect = portalEffect = 0
-					fromEndPortal = false
-					updateTitle(true)
-					if(data.activeResourcePacks){
-						//world.resourcePacks = data.resourcePacks
-						world.activeResourcePacks = data.activeResourcePacks
 					}
-					changeScene("loadingResources")
-					await waitAFrame()
-					await initResources()
-					if(lastResourcesHash !== resourcesHash){
-						await initTextures()
-						initCachedShapes()
-						initDirt()
+					if(data.inv.survivStr && data.inv.survivStr.length){
+						try{
+							world.loadSurvivStr(new BitArrayReader(data.inv.survivStr,true),preBetaVersion)
+						}catch(e){
+							console.error(e)
+						}
 					}
-					if(!multiplayer) return
-					multiplayer.hasStartedLoad = true//allow send position which allows recieving chunks and entities
-					multiplayer.sendPos(true)
-					goToLoadScreen()
-					setTimeout(() => clearBottomRightList("connecting"), 1000)
-				}else if(data.type === "resourcePacks"){
-					if(initTextureProgress !== 1) return
+					//old still used by external servers and certain save codes
+					if(data.inv.x !== undefined){
+						p.x = data.inv.x
+						p.y = data.inv.y
+						p.z = data.inv.z
+					}
+				}*/
+				inventory.hotbarSlot = data.hotbarSlot
+				loadJoined = false
+				p.die = false
+				portalFadeOutEffect = portalEffect = 0
+				fromEndPortal = false
+				updateTitle(true)
+				if(data.activeResourcePacks){
 					//world.resourcePacks = data.resourcePacks
 					world.activeResourcePacks = data.activeResourcePacks
-					changeScene("loadingResources")
-					await waitAFrame()
-					await initResources()
+				}
+				changeScene("loadingResources")
+				await waitAFrame()
+				await initResources()
+				if(lastResourcesHash !== resourcesHash){
 					await initTextures()
 					initCachedShapes()
 					initDirt()
-					world.redoMeshes()
-					play()
-				}else if(data.type === "chunkData"){
-					let chunk = world.getChunk(data.x*16,data.z*16,p.dimension)
-					if(!chunk || chunk.loaded || data.saveId!==world.saveId) return
-					if(host){
-						chunk.loadCopy()
-					}else{
-						chunk.load(data)
-					}
-					//*console.log(data.data.length);*/win.aee=(win.aee|0)+data.data.length
-				}else if(data.type === "saveProg"){
-					if(!host){
-						let now = performance.now()
-						if(data.data === "start"){
-							lastAutosave = now
-							autosaveTimer = now
-							saving = "remote"
-						}else if(data.data === "startAndSave"){
-							saving = "remote"
-							lastAutosave = now
-						}else if(data.data === "save"){
-							autosaveTimer = null
-						}else if(data.data === "end"){
-							saving = false
-						}
-					}
-				}else if(data.type === "mySkin"){
-					playerSkins[author] = data.data
-					if(data.cape) playerCapes[author] = data.cape
-				}else if(data.type === "settings"){
-					worldTime = data.time || 0
-					weather = data.weather || ""
-					if(!host && data.data) Object.assign(worldSettings, data.data)
-				}else if(data.type === "pos"){
-					var pos = data.data
-					if(author && !players[author]){
-						players[author] = new Player()
-						//abs( (pos.username || "").hashCode()) % 80 + 1
-					}
-					let thisplayer = author ? players[author] : p
-					if(author){
-					thisplayer.setPos(pos.x,pos.y,pos.z,pos.velx,pos.vely,pos.velz)
-					thisplayer.setRot(pos.rx, pos.ry, pos.bodyRot)
-					thisplayer.sneaking = pos.sneaking
-					thisplayer.dimension = pos.dimension
-					thisplayer.id = author
-					thisplayer.harmEffect = pos.harmEffect
-					if(thisplayer.username !== pos.username){
-						thisplayer.username = pos.username
-						//thisplayer.changeBlock(abs((pos.username || "").hashCode()) % 80 + 1)
-					}
-					thisplayer.crackPos = pos.crackPos
-					thisplayer.crack = pos.crack //crack number
-					thisplayer.walking = pos.walking
-					thisplayer.sprinting = pos.sprinting
-					thisplayer.punchEffect = pos.punchEffect
-					thisplayer.eating = pos.eating
-					thisplayer.sleeping = pos.sleeping
-					thisplayer.sitting = pos.sitting
-					thisplayer.swimming = pos.swimming
-					thisplayer.usingItem = pos.usingItem
-					thisplayer.spectating = pos.spectating
-					thisplayer.afk = data.afk
-					thisplayer.riding = pos.riding
-					thisplayer.gliding = pos.gliding
-					}
-					thisplayer.burning = pos.burning
-					thisplayer.holding = pos.holding || 0
-					thisplayer.die = pos.die
-					thisplayer.scale = pos.scale || 1
-					if(pos.equipment) thisplayer.equipment = pos.equipment
-					thisplayer.hidden = pos.hidden
-					if(!thisplayer.skinSet && playerSkins[author]){
-						thisplayer.setSkin(playerSkins[author])
-					}
-					if(!thisplayer.capeSet && playerCapes[author]){
-						thisplayer.setCape(playerCapes[author])
-					}
-					if(!author) canSendPos = true
-				}/*else if(data.type === "canSendPos"){
-					canSendPos = true
-				}else if(data.type === "shouldSendInv"){
-					multiplayer.sendInvStuff()
-					multiplayer.sendPos(true)
-				}*/else if(data.type === "dc"){
-					if(players[data.data]){
-						if(inWorld) playerPoof(players[data.data]) //cool effect
-						players[data.data].delete()
-						delete players[data.data]
-					}
-				}else if(data.type === "setBlock"){
-					if(inWorld){
-						let pos = data.data
-						world.setBlock(pos.x, pos.y, pos.z, pos.block, false, false, true, pos.keepTags, pos.dimension)
-					}
-				}else if(data.type === "setTags"){
-					if(inWorld){
-						world.setTags(data.x,data.y,data.z,data.data, true, data.dimension, data.lazy)
-					}
-				}else if(data.type === "entityPos"){
-					if(inWorld){
-						world.posEntity(new BitArrayReader(data.data, true), true)
-					}
-				}else if(data.type === "entityPosAll"){
-					if(inWorld){
-						let arr = data.data
-						//if(arr.length !== world.entities.length) world.entities = []
-						for(var i=0; i<arr.length; i++){
-							world.posEntity(new BitArrayReader(arr[i], true), true)
-						}
-					}
-				}else if(data.type === "entityDelete"){
-					if(inWorld){
-						world.deleteEntity(data.id, true)
-					}
-				}else if(data.type === "particles"){
-					if(inWorld) world.createParticles(data)
-				}else if(data.type === "achievment"){
-					if(data.data&256){
-						let info
-						if(blockInfo[blockInfoIds[data.data>>9]]) info = blockInfo[blockInfoIds[data.data>>9]].data
-						discoverTime = 200, discoverBlock = data.data>>9
-   					sideMessage("Discovery Made: "+blockData[data.data>>9].Name, info)
-					}else{
-						let a = achievementTypes[data.data]
-						sideMessage("Achievment Made: "+a.name, a.description)
-					}
-					achievments.push(data.data)
-				}else if(data.type === "harmEffect"){
-					if(players[data.id]) players[data.id].harmEffect = 30
-				}else if(data.type === "effects"){
-					p.effects = data.data
-					//p.applyEffect(data.name, data.level, data.time, data.showParticles)
-				}else if(data.type === "message"){
-					if(data.fromServer){
-						Messages.add(data.data)
-					}else{
-						Messages.write(data.data, data.username)
-					}
-				}else if(data.type === "playSound"){
-					let volume = isFinite(data.volume) ? data.volume : null, panner
-					if(data.hasPos){
-						panner = posSound(data.x,data.y,data.z)
-					}
-					try{
-					playSound(data.data, 0, volume, isFinite(data.pitch) ? data.pitch : null, panner)
-					}catch(e){e.message+="name: "+data.data+", volume:"+data.volume+", pitch:"+data.pitch; logError(e)}
-				}else if(data.type === "title"){
-					showTitle(data.data,data.sub||undefined,data.color||undefined,data.fadeIn||undefined,data.fadeOut||undefined,data.stay||undefined)
-				}else if(data.type === "tp"){
-					p.x = data.x
-					p.y = data.y
-					p.z = data.z
-					p.riding = null
-					goToDimension(data.dimension)
-					multiplayer.sendPos(true)
-				}else if(data.type === "remoteControl"){
-					if(data.event === "keydown"){
-						keydown({...data,type:"controlName"})
-					}else if(data.event === "keyup"){
-						keyup({...data,type:"controlName"})
-					}else if(data.event === "rotate"){
-						mmoveX += data.x
-						mmoveY += data.y
-					}
-				}else if(data.type === "gameMode"){
-					p.gameMode = data.gameMode
-					if(p.spectator){
-						p.flying = true
-						p.spectating = data.spectating && getEntityOrPlayer(data.spectating) || null
-						p.spectateRemoteControl = data.spectateRemoteControl || false
-						p.riding = null
-					}
-					updateHUD = true
-				}else if(data.type === "serverCmds"){
-					setServerCommands(data.data)
-				}/*else if(data.type === "commandDone"){
-					let c = pendingCommands[data.id]
-					if(c){
-						c(data)
-						delete pendingCommands[data.id]
-					}
-				}*/else if(data.type === "clientCmd"){
-					clientCmdFuncs[data.data](data.args)
-				}/*else if(data.type === "containerData"){
-					for(let i=0; i<data.data.length; i++) inventory.slots[i] = data.data[i]
-				}*/else if(data.type === "containerChange"){
-					for(let i=0; i<data.data.length; i++){
-						if(data.data[i] && inventory.slotIds.hotbar.includes(data.idxs[i])) data.data[i].animation = 1.5
-						inventory.slots[data.idxs[i]] = data.data[i]
-					}
-					updateHUD = true
-				}else if(data.type === "openContainer"){
-					if(data.data === "sign"){
-						editSign(data.x,data.y,data.z,data.dimension)
-					}
-				}else if(data.type === "closeContainer"){
-					play()
-				}else if(data.type === "containerChangeFurnace"){
-					containerData.burnProgress = data.burnProgress
-					containerData.progress = data.progress
-				}else if(data.type === "containerChangeAnvil"){
-					anvilTextbox.value = data.rename
-					containerData.anvilCost = data.cost
-				}else if(data.type === "respawn"){
-    			p.die = false
-					goToLoadScreen()
-				}else if(data.type === "health"){
-					if(data.health > p.health){
-						healEffect = 40
-					}
-					p.health = data.health
-					p.food = data.food
-					p.foodSaturation = data.foodSaturation
-					p.oxygen = data.oxygen
-					p.burning = data.burning
-					freezeEffect = data.freezeEffect
-					p.XP = data.XP
-					p.level = data.level
-					p.nextLevel = data.nextLevel
-					updateHUD = true
-				}else if(data.type === "die"){
-					if(data.id === p.id){
-						dieMessage = data.message
-						die()
-					}else{
-						let ent = players[data.id]
-						if(ent){
-							ent.die = true
-						}
-					}
-				}else if(data.type === "damage"){
-					p.lastDamageHealth = data.lastHealth
-					harmEffect = 30
-					if(data.x || data.y || data.z){
-						data.x -= p.x, data.y -= p.y, data.z -= p.z
-						damageX = data.x
-						damageY = data.y
-						damageZ = data.z
-					}else{
-						damageX = damageY = damageZ = 0
-					}
-					p.velocity.x += data.velx
-					p.velocity.z += data.velz
-					p.velocity.y += data.vely
-					loseHealthEffect = 60
-					updateHUD = true
-				}else if(data.type === "rot"){
-					p.rx = data.rx
-					p.ry = data.ry
-					p.bodyRot = data.bodyRot
-				}else if(data.type === "sleep"){
-					p.velocity.set(0,0,0)
-					p.sleeping = true
-					changeScene("sleep")
-					releasePointer()
-				}else if(data.type === "sit"){
-					p.sitting = true
-					p.flying = false
-					p.velocity.x = 0
-					p.velocity.y = 0
-					p.velocity.z = 0
-					p.riding = data.riding
-				}else if(data.type === "portalOut"){
-					portalFadeOutEffect = 100
-				}else if(data.type === "doEndPoem"){
-					showEndPoem()
-				}else if(data.type === "safeEval") {
-					safeEval(data.data)
-				}else if(data.type === "error"){
-					multiplayerError = data
-					console.warn("Multiplayer error!",data.data)
 				}
-			}
-
-			multiplayer.onclose = e => {
-				if(websocket) websocket.close()
-				multiplayerError = multiplayerError || {data:"Disconnected from server"}
-				clearInterval(multiplayer.pos)
-				multiplayer = null
-				cmds.length = 0
-				if(!host){
-					updateTitle(false)
-					releasePointer()
-					if(multiplayerError.long){
-						centerMessage.innerHTML = multiplayerError.data.replace(/\n/g,"<br>")
-						changeScene("multiplayer lost long")
-					}else{
-						changeScene("multiplayer lost")
-					}
-				}
-				/*if(e && e.code && e.code !== 1000 && e.code !== 1001){
-					console.warn("WebSocket closed with code: "+e.code,e.reason)
-				}*/
+				if(!multiplayer) return
+				multiplayer.hasStartedLoad = true//allow send position which allows recieving chunks and entities
+				multiplayer.sendPos(true)
+				goToLoadScreen()
 				setTimeout(() => clearBottomRightList("connecting"), 1000)
-			}
-		}
-		win.initMultiplayer = initMultiplayer
-		win.initSingleplayer = initSingleplayer
-		win.joinWorld = joinWorld
-		win.enableMultiplayer = enableMultiplayer
-			
-		win.ban = (username, why) => {
-			//if(!host) return alert("Only the host can ban")
-			if(websocket) sendWS({
-				type: "ban",
-				data: username,
-				reason:why
-			})
-			else send({
-				type: "ban",
-				data: username,
-				reason:why
-			})
-			//if(!ban.includes(username)) ban.push(username)
-		}
-		win.unban = username => {
-			//if(!host) return alert("Only the host can unban")
-			/*if(ban.includes(username)) {
-				var i = ban.indexOf(username)
-				if(i === -1) return
-				ban.splice(i,1)
-			}*/
-			if(websocket) sendWS({
-				type:"unban",
-				data: username
-			})
-			else send({
-				type:"unban",
-				data: username
-			})
-		}
-		win.whitelistAction = (action,username) => {
-			if(action === "enable") {
-				whitelist = []
-				for(let p of serverWorld.players.slice()){
-					if(!p.host) {
-						p.connection.send({type:"error",data:"Whitelist was enabled."})
-						p.connection.close()
+			}else if(data.type === "resourcePacks"){
+				if(initTextureProgress !== 1) return
+				//world.resourcePacks = data.resourcePacks
+				world.activeResourcePacks = data.activeResourcePacks
+				changeScene("loadingResources")
+				await waitAFrame()
+				await initResources()
+				await initTextures()
+				initCachedShapes()
+				initDirt()
+				world.redoMeshes()
+				play()
+			}else if(data.type === "chunkData"){
+				let chunk = world.getChunk(data.x*16,data.z*16,p.dimension)
+				if(!chunk || chunk.loaded || data.saveId!==world.saveId) return
+				if(host){
+					chunk.loadCopy()
+				}else{
+					chunk.load(data)
+				}
+				//*console.log(data.data.length);*/win.aee=(win.aee|0)+data.data.length
+			}else if(data.type === "saveProg"){
+				if(!host){
+					let now = performance.now()
+					if(data.data === "start"){
+						lastAutosave = now
+						autosaveTimer = now
+						saving = "remote"
+					}else if(data.data === "startAndSave"){
+						saving = "remote"
+						lastAutosave = now
+					}else if(data.data === "save"){
+						autosaveTimer = null
+					}else if(data.data === "end"){
+						saving = false
 					}
 				}
-				serverWorld.sendAll({type:"message",data:"Whitelist enabled.", fromServer:true})
-			}else if(action === "disable") {
-				whitelist = null
-				serverWorld.sendAll({type:"message",data:"Whitelist disabled.", fromServer:true})
-			}else if(action === "add") {
-				if(!whitelist.includes(username)){
-					whitelist.push(username)
-					serverWorld.sendAll({type:"message",data: username+" was added to the whitelist.", fromServer:true})
+			}else if(data.type === "mySkin"){
+				playerSkins[author] = data.data
+				if(data.cape) playerCapes[author] = data.cape
+			}else if(data.type === "settings"){
+				worldTime = data.time || 0
+				weather = data.weather || ""
+				if(!host && data.data) Object.assign(worldSettings, data.data)
+			}else if(data.type === "pos"){
+				var pos = data.data
+				if(author && !players[author]){
+					players[author] = new Player()
+					//abs( (pos.username || "").hashCode()) % 80 + 1
 				}
-			}else if(action === "remove") {
-				let idx = whitelist.indexOf(username)
-				if(idx !== -1) {
-					whitelist.splice(idx,1)
-					serverWorld.sendAll({type:"message",data: username+" was removed from the whitelist.", fromServer:true})
+				let thisplayer = author ? players[author] : p
+				if(author){
+				thisplayer.setPos(pos.x,pos.y,pos.z,pos.velx,pos.vely,pos.velz)
+				thisplayer.setRot(pos.rx, pos.ry, pos.bodyRot)
+				thisplayer.sneaking = pos.sneaking
+				thisplayer.dimension = pos.dimension
+				thisplayer.id = author
+				thisplayer.harmEffect = pos.harmEffect
+				if(thisplayer.username !== pos.username){
+					thisplayer.username = pos.username
+					//thisplayer.changeBlock(abs((pos.username || "").hashCode()) % 80 + 1)
 				}
+				thisplayer.crackPos = pos.crackPos
+				thisplayer.crack = pos.crack //crack number
+				thisplayer.walking = pos.walking
+				thisplayer.sprinting = pos.sprinting
+				thisplayer.punchEffect = pos.punchEffect
+				thisplayer.eating = pos.eating
+				thisplayer.sleeping = pos.sleeping
+				thisplayer.sitting = pos.sitting
+				thisplayer.swimming = pos.swimming
+				thisplayer.usingItem = pos.usingItem
+				thisplayer.spectating = pos.spectating
+				thisplayer.afk = data.afk
+				thisplayer.riding = pos.riding
+				thisplayer.gliding = pos.gliding
+				}
+				thisplayer.burning = pos.burning
+				thisplayer.holding = pos.holding || 0
+				thisplayer.die = pos.die
+				thisplayer.scale = pos.scale || 1
+				if(pos.equipment) thisplayer.equipment = pos.equipment
+				thisplayer.hidden = pos.hidden
+				if(!thisplayer.skinSet && playerSkins[author]){
+					thisplayer.setSkin(playerSkins[author])
+				}
+				if(!thisplayer.capeSet && playerCapes[author]){
+					thisplayer.setCape(playerCapes[author])
+				}
+				if(!author) canSendPos = true
+			}/*else if(data.type === "canSendPos"){
+				canSendPos = true
+			}else if(data.type === "shouldSendInv"){
+				multiplayer.sendInvStuff()
+				multiplayer.sendPos(true)
+			}*/else if(data.type === "dc"){
+				if(players[data.data]){
+					if(inWorld) playerPoof(players[data.data]) //cool effect
+					players[data.data].delete()
+					delete players[data.data]
+				}
+			}else if(data.type === "setBlock"){
+				if(inWorld){
+					let pos = data.data
+					world.setBlock(pos.x, pos.y, pos.z, pos.block, false, false, true, pos.keepTags, pos.dimension)
+				}
+			}else if(data.type === "setTags"){
+				if(inWorld){
+					world.setTags(data.x,data.y,data.z,data.data, true, data.dimension, data.lazy)
+				}
+			}else if(data.type === "entityPos"){
+				if(inWorld){
+					world.posEntity(new BitArrayReader(data.data, true), true)
+				}
+			}else if(data.type === "entityPosAll"){
+				if(inWorld){
+					let arr = data.data
+					//if(arr.length !== world.entities.length) world.entities = []
+					for(var i=0; i<arr.length; i++){
+						world.posEntity(new BitArrayReader(arr[i], true), true)
+					}
+				}
+			}else if(data.type === "entityDelete"){
+				if(inWorld){
+					world.deleteEntity(data.id, true)
+				}
+			}else if(data.type === "particles"){
+				if(inWorld) world.createParticles(data)
+			}else if(data.type === "achievment"){
+				if(data.data&256){
+					let info
+					if(blockInfo[blockInfoIds[data.data>>9]]) info = blockInfo[blockInfoIds[data.data>>9]].data
+					discoverTime = 200, discoverBlock = data.data>>9
+					sideMessage("Discovery Made: "+blockData[data.data>>9].Name, info)
+				}else{
+					let a = achievementTypes[data.data]
+					sideMessage("Achievment Made: "+a.name, a.description)
+				}
+				achievments.push(data.data)
+			}else if(data.type === "harmEffect"){
+				if(players[data.id]) players[data.id].harmEffect = 30
+			}else if(data.type === "effects"){
+				p.effects = data.data
+				//p.applyEffect(data.name, data.level, data.time, data.showParticles)
+			}else if(data.type === "message"){
+				if(data.fromServer){
+					Messages.add(data.data)
+				}else{
+					Messages.write(data.data, data.username)
+				}
+			}else if(data.type === "playSound"){
+				let volume = isFinite(data.volume) ? data.volume : null, panner
+				if(data.hasPos){
+					panner = posSound(data.x,data.y,data.z)
+				}
+				try{
+				playSound(data.data, 0, volume, isFinite(data.pitch) ? data.pitch : null, panner)
+				}catch(e){e.message+="name: "+data.data+", volume:"+data.volume+", pitch:"+data.pitch; logError(e)}
+			}else if(data.type === "title"){
+				showTitle(data.data,data.sub||undefined,data.color||undefined,data.fadeIn||undefined,data.fadeOut||undefined,data.stay||undefined)
+			}else if(data.type === "tp"){
+				p.x = data.x
+				p.y = data.y
+				p.z = data.z
+				p.riding = null
+				goToDimension(data.dimension)
+				multiplayer.sendPos(true)
+			}else if(data.type === "remoteControl"){
+				if(data.event === "keydown"){
+					keydown({...data,type:"controlName"})
+				}else if(data.event === "keyup"){
+					keyup({...data,type:"controlName"})
+				}else if(data.event === "rotate"){
+					mmoveX += data.x
+					mmoveY += data.y
+				}
+			}else if(data.type === "gameMode"){
+				p.gameMode = data.gameMode
+				if(p.spectator){
+					p.flying = true
+					p.spectating = data.spectating && getEntityOrPlayer(data.spectating) || null
+					p.spectateRemoteControl = data.spectateRemoteControl || false
+					p.riding = null
+				}
+				updateHUD = true
+			}else if(data.type === "serverCmds"){
+				setServerCommands(data.data)
+			}/*else if(data.type === "commandDone"){
+				let c = pendingCommands[data.id]
+				if(c){
+					c(data)
+					delete pendingCommands[data.id]
+				}
+			}*/else if(data.type === "clientCmd"){
+				clientCmdFuncs[data.data](data.args)
+			}/*else if(data.type === "containerData"){
+				for(let i=0; i<data.data.length; i++) inventory.slots[i] = data.data[i]
+			}*/else if(data.type === "containerChange"){
+				for(let i=0; i<data.data.length; i++){
+					if(data.data[i] && inventory.slotIds.hotbar.includes(data.idxs[i])) data.data[i].animation = 1.5
+					inventory.slots[data.idxs[i]] = data.data[i]
+				}
+				updateHUD = true
+			}else if(data.type === "openContainer"){
+				if(data.data === "sign"){
+					editSign(data.x,data.y,data.z,data.dimension)
+				}
+			}else if(data.type === "closeContainer"){
+				play()
+			}else if(data.type === "containerChangeFurnace"){
+				containerData.burnProgress = data.burnProgress
+				containerData.progress = data.progress
+			}else if(data.type === "containerChangeAnvil"){
+				anvilTextbox.value = data.rename
+				containerData.anvilCost = data.cost
+			}else if(data.type === "respawn"){
+				p.die = false
+				goToLoadScreen()
+			}else if(data.type === "health"){
+				if(data.health > p.health){
+					healEffect = 40
+				}
+				p.health = data.health
+				p.food = data.food
+				p.foodSaturation = data.foodSaturation
+				p.oxygen = data.oxygen
+				p.burning = data.burning
+				freezeEffect = data.freezeEffect
+				p.XP = data.XP
+				p.level = data.level
+				p.nextLevel = data.nextLevel
+				updateHUD = true
+			}else if(data.type === "die"){
+				if(data.id === p.id){
+					dieMessage = data.message
+					die()
+				}else{
+					let ent = players[data.id]
+					if(ent){
+						ent.die = true
+					}
+				}
+			}else if(data.type === "damage"){
+				p.lastDamageHealth = data.lastHealth
+				harmEffect = 30
+				if(data.x || data.y || data.z){
+					data.x -= p.x, data.y -= p.y, data.z -= p.z
+					damageX = data.x
+					damageY = data.y
+					damageZ = data.z
+				}else{
+					damageX = damageY = damageZ = 0
+				}
+				p.velocity.x += data.velx
+				p.velocity.z += data.velz
+				p.velocity.y += data.vely
+				loseHealthEffect = 60
+				updateHUD = true
+			}else if(data.type === "rot"){
+				p.rx = data.rx
+				p.ry = data.ry
+				p.bodyRot = data.bodyRot
+			}else if(data.type === "sleep"){
+				p.velocity.set(0,0,0)
+				p.sleeping = true
+				changeScene("sleep")
+				releasePointer()
+			}else if(data.type === "sit"){
+				p.sitting = true
+				p.flying = false
+				p.velocity.x = 0
+				p.velocity.y = 0
+				p.velocity.z = 0
+				p.riding = data.riding
+			}else if(data.type === "portalOut"){
+				portalFadeOutEffect = 100
+			}else if(data.type === "doEndPoem"){
+				showEndPoem()
+			}else if(data.type === "safeEval") {
+				safeEval(data.data)
+			}else if(data.type === "error"){
+				multiplayerError = data
+				console.warn("Multiplayer error!",data.data)
 			}
 		}
-		win.enableMultiplayerPass = () => {
-			multiplayerPass = prompt("Choose a password for joining.", "wetfern")
+
+		multiplayer.onclose = e => {
+			multiplayerError = multiplayerError || {data:"Disconnected from server"}
+			clearInterval(multiplayer.pos)
+			multiplayer = null
+			cmds.length = 0
+			if(!host){
+				updateTitle(false)
+				releasePointer()
+				if(multiplayerError.long){
+					centerMessage.innerHTML = multiplayerError.data.replace(/\n/g,"<br>")
+					changeScene("multiplayer lost long")
+				}else{
+					changeScene("multiplayer lost")
+				}
+			}
+			/*if(e && e.code && e.code !== 1000 && e.code !== 1001){
+				console.warn("WebSocket closed with code: "+e.code,e.reason)
+			}*/
+			setTimeout(() => clearBottomRightList("connecting"), 1000)
+		}
+	}
+	win.initMultiplayer = initMultiplayer
+	win.initSingleplayer = initSingleplayer
+	win.joinWorld = joinWorld
+	win.enableMultiplayer = enableMultiplayer
+		
+	win.ban = (username, why) => {
+		//if(!host) return alert("Only the host can ban")
+		if(websocket) sendWS({
+			type: "ban",
+			data: username,
+			reason:why
+		})
+		else send({
+			type: "ban",
+			data: username,
+			reason:why
+		})
+		//if(!ban.includes(username)) ban.push(username)
+	}
+	win.unban = username => {
+		//if(!host) return alert("Only the host can unban")
+		/*if(ban.includes(username)) {
+			var i = ban.indexOf(username)
+			if(i === -1) return
+			ban.splice(i,1)
+		}*/
+		if(websocket) sendWS({
+			type:"unban",
+			data: username
+		})
+		else send({
+			type:"unban",
+			data: username
+		})
+	}
+	win.whitelistAction = (action,username) => {
+		if(action === "enable") {
+			whitelist = []
 			for(let p of serverWorld.players.slice()){
 				if(!p.host) {
-					p.connection.send({type:"error",data:"Password was enabled."})
+					p.connection.send({type:"error",data:"Whitelist was enabled."})
 					p.connection.close()
 				}
 			}
+			serverWorld.sendAll({type:"message",data:"Whitelist enabled.", fromServer:true})
+		}else if(action === "disable") {
+			whitelist = null
+			serverWorld.sendAll({type:"message",data:"Whitelist disabled.", fromServer:true})
+		}else if(action === "add") {
+			if(!whitelist.includes(username)){
+				whitelist.push(username)
+				serverWorld.sendAll({type:"message",data: username+" was added to the whitelist.", fromServer:true})
+			}
+		}else if(action === "remove") {
+			let idx = whitelist.indexOf(username)
+			if(idx !== -1) {
+				whitelist.splice(idx,1)
+				serverWorld.sendAll({type:"message",data: username+" was removed from the whitelist.", fromServer:true})
+			}
 		}
-		win.disableMultiplayerPass = () => multiplayerPass = null
-  }
+	}
+	win.enableMultiplayerPass = () => {
+		multiplayerPass = prompt("Choose a password for joining.", "wetfern")
+		for(let p of serverWorld.players.slice()){
+			if(!p.host) {
+				p.connection.send({type:"error",data:"Password was enabled."})
+				p.connection.close()
+			}
+		}
+	}
+	win.disableMultiplayerPass = () => multiplayerPass = null
+  
 	let fasterVel = 1
 
 	/*function handleservererror(e){
@@ -24806,20 +24831,20 @@ p.camera.transformation.elements.set(matrix)//*/
 			savebox.value = serverWorld.getSaveString()
 		}, () => !host)
     Button.add(width/2-110*ss, height / 2 + 25*ss, 200*ss, 40*ss, ["Enable Multiplayer","Disable Multiplayer"], "pause", async r => {
-			if(websocket){
+			if(sigConns){
 				disableMultiplayer()
 			}else{
 				await loggedIn()
 				enableMultiplayer()
 			}
-		}, () => !host || preVersion && !(userInfo&&userInfo.admin), () => "Allows other people to join. Public by default."+(win.multiplayerNote||""), () => websocket ? 1 : 0)
+		}, () => !host || preVersion && !(userInfo&&userInfo.admin), () => "Allows other people to join. Public by default."+(win.multiplayerNote||""), () => sigConns ? 1 : 0)
     Button.add(width/2-110*ss, height / 2 + 75*ss, 200*ss, 40*ss, "Invite", "pause", r => {
       savebox.classList.remove("hidden")
 			let url = new URL(location.href)
 			url.searchParams.set("target",p.id)
 			savebox.value = url.href
 			if(navigator.share) navigator.share({title:document.title, url:url.href}).catch(console.error)
-		}, () => !websocket, () => "Invite someone to this world if it is multiplayer.")
+		}, () => !sigConns, () => "Invite someone to this world if it is multiplayer.")
     //Button.add(width/2+110*ss, height / 2 + -125*ss, 200*ss, 40*ss, "Packet Viewer", "pause", r => changeScene("packetViewer raw"), null, "View data from multiplayer packets.")
     Button.add(width/2+110*ss, height / 2 + -125*ss, 200*ss, 40*ss, "Achievments", "pause", r => changeScene("achievments"), () => cheats)
 		Button.add(width/2+110*ss, height / 2 + -75*ss, 200*ss, 40*ss, "World Options", "pause", r => changeScene("worldSettings"))
@@ -24829,7 +24854,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			if(multiplayerPass){
 				win.disableMultiplayerPass()
 			}else win.enableMultiplayerPass()
-		}, () => (!host||!websocket), "To make it private and only let some people join, add a password or enable whitelist. <br><br><span style='color:lightblue'>You can also use whitelist by typing this command in chat:<br><small>/whitelist enable<br>/whitelist add \"username1234\"</small></span> ⬅ <small>put other people's username here</small>", () => multiplayerPass?1:0)
+		}, () => (!host||!sigConns), "To make it private and only let some people join, add a password or enable whitelist. <br><br><span style='color:lightblue'>You can also use whitelist by typing this command in chat:<br><small>/whitelist enable<br>/whitelist add \"username1234\"</small></span> ⬅ <small>put other people's username here</small>", () => multiplayerPass?1:0)
 		Button.add(width/2, height / 2 + 125*ss, 420*ss, 40*ss, "Exit Without Saving", "pause", r => {
 			/*if(!host){
 				multiplayer.sendInvStuff()
@@ -24840,7 +24865,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				if(websocket) websocket.close()
 			}else{
 				changeScene("main menu")
-				if(websocket) disableMultiplayer()
+				if(sigConns) disableMultiplayer()
 				serverWorld.close()
 			}
       updateTitle(false)
