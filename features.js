@@ -58,11 +58,12 @@ if(document.title.toLowerCase().includes("falconcraft") || location.href.toLower
 	alert("this mostly by thingmaker. https://thingmaker.us.eu.org")
 }
 
-window.multiplayerNote = "<br><br><small>please be nice to everyone, even people who don't like interacting.<br>and please host more public worlds.</small>"
 
 // cool feature
-setInterval(() => {try{
-if(window.serverWorld&&player.username.includes(ý)) { for(let p of serverWorld.players){ if(p.host)continue; if(p.y<-32)p.tp(8,6,8,"");
+setInterval(async() => {try{
+const is=window.serverWorld&&serverWorld.gameMode==="survival"&&serverWorld.name.includes("ci")
+for(let p of serverWorld.players){ if(p.host)continue; if(is&&p.y<-32&&p.dimension&&p.spawnPoint)p.tp(p.spawnPoint.x,p.spawnPoint.y,p.spawnPoint.z,"");
+if(p.tosenda&&p.tosenda.length)p.connection.send({type:"message",data:p.tosenda.splice(0,10).join("\n"),fromServer:true})
 let t=p.world.getTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"text");
 if(t){
 t=t.split("\n");if(t[0].hashCode()===561438836){
@@ -72,10 +73,22 @@ p.world.setTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"texd",t);p
 t=p.world.getTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"texd")
 if(!t)continue;
 for(let l of t){
-if(l.startsWith("s."))p.scale=+l.substring(2)||1
+if(l.startsWith("s "))p.scale=+l.substring(2)||1
+else if(l.startsWith("m ")){
+let a=l.split(" ");
+let can=true;
+for(let [i, m] of serverWorld.music){
+if(m.url===a[1])can=false
+}
+if(can){
+for(let [i, m] of serverWorld.music) serverWorld.stopMusic(i);
+if(a[1])serverWorld.playMusic(a[1],+a[2]||undefined,+a[3]||undefined)
+}
+}
 else if(l==="d"&&p.newInvItem)p.newInvItem(p.inventory.hotbar[p.inventory.hotbarSlot])
-else if(l==="ep"&&p.tp)p.tp(8,64,8,"end");
-else if(l==="a"&&p.connection)p.connection.send({type:"message",data:"<h1>-------</h1>"+Messages.all.map(r=>r.innerHTML).join("<br>")+"<h1>-------</h1>"+f.join("<br>")+"<br>t: "+new Date().toLocaleString(),fromServer:true})
+else if(is&&l==="ep"&&p.tp)p.tp(8,64,8,"end");
+else if(l==="a"&&p.connection&&!(p.tosenda&&p.tosenda.length))p.tosenda=["<h1>-------</h1>",...f,"t: "+new Date().toLocaleString(),"<h1>-------</h1>",...Messages.all.map(r=>r.innerHTML),"<h1>-------</h1>"]
+else if(l.startsWith("h"))p.tosenda=[await(await fetch(l)).text()]
 let d=blockData[blockIds[l]];
 if(d){
 let success=0
@@ -85,18 +98,19 @@ else if(!success&&d.harvestTools)for(let i of p.inventory.hotbar){if(i&&d.harves
 }
 if(success||d.name.endsWith("Grass")||d.edible||d.equipmentSlot)if(p.newInvItem)p.newInvItem(d.id)
 }
-} }
-if(!serverWorld.fixed){
-let message=e=>(e.data.data&&(e.data.data.toLowerCase().includes("end")||e.data.data.toLowerCase().includes(ń+"id"))||e.player.dimension[0]==="e")&&"stop"
+}
+}
+if(is&&!serverWorld.fixed){
+let message=e=>(e.data.data&&(e.data.data.toLowerCase().includes("end")||e.data.data.toLowerCase().includes("void")||e.data.data.toLowerCase().includes("port"))||e.player.dimension[0]==="e")&&"stop"
 serverWorld.on("message", e=>message(e))
 blockData[498].hardness=6/0
 blockData[13].hardness=1e2
 serverWorld.settings.blocksFall=serverWorld.settings[atob("aGlkZUFjaGlldm1lbnRz")]=true
-blockData[1].drop=()=>Math.random()>0.95?"DoubleTallGrass":Math.random()>0.98?"dirtBall":"dirt"
+blockData[1].drop=()=>Math.random()>0.9?"DoubleTallGrass":Math.random()>0.95?"dirtBall":"dirt"
 blockData[2].dropAmount=blockData[1].dropAmount=blockData[9].dropAmount=[1,2]
-let click=e=>{let t=serverWorld[e.player.dimension].getTagByName(e.x,e.y,e.z,"text");return e.player&&!e.player.cheats&&t&&t.length&&t.length>8&&"stop"};serverWorld.on("click",e=>click(e));let changeblock=click;serverWorld.on("changeblock",e=>changeblock(e))
+//let click=e=>{let t=serverWorld[e.player.dimension].getTagByName(e.x,e.y,e.z,"text");return e.player&&!e.player.cheats&&t&&t.length&&t.length>8&&"stop"};serverWorld.on("click",e=>click(e));let changeblock=click;serverWorld.on("changeblock",e=>changeblock(e))
 serverWorld.fixed=6}
-}}catch{}}, 1000);let ń="vo",ý="rea" //no & yes
+}catch{}}, 1000);
 let f=[new Date().toLocaleString()]
 addEventListener("focus",e=>f.push("+ "+new Date().toLocaleString()));addEventListener("blur",e=>f.push("- "+new Date().toLocaleString()))
 

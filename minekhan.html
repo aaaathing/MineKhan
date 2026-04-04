@@ -5,7 +5,8 @@
 		<title>MineKhan</title>
     <base href>
     <meta name="keywords" content="MineKhan, survival, game, sandbox, biomes, terrain, 3d, multiplayer">
-    <meta name="description" content="MineKhan with survival, dimensions, multiplayer, moving things, biomes and more">
+    <meta name="description" content="MineKhan with survival, dimensions, multiplayer, moving things, biomes and more. Different from MC, but still interesting.">
+		<meta property="og:image" content="https://www.khanacademy.org/computer-programming/images/6642195861815296/6212708026073088.png"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
     <meta name="theme-color" id="themeColor">
 		<link rel="manifest" href="./manifest.json">
@@ -15,7 +16,7 @@
 <pre id="topCredits" class='hidden'>
 @MineKhan-thingmaker version Beta 1.1.3
 
-Feel free to make a spin-off/fork/copy of this. If you do, please keep the current credits and don't change them.
+You can make a spin-off/fork/copy of this. If you do, please keep the current credits and don't change them.
 
 	Notes and accreditation:
 Original: https://github.com/willard21/minekhan
@@ -56,13 +57,15 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 	<style>
 		body {
 			overflow: hidden; /* Hide scrollbars */
+			width:100%;
+			height:100%;
 		}
     #errorScreen {
       position: absolute;
       top: 0px;
       left: 0px;
-      width:100vw;
-      height:100vh;
+      width:100%;
+      height:100%;
       z-index:10;
       background:darkblue;
       color:white;
@@ -309,7 +312,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 			display: block;
 			position: absolute;
 			margin: 0 auto;
-			width: 99vw;
+			width: 99%;
 			z-index: 1;
 			background-color: RGBA(0, 0, 0, 0.6);
 			justify-content: center;
@@ -320,7 +323,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		#messagesHolder, #messages{
       color:white;
       font:14px 'thefont';
-      max-height:100vh;
+      max-height:100%;
       overflow:hidden;
 		}
     #messagesHolder{
@@ -329,8 +332,8 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
       top:0px;
       left:0px;
       overflow-wrap:anywhere;
-      width:100vw;
-      height:100vh;
+      width:100%;
+      height:100%;
       display:flex;
       flex-direction:column;
     }
@@ -355,7 +358,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
       display:inline-block;
       margin-left: 50px;
       height: 50px;
-      width: calc(100vw - 150px);
+      width: calc(100% - 150px);
       font:16px 'thefont';
       padding:8px;
       background:rgb(60,60,60);
@@ -366,7 +369,6 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
       box-sizing: border-box;
     }
 		#messageInput{
-			color:transparent;
 			caret-color:white;
 			position:relative;
 			background:transparent;
@@ -407,7 +409,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		}
     .messagesScroll{
       background:#000a;
-      height:100%;
+      height:calc(100% - 50px);
       width:100%;
       overflow-y:scroll;
     }
@@ -419,9 +421,9 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		}
     
     #controls{
-      width: 99vw;
+      width: 99%;
 			min-width: 300px;
-			height: calc(100vh - 130px);
+			height: calc(100% - 130px);
 			position: absolute;
 			bottom: 80px;
 			overflow-y: auto;
@@ -444,8 +446,8 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 			margin:0;
     }
     #controlDetect{
-      width: 100vw;
-			height: 100vh;
+      width: 100%;
+			height: 100%;
 			position: absolute;
 			top:0;
       left:0;
@@ -469,8 +471,8 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
       z-index:2;
       top:50px;
       left:0px;
-      width:100vw;
-      height:calc(100vh - 50px);
+      width:100%;
+      height:calc(100% - 50px);
       background:#0000;
       color:white;
       font:16px thefont;
@@ -552,7 +554,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 			right:0;
 			font-size: 16px;
 			color:white;
-			max-width:100vw;
+			max-width:100%;
 			text-align:right;
 			z-index:4;
 			pointer-events: none;
@@ -692,9 +694,9 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 			overflow-y:auto;
 		}
     #centerMessage{
-      width: 99vw;
+      width: 99%;
 			min-width: 300px;
-			height: calc(100vh - 220px);
+			height: calc(100% - 220px);
 			position: absolute;
 			bottom: 120px;
 			overflow-y: auto;
@@ -704,9 +706,9 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
       font: 16px thefont;
     }
     #marketplaceInfo {
-			width: 99vw;
+			width: 99%;
 			min-width: 300px;
-			height: calc(100vh - 220px);
+			height: calc(100% - 220px);
 			position: absolute;
 			bottom: 120px;
 			overflow-y: auto;
@@ -803,9 +805,9 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
       }
     }
 		#languages{
-			width: 99vw;
+			width: 99%;
 			min-width: 300px;
-			height: calc(100vh - 220px);
+			height: calc(100% - 220px);
 			position: absolute;
 			bottom: 120px;
 			overflow-y: auto;
@@ -817,9 +819,9 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 			text-align:center;
 		}
 		#resourcePacks{
-			width: 99vw;
+			width: 99%;
 			min-width: 300px;
-			height: calc(100vh - 220px);
+			height: calc(100% - 220px);
 			position: absolute;
 			bottom: 120px;
 			overflow-y: auto;
@@ -869,8 +871,8 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 			position:absolute;
 			left:0;
 			bottom:0;
-			width:100vw;
-			height:calc(100vh - 100px);
+			width:100%;
+			height:calc(100% - 100px);
 			background:black;
 			color:wheat;
 			font:16px monospace;
@@ -1011,10 +1013,10 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		idea to use save codes.
 	</p>
 	<div style="position:absolute;box-sizing:border-box;" id="modBoxContainer" class="hidden">
-		<button onclick="window.modBoxShow.classList.remove('hidden')">Edit mod</button>
+		<button onclick="window.modBoxShow.classList.remove('hidden')">Edit JS code</button>
 		<span id="modBoxShow" class="hidden">
-		<button onclick="changeScene('options help');scrollToEl('help_mod')">Mod help</button>
-		<textarea id="modBox" placeholder="Mod (JavaScript) (not needed)" style="width:100%;height:calc(100% - 40px);background:black;color:white;"></textarea>
+		<button onclick="changeScene('options help');scrollToEl('help_mod')">Help</button>
+		<textarea id="modBox" placeholder="Enter JavaScript code" style="width:100%;height:calc(100% - 40px);background:black;color:white;"></textarea>
 		</span>
 	</div>
 	<div class="world-select hidden" id="worlds"></div>
@@ -1059,9 +1061,9 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 	</div>
 	<div id="achievments" class="hidden"></div>
 	<div id="editProfile" class="hidden darklinks" style="position:absolute; left:8px; bottom:24px; font-family:thefont; color:white;">
-		<label for="editUsername">Username:</label> <input id="editUsername" type="text" placeholder="Username"><br>
+		<label for="editUsername">Username:</label> <input id="editUsername" type="text"><br>
 		<label for="editSkin"><a href="https://www.minecraftskins.com/" target="_blank" style="background:#fff8">Skin</a>:</label> <input id="editSkin" type="file"><br>
-		<label for="editCape"><a href="https://skinmc.net/capes/custom" target="_blank" style="background:#fff8">Cape</a>:</label> <input id="editCape" type="file"><br>
+		<label for="editCape">Cape:</label> <input id="editCape" type="file"><br>
 	</div>
 	<!--<div style="z-index:4;position:absolute;top:0;left:0;width:100vw;height:100vh;background:white;">
 		<div id="countdown" style="font-size:24px;position:absolute;top:50%;left:50%;transform:translateX(-50%) translateY(-50%);"></div>
@@ -1137,7 +1139,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
         MineKhan is a sandbox game.<br>
         MineKhan has things Minecraft doesn't.<br>
         MineKhan doesn't have some things Minecraft has.<br>-->
-        If you want to suggest stuff, you should go to the website that this is on: <a href="/posts" target="_blank">here</a>
+        If you want to suggest stuff, you should go to the website that this is on: <a href="/" target="_blank">here</a>
         <h2>Where MineKhan came from</h2>
         One upon a time, there was a game on Khan Academy called Scuscraft.<br>
         One day, Willard spin-offed Scusraft and made MineKhan.<br>
@@ -1145,9 +1147,6 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
         Then, when Willard made his own website (willard.fun), thingMaker copied the code and programmed it more so soon it became this.<br>
         The End.<br>
 				<br>
-				A lot of great and fun things and interesting conflicts happened in MineKhan in its golden days.<br>
-				Read about it <a href="https://thingmaker.us.eu.org/history.html">here</a>
-				<br><br>
 				<a href="updates.txt" target="_blank">Changelog</a>
 				<br><br>
 				<img src="assets/images/sij.png" loading="lazy">
@@ -1278,26 +1277,33 @@ With touch screen:
 			<section id="help_mod">
 				<style>#help_mod hr{margin:50px 0;opacity:0.5;} #help_mod pre{color:lightblue;}</style>
 <h1>Mods</h1>
-<p>You can write a mod (code) when editing a world.</p>
-<p>How: go to Singleplayer, select the world, click Edit, and write in the big textbox.</p>
+<p>You can write a mod when editing a world. They are JavaScript code that runs when you open a world.</p>
+<p>How: go to Singleplayer, select the world, click Edit, click Edit mod, and write in the big textbox.</p>
 <p>You might get errors if your code has syntax errors or does something wrong. Most errors can be hidden. You can always try again.</p>
 <p>There are so many possibilities! Here are some examples:</p>
 <hr>
-<p>This shows a welcome message when someone joins. Try changing the message and color!</p>
+<p>// This shows a welcome message when someone joins. Try changing the message and color!</p>
 <pre>
 world.on("join", e => {
 	e.player.connection.send({type:"title", data:"Welcome "+e.player.username, color:"yellow"})
 })
 </pre>
+<p>// You can show a message in the chat. The § symbols are for color codes.</p>
+<pre>
+world.on("join", e => {
+	e.player.connection.send({type:"message", data:"§aWelcome "+e.player.username, fromServer:true})
+	e.player.connection.send({type:"message", data:"§bThis world is "+world.name, fromServer:true})
+})
+</pre>
 <hr>
-<p>This makes you get damage when you click a redStain.</p>
+<p>// This makes you get damage when you click a redStain.</p>
 <pre>
 world.on("click", e => {
 	if(e.block === blockIds.redStain) e.player.damage(3, e.player.username+" died from clicking it.")
 })
 </pre>
 <hr>
-<p>This makes emerald blocks become checkpoints. When you stand on one, the respawn point is set there.</p>
+<p>// This makes emerald blocks become checkpoints. When you stand on one, the respawn point is set there.</p>
 <pre>
 world.on("tick", e => {
 	for(let p of world.players){
@@ -1308,7 +1314,7 @@ world.on("tick", e => {
 })
 </pre>
 <hr>
-<p>This stops fall damage.</p>
+<p>// This stops fall damage.</p>
 <pre>
 world.on("damage", e => {
 	if(e.type === "fallbig" || e.type === "fallsmall"){
@@ -1317,7 +1323,7 @@ world.on("damage", e => {
 })
 </pre>
 <hr>
-<p>This prevents people from breaking things.</p>
+<p>// This prevents people from breaking things.</p>
 <pre>
 world.on("changeblock", e => {
 	// Protect blocks between (-64, -64) and (63, 63)
@@ -1339,7 +1345,7 @@ world.on("changeblock", e => {
 })
 </pre>
 <hr>
-<p>This gives someone items when they join if they don't already have it.</p>
+<p>// This gives someone items when they join if they don't already have it.</p>
 <pre>
 world.on("join", e => {
 	// This gives apples
@@ -1353,7 +1359,7 @@ world.on("join", e => {
 })
 </pre>
 <hr>
-<p>Here is an example of world (terrain) generation.</p>
+<p>// Here is an example of world (terrain) generation.</p>
 <pre>
 // world[""] means overworld. can also be world["nether"] or world["end"]
 world[""].customChunkGenerate = function(chunk){
@@ -1391,7 +1397,7 @@ world[""].customChunkPopulate = function(chunk){
 }
 </pre>
 <hr>
-<p>This spawns a house when you hold a brick and click. Note: block can also be an item.</p>
+<p>// This spawns a house when you hold a brick and click. Note: block can also be an item.</p>
 <pre>
 // Define the list of blocks
 const wallBlocks = [blockIds.quartzBlock, blockIds.bricks, blockIds.oakPlanks, blockIds.stoneBricks, blockIds.endStoneBricks, blockIds.purpurBlock, blockIds.deepslateTiles]
@@ -1418,13 +1424,14 @@ world.on("click", e => {
 })
 </pre>
 <hr>
-<p>You can set functions for certain blocks in blockData. There is onclick, serveronuse (on use), onupdate, onset, ondelete, onplace, onbreak, serverontouch (on touch), onpowerupdate (for redstone), ongetexploded, onburn, tick</p>
-<p>The functions in blockData will not change back, even if you exit the world, until you reload the page.</p>
+<p>// You can set functions for certain blocks in blockData. There is onclick, serveronuse (on use), onupdate, onset, ondelete, onplace, onbreak, serverontouch (on touch), onpowerupdate (for redstone), ongetexploded, onburn, tick</p>
+<p>// The functions in blockData will not change back, even if you exit the world, until you reload the page.</p>
 <pre>
 // This makes coal ore explode when clicked
 blockData[blockIds.coalOre].onclick = function(x,y,z,world){
 	world.explode(x,y,z, 2) // The radius is 2
 }
+
 // This makes black stuff spread
 blockData[blockIds.blackConcrete].tick = function(block,x,y,z,world){
 	x += round(rand(-1,1)) // Add a random amount between -1 and 1 to the coordinates
@@ -1434,18 +1441,75 @@ blockData[blockIds.blackConcrete].tick = function(block,x,y,z,world){
 		world.setBlock(x,y,z, blockIds.blackConcrete)
 	}
 }
+
+// This makes rose bush give blur effect
+blockData[blockIds.roseBush].serverontouch = (x,y,z,ent) => ent.applyEffect("blur",1,2,false)
+
+// When you touch poppy, become small. (reset with scale=1)
+blockData[blockIds.poppy].serverontouch = (x,y,z,ent) => ent.scale = 0.75
+
+// This makes logs break when not supported. (set the logs onupdate to cactus onupdate because cactus also breaks)
+blockData[blockIds.oakLog].onupdate = blockData[blockIds.birchLog].onupdate = blockData[blockIds.jungleLog].onupdate = blockData[blockIds.cactus].onupdate
+
+// This makes leaves fall (set the leaves onupdate to sand onupdate which falls)
+blockData[blockIds.oakLeaves].onupdate = blockData[blockIds.birchLeaves].onupdate = blockData[blockIds.jungleLeaves].onupdate = blockData[blockIds.sand].onupdate
 </pre>
-<p>You can even change some properties of blocks. Some properties are client-side, so changing them doesn't work.</p>
+<p>// You can even change some properties of blocks. Some properties are client-side, so changing them doesn't work.</p>
 <pre>
 // This makes tall grass drop carrots
-blockData[blockIds.TallGrass].drop = "carrots"
+blockData[blockIds.TallGrass].drop = "carrot"
+blockData[blockIds.TallGrass].dropAmount = [0,2]
 
 // This makes diamond ore drop 75% dirt and 25% diamond
 blockData[blockIds.diamondOre].drop = () => rand()&lt;0.75 ? "dirt" : "diamond"
+
+// This makes you get damaged when you touch redStain
+blockData[blockIds.redStain].damage = 5
+
+// This changes the sound of stone
+blockData[blockIds.stone].digSound = ["click","cow.step1","pig.step1"]
+blockData[blockIds.stone].stepSound = ["click","cow.step1","pig.step1"]
 </pre>
 <hr>
-<p>This plays creepy sounds occasionly. Try changing it to different sounds!</p>
-<p>Note: rand() is the same as Math.random() except rand can have a range like this: rand(10) rand(1,10).</p>
+<p>// You can also change some properties and functions (methods) on entities.</p>
+<p>// These will also not change back until you reload.</p>
+<pre>
+// This makes pigs hostile and attack.
+entities[entityIds.Pig] = class WeirdPig extends entities[entityIds.Pig] {
+	constructor(x,y,z){
+		super(x,y,z)
+		this.hostile = true
+		this.minFollowDist = 1
+		this.maxFollowDist = 16
+		this.detectionDist = 16
+		this.attackStrength = 3
+		this.maxAttackCooldown = 20
+	}
+	// You can also change the drop
+	drop = [blockIds.mangroveLog]
+	dropAmount = [1,5]
+	experience = 5
+}
+
+// This makes entities heal when clicked
+world.on("click", e => {
+	if(e.entity && e.player){ // Only runs when there is an entity and player
+		e.entity.health += 10
+		// This makes mobs go toward the player when clicked
+		if(e.entity.mob) e.entity.path = e.entity.findPath(e.player.x, e.player.y, e.player.z)
+	}
+})
+</pre>
+<hr>
+<p>// To spawn mobs, use this code and change the coordinates:</p>
+<pre>world[""].addEntity(new entities[entityIds.Pig](10,50,10))</pre>
+<p>// Some entities take different arguments.</p>
+<p>// It can also add item entities.</p>
+<pre>world[""].addItems(10,50,10, 0,0,0, blockIds.grass, true, 64)
+// The arguments are: x,y,z,vx,vy,vz,block,autoSetVel,amount,durability,customName,from</pre>
+<hr>
+<p>// This plays creepy sounds occasionly. Try changing it to different sounds!</p>
+<p>// Note: rand() is the same as Math.random() except rand can have a range like this: rand(10) rand(1,10).</p>
 <pre>
 let lastTime = Date.now()
 let sounds = ["damage.classic_hurt","block.portal.travel","grass.step3","creeper.say4"]
@@ -1463,8 +1527,8 @@ world.on("tick", () => {
 })
 </pre>
 <hr>
-<p>This makes the code run when someone goes in the coordinates.</p>
-<p>It might be easier to use command blocks.</p>
+<p>// This makes the code run when someone goes in the coordinates.</p>
+<p>// It might be easier to use command blocks.</p>
 <pre>
 // This gives someone an apple when they go between 10,50,10 and 20,60,20
 world.addPortal(player => {
@@ -1477,6 +1541,61 @@ world.addPortal(player => {
 world.addPortal(player => {
 	player.tp(100, 50, 0)
 }, 30,50,0, 40,60,10, "")
+</pre>
+<hr>
+<p>// This plays music when someone joins. It will be synced for everyone.</p>
+<p>// You can also use the command like this: /playMusic "https://put url here"</p>
+<pre>
+world.on("join", e => {
+	if(!world.music.size){ // If no music is playing, play a new one
+		world.playMusic("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/sounds/records/chirp.ogg")
+	}
+})
+</pre>
+<!--<p>// This keeps playing random songs:</p>
+<pre>
+// First get the file names
+fetch("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/sounds/music/game/_list.json")
+.then(r => r.json()).then(r => {
+	let files = r.files
+	// Then start playing them
+	world.on("tick", () => {
+		if(!world.music.size){ // If no music is playing
+			let file = files[floor(rand(files.length))] // Choose a random music file
+			// Play the music. The duration is unknown, so is is set to 5 minutes (5*60).
+			world.playMusic("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/sounds/music/game/"+file, 5*60)
+		}
+	})
+})
+</pre>-->
+<p>// This occasionly plays random songs in a list:</p>
+<pre>
+let urls = [ // Example URLs for music
+"https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/sounds/music/game/deeper.ogg",
+"https://cdn.freesound.org/previews/831/831502_14312064-lq.mp3",
+ // Put more URLs here with quotes and a comma
+]
+let lastMusic = Date.now()
+world.on("tick", () => {
+	let now = Date.now()
+	if(now - lastMusic > 10*60*1000){ // Every 10 minutes
+		let url = urls[floor(rand(urls.length))] // Choose a random song
+		world.playMusic(url)
+		lastMusic = now
+	}
+})
+</pre>
+<hr>
+<p>// Although you can create custom dimensions, it is a little glitchy and won't save.</p>
+<pre>
+world["aether"] = new ServerWorldDimension(world, "aether")
+world.on("touchportal", e => {
+	if(blockData[e.entity.world.getBlock(e.x,e.y,e.z)].name === "portal"){
+		e.entity.tp(8,50,8, e.entity.dimension ? "" : "aether")
+		return "stop"
+	}
+})
+// You can use custom terrain generation. See terrain example.
 </pre>
 			</section>
       <section id="help_wiki">
@@ -2057,7 +2176,7 @@ world.addPortal(player => {
 			uniform bool flicker;
 			float getShadowMap(float light, vec3 normal, inout vec3 lightTint){
 				if(light == 0.) return 0.;//there can't possibly be light in this case
-				float skylight = uTime*1.33;
+				float skylight = uTime*1.5;
 				//change below depending on skylightCascades
 				bool shadow = false;
 				if(shadowMapTexture[0].x > 0. && shadowMapTexture[0].x < 1. && shadowMapTexture[0].y > 0. && shadowMapTexture[0].y < 1.){
@@ -2152,7 +2271,7 @@ world.addPortal(player => {
 			if(type == 1.){
 				vTexture.y -= uGameTime/4.;
 			}else{
-				vTexture.y -= uGameTime;
+				vTexture.y -= uGameTime*2.;
 			}
 			gl_Position = uView * vec4(aVertex, 1.0);
 			vVertex = aVertex;
@@ -6272,7 +6391,7 @@ if time is 0, it will update every time
     narratorPitch: 1,
     narratorRate: 1,
     narratorVoice: null, // defined later
-		joystick: true,
+		joystick: false,
 		language: null,
 		adjustBrightness: false,
 		reach: 5, // Max distance player can place or break blocks
@@ -6364,6 +6483,7 @@ if time is 0, it will update every time
       if(this.moonPhase !== moonPhase){
         this.moonPhase = moonPhase
         let tex = textureCoords[textureMap["moonPhases"+moonPhase]]
+				if(this.moon) deleteVAO(this.moon.vao)
         this.moon = generateVAO(shapes.sun, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
       }
       
@@ -6473,7 +6593,7 @@ if time is 0, it will update every time
 		//categoryTools:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAFmSURBVHjanJS9SgNBFEbPhCALYsAigbVYU7hYhK2CQirRB7ATe0Ui+wBJlQdIHiC4+ARCKpvUaXZhg5BWYqFpBDdVQAg210J32M2PSfxgipm5c+535w6jDLvIIm3tFVimSS+UxFRl2FCTXijlqE8p6Oi1zH8A05c3jIP9zSGzgKf8EYBaG/IXYC3IKoCIkI0n0+FrfOMq7tgqQO7keN5J/voCQKbD17UBABh2kcRbEatVF0DKUV9KQUfKUV+AZSNdTlKGXdQOvs6u8H1/LmYwGOC6riillK7/dPeTbhjFbvi4f8A2dvA8j0qlAkAQBCkIgOu6c92R23OLUa1J4eYytbEIEEuX0w0jaVYPqXvPAGpUa4rjOBpQrVb1ofF4TKPRSGf/daAvK7nn+744jiNWzkgN0zSl3W4LIBkAq1Xn7nGUauEmygKMas10evkxpJTS9t8n01SMuZ34C2apMSABkSWxev17ACRnxMv4aVvaAAAAAElFTkSuQmCC",
 		//categoryConstruction:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAEdSURBVHjalJOhTgNBEIa/IWd4AyRBkSAQkBIEstTxAg2OZ0AVd6rPcK49gT1HViKaNK3AVV5dFQJDUIOgc73du2uXUXuTzLf//8+eqCoAIqIAqioigvVjKjFAPhx4MBGRWFBih+/LOwDy7fcwf9OtIomGlK4A4LT/4MHqNg9C6lW64l+wCmJDscqAKjNRVURER/2eN2SQ8JLjj3fLrFKVtFnpgpWu4OfsgoN2bMhyCW1uFrMG5Kh+S9ug9dtyi95OaPPk+vavsVw1IJK6uQJkga3Q5mYx24FCJZa0rdC2FcLWr9N2O/V/JBunAvD0PPJgBgxVeA+mq0xZNk4pXcH68wuAyXK1U2+Ql/ubvTDL7PHqvBuyR0nYajz73wEADsipFjE4Vi8AAAAASUVORK5CYII=",
 		//worldIcon:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAAAklEQVR4AewaftIAAAG0SURBVLXBQUhTYQDA8f83p/HGHDwow5wQKTT0UMfyHezSg6BD9ewSdurWYR67BK1ZB496kCDq0qFLzy56GUGMmDMjNl2bLygvKyUSHrnizVJe+2JfPMYQPPj7caiy5ZKfLZd89iFo49pU0adh4nIH0vT8HtLcnbOCFoKA5NKYT4DVfY/p+T2kVe0GyqdkRdAkaEgujfm0+JK9ixIffUA7M+deiA4atsSt1FZkmf6j3QxrffR0xhgcLPKmPkotdoSv7kV+/LnKhWNFejpjPHpWZe1Dndrb9fthAhadDRbZYCRxgsq3WaJR/hk6fpthrY/HhXesP7+CliijhGjh5iwWnpzn+9p7TsUjXD/5ECn9tMxmIYKWyOA5JkqYJjdnoRs2ys/PFVb7T7OwXKYdzzGBV4QIcHMWumET5Dkm+wkRoBs2km7Y6IaNV/2I5DkmiueYdPWuoIQ4oK7eFX5vnkEJ07Dj/UJycxa6YSO5OYvoAP95jomyW6+hCALi42k/NjLHTuEmUnRgiOrrEspuvYa0nZ0UNAnaiI+nfRpeTlwik8kgTWXqbGcnBQeRz+f9VCrlc5j+AmTYl6HuWT1sAAAAAElFTkSuQmCC"
-  };window[atob("YmFzZTY0")] = "VGhpcyBwcm9ncmFtIGlzIGEgc3Bpbi1vZmY8YnI+b2YgPGEgaHJlZj0naHR0cHM6Ly93aWxsYXJkLmZ1bi9taW5la2hhbicgdGFyZ2V0PSdfbmV3Jz5NaW5lS2hhbjwvYT4gYnkgV2lsbGFyZC48YnI+TW9zdCBvZiB0aGUgYWRkZWQgZmVhdHVyZXMgYXJlIGJ5PGJyPnRoaW5nTWFrZXIgKGtub3duIGFzIDItcGVvcGxlIG9uIE1pbmVLaGFuKTxicj5IZWxwIGFkZCBmZWF0dXJlczogPGEgaHJlZj0naHR0cHM6Ly9naXRodWIuY29tL2FhYWF0aGluZy9NaW5la2hhbicgdGFyZ2V0PSdfbmV3Jz5SZXBvPC9hPjxicj5UbyBzZWUgY3JlZGl0cywgY2xpY2sgSGVscCAocXVlc3Rpb24gbWFyayBidXR0b24pLg==";
+  };window[atob("YmFzZTY0")] = "VGhpcyBwcm9ncmFtIGlzIGEgc3Bpbi1vZmY8YnI+b2YgPGEgaHJlZj0naHR0cHM6Ly93aWxsYXJkLmZ1bi9taW5la2hhbicgdGFyZ2V0PSdfbmV3Jz5NaW5lS2hhbjwvYT4gYnkgV2lsbGFyZC48YnI+TW9zdCBvZiB0aGUgYWRkZWQ8YnI+ZmVhdHVyZXMgYXJlIGJ5IDxhIGhyZWY9J2h0dHBzOi8vdGhpbmdtYWtlci51cy5ldS5vcmcvJz50aGluZ01ha2VyPC9hPjxicj4oYWthIDItcGVvcGxlKTxicj5IZWxwIGFkZCBmZWF0dXJlczogPGEgaHJlZj0naHR0cHM6Ly9naXRodWIuY29tL2FhYWF0aGluZy9NaW5la2hhbicgdGFyZ2V0PSdfbmV3Jz5SZXBvPC9hPjxicj5UbyBzZWUgY3JlZGl0cywgY2xpY2sgSGVscC4=";
 	
   let crossOriginImages = ["panorama"]
   function loadImage(i,images){
@@ -6882,7 +7002,7 @@ ROTATION = 0x1800 // Mask for the direction bits
         let s = inventory.size
         let s2 = s/2
 				let perRow = inventory.category === 0 ? 9 : Math.floor(width/s)-8
-        invTextbox.style.top = 50.5+s*(inventory.category === 0 ? 3 : 8)+"px"
+        invTextbox.style.top = 50.5+s*(inventory.category === 0 ? 3 : 8)-s2+"px"
         invTextbox.style.left = 50.5-s2+"px"
         invTextbox.style.width = s*perRow+"px"
         invTextbox.style.height = s2+"px"
@@ -6894,57 +7014,46 @@ ROTATION = 0x1800 // Mask for the direction bits
 			},
       onexit: () => {
         invTextbox.oninput = null
-				/*for(var i=0; i<9; i++){
-					if(inventory.crafting[i]){
-						for(var n=0; n<inventory.crafting[i].amount; n++){
-							if(!newInvItem(inventory.crafting[i].id, inventory.crafting[i].durability, inventory.crafting[i].customName)){
-								world.addEntity(new entities[entityIds.Item](p.x,p.y,p.z,0,0,0,inventory.crafting[i].id, false,1, inventory.crafting[i].durability, inventory.crafting[i].customName,p.id),false,p.dimension)
-							}
-						}
-						inventory.crafting[i] = 0
-					}
-				}
-				inventory.craftingRes = 0*/
       }
     },
 		crafting:{
+			enter:[inventoryScrollable.el],
+      exit:[invTextbox, inventoryScrollable.el],
 			onafterenter: () => {
 				orderInvSlots()
 				slotInv()
 			},
-			onexit: () => {
-				/*for(var i=0; i<9; i++){
-					if(inventory.crafting[i]){
-						for(var n=0; n<inventory.crafting[i].amount; n++){
-							if(!newInvItem(inventory.crafting[i].id, inventory.crafting[i].durability, inventory.crafting[i].customName)){
-								world.addEntity(new entities[entityIds.Item](p.x,p.y,p.z,0,0,0,inventory.crafting[i].id, false,1, inventory.crafting[i].durability, inventory.crafting[i].customName,p.id),false,p.dimension)
-							}
-						}
-						inventory.crafting[i] = 0
-					}
-				}
-				inventory.craftingRes = 0*/
-			},
-			onresize:slotInv
+			onenter: () => html.inventory.onenter(),
+			onresize: () => html.inventory.onresize(),
+			onexit: () => html.inventory.onexit(),
 		},
 		furnace:{
+			enter:[inventoryScrollable.el],
+      exit:[invTextbox, inventoryScrollable.el],
 			onafterenter: () => {
 				orderInvSlots()
 				slotInv()
 			},
-			onresize:slotInv
+			onenter: () => html.inventory.onenter(),
+			onresize: () => html.inventory.onresize(),
+			onexit: () => html.inventory.onexit(),
 		},
 		chest:{
+			enter:[inventoryScrollable.el],
+      exit:[invTextbox, inventoryScrollable.el],
 			onafterenter: () => {
 				orderInvSlots()
 				slotInv()
 			},
-			onresize:slotInv
+			onenter: () => html.inventory.onenter(),
+			onresize: () => html.inventory.onresize(),
+			onexit: () => html.inventory.onexit(),
 		},
     anvil:{
-      enter:[anvilTextbox],
-      exit:[anvilTextbox],
+      enter:[anvilTextbox, inventoryScrollable.el],
+      exit:[anvilTextbox, invTextbox, inventoryScrollable.el],
       onenter: () => {
+				html.inventory.onenter()
         let s = inventory.size
         let offX = width - s*5
         let offY = s * 2
@@ -6958,40 +7067,30 @@ ROTATION = 0x1800 // Mask for the direction bits
 				orderInvSlots()
 				slotInv()
 			},
-			onexit: () => {
-				/*if(inventory.anvilInput && inventory.anvilInput.id){
-					for(var n=0; n<inventory.anvilInput.amount; n++){
-						if(!newInvItem(inventory.anvilInput.id, inventory.anvilInput.durability, inventory.anvilInput.customName)){
-							world.addEntity(new entities[entityIds.Item](p.x,p.y,p.z,0,0,0,inventory.anvilInput.id, false,1, inventory.anvilInput.durability, inventory.anvilInput.customName,p.id),false,p.dimension)
-						}
-					}
-					inventory.anvilInput = inventory.anvilOutput = 0
-				}
-				if(inventory.anvilMaterial && inventory.anvilMaterial.id){
-					for(var n=0; n<inventory.anvilMaterial.amount; n++){
-						if(!newInvItem(inventory.anvilMaterial.id, inventory.anvilMaterial.durability, inventory.anvilMaterial.customName)){
-							world.addEntity(new entities[entityIds.Item](p.x,p.y,p.z,0,0,0,inventory.anvilMaterial.id, false,1, inventory.anvilMaterial.durability, inventory.anvilMaterial.customName,p.id),false,p.dimension)
-						}
-					}
-					inventory.anvilMaterial = 0
-				}
-				inventory.anvilCost = 0*/
-			},
-			onresize:slotInv
+			onresize: () => html.inventory.onresize(),
+			onexit: () => html.inventory.onexit(),
     },
 		dispenser:{
+			enter:[inventoryScrollable.el],
+      exit:[invTextbox, inventoryScrollable.el],
 			onafterenter: () => {
 				orderInvSlots()
 				slotInv()
 			},
-			onresize:slotInv
+			onenter: () => html.inventory.onenter(),
+			onresize: () => html.inventory.onresize(),
+			onexit: () => html.inventory.onexit(),
 		},
 		hopper:{
+			enter:[inventoryScrollable.el],
+      exit:[invTextbox, inventoryScrollable.el],
 			onafterenter: () => {
 				orderInvSlots()
 				slotInv()
 			},
-			onresize:slotInv
+			onenter: () => html.inventory.onenter(),
+			onresize: () => html.inventory.onresize(),
+			onexit: () => html.inventory.onexit(),
 		},
     chat: {
       enter: [window.messageHolder],
@@ -7067,12 +7166,12 @@ ROTATION = 0x1800 // Mask for the direction bits
 		achievments:{
 			enter:[window.achievments],
 			exit:[window.achievments],
-			onenter:initAchievmentsMenu
+			onenter:()=>initAchievmentsMenu("achievments")
 		},
 		"achievments discoveries":{
 			enter:[window.achievments],
 			exit:[window.achievments],
-			onenter:initAchievmentsMenu
+			onenter:()=>initAchievmentsMenu("achievments discoveries")
 		},
 		dead:{
 			onenter:() => {
@@ -7258,20 +7357,16 @@ ROTATION = 0x1800 // Mask for the direction bits
 			this.spectatePlayer_username(args)
 		},*/
 		reloadChunks: () => {
-			world.unloadAllChunks()
+			world.delete()
 		},
 		ban_username: args => {
-			if(win.ban){
-				ban(args.ban_username, args.ban_reason)
-			}else{
+			if(win.ban && ban(args.ban_username, args.ban_reason)){
 				Messages.add("Error: can't ban.","error")
 			}
 		},
 		ban_reason: args => clientCmdFuncs.ban_username(args),
 		unban_username: args => {
-			if(win.unban){
-				unban(args.unban_username)
-			}else{
+			if(win.unban && unban(args.unban_username)){
 				Messages.add("Error: can't unban.","error")
 			}
 		},
@@ -7353,6 +7448,11 @@ ROTATION = 0x1800 // Mask for the direction bits
 		safeTemplate.innerHTML = str
 		makeHTMLSafeElement(safeTemplate.content,attrcb,elcb)
 		return safeTemplate.innerHTML
+	}
+	let HTMLSafeSanitizer
+	if(window.Sanitizer){
+		HTMLSafeSanitizer = new Sanitizer({})
+		HTMLSafeSanitizer.removeUnsafe()
 	}
 
 	let unsupported = []
@@ -7631,9 +7731,9 @@ ROTATION = 0x1800 // Mask for the direction bits
 									if(count>50) break
 								}
 								break
-							case "x": this.addHint(p.x.toFixed(2)); this.addHint("~","~ - current x"); break
-							case "y": this.addHint(p.y.toFixed(2)); this.addHint("~","~ - current y"); break
-							case "z": this.addHint(p.z.toFixed(2)); this.addHint("~","~ - current z"); break
+							case "x": this.addHint(p.x.toFixed(2)); this.addHint("~","~ - current x",false); break
+							case "y": this.addHint(p.y.toFixed(2)); this.addHint("~","~ - current y",false); break
+							case "z": this.addHint(p.z.toFixed(2)); this.addHint("~","~ - current z",false); break
 							case "sound":
 								for(i of soundNames){
 									if(i.toLowerCase().includes(this.highlightReplaces.toLowerCase())){
@@ -7672,9 +7772,10 @@ ROTATION = 0x1800 // Mask for the direction bits
 		},
 		highlightLastTree:[],
 		hints:new Map(),
-		addHint(value,short=value){
+		addHint(value,short=value,isString=true){
 			if(!value.toLowerCase().includes(this.highlightReplaces.toLowerCase())) return
 			this.hintObj.hintsPart.push(short)
+			if(isString && value.match(/[^\p{L}|\p{N}|\?|_|@|\.]/u)) value = '"'+value+'"'
 			this.hintObj.hints.push(this.highlightValuesBefore+value)
 		},
 		hilightCommand(input,doHints){
@@ -7784,15 +7885,15 @@ ROTATION = 0x1800 // Mask for the direction bits
           }
         }
 				messageOverlay.innerHTML = overlay
-				messageHolder.classList.add('command')
+				messageInput.style.color = "transparent"
       }else{
-				if(messageInput.prevValue && messageInput.prevValue.startsWith("/")){
+				if(messagesAll.classList.contains("hidden")){
 					messageHints.classList.add("hidden")
 					messagesAll.classList.remove('hidden')
+					messageInput.style.color = ""
+					messageOverlay.textContent = ""
+					this.hints.delete(messageInput)
 				}
-				messageOverlay.innerHTML = sanitize(value)
-				messageHolder.classList.remove('command')
-				this.hints.delete(messageInput)
 			}
       messageInput.prevValue = value
     },
@@ -7823,7 +7924,7 @@ ROTATION = 0x1800 // Mask for the direction bits
         str = str.replace(obj.replace, obj.with)//"<span style='color:red; background:black;'>"+obj.with+"</span>")
       } //if you change this change it at canvas text
 
-			if(this.span.setHTML) this.span.setHTML(str)
+			if(this.span.setHTML) this.span.setHTML(str, {sanitizer:HTMLSafeSanitizer})
 			else return makeHTMLSafe(str)
 			return this.span.innerHTML
     }
@@ -10923,12 +11024,16 @@ return//*/
         p.cOffsetZ += p.direction.z*hsize
       }*/
 
-      let intensity = 0.1//0.0625//0.09375
+      //let intensity = 0.1//0.0625//0.09375
       prevViewBobIntensity = viewBobIntensity
 			 if(!p.thirdPerson && !p.sleeping){
         //view bobbing
-				let bobSpeed = dist2(p.x,p.z,p.previousX,p.previousZ)*500
-        if(p.walking && !p.swimming && p.onGround && bobSpeed>25){
+				let moveSpeed = dist2(p.x,p.z,p.previousX,p.previousZ)
+				let bobSpeed = moveSpeed*500
+				let target = 0
+				if(p.walking && !p.swimming && p.onGround) target = min(moveSpeed,0.1)
+				viewBobIntensity += (target-viewBobIntensity)*0.4
+        /*if(p.walking && !p.swimming && p.onGround){
           if(!prevViewBob){
             prevViewBob = true
             //if(!viewBobIntensity) viewBobCount = lastViewBobCount = lerp(min(abs(move.x),1),Math.random()*2-1,move.x) > 0 ? 500 : -500
@@ -10945,10 +11050,10 @@ return//*/
             viewBobIntensity -= 0.5
 						if(viewBobIntensity<0) viewBobIntensity = 0
           }
-        }
-        const intensityMult = lerp(min((now-lastTick)/tickTime,1),prevViewBobIntensity,viewBobIntensity)/5
-				intensity *= intensityMult*intensityMult
-        if(intensity){
+        }*/
+        let intensity = lerp(min((now-lastTick)/tickTime,1),prevViewBobIntensity,viewBobIntensity)// /5
+				//intensity *= intensityMult*intensityMult
+        if(intensity>0.01){
           lastViewBobCount = viewBobCount
 					viewBobCount = p.walkCount
 					/*if(intensityMult === 1){
@@ -10983,8 +11088,9 @@ return//*/
 					p.camera.viewBobRz = (bob-0.5)*Math.PI/24*intensity//(abs((counter%1000)-500)-250)*/
         }
 				let dnow = Date.now()
-				if(!p.swimming && !p.flying){
-					p.camera.viewBobRx += p.velocity.y/p.jumpSpeed*Math.PI/128
+				if(!p.swimming && !p.flying && !p.gliding){
+					p.camera.viewBobRx += atan(p.velocity.y*0.2)*15/180*Math.PI
+					//p.camera.viewBobRx += p.velocity.y/p.jumpSpeed*Math.PI/128
 					//let effect = max(1-((dnow-p.lastJump)/400)**2,0)
 					//p.camera.viewBobRx = lerp(0.5,p.camera.viewBobRx, max(1-p.velocity.y/p.jumpSpeed,0)*Math.PI/48 * effect)
 					//if(amount>p.camera.viewBobRx) p.camera.viewBobRx = lerp(0.25, p.camera.viewBobRx, amount)  //sin((dnow-p.lastJump)*Math.PI/500)*Math.PI/64
@@ -12296,6 +12402,7 @@ return//*/
 					gl.vertexAttrib1f(glCache.aBlocklight, 1.0)
 					gl.vertexAttrib1f(glCache.aShadow, 1.0)
 					gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, 0)
+					gl.enableVertexAttribArray(glCache.aShadow)
 				}
 				i++
 			}
@@ -12309,6 +12416,9 @@ return//*/
 		if (blockOutlines) {
       gl.disableVertexAttribArray(glCache.aSkylight)
       gl.disableVertexAttribArray(glCache.aBlocklight)
+      gl.disableVertexAttribArray(glCache.aNormal)
+			gl.disableVertexAttribArray(glCache.aShadow)
+      gl.disableVertexAttribArray(glCache.tint)
       gl.vertexAttrib1f(glCache.aSkylight, 1.0)
       gl.vertexAttrib1f(glCache.aBlocklight, 1.0)
       
@@ -12317,6 +12427,7 @@ return//*/
 			for (let i = 0; i < hitBox.shape.size; i++) {
 				gl.drawArrays(gl.LINE_LOOP, i * 4, 4)
 			}
+			gl.enableVertexAttribArray(glCache.aShadow)
     }
 	}
 	let tempTex = new Array(6)
@@ -12734,16 +12845,14 @@ return//*/
   function goToDimension(d){
     d = d || ""
     if(d === p.dimension) return
-		if(inWorld) world.unloadAllChunks()
+		if(inWorld) world.delete()
 		releasePointer()
+		p.dimension = d
     if(d === "nether"){
-      p.dimension = "nether"
 			if(inWorld) changeScene("netherLoading")
     }else if(d === "end"){
-      p.dimension = "end"
 			if(inWorld) changeScene("endLoading")
     }else{
-      p.dimension = ""
 			if(inWorld) changeScene("loading")
     }
   }
@@ -13527,77 +13636,41 @@ r 11 y  n  n  n
 		deleteBlock(x, y, z) {
 			this.blocks[x * 256 + y * 16 + z] = 0
 		}
-		optimizeBlock(x, y, z, localBlocks, blockState, flags = 63){ //Flags tell if a face is possibly visible
-			let palleteIndex
-			if (this.palleteMap[blockState] === undefined) {
-				this.palleteMap[blockState] = this.pallete.length
-				palleteIndex = this.pallete.length
-				this.pallete.push(blockState)
-			} else {
-				palleteIndex = this.palleteMap[blockState]
-			}
-
-			const visible = (
-				(flags&32&& hideFace(x-1, y, z, localBlocks, blockState, getBlock, "west", "east", this, x,y,z))
-			| (flags&16&& hideFace(x+1, y, z, localBlocks, blockState, getBlock, "east", "west", this, x,y,z)) << 1
-			| (flags&1 && hideFace(x, y-1, z, localBlocks, blockState, getBlock, "bottom", "top", this, x,y,z)) << 2
-			| (flags&2 && hideFace(x, y+1, z, localBlocks, blockState, getBlock, "top", "bottom", this, x,y,z)) << 3
-			| (flags&8 && hideFace(x, y, z-1, localBlocks, blockState, getBlock, "south", "north", this, x,y,z)) << 4
-			| (flags&4 && hideFace(x, y, z+1, localBlocks, blockState, getBlock, "north", "south", this, x,y,z)) << 5)
-			if (visible) {
-				const pos = (x | y << 4 | z << 8) << 19
-				this.renderData[this.renderLength++] = 1 << 31 | pos | visible << 13 | palleteIndex
-				//this.extraRenderData[this.renderLength-1] = getRandomRotate(blockState,x+this.x,y+this.y,z+this.z,visible)
-			}
-
-			if(this.ambients.length<50 && (blockData[blockState].ambientSound || blockData[blockState].temperature !== undefined)){
-				const pos = (x | y << 4 | z << 8) << 19
-				this.ambients[this.ambients.length] = 1 << 31 | pos | palleteIndex
-				this.hasAmbients = true
-			}
-		}
 		optimize(){
 			let {world} = this
 			let localBlocks = world.getAdjacentSubchunks(this.x, this.y, this.z, 0, this.type)
-			/*let xLoaded = world.getChunk(this.x-16,this.z,this.type); xLoaded = xLoaded&&xLoaded.loaded ? null : 0
-			let XLoaded = world.getChunk(this.x+16,this.z,this.type); XLoaded = XLoaded&&XLoaded.loaded ? null : 16
-			let zLoaded = world.getChunk(this.x,this.z-16,this.type); zLoaded = zLoaded&&zLoaded.loaded ? null : 0
-			let ZLoaded = world.getChunk(this.x,this.z+16,this.type); ZLoaded = ZLoaded&&ZLoaded.loaded ? null : 16*/
 			for (let x = 0; x < 16; x++) for (let z = 0; z < 16; z++) for (let y = 0; y < 16; y++){
-				let block = this.blocks[x * 256 + y * 16 + z]
-				if(block){
-					this.optimizeBlock(x,y,z,localBlocks,block/*, 3 | (z!==ZLoaded)<<2 | (z!==zLoaded)<<3 | (x!==XLoaded)<<4 | (x!==xLoaded)<<5*/)
-				}
-			}
-			/*//Check all the blocks in the subchunk to see if they're visible.
-			//Visible flags: bottom, top, north, south, east, west
-			let visFlags = new Int8Array(4096), index = 0
-			let localBlocks = this.world.getAdjacentSubchunks(this.x, this.y, this.z, 0, this.type)
-			for (let x = 0; x < 16; x++) {
-				for (let i = 0; i < 256; i++, index++) {
-					const y = i >> 4
-					const z = i & 15
-					const blockState = this.blocks[index]
-					const block = blockData[blockState]
-					//Show if neighbour is in another section because the neighbour block is unknown
-					visFlags[index] |= (!y) | (y === 15)<<1 | (z === 15)<<2 | (!z)<<3 | (x === 15)<<4 | (!x)<<5
-					if(block.transparent || block.customCullFace){
-						//This does not hide edge faces of neighbour sections
-						if(y) visFlags[index-16] |= 2//Top face of bottom block
-						if(y < 15) visFlags[index+16] |= 1//Bottom face of top block
-						if(z)      visFlags[index - 1] |= 4 // South face of North block is visible
-						if(z < 15) visFlags[index + 1] |= 8 // North face of South block is visible
-						if(x)      visFlags[index - 256] |= 16 // West face of East block is visible
-						if(x < 15) visFlags[index + 256] |= 32 // East face of West block is visible
+				let blockState = this.blocks[x * 256 + y * 16 + z]
+				if(blockState){
+					let palleteIndex
+					if (this.palleteMap[blockState] === undefined) {
+						this.palleteMap[blockState] = this.pallete.length
+						palleteIndex = this.pallete.length
+						this.pallete.push(blockState)
+					} else {
+						palleteIndex = this.palleteMap[blockState]
+					}
+
+					const visible = (
+						hideFace(x-1, y, z, localBlocks, blockState, getBlock, "west", "east", this, x,y,z)
+					| hideFace(x+1, y, z, localBlocks, blockState, getBlock, "east", "west", this, x,y,z) << 1
+					| hideFace(x, y-1, z, localBlocks, blockState, getBlock, "bottom", "top", this, x,y,z) << 2
+					| hideFace(x, y+1, z, localBlocks, blockState, getBlock, "top", "bottom", this, x,y,z) << 3
+					| hideFace(x, y, z-1, localBlocks, blockState, getBlock, "south", "north", this, x,y,z) << 4
+					| hideFace(x, y, z+1, localBlocks, blockState, getBlock, "north", "south", this, x,y,z) << 5)
+					if (visible) {
+						const pos = (x | y << 4 | z << 8) << 19
+						this.renderData[this.renderLength++] = 1 << 31 | pos | visible << 13 | palleteIndex
+						//this.extraRenderData[this.renderLength-1] = getRandomRotate(blockState,x+this.x,y+this.y,z+this.z,visible)
+					}
+
+					if(this.ambients.length<50 && (blockData[blockState].ambientSound || blockData[blockState].temperature !== undefined)){
+						const pos = (x | y << 4 | z << 8) << 19
+						this.ambients[this.ambients.length] = 1 << 31 | pos | palleteIndex
+						this.hasAmbients = true
 					}
 				}
-				await yieldThread()
 			}
-			for(let i=0; i<visFlags.length; i++){
-				if(this.blocks[i] && visFlags[i]){
-					this.optimizeBlock(i>>8, i>>4&15, i&15, localBlocks, this.blocks[i], visFlags[i])
-				}
-			}*/
 		}
 		updateBlock(x, y, z, noOnupdate, sx,sy,sz) {
 			if (this.chunk.buffer && !this.world.meshQueue.includes(this.chunk)) {
@@ -14067,6 +14140,8 @@ r 11 y  n  n  n
 			this.optimized = false
 			this.lit = false
 			this.wasLit = false
+			this.lightDropped = false
+			this.blockSpread = null
 			this.lazy = false
 			this.loaded = false
       this.type = type || ""
@@ -14092,7 +14167,7 @@ r 11 y  n  n  n
 			if (!this.sections[y >> 4]) {
 				do {
           let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
-          if(this.lit) section.skyLight.fill(15)
+          if(this.lit) section.skyLight.fill(255)
 					this.sections.push(section)
 				} while (!this.sections[y >> 4])
 			}
@@ -14155,7 +14230,7 @@ r 11 y  n  n  n
 			if (!this.sections[y >> 4]) {
 				do {
           let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
-          if(this.lit) section.skyLight.fill(15)
+          if(this.lit) section.skyLight.fill(255)
 					this.sections.push(section)
 				} while (!this.sections[y >> 4])
 			}
@@ -14166,7 +14241,7 @@ r 11 y  n  n  n
 			if (!this.sections[y >> 4]) {
 				do {
           let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
-          if(this.lit) section.skyLight.fill(15)
+          if(this.lit) section.skyLight.fill(255)
 					this.sections.push(section)
 				} while (!this.sections[y >> 4])
 			}
@@ -14176,6 +14251,41 @@ r 11 y  n  n  n
 			y -= minHeight
 			if (!this.sections[y >> 4]) return !(blockLight&1) * 15
 			return this.sections[y >> 4].getLight(x, y & 15, z, blockLight)
+		}
+		dropLight(){
+			if (this.lightDropped) return
+			let blockSpread = []
+			this.blockSpread = blockSpread
+			let max = this.sections.length * 16 - 1 + minHeight
+
+			//if(this.wasLit) this.unfillLight()
+	
+			// Set virtical columns of light to level 15
+			for (let x = 0; x < 16; x++) {
+				for (let z = 0; z < 16; z++) {
+					let light = 15, stop = false
+					for (let y = max; y >= minHeight; y--) {
+						let data = blockData[this.getBlock(x, y, z)]
+						if (data.lightLevel) {
+							if (!blockSpread[data.lightLevel]) blockSpread[data.lightLevel] = []
+							blockSpread[data.lightLevel].push(x + this.x, y, z + this.z)
+							this.setLight(x, y, z, data.lightLevel, 1)
+							this.setLight(x, y, z, data.lightLevel, 3)
+						}
+						if (!stop && !data.transparent) {
+							this.tops[z * 16 + x] = y
+							light = 0
+							stop = true
+						} else if (light) {
+							if(data.decreaseLight) light = Math.max(light-data.decreaseLight,0)
+							this.setLight(x, y, z, light, 2)
+							this.setLight(x, y, z, light, 0)
+						}
+					}
+				}
+			}
+
+			this.lightDropped = true
 		}
 		fillLight() {
 			if(host){
@@ -14204,56 +14314,37 @@ r 11 y  n  n  n
 				return
 			}
 			
+			const {world} = this
 			let max = this.sections.length * 16 - 1 + minHeight
-			let blockSpread = []
+			this.dropLight()
+			let blockSpread = this.blockSpread
+			this.blockSpread = null
 
-			//if(this.wasLit) this.unfillLight()
-	
-			// Set virtical columns of light to level 15
-			for (let x = 0; x < 16; x++) {
-				for (let z = 0; z < 16; z++) {
-					let light = 15, stop = false
-					for (let y = max; y >= minHeight; y--) {
-						let data = blockData[this.getBlock(x, y, z)]
-						if (data.lightLevel) {
-							if (!blockSpread[data.lightLevel]) blockSpread[data.lightLevel] = []
-							blockSpread[data.lightLevel].push(x + this.x, y, z + this.z)
-							this.setLight(x, y, z, data.lightLevel, 1)
-							this.setLight(x, y, z, data.lightLevel, 3)
-						}
-						if (!stop && !data.transparent) {
-							this.tops[z * 16 + x] = y
-							light = 0
-							stop = true
-						} else if (light) {
-							if(data.decreaseLight) light = Math.max(light-data.decreaseLight,0)
-							this.setLight(x, y, z, light, 2)
-							this.setLight(x, y, z, light, 0)
-						}
-					}
-				}
-			}
+			world.getChunk(this.x - 16, this.z).dropLight()
+			world.getChunk(this.x + 16, this.z).dropLight()
+			world.getChunk(this.x, this.z - 16).dropLight()
+			world.getChunk(this.x, this.z + 16).dropLight()
 	
 			// Spread the light to places where the virtical columns stopped earlier, plus chunk borders
 			let spread = []
 			for (let x = 0; x < 16; x++) {
 				for (let z = 0; z < 16; z++) {
 					for (let y = this.tops[z * 16 + x] + 1; y <= max; y++) {
-						let light = this.getLight(x, y+1, z, 0)
+						let light = this.getLight(x, y, z, 0)
 						if(!spread[light]) spread[light] = []
-						if (this.getLight(x+1,y,z,0) < light) {
+						if (x === 15 || this.tops[z * 16 + x + 1] > y) {
 							spread[light].push(x + this.x, y, z + this.z)
 							continue
 						}
-						if (this.getLight(x-1,y,z,0) < light) {
+						if (x === 0 || this.tops[z * 16 + x - 1] > y) {
 							spread[light].push(x + this.x, y, z + this.z)
 							continue
 						}
-						if (this.getLight(x,y,z+1,0) < light) {
+						if (z === 15 || this.tops[(z + 1) * 16 + x] > y) {
 							spread[light].push(x + this.x, y, z + this.z)
 							continue
 						}
-						if (this.getLight(x,y,z-z,0) < light) {
+						if (z === 0 || this.tops[(z - 1) * 16 + x] > y) {
 							spread[light].push(x + this.x, y, z + this.z)
 							continue
 						}
@@ -14484,6 +14575,7 @@ r 11 y  n  n  n
 			}
 		}
 		genMesh() {
+			if(!this.vao) return // already deleted but still in meshQueue, or couldn't create vao
 			let start = performance.now()
 			let barray = bigArray
 			let index = 0
@@ -14618,6 +14710,13 @@ r 11 y  n  n  n
 			this.updateWeather = false
 			this.weatherSize = size
 			this.prevWeather = (weather || prevActualWeather)
+		}
+		delete(){
+			glExtensions.vertex_array_object.deleteVertexArrayOES(this.vao)
+			this.vao = null
+			glExtensions.vertex_array_object.deleteVertexArrayOES(this.weatherVAO)
+			if(this.buffer) gl.deleteBuffer(this.buffer)
+			if(this.weatherBuffer) gl.deleteBuffer(this.weatherBuffer)
 		}
 		tick() {
 			if(((weather || prevActualWeather) !== this.prevWeather || weather && this.updateWeather) && chunkDist(this) <= weatherRenderDist){
@@ -15026,7 +15125,7 @@ r 11 y  n  n  n
 		const verticesBuffer = gl.createBuffer()
 		const textureBuffer = gl.createBuffer()
 		const normalBuffer = gl.createBuffer()
-		if(!cached){
+		if(!cached && vao){
 			vao.tHeVerticesBuffer = verticesBuffer
 			vao.tHeTextureBuffer = textureBuffer
 			vao.tHeNormalBuffer = normalBuffer
@@ -15090,7 +15189,7 @@ r 11 y  n  n  n
 		const vao = glExtensions.vertex_array_object.createVertexArrayOES()
 		const verticesBuffer = gl.createBuffer()
 		const textureBuffer = gl.createBuffer()
-		if(!cached){
+		if(!cached && vao){
 			vao.tHeVerticesBuffer = verticesBuffer
 			vao.tHeTextureBuffer = textureBuffer
 		}
@@ -15155,6 +15254,11 @@ r 11 y  n  n  n
 		const verticesBuffer = gl.createBuffer()
 		const textureBuffer = gl.createBuffer()
 		const normalBuffer = gl.createBuffer()
+		if(vao){
+			vao.tHeVerticesBuffer = verticesBuffer
+			vao.tHeTextureBuffer = textureBuffer
+			vao.tHeNormalBuffer = normalBuffer
+		}
 		glExtensions.vertex_array_object.bindVertexArrayOES(vao)
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
 
@@ -15175,6 +15279,17 @@ r 11 y  n  n  n
 		gl.enableVertexAttribArray(glCache.aNormalEntity)
 		glExtensions.vertex_array_object.bindVertexArrayOES(null)
 		return {vao, size}
+	}
+	function deleteVAO(vao){
+		if(!vao || typeof vao !== "object") return
+		if(vao.tHeVerticesBuffer){
+			glExtensions.vertex_array_object.deleteVertexArrayOES(vao)
+			gl.deleteBuffer(vao.tHeVerticesBuffer)
+			gl.deleteBuffer(vao.tHeTextureBuffer)
+		}
+		if(vao.tHeNormalBuffer){
+			gl.deleteBuffer(vao.tHeNormalBuffer)
+		}
 	}
 
 	let entities = [], entityIds = {}
@@ -15241,15 +15356,14 @@ r 11 y  n  n  n
 			this.rideOffsetZ = 0
       if(vao){
         this.vao = vao
-				if(vao.tHeVerticesBuffer){
-					this.verticesBuffer = vao.tHeVerticesBuffer
-					this.textureBuffer = vao.tHeTextureBuffer
-					this.normalBuffer = vao.tHeNormalBuffer
-				}
       }else if(vertices && texture){
         this.vao = glExtensions.vertex_array_object.createVertexArrayOES()
-        const verticesBuffer = this.verticesBuffer = gl.createBuffer()
-        const textureBuffer = this.textureBuffer = gl.createBuffer()
+        const verticesBuffer = gl.createBuffer()
+        const textureBuffer = gl.createBuffer()
+				if(this.vao){
+					this.vao.tHeVerticesBuffer = verticesBuffer
+					this.vao.tHeTextureBuffer = textureBuffer
+				}
         glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
 
@@ -15700,11 +15814,6 @@ r 11 y  n  n  n
         originalX:x, originalY:y, originalZ:z,
 				attached, glow
       }
-			if(vao && vao.tHeVerticesBuffer){
-				part.verticesBuffer = vao.tHeVerticesBuffer
-				part.textureBuffer = vao.tHeTextureBuffer
-				part.normalBuffer = vao.tHeNormalBuffer
-			}
 			let attachChain = []
 			let part2 = part
 			while(part2.attached){
@@ -15730,13 +15839,14 @@ r 11 y  n  n  n
 			if(this.reverseRotOrder) modelMatrix.rotY(lerp(diff,prevYaw,this.yaw))
 			modelMatrix.rotX(lerp(diff,this.previousPitch,this.pitch))
 			if(!this.reverseRotOrder) modelMatrix.rotY(lerp(diff,prevYaw,this.yaw))
-			if(this.scale) modelMatrix.scale(this.scale*this.actualSize,this.scale*this.actualSize,this.scale*this.actualSize)
+			if(this.scale) modelMatrix.scale(this.scale*this.actualSize,this.scale*this.actualSize,this.scale*this.actualSize) // for Player
 			if(this.dieRotate){
 				modelMatrix.translate(0,-this.height/2,0)
 				modelMatrix.rotZ(lerp(diff,this.prevDieRotate,this.dieRotate))
 				modelMatrix.translate(0,this.height/2,0)
 			}
 			if(this.extraSize) modelMatrix.scale(1 + this.extraSize, 1 + this.extraSize, 1 + this.extraSize)
+      if(this.offsetZ||this.pOffsetZ) modelMatrix.translate(0,0,lerp(diff,this.pOffsetZ,this.offsetZ)) // for Player
 			if(part.attached){
 				for(let partName of part.attachChain){
 					let part2 = this.parts[partName]
@@ -15777,13 +15887,14 @@ r 11 y  n  n  n
 			if(this.reverseRotOrder) modelMatrix.rotY(lerp(diff,prevYaw,this.yaw))
 			modelMatrix.rotX(lerp(diff,this.previousPitch,this.pitch))
 			if(!this.reverseRotOrder) modelMatrix.rotY(lerp(diff,prevYaw,this.yaw))
-			if(this.scale) modelMatrix.scale(this.scale*this.actualSize,this.scale*this.actualSize,this.scale*this.actualSize)
+			if(this.scale) modelMatrix.scale(this.scale*this.actualSize,this.scale*this.actualSize,this.scale*this.actualSize) // for Player
 			if(this.dieRotate){
 				modelMatrix.translate(0,-this.height/2,0)
 				modelMatrix.rotZ(lerp(diff,this.prevDieRotate,this.dieRotate))
 				modelMatrix.translate(0,this.height/2,0)
 			}
 			if(this.extraSize) modelMatrix.scale(1 + this.extraSize, 1 + this.extraSize, 1 + this.extraSize)
+      if(this.offsetZ||this.pOffsetZ) modelMatrix.translate(0,0,lerp(diff,this.pOffsetZ,this.offsetZ)) // for Player
 			if(part.attached){
 				for(let partName of part.attachChain){
 					let part2 = this.parts[partName]
@@ -15844,23 +15955,8 @@ r 11 y  n  n  n
       this.pitch = Math.PId - atan2(y - this.y, adjacent)
     }
 		delete(){
-			if(this.verticesBuffer){
-				gl.deleteBuffer(this.verticesBuffer)
-				gl.deleteBuffer(this.textureBuffer)
-			}
-			if(this.normalBuffer){
-				gl.deleteBuffer(this.normalBuffer)
-			}
-			for(let i in this.parts){
-				let part = this.parts[i]
-				if(part.verticesBuffer){
-					gl.deleteBuffer(part.verticesBuffer)
-					gl.deleteBuffer(part.textureBuffer)
-				}
-				if(part.normalBuffer){
-					gl.deleteBuffer(part.normalBuffer)
-				}
-			}
+			deleteVAO(this.vao)
+			for(let i in this.parts) deleteVAO(this.parts[i].vao)
 		}
 	}
 	const entitySerializer = win.entitySerializer
@@ -15908,11 +16004,11 @@ r 11 y  n  n  n
         this.previousYaw -= Math.PId
       }
       
-      if(now - this.spawn > 1000){
-        if(!p.spectator && !p.die && p.dimension === this.dimension) this.goCloserToPlayer(p)
+      if(now - this.spawn > 500){
+        if(!p.spectator && !p.die && p.dimension === this.dimension && (p.id !== this.from || now - this.spawn > 1000)) this.goCloserToPlayer(p)
         if(multiplayer) for(var i in players){
           var P = players[i]
-          if(!P.hidden && !P.die && P.dimension === this.dimension) this.goCloserToPlayer(P)
+          if(!P.hidden && !P.die && P.dimension === this.dimension && (P.id !== this.from || now - this.spawn > 1000)) this.goCloserToPlayer(P)
         }
       }
       
@@ -16012,10 +16108,14 @@ r 11 y  n  n  n
       var vertices = new Float32Array(verts)
       texture = new Float32Array(texture)
       
-			const verticesBuffer = gl.createBuffer()
-			const textureBuffer = gl.createBuffer()
-			const normalBuffer = gl.createBuffer()
+			if(!this.vao) return
+			const verticesBuffer = this.vao.tHeVerticesBuffer || gl.createBuffer()
+			const textureBuffer = this.vao.tHeTextureBuffer || gl.createBuffer()
+			const normalBuffer = this.vao.tHeNormalBuffer || gl.createBuffer()
 			glExtensions.vertex_array_object.bindVertexArrayOES(this.vao)
+			this.vao.tHeVerticesBuffer = verticesBuffer
+			this.vao.tHeTextureBuffer = textureBuffer
+			this.vao.tHeNormalBuffer = normalBuffer
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer)
@@ -16052,6 +16152,7 @@ r 11 y  n  n  n
     changeBlock(blockID){
       if(this.block === blockID) return
       this.block = blockID
+			deleteVAO(this.vao)
       let v = generateBlockVAO(blockID)
       this.faces = v.size
 			this.vao = v.vao
@@ -16740,6 +16841,7 @@ r 11 y  n  n  n
 				else{
 					let base = this.baseBlock
 					let signBlock = (block & STAIR) === STAIR ? (base | CROSS) : (base | SLAB)
+					deleteVAO(this.vao)
 					let v = generateBlockVAO(signBlock)
 		      this.faces = v.size
 					this.vao = v.vao
@@ -17050,13 +17152,13 @@ r 11 y  n  n  n
 		alwaysRender = true
 		constructor(x,y,z){
       super(x, y+(maxHeight-y)/2, z, 0, 0, 0, 0, 0, 0.25, maxHeight - y, 0.25, null, null, 0, Infinity, glExtensions.vertex_array_object.createVertexArrayOES())
-			this.willUpdateShape = true
 			this.shader = 2
 			this.remote = true
 			this.noHitbox = true
 			this.actualY = y
 			this.prevColumn = null
 			this.glow = true
+			this.updateShape()
     }
 		generateVAO(y,y2,vao){
 			const shape = shapes.cube
@@ -17105,9 +17207,12 @@ r 11 y  n  n  n
 					vertIndex += 12
 				}
 			}
-			const verticesBuffer = gl.createBuffer()
-			const textureBuffer = gl.createBuffer()
+			if(!vao) return
+			const verticesBuffer = vao.tHeVerticesBuffer || gl.createBuffer()
+			const textureBuffer = vao.tHeTextureBuffer || gl.createBuffer()
 			glExtensions.vertex_array_object.bindVertexArrayOES(vao)
+			vao.tHeVerticesBuffer = verticesBuffer
+			vao.tHeTextureBuffer = textureBuffer
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer)
@@ -17159,7 +17264,10 @@ r 11 y  n  n  n
 				}
 			}
 			for(let part in this.parts){
-				if(+part >= parts.length) delete this.parts[part]
+				if(+part >= parts.length){
+					deleteVAO(this.parts[part].vao)
+					delete this.parts[part]
+				}
 			}
 		}
 		update() {
@@ -17635,7 +17743,8 @@ r 11 y  n  n  n
       this.prevHolding = null
       this.holdRot = Math.PI / -10
       //if(blockData) part = generateBlockVAO(this.holding)
-      this.addPart("holding",part.size,part.vao,0, 0, 0, 1,1,1, 0, 0, 0, "rightArm")
+      this.addPart("holding",null,null,0, 0, 0, 1,1,1, 0, 0, 0, "rightArm")
+			this.parts.holding.hidden = true
       
 			this.equipment = {}
       this.addPart("armorHelmet", null,null, 0, 0, 0, 1,1,1, 0,0, 0, "head")
@@ -17725,6 +17834,7 @@ r 11 y  n  n  n
       image.src = url
     }
 		delete(){
+			super.delete()
 			if(this.skinURL) gl.deleteTexture(this.skinTex)
 			if(this.capeURL) gl.deleteTexture(this.capeTex)
 		}
@@ -17762,7 +17872,10 @@ r 11 y  n  n  n
       const verticesBuffer = gl.createBuffer()
       const textureBuffer = gl.createBuffer()
       const normalBuffer = gl.createBuffer()
-      glExtensions.vertex_array_object.bindVertexArrayOES(vao)
+			glExtensions.vertex_array_object.bindVertexArrayOES(vao)
+			vao.tHeVerticesBuffer = verticesBuffer
+			vao.tHeTextureBuffer = textureBuffer
+			vao.tHeNormalBuffer = normalBuffer
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
 
       gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer)
@@ -17789,16 +17902,18 @@ r 11 y  n  n  n
 			if(item && blockData[item.id]){
 				if(!part.prevItem || part.prevItem.id !== item.id || part.prevItem.trim !== item.trim || part.prevItem.trim_material !== item.trim_material){
 					part.prevItem = {...item}
+					deleteVAO(part.vao)
+					deleteVAO(part.overlayVao)
 					let texName = blockData[item.id].equipmentTexture
 					let texInfo = textureCoords[textureMap[(blockData[item.id].leggings?"equipment_humanoid_leggings_":"equipment_humanoid_")+texName]]
 					let tx = texInfo[0], ty = texInfo[1], tw = texInfo[2]-texInfo[0], th = texInfo[5]-texInfo[1]
-					let v = generateVAO(shape, tx, ty, tw, th, true)
+					let v = generateVAO(shape, tx, ty, tw, th)
 					part.vao = v.vao
 					part.size = v.size
 					if(item.trim){
 						texInfo = textureCoords[textureMap[(blockData[item.id].leggings?"trim_humanoid_leggings_":"trim_humanoid_")+item.trim]]
 						tx = texInfo[0], ty = texInfo[1], tw = texInfo[2]-texInfo[0], th = texInfo[5]-texInfo[1]
-						v = generateVAO(shape, tx, ty, tw, th, true)
+						v = generateVAO(shape, tx, ty, tw, th)
 						part.overlayVao = v.vao
 						texInfo = textureCoords[textureMap["trim_palette_"+item.trim_material]]
 						part.overlayTint = [texInfo[0]-0.5/textureSize/*it doesn't reach full bright, shift left*/, texInfo[1]+0.5/textureH, texInfo[2]-texInfo[0]]
@@ -17953,9 +18068,13 @@ r 11 y  n  n  n
       var part = this.parts.holding
       if(this.holding !== this.prevHolding){
         this.prevHolding = this.holding
-				var v = generateBlockVAO(this.holding)
-				part.vao = v.vao
-				part.size = v.size
+				deleteVAO(part.vao)
+				if(this.holding){
+					var v = generateBlockVAO(this.holding)
+					part.vao = v.vao
+					part.size = v.size
+				}else part.vao = null
+				part.hidden = !this.holding
       }
       this.parts.rightArm.rx = this.holdRot
       this.parts.leftArm.rx = 0 //if you change below, also change mob holding
@@ -18061,7 +18180,8 @@ r 11 y  n  n  n
 					this.parts.holding.y = pix*-10
 					this.parts.holding.x = pix*5
 					this.punchEffect = 0
-				}else if(this.punchEffect <= 0){
+				}else if(this.eating){}
+				else if(this.punchEffect <= 0){
 					this.parts.rightArm.rx -= 10*Math.PI/8*max(this.rx/Math.PI*2*0.5+0.5,0.25)
 				}
       }
@@ -18099,9 +18219,11 @@ r 11 y  n  n  n
 							tx = texInfo[0], ty = texInfo[1], tw = texInfo[2]-texInfo[0], th = texInfo[5]-texInfo[1]
 						}
 					}
-        	let vao = generateVAO(shapes.elytraRight, tx, ty, tw, th, true)
+					deleteVAO(this.parts.elytraRight.vao)
+        	let vao = generateVAO(shapes.elytraRight, tx, ty, tw, th)
 					this.parts.elytraRight.vao = vao.vao, this.parts.elytraRight.size = vao.size
-        	vao = generateVAO(shapes.elytraLeft, tx, ty, tw, th, true)
+					deleteVAO(this.parts.elytraLeft.vao)
+        	vao = generateVAO(shapes.elytraLeft, tx, ty, tw, th)
 					this.parts.elytraLeft.vao = vao.vao, this.parts.elytraLeft.size = vao.size
 				}
         var rxTarget, ryTarget, rzTarget
@@ -18713,11 +18835,14 @@ r 11 y  n  n  n
     }
     updateShape(){
       let tex = textureCoords[textureMap.sheepCombined]
+			deleteVAO(this.vao)
       let vao = generateVAO(this.fur ? shapes.sheepBodyFur : shapes.sheepBody, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
       this.vao = vao.vao, this.faces = vao.size
+			deleteVAO(this.parts.frontLeftLeg.vao)
       let part = generateVAO(this.fur ? shapes.sheepLegFur : shapes.sheepLeg,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
       this.parts.frontLeftLeg.vao = this.parts.frontRightLeg.vao = this.parts.backLeftLeg.vao = this.parts.backRightLeg.vao = part.vao
       this.parts.frontLeftLeg.size = this.parts.frontRightLeg.size = this.parts.backLeftLeg.size = this.parts.backRightLeg.size = part.size
+			deleteVAO(this.parts.head.vao)
       part = generateVAO(this.fur ? shapes.sheepHeadFur : shapes.sheepHead,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
       this.parts.head.vao = part.vao
       this.parts.head.size = part.size
@@ -18896,7 +19021,8 @@ r 11 y  n  n  n
       this.addPart("leftArm",part.size,part.vao,pix*5,pix*6,pix*0,1,1,1,0,0)
       var part = generateVAO(shapes.creeperHead,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
       this.addPart("head",part.size,part.vao,0,pix*10,0,1,1,1,0,0)
-      this.addPart("holding",0,part.vao,0,0,0,1,1,1,0,0,undefined,"rightArm") //changed later
+      this.addPart("holding",null,null,0,0,0,1,1,1,0,0,undefined,"rightArm") //changed later
+			this.parts.holding.hidden = true
       
       this.health = 20
       this.prevWalking = false
@@ -18906,9 +19032,13 @@ r 11 y  n  n  n
     }
 		updateHolding(){
 			let part = this.parts.holding
-			let v = generateBlockVAO(this.holding)
-			part.vao = v.vao
-			part.size = v.size
+			deleteVAO(part.vao)
+			if(this.holding){
+				let v = generateBlockVAO(this.holding)
+				part.vao = v.vao
+				part.size = v.size
+			}else part.vao = null
+			part.hidden = !this.holding
       let pix = 1 / 16
 			if(blockData[this.holding].tool){
         part.x = 0
@@ -19127,22 +19257,27 @@ r 11 y  n  n  n
     }
 		updateShape(){
 			var tex = textureCoords[textureMap[this.target ? "wolfAngry" : (this.tame ? "wolfTame" : "wolf")]]
+			deleteVAO(this.vao)
       var vao = generateVAO(shapes.wolfBody, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
       this.faces = vao.size
 			this.vao = vao.vao
       var pix = 1/16
+			deleteVAO(this.parts.head.vao)
       var part = generateVAO(shapes.wolfHead,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
       this.parts.head.size = part.size
 			this.parts.head.vao = part.vao
+			deleteVAO(this.parts.backLeftLeg.vao)
       var part = generateVAO(shapes.wolfLeg,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
       this.parts.backLeftLeg.vao = this.parts.frontLeftLeg.vao = this.parts.backRightLeg.vao = this.parts.frontRightLeg.vao = part.vao
       this.parts.backLeftLeg.size = this.parts.frontLeftLeg.size = this.parts.backRightLeg.size = this.parts.frontRightLeg.size = part.size
+      deleteVAO(this.parts.tail.vao)
       var part = generateVAO(shapes.wolfTail,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
       this.parts.tail.vao = part.vao
 			this.parts.tail.size = part.size
 			if(this.tame){
 				var tex = textureCoords[textureMap.wolfCollar]
 				this.parts.collar.hidden = false
+				deleteVAO(this.parts.collar.vao)
 				var part = generateVAO(shapes.wolfBody,tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
 				this.parts.collar.vao = part.vao
 				this.parts.collar.size = part.size
@@ -19829,17 +19964,19 @@ r 11 y  n  n  n
   
   entities[entities.length] = class PoofParticle extends Particle{
 		static name2 = "PoofParticle"
-    constructor(x,y,z){
-      super(x, y, z, 0, 0, rand(-0.05, 0.05), 0, rand(-0.05, 0.05), 0.5, 0.5, 0.5, null, null, genericVaos.size, rand(1000, 3000), genericVaos[floor(rand(8))])
+    constructor(x,y,z, size = rand(0.25,1)){
+      super(x, y, z, 0, 0, rand(-0.05, 0.05), 0, rand(-0.05, 0.05), size, size, size, null, null, genericVaos.size, rand(1000, 3000), genericVaos[genericVaos.length-1])
       this.brightness = rand(0.8, 1)
       this.speed = rand(0.01, 0.05)
 			this.tint = [this.brightness,this.brightness,this.brightness]
+			this.fadeSpeed = rand(250,500)
     }
     update(){
 			this.updateVelocity(now)
       this.vely = this.speed
 			this.move(now)
-			if (now - this.spawn > this.despawns) {
+			this.vao = genericVaos[genericVaos.length-1-floor((now-this.spawn)/this.fadeSpeed)]
+			if (!this.vao) {
 				this.canDespawn = true
 			}
       
@@ -21249,6 +21386,7 @@ r 11 y  n  n  n
 	function unfillReqs(x, z, dimension, dist, chunk){
 		if(dist >= 1 && chunk.lit){
 			chunk.lit = false
+			chunk.lightDropped = false
 			//world.unlightingQueue.push(chunk)
 		}
 	}
@@ -21490,16 +21628,7 @@ r 11 y  n  n  n
 			let conn
 			conn = server.connect({ id:"g"+p.id,
 			onopen: () => {
-				if(conn.list) conn.list()
 				conn.sendAll({type:"ping"})
-			},
-			onlist: id => {
-				if(id && (id.startsWith("srv") || /*old one*/id.startsWith("player")) && !users[id]){
-					let w = {id,signalingServer:key, name:"", version:"", host:"", players:[], ping:null}
-					users[id] = w
-					worlds.push(w)
-					if(addWorldCallback) addWorldCallback(w)
-				}
 			},
 			onmessage: data => {
 				if(!data) return
@@ -21640,7 +21769,6 @@ r 11 y  n  n  n
 				this.onmessage(packet)
 			})
 			connection.addEventListener("connectionstatechange", e => {
-				console.log(connection.connectionState)
 				if(connection.connectionState === "closed" || connection.connectionState === "failed"){
 					this.onclose(), this.onclose = emptyFunc
 				}
@@ -21727,7 +21855,7 @@ r 11 y  n  n  n
 		close(){}
 	}
 
-	import("."+"/"+"fea"+"ture"+"s.j"+"s").catch(console.error)
+	import("./features.js").catch(console.error)
   let host = false
 	
 	function initSingleplayer(){
@@ -21933,7 +22061,7 @@ r 11 y  n  n  n
 
 				if(!rejected) serverWorld.sendAll({type:"message",data:"<span style='color:lightgreen;'>"+data.username+" is connecting. "+(serverWorld.players.length+1)+" players now.", fromServer:true})
 				let peerConnection = new RTCPeerConnection({iceServers})
-				peerConnections[data.id] = peerConnection
+				peerConnections[data.FROM] = peerConnection
 
 				peerConnection.addEventListener('icecandidate', event => {
 					if (event.candidate) {
@@ -21961,14 +22089,14 @@ r 11 y  n  n  n
 				peerConnection.addEventListener("connectionstatechange", e => {
 					if(peerConnection.connectionState === "closed"){
 						cAnCeLcOnNectION = true
-						if(peerConnections[data.id]){
-							delete peerConnections[data.id]
+						if(peerConnections[data.FROM]){
+							delete peerConnections[data.FROM]
 						}
 					}else if(peerConnection.connectionState === "failed"){
 						cAnCeLcOnNectION = true
 						peerConnection.close()
-						if(peerConnections[data.id]){
-							delete peerConnections[data.id]
+						if(peerConnections[data.FROM]){
+							delete peerConnections[data.FROM]
 						}
 					}
 				})
@@ -22017,10 +22145,10 @@ r 11 y  n  n  n
 					if(!sigConns.get(key)) return
 					sigConns.delete(key)
 					if(sigConns.size){
-						setTimeout(() => {if(inWorld) openForServer(key, server)}, 60*1000)
+						setTimeout(() => {if(sigConns) openForServer(key, server)}, 60*1000)
 					}else{
 						setTimeout(() => {
-							if(inWorld) for(let [key,server] of Object.entries(signalingServers)) openForServer(key,server)
+							if(sigConns) for(let [key,server] of Object.entries(signalingServers)) openForServer(key,server)
 						}, 5000)
 					}
 				}
@@ -22127,6 +22255,7 @@ r 11 y  n  n  n
 				initBlockData()
 				genIcons()
 				initBlockEntities()
+				if(world) world.delete()
 				world = new World()
 				win.world = world
 				world.version = version
@@ -22141,6 +22270,7 @@ r 11 y  n  n  n
 				world.id = external ? originalTarget : data.id
 				world.name = data.name
 				world.saveId = data.saveId
+				world.mod = data.mod
 
 				autosaveTimer = null
 				lastAutosave = performance.now()
@@ -22354,7 +22484,7 @@ r 11 y  n  n  n
 					let info
 					if(blockInfo[blockInfoIds[data.data>>9]]) info = blockInfo[blockInfoIds[data.data>>9]].data
 					discoverTime = 200, discoverBlock = data.data>>9
-					sideMessage("Discovery Made: "+blockData[data.data>>9].Name, info)
+					//sideMessage("Discovery Made: "+blockData[data.data>>9].Name, info)
 				}else{
 					let a = achievementTypes[data.data]
 					sideMessage("Achievment Made: "+a.name, a.description)
@@ -22371,6 +22501,8 @@ r 11 y  n  n  n
 				}else{
 					Messages.write(data.data, data.username)
 				}
+			}else if(data.type === "music"){
+				handleWorldMusic(data)
 			}else if(data.type === "playSound"){
 				let volume = isFinite(data.volume) ? data.volume : null, panner
 				if(data.hasPos){
@@ -22535,16 +22667,14 @@ r 11 y  n  n  n
 		
 	win.ban = (username, why) => {
 		//if(!host) return alert("Only the host can ban")
-		if(websocket) sendWS({
-			type: "ban",
-			data: username,
-			reason:why
-		})
-		else send({
-			type: "ban",
-			data: username,
-			reason:why
-		})
+		if(websocket){
+			sendWS({
+				type: "ban",
+				data: username,
+				reason:why
+			})
+			return true
+		}
 		//if(!ban.includes(username)) ban.push(username)
 	}
 	win.unban = username => {
@@ -22554,14 +22684,13 @@ r 11 y  n  n  n
 			if(i === -1) return
 			ban.splice(i,1)
 		}*/
-		if(websocket) sendWS({
-			type:"unban",
-			data: username
-		})
-		else send({
-			type:"unban",
-			data: username
-		})
+		if(websocket){
+			sendWS({
+				type:"unban",
+				data: username
+			})
+			return true
+		}
 	}
 	win.whitelistAction = (action,username) => {
 		if(action === "enable") {
@@ -22577,6 +22706,7 @@ r 11 y  n  n  n
 			whitelist = null
 			serverWorld.sendAll({type:"message",data:"Whitelist disabled.", fromServer:true})
 		}else if(action === "add") {
+			if(!whitelist) win.whitelistAction("enable")
 			if(!whitelist.includes(username)){
 				whitelist.push(username)
 				serverWorld.sendAll({type:"message",data: username+" was added to the whitelist.", fromServer:true})
@@ -23001,15 +23131,6 @@ r 11 y  n  n  n
 						chunk.spreadLight(blspread, blight - 1, true, 1)
 					}
 				}
-				if (blockLight) { // Light block was removed
-					this.setLight(x, y, z, 0, 1)
-					this.setLight(x, y, z, 0, 3)
-					blspread.push(x, y, z)
-					let respread = []
-					for (let i = 0; i <= 15/*blockLight + 1*/; i++) respread[i] = []
-					chunk.unSpreadLight(blspread, blockLight - 1, respread, 1)
-					chunk.reSpreadLight(respread, 1)
-				}
 			}
 			else if (place && (center !== 0 || blight !== 0)) { // Block was placed; decrease light levels
 				let respread = []
@@ -23054,20 +23175,23 @@ r 11 y  n  n  n
 					chunk.unSpreadLight(blspread, blight - 1, respread, 1)
 					chunk.reSpreadLight(respread, 1)
 				}
-				if (blockLight) { // Light block was placed
-					up = this.getLight(x, y+1, z, 1)
-					down = this.getLight(x, y-1, z, 1)
-					north = this.getLight(x, y, z+1, 1)
-					south = this.getLight(x, y, z-1, 1)
-					east = this.getLight(x+1, y, z, 1)
-					west = this.getLight(x-1, y, z, 1)
-					blight = max(max(up, down, north, south, east, west)-1, blockLight)
-					this.setLight(x, y, z, blight, 1)
-					this.setLight(x, y, z, blockLight, 3)
-					blspread.length = 0
-					blspread.push(x, y, z)
-					chunk.spreadLight(blspread, blight - 1, true, 1)
-				}
+			}
+			if (place && blockLight) { // Light block was placed
+				blight = max(this.getLight(x, y, z, 1), blockLight)
+				this.setLight(x, y, z, blight, 1)
+				this.setLight(x, y, z, blockLight, 3)
+				blspread.length = 0
+				blspread.push(x, y, z)
+				chunk.spreadLight(blspread, blight - 1, true, 1)
+			}
+			else if (!place && blockLight) { // Light block was removed
+				this.setLight(x, y, z, 0, 1)
+				this.setLight(x, y, z, 0, 3)
+				blspread.push(x, y, z)
+				let respread = []
+				for (let i = 0; i <= 15/*blockLight + 1*/; i++) respread[i] = []
+				chunk.unSpreadLight(blspread, blockLight - 1, respread, 1)
+				chunk.reSpreadLight(respread, 1)
 			}
 		}
     getBiome(x,y,z,dimension){
@@ -23178,14 +23302,14 @@ r 11 y  n  n  n
 				ent.burning = p.burning||false; ent.burnTimer = p.burnTimer||0
 				ent.oxygen = p.oxygen; ent.spinTarget = p.spinTarget
 				ent.path = p.path || null
-				if(p.fur) ent.fur = p.fur
-				if(p.color) ent.color = p.color
-				if(p.eating) ent.eating = p.eating
+				if("fur" in ent) ent.fur = p.fur
+				if("color" in ent) ent.color = p.color
+				if("eating" in ent) ent.eating = p.eating
 				ent.target = p.target
 				if(entType === "Sheep") ent.wool = p.wool
-				if(p.tame) ent.tame = p.tame
-				if(p.sitting) ent.sitting = p.sitting
-				if(p.owner) ent.owner = p.owner
+				if("tame" in ent) ent.tame = p.tame
+				if("sitting" in ent) ent.sitting = p.sitting
+				if("owner" in ent) ent.owner = p.owner
 				ent.holding = p.holding; ent.attractedBy = p.attractedBy||null
 				if(entType === "Creeper"){ ent.explodeAmount = p.explodeAmount; ent.timerStart = now - p.timerStartRelative }
 				ent.attackCooldown = p.attackCooldown||0
@@ -23249,7 +23373,7 @@ r 11 y  n  n  n
         case "explosion":
           for(let i=0; i<o.data.length; i+=5){
             this.addParticle(new entities[entityIds.ShockwaveParticle](o.data[i], o.data[i+1], o.data[i+2], o.data[i+4]), o.data[i+3],o.dimension)
-            this.addParticle(new entities[entityIds.PoofParticle](o.data[i], o.data[i+1], o.data[i+2]), o.data[i+3],o.dimension)
+            this.addParticle(new entities[entityIds.PoofParticle](o.data[i], o.data[i+1], o.data[i+2], rand(0.25,0.5)), o.data[i+3],o.dimension)
           }
           break
 				case "flameCube":
@@ -23351,7 +23475,8 @@ r 11 y  n  n  n
 				particle.update()
 				if (particle.canDespawn || (particle.y <= minEntityY)) {
 					particle.delete()//ondelete
-					this.particles.splice(i,1)
+					this.particles[i] = this.particles[this.particles.length-1]
+					this.particles.pop()
 				}
 			}
 			this.lastUpdate = now
@@ -23471,6 +23596,7 @@ r 11 y  n  n  n
 					skyBottom[0] *= w
 					skyBottom[1] *= w
 					skyBottom[2] *= w
+					skylightAmount *= (1-slowWeatherAmount)*0.85+0.15
 				}
 				if(weatherAmount){
 					sky[0] = lerp(weatherAmount, sky[0], 0.5)
@@ -23585,7 +23711,7 @@ r 11 y  n  n  n
 				for (let i in chunk.entities) {
 					const entity = chunk.entities[i]
 					//if(entity.alwaysRender) continue
-					if(dist3(entity.x,entity.y,entity.z,p.camera.renderX,p.camera.renderY,p.camera.renderZ) > settings.renderDistance*16+max(entity.width,entity.height,entity.depth)) continue//out of render distance
+					//if(dist3(entity.x,entity.y,entity.z,p.camera.renderX,p.camera.renderY,p.camera.renderZ) > settings.renderDistance*16+max(entity.width,entity.height,entity.depth)) continue//out of render distance
 					if(cull !== entity.cullFace){
 						cull = entity.cullFace
 						cull ? gl.enable(gl.CULL_FACE) : gl.disable(gl.CULL_FACE)
@@ -23788,11 +23914,26 @@ p.camera.transformation.elements.set(matrix)//*/
     renderTextDisplay(e){
       this.textEntities.push(e)
     }
-		unloadAllChunks(){
+		delete(){
 			this.loaded.length = 0
 			this.lastChunk = ","
-			this.entities.clear()
+			for(let x in this.chunks) for(let z in this.chunks[x]){
+				let chunk = this.chunks[x][z]
+				if(chunk){
+					for(let i in chunk.entities){
+						this.deleteEntity(i,true)
+					}
+					chunk.delete()
+				}
+			}
 			this.chunks = {}
+			this.entities.clear()
+			this.chunkGenQueue.length = 0
+			this.lightingQueue.length = 0
+			//this.unlightingQueue.length = 0
+			this.neededChunks.length = 0
+			this.sortedChunks.length = 0
+			this.doubleRenderChunks.length = 0
 		}
 		loadChunks() {
 			let actualRenderDistance = settings.renderDistance
@@ -23832,6 +23973,7 @@ p.camera.transformation.elements.set(matrix)//*/
 					let chunk = this.getOrNewChunk(x*16,z*16,d)
 					this.loaded[X * this.lwidth + Z] = chunk
 					if(maxDist(cx, cz, x, z) <= actualRenderDistance){
+						fillReqs(x, z, d)
 						if (!chunk.buffer && !this.chunkGenQueue.includes(chunk)) {
 							this.chunkGenQueue.push(chunk)
 						}
@@ -23850,6 +23992,7 @@ p.camera.transformation.elements.set(matrix)//*/
 							for(let i in chunk.entities){
 								this.deleteEntity(i,true)
 							}
+							chunk.delete()
 							delete this.chunks[x][z]
 						}
 					}
@@ -24558,13 +24701,13 @@ p.camera.transformation.elements.set(matrix)//*/
     }, () => preVersion && !(userInfo&&userInfo.admin))
     Button.add(width / 2, height / 2 + 70*ss, 400*ss, 40*ss, "Marketplace", "main menu", r => {marketplaceCategory = null; marketplaceSearch.value = ""; changeScene("marketplace")})
 		Button.add(width / 2 - 105*ss, height / 2 + 160*ss, 190*ss, 40*ss, "Options", "main menu", r => changeScene("options"))
-    Button.add(width / 2 + 105*ss, height / 2 + 160*ss, 190*ss, 40*ss, ["Quit","Download to u n b l o c k"], "main menu", r => {
+    Button.add(width / 2 + 105*ss, height / 2 + 160*ss, 190*ss, 40*ss, "Quit", "main menu", r => {
       if(window.opener !== null || window.history.length === 1){
         close()
       }else{
         location.href = "offdown.html"
       }
-    }, null,null, () => window.opener !== null || window.history.length === 1 ? 0 : 1)
+    })
     Button.add(width / 2 - 235*ss, height / 2 + 160*ss, 40*ss, 40*ss, "?", "main menu", r => changeScene("options help"), null, "Help")
     Button.add(width / 2 + 235*ss, height / 2 + 160*ss, 40*ss, 40*ss, "🌐", "main menu", r => changeScene("options languages"), null, "Languages")
 		
@@ -24589,7 +24732,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			worldType = r === "World Type: Superflat" ? "superflat" : r === "World Type: Island" ? "island" : r === "World Type: Void" ? "void" : r === "World Type: Large" ? "large" : "alpha"
 			if(worldType !== "large") fancyRivers = false
 			if(worldType === "superflat") trees = caves = structures = false
-		}, null, () => worldType === "alpha" ? "Old world type. Simple terrain and biomes. Some trees and flowers." : worldType === "large" ? "Mountains, hills, forests, rivers, big rocks, and more." : worldType === "void" ? "To start building in void, use setblock command." : worldType === "island" ? "A very big island with a volcano. Surrounded by infinite ocean." : null,
+		}, null, () => worldType === "alpha" ? "Old world type with trees and biomes." : worldType === "large" ? "Mountains, hills, forests, rivers, big rocks, and more." : worldType === "void" ? "To start building in void, use setblock command." : worldType === "island" ? "A very big island with a volcano. Surrounded by infinite ocean." : null,
 		() => {
 			if(worldType === "island") return 3
 			if(worldType === "void") return 4
@@ -24702,7 +24845,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				w.code = newCode
 			}
 			}
-			w.mod = window.modBox.value
+			w.mod = window.modBox.value || undefined
       saveToDB(w.id, w).then(success => {
 				initWorldsMenu()
 				changeScene("loadsave menu")
@@ -24855,21 +24998,22 @@ p.camera.transformation.elements.set(matrix)//*/
 				win.disableMultiplayerPass()
 			}else win.enableMultiplayerPass()
 		}, () => (!host||!sigConns), "To make it private and only let some people join, add a password or enable whitelist. <br><br><span style='color:lightblue'>You can also use whitelist by typing this command in chat:<br><small>/whitelist enable<br>/whitelist add \"username1234\"</small></span> ⬅ <small>put other people's username here</small>", () => multiplayerPass?1:0)
-		Button.add(width/2, height / 2 + 125*ss, 420*ss, 40*ss, "Exit Without Saving", "pause", r => {
+		Button.add(width/2, height / 2 + 125*ss, 420*ss, 40*ss, "Exit", "pause", r => {
 			/*if(!host){
 				multiplayer.sendInvStuff()
 				multiplayer.sendPos(true)
 			}*/
+      updateTitle(false)
 			multiplayer.close()
 			if(!host){
 				if(websocket) websocket.close()
+				changeScene("multiplayer menu")
 			}else{
-				changeScene("main menu")
 				if(sigConns) disableMultiplayer()
 				serverWorld.close()
+				changeScene("main menu")
 			}
-      updateTitle(false)
-		})
+		}, null, () => host&&"Does not save.")
     Button.add(width/2, 10+20*ss, 300*ss, 40*ss, "Download This World", "pause", r => {
 			getSaveJSON().then(data => {
 				let a = document.createElement("a")
@@ -25000,8 +25144,9 @@ p.camera.transformation.elements.set(matrix)//*/
 		Button.add(30*ss, height/2, 30*ss,30*ss,"◀","options 2", r => changeScene("options"))*/
     
     // World settings buttons
-    Button.add(width / 4, height/2 + -185*ss, width / 3, 40*ss, ["TNT Explodes: On","TNT Explodes: Off"], "worldSettings", r => worldSettings.tntExplode = r === "TNT Explodes: On", null, null, () => worldSettings.tntExplode ? 0 : 1)
-    Button.add(width / 4, height/2 + -125*ss, width / 3, 40*ss, ["Kill command enabled","Kill command disabled"], "worldSettings", r => worldSettings.killCmdOff = r === "Kill command disabled", null, null, () => worldSettings.killCmdOff ? 1 : 0)
+		// if you change any needsCheats, change createNewWorld
+		Button.add(width / 4, height/2 + -185*ss, width / 3, 40*ss, ["TNT Explodes: On","TNT Explodes: Off"], "worldSettings", r => worldSettings.tntExplode = r === "TNT Explodes: On", () => !host&&inWorld, null, () => worldSettings.tntExplode ? 0 : 1)
+    Button.add(width / 4, height/2 + -125*ss, width / 3, 40*ss, ["Kill command enabled","Kill command disabled"], "worldSettings", r => worldSettings.killCmdOff = r === "Kill command disabled", () => !host&&inWorld, null, () => worldSettings.killCmdOff ? 1 : 0)
     Button.add(width / 4, height/2 + -65*ss, width / 3, 40*ss, ["Daylight Cycle: On", "Daylight Cycle: Off", "Daylight Cycle: 24 Hours"], "worldSettings", r => worldSettings.dayNightCycle = r !== "Daylight Cycle: Off", needsCheats, noCheatsThenSayIt("dayNightCycle",true), () => worldSettings.dayNightCycle ? 0 : 1)
     Button.add(width / 4, height/2 + -5*ss, width / 3, 40*ss, ["Blocks Fall: On", "Blocks Fall: Off"], "worldSettings", r => worldSettings.blocksFall = r === "Blocks Fall: On", needsCheats, noCheatsThenSayIt("blocksFall",true), () => worldSettings.blocksFall ? 0 : 1)
 		Button.add(width / 4, height/2 + 55*ss, width / 3, 40*ss, ["Default Game Mode: Creative", "Default Game Mode: Survival", "Default Game Mode: Hardcore"], "worldSettings", r => {
@@ -26386,6 +26531,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		gl.vertexAttribPointer(glCache.aShadow, 1, gl.FLOAT, false, 24, 20)
 		gl.disableVertexAttribArray(glCache.aSkylight)
 		gl.disableVertexAttribArray(glCache.aBlocklight)
+		gl.disableVertexAttribArray(glCache.aNormal)
     gl.disableVertexAttribArray(glCache.tint)
 		gl.vertexAttrib1f(glCache.aSkylight, 1.0)
 		gl.vertexAttrib1f(glCache.aBlocklight, 1.0)
@@ -26822,7 +26968,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		ctx.textAlign = 'left'
 		text(debugLines.join("\n"), 5, height - 5, 16*ss, 3)
 		ctx.textAlign = 'right'
-		text("Position: " + p2.x + ", " + p2.y + ", " + p2.z, width - 10, 5, 16*ss, 4)
+		if(showDebug) text("Position: " + p2.x + ", " + p2.y + ", " + p2.z, width - 10, 5, 16*ss, 4)
 
 		ctx.drawImage(gl.canvas, 0, 0, width,height)
 	}
@@ -26934,6 +27080,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT)
     gl.useProgram(program3D)
     gl.uniform1i(glCache.uSampler, 0)
+		gl.depthFunc(gl.LESS)
 		//ctx.globalAlpha = changeSceneAnimation ? (thisSceneCurrent ? animationAmount : 1-animationAmount) : 1
 		ctx.textAlign = 'left'
 		ctx.fillStyle = "rgb(127, 127, 127, 65%)"
@@ -27032,10 +27179,10 @@ p.camera.transformation.elements.set(matrix)//*/
     if(screen === "inventory"){
       let offX = width - s*4
       let offY = s*2
-			ctx.font = s*0.4+"px thefont"
+			ctx.font = s/3+"px thefont"
 			ctx.fillStyle = "white"
 			ctx.textAlign = "left"
-			ctx.fillText("crafting", offX, offY - s2)
+			ctx.fillText("Crafting", offX, offY - s2)
       //draw grid
       ctx.lineWidth = 1
       ctx.strokeStyle = "black"
@@ -27115,6 +27262,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				if(item) showName = item
 			}
 		}
+		gl.depthFunc(gl.LEQUAL) // change it back
 		ctx.drawImage(gl.canvas,0,0, width,height)
     if(showName){
 			showHoverbox(blockNameText(showName))
@@ -27266,10 +27414,10 @@ p.camera.transformation.elements.set(matrix)//*/
     
     let offX = width - s*4
     let offY = s * 2
-		ctx.font = s*0.4+"px thefont"
+		ctx.font = s/3+"px thefont"
 		ctx.fillStyle = "white"
 		ctx.textAlign = "left"
-		ctx.fillText("crafting", offX, offY - s2)
+		ctx.fillText("Crafting", offX, offY - s2)
     //draw grid
     ctx.lineWidth = 1
 		ctx.strokeStyle = "black"
@@ -27694,8 +27842,8 @@ p.camera.transformation.elements.set(matrix)//*/
 			}
 			let touch = e.tOuCH
 			if(!touch) continue
-			e.movementY = touch.pageY - pTouch.y;
-			e.movementX = touch.pageX - pTouch.x;
+			e.movementY = (touch.pageY - pTouch.y) * 4;
+			e.movementX = (touch.pageX - pTouch.x) * 4;
 			e.x = touch.pageX
 			e.y = touch.pageY
 			let isWorldTouch = worldTouch && touch.identifier === worldTouch.identifier
@@ -27783,6 +27931,70 @@ p.camera.transformation.elements.set(matrix)//*/
       return true
     }
   }
+
+	/*//let deviceMove = {x:0,y:0,z:0}
+	let deviceRotX = 0, deviceRotY = 0
+
+	function quatFromEuler(alpha, beta, gamma) {
+		const c1 = Math.cos(alpha/2);
+		const c2 = Math.cos(beta/2);
+		const c3 = Math.cos(gamma/2);
+		const s1 = Math.sin(alpha/2);
+		const s2 = Math.sin(beta/2);
+		const s3 = Math.sin(gamma/2);
+
+		return {
+			w: c1*c2*c3 - s1*s2*s3,
+			x: c1*s2*c3 - s1*c2*s3,
+			y: c1*c2*s3 + s1*s2*c3,
+			z: s1*c2*c3 + c1*s2*s3
+		};
+	}
+
+	function rotateVec(q, v) {
+		const {x,y,z,w} = q;
+
+		const ix =  w*v.x + y*v.z - z*v.y;
+		const iy =  w*v.y + z*v.x - x*v.z;
+		const iz =  w*v.z + x*v.y - y*v.x;
+		const iw = -x*v.x - y*v.y - z*v.z;
+
+		return {
+			x: ix*w + iw*-x + iy*-z - iz*-y,
+			y: iy*w + iw*-y + iz*-x - ix*-z,
+			z: iz*w + iw*-z + ix*-y - iy*-x
+		};
+	}
+
+	window.addEventListener("deviceorientation", (e) => {
+		if(screen !== "play") return
+
+		const alpha = (e.alpha || 0) * Math.PI/180;
+		const beta  = (e.beta  || 0) * Math.PI/180;
+		const gamma = (e.gamma || 0) * Math.PI/180;
+
+		const q = quatFromEuler(alpha, beta, gamma);
+
+		// device forward vector
+		const f = rotateVec(q, {x:0, y:0, z:-1});
+
+		// pitch
+		let rotX = Math.asin(f.z);
+
+		// yaw from horizontal projection
+		let rotY = Math.atan2(f.x, f.y);
+
+		mmoveX += rotX-deviceRotX
+		mmoveY += rotY-deviceRotY
+		deviceRotX = rotX, deviceRotY = rotY
+		
+	});
+	function requestDeviceMotion(){
+		if(window.DeviceOrientationEvent && DeviceOrientationEvent.requestPermission) DeviceOrientationEvent.requestPermission().catch(console.error)
+		window.removeEventListener("click", requestDeviceMotion)
+	}
+	window.addEventListener("click", requestDeviceMotion)
+	*/
   
 	document.onpointerlockchange = function() {
 		if (doc.pointerLockElement === canvas) {
@@ -28071,7 +28283,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			if(k === "+") fasterVel *= 2
 			if(k === "-") fasterVel = 1
 
-			if(p.spectateRemoteControl && controlKeys[k] && controlKeys[k].isGameControl) send({type:"controlName",event:"keydown",key:controlKeys[k].name},p.spectating.id)
+			if(p.spectateRemoteControl && controlKeys[k] && controlKeys[k].isGameControl) send({type:"remoteControl",event:"keydown",key:controlKeys[k].name},p.spectating.id)
 		} else if (screen === "pause") {
 			if(k === controlMap.pause.key) {
 				play()
@@ -29397,8 +29609,8 @@ p.camera.transformation.elements.set(matrix)//*/
 		window.servers.appendChild(searchMsg)
 		let worlds = await getWorlds(addWorld, msg => window.servers.insertAdjacentHTML('beforeend',"<div class='select-message'>"+msg+"</div>"))
     //if(worlds === "notLoggedIn") return changeScene("main menu")
-    //if(typeof worlds === "string") return window.servers.innerHTML = "<div class='select-message'>"+worlds+"</div>"
-		if(!worlds.length) window.servers.insertAdjacentHTML('beforeend',"<div class='select-message'>No servers. You can host one by clicking 'Enable Multiplayer' in a world.</div>")
+    if(typeof worlds === "string") window.servers.innerHTML = "<div class='select-message'>"+worlds+"</div>"
+		else if(!worlds.length) window.servers.insertAdjacentHTML('beforeend',"<div class='select-message'>No servers. You can host one by clicking 'Enable Multiplayer' in a world.</div>")
 		searchMsg.remove(), searchMsg = null
 
 		/*
@@ -30160,12 +30372,88 @@ p.camera.transformation.elements.set(matrix)//*/
     return musicObj
   }
   win.playMusic = playMusic
-  
+
+  const worldMusic = {}
+	win.worldMusic = worldMusic
+  const MUSIC_FADE_TIME = 2
+
+  function worldMusicFadeTo(track, targetGain) {
+    track.targetGain = targetGain
+    const g = track.gainNode.gain
+    const target = targetGain * settings.volume
+    try {
+      g.cancelScheduledValues(audioCtx.currentTime)
+      g.setValueAtTime(g.value, audioCtx.currentTime)
+      g.linearRampToValueAtTime(target, audioCtx.currentTime + MUSIC_FADE_TIME)
+    } catch(e) {
+      g.value = target
+    }
+  }
+
+  function handleWorldMusic({id, url, elapsed}) {
+    if(!url) {
+      const track = worldMusic[id]
+      if(track) {
+        worldMusicFadeTo(track, 0)
+        setTimeout(() => { track.audio.pause(); track.audio.src = "" }, MUSIC_FADE_TIME * 1000)
+        delete worldMusic[id]
+      }
+      return
+    }
+    if(document.hidden) return
+    let track = worldMusic[id]
+    if(!track) {
+      const audio = new Audio()
+      audio.crossOrigin = ""
+      audio.loop = false
+      const source = audioCtx.createMediaElementSource(audio)
+      const gainNode = audioCtx.createGain()
+      gainNode.gain.value = 0
+      source.connect(gainNode)
+      gainNode.connect(audioCtx.destination)
+      track = {audio, gainNode, targetGain: 0, startTime: Date.now()/1000-elapsed}
+      worldMusic[id] = track
+    }
+    if(track.audio.src !== url) {
+      track.audio.src = url
+      track.audio.currentTime = elapsed
+    } else if(Math.abs(track.audio.currentTime - elapsed) > 0.5) {
+			if(track.audio.duration && elapsed>track.audio.duration) return
+      track.audio.currentTime = elapsed
+    }
+    track.audio.play().catch(console.warn)
+    worldMusicFadeTo(track, 1)
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    const visible = !document.hidden
+    for(const id in worldMusic) {
+      const track = worldMusic[id]
+      if(visible) {
+				let elapsed = Date.now()/1000-track.startTime
+				if(track.audio.duration && elapsed>track.audio.duration) return
+				track.audio.currentTime = elapsed
+        track.audio.play().catch(console.warn)
+      } else {
+        setTimeout(() => {if(track.targetGain === 0) track.audio.pause()}, MUSIC_FADE_TIME * 1000)
+      }
+      worldMusicFadeTo(track, visible ? 1 : 0)
+    }
+  })
+
   let menuMusicVolume = 0, lastUpdateMusic = performance.now()
   let menuMusicIdx = 0
   let currentMusic = null
   function updateMusic(){
 		let now = performance.now(), dt = (now - lastUpdateMusic) / 4000
+    if(!inWorld){
+      for(const id in worldMusic){
+        const track = worldMusic[id]
+        worldMusicFadeTo(track, 0)
+        setTimeout(() => track.audio.pause(), MUSIC_FADE_TIME * 1000)
+        delete worldMusic[id]
+      }
+    }
     if(inWorld){
       if(menuMusicVolume > 0) menuMusicVolume -= dt
       if(menuMusicVolume < 0) menuMusicVolume = 0
@@ -30216,13 +30504,13 @@ p.camera.transformation.elements.set(matrix)//*/
   document.addEventListener("mousedown", tryPlayMusic)
   document.addEventListener("touchstart", tryPlayMusic)
   //document.body.onmousedown = e => {if(e.target && e.target.tagName.toLowerCase() === "button") playSound("click")}
-	const mediaAction = () => alert("You can't do that!")
+	/*const mediaAction = () => alert("You can't do that!")
   navigator.mediaSession.setActionHandler('play', mediaAction);
 	navigator.mediaSession.setActionHandler('pause', mediaAction);
 	navigator.mediaSession.setActionHandler('seekbackward', mediaAction);
 	navigator.mediaSession.setActionHandler('seekforward', mediaAction);
 	navigator.mediaSession.setActionHandler('previoustrack', mediaAction);
-	navigator.mediaSession.setActionHandler('nexttrack', mediaAction);
+	navigator.mediaSession.setActionHandler('nexttrack', mediaAction);*/
 
   /*var audioRecorder = null, audioStream = null, recordingAudio = false, canSendAudio = false
   async function startRecordAudio(){
@@ -30743,6 +31031,10 @@ p.camera.transformation.elements.set(matrix)//*/
 			name:"Sparse jungle",
 			seeds:[923024760]
 		},
+		{
+			name:"Steep taiga",
+			seeds:[188809457]
+		},
 	]
 	function initSeedTemplatesMenu(){
 		while (window.seeds.firstChild) {
@@ -30776,6 +31068,11 @@ p.camera.transformation.elements.set(matrix)//*/
 			win.initServerEverything = null
 		}
     host = true
+		if(!cheats){ // if you change this, change World settings buttons
+			worldSettings.dayNightCycle = true
+			worldSettings.blocksFall = true
+			worldSettings.weatherCycle = true
+		}
 		let seed = isNaN(seedBox.value) ? seedBox.value.hashCode() : +seedBox.value
 		serverWorld = new ServerWorld({operators:[p.username],trees,caves,fancyRivers,worldType,structures,gameMode:p.gameMode,cheats,settings:worldSettings})
 		serverWorld.setSeed(seedBox.value ? seed : (Math.random() * 2000000000 | 0))
@@ -30852,7 +31149,9 @@ p.camera.transformation.elements.set(matrix)//*/
           data = JSON.parse(data)
         }catch(e){
           alert(e)
+					return
         }
+				if(data.file && !data.code) data = JSON.parse(data.file)
       }
       if (data) {
         code = data.code
@@ -30890,18 +31189,18 @@ p.camera.transformation.elements.set(matrix)//*/
 				if(data.survivStr){
 					serverWorld.playersInv[":host"] = {survivStr:data.survivStr,inv:data.inv}
 				}
-				for(let i in serverWorld.playersInv){
-					if(typeof serverWorld.playersInv.inv === "string") serverWorld.playersInv[i].inv = atoarr(serverWorld.playersInv[i].inv)
-					if(typeof serverWorld.playersInv.survivStr === "string") serverWorld.playersInv[i].survivStr = atoarr(serverWorld.playersInv[i].survivStr)
-					if(typeof serverWorld.playersInv.data === "string") serverWorld.playersInv[i].data = atoarr(serverWorld.playersInv[i].data)
-				}
+				/*for(let i in serverWorld.playersInv){
+					if(typeof serverWorld.playersInv[i].inv === "string") serverWorld.playersInv[i].inv = atoarr(serverWorld.playersInv[i].inv)
+					if(typeof serverWorld.playersInv[i].survivStr === "string") serverWorld.playersInv[i].survivStr = atoarr(serverWorld.playersInv[i].survivStr)
+					if(typeof serverWorld.playersInv[i].data === "string") serverWorld.playersInv[i].data = atoarr(serverWorld.playersInv[i].data)
+				}*/
 				mod = data.mod
 				banned = data.banned
 				whitelist = data.whitelist
 				multiplayerPass = data.multiplayerPass
       }
-    }
-
+		}
+		
 		cheats = !p.survival
     /*if(inv){
       world.loadOldInv(inv)
@@ -30926,11 +31225,12 @@ p.camera.transformation.elements.set(matrix)//*/
 		if(mod){
 			serverWorld.mod = mod
 			if(!mod.startsWith("function") && confirm("Run this mod?\n\n\n"+mod)){
+				initBlockData()
 				// for better error messages
-				let url = URL.createObjectURL(new Blob(["export default function(world){"+mod+"}"],{type:"application/javascript"}))
+				let url = URL.createObjectURL(new Blob(["export default function(world,blockData,blockIds,entities,entityIds){ "+mod+" }"],{type:"application/javascript"}))
 				try{
 					let e = await import(url)
-					e.default(serverWorld)
+					e.default(serverWorld,blockData,blockIds,serverEntities,serverEntityIds)
 				}catch(e){
 					reportError(e)
 					return
@@ -31626,10 +31926,10 @@ p.camera.transformation.elements.set(matrix)//*/
 				ctx.textAlign = "center"
 				fill(255)
 				textSize(40*x)
-				text("You discovered",width/2,height/2-inventory.size*x*2)
-				text(blockNameText(discoverBlock,false),width/2,height/2+inventory.size*x*1.5)
+				text("You discovered",width/2,inventory.size*x*0.5)
+				text(blockNameText(discoverBlock,false),width/2,inventory.size*x*4)
 				if(!blockData[discoverBlock])throw new Error("no block "+discoverBlock+" from discover")
-				drawIcon(width/2, height/2, discoverBlock, null, null, x*2.5)
+				drawIcon(width/2, inventory.size*x*2.5, discoverBlock, null, null, x*2.5)
 				ctx.globalAlpha = 1
 				updateHUD = true
 			}
@@ -31703,12 +32003,12 @@ p.camera.transformation.elements.set(matrix)//*/
       fill(255)
       ctx.font = (50*ss)+"px thefont"
       ctx.textAlign = "center"
-      text(p.gameMode === "hardcore" ? "Game Over" : "You Died", width/2, 60)
+      text(p.gameMode === "hardcore" ? "Game Over!" : "You Died!", width/2, 60*ss)
       
       ctx.font = (16*ss)+"px thefont"
-      text(dieMessage, width/2, 140)
+      text(dieMessage, width/2, 130*ss)
       
-      text("Score: "+p.level, width/2, 180)
+      text("Score: "+p.level, width/2, 160*ss)
     }
 		drawScreens["temporary dead"] = () => {
 			defineWorld()
@@ -31760,7 +32060,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		drawScreens.loading = () => {
 			let sub = 0
 			let findingLand
-			p.dimension = ""
+			//p.dimension = ""
 			if (host && serverWorld.worldType === "island" && serverWorld.islandGenerator.stage < 10) {
 			} else if(host && serverWorld.worldType === "large" && !serverWorld.spawnPoint.land){
 				findingLand = true
@@ -31833,7 +32133,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		}
 		drawScreens.netherLoading = () => {
 			let sub = 0
-			p.dimension = "nether"
+			//p.dimension = "nether"
 			let standing = true
 			/*p.x = p2.x
 			p.y = p2.y
@@ -31879,7 +32179,7 @@ p.camera.transformation.elements.set(matrix)//*/
     
     drawScreens.endLoading = () => {
 			let sub = 0
-			p.dimension = "end"
+			//p.dimension = "end"
 			let standing = true
 			/*p.x = p2.x
 			p.y = p2.y
@@ -31932,7 +32232,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				textSize(16*inventory.ss)
 				text("§3I see the player you mean.", width/2, y+0.25*height)
 				text("§2"+player.username+"?", width/2, y+0.5*height)
-				text("§4"+strange, width/2, y+0.65*height)
+				text("§4"+strange, width/2, y+0.65*height, 16*inventory.ss)
 				text("§2........", width/2, y+0.8*height)
 				if(endPoemProgress>1 && endPoemVideo.classList.contains("hidden")){
 					endPoemVideo.classList.remove("hidden")

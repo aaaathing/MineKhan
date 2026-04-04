@@ -1322,7 +1322,6 @@ const blockData = [
 		ambientSound:"portal.portal",
 		pistonPush:false,
 		pistonPull:false,
-		hidden:true,
 		serverontouch: function(x,y,z,ent){
 			if(ent.world.world.event("touchportal", {x,y,z,entity:ent})) return
 			ent.portalEffect += 2.5
@@ -2515,7 +2514,6 @@ const blockData = [
 		shadow: false,
 		cullFace:0,
 		blastResistance:100,
-		hidden:true,
 		dripThroughBlocks:[43/255, 63/255, 213/255],
 		getLevelDifference:function(level,dimension){return level-1},
 		canDuplicate:true,
@@ -2561,7 +2559,6 @@ const blockData = [
 		dieMessage: p => p.username+" tried to swim in lava.",
 		shadow: false,
 		blastResistance:100,
-		hidden:true,
 		temperature:25,
 		dripThroughBlocks:[210/255, 59/255, 17/255],
 		drop:"air",
@@ -2805,7 +2802,7 @@ const blockData = [
 			var top = world.getBlock(x,y+1,z)
 			var isIt = blockData[top].name === "twistingVines" || blockData[top].name === "twistingVinesPlant"
 			if(isIt){
-				world.setBlock(x,y,z,blockIds.twistingVinesPlant | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.twistingVinesPlant,false,false,false,false)
 			}
 		},
 		hidden:true,
@@ -2824,7 +2821,7 @@ const blockData = [
 			var top = world.getBlock(x,y+1,z)
 			var isIt = blockData[top].name === "twistingVines" || blockData[top].name === "twistingVinesPlant"
 			if(!isIt){
-				world.setBlock(x,y,z,blockIds.twistingVines | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.twistingVines,false,false,false,false)
 			}
 		},
 		category:"nature",
@@ -2840,7 +2837,7 @@ const blockData = [
 			var top = world.getBlock(x,y-1,z)
 			var isIt = blockData[top].name === "weepingVines" || blockData[top].name === "weepingVinesPlant"
 			if(isIt){
-				world.setBlock(x,y,z,blockIds.weepingVinesPlant | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.weepingVinesPlant,false,false,false,false)
 			}
 		},
 		hidden:true,
@@ -2858,7 +2855,7 @@ const blockData = [
 			var top = world.getBlock(x,y-1,z)
 			var isIt = blockData[top].name === "weepingVines" || blockData[top].name === "weepingVinesPlant"
 			if(!isIt){
-				world.setBlock(x,y,z,blockIds.weepingVines | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.weepingVines,false,false,false,false)
 			}
 		},
 		category:"nature"
@@ -3758,7 +3755,7 @@ const blockData = [
 			var top = world.getBlock(x,y-1,z)
 			var isIt = blockData[top].name === "caveVines" || blockData[top].name === "caveVinesPlant" || blockData[top].name === "caveVinesLit" || blockData[top].name === "caveVinesPlantLit"
 			if(isIt){
-				world.setBlock(x,y,z,blockIds.caveVinesPlant | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.caveVinesPlant,false,false,false,false)
 			}
 		},
 		liquidBreakable:"drop",
@@ -3774,7 +3771,7 @@ const blockData = [
 			var top = world.getBlock(x,y-1,z)
 			var isIt = blockData[top].name === "caveVines" || blockData[top].name === "caveVinesPlant" || blockData[top].name === "caveVinesLit" || blockData[top].name === "caveVinesPlantLit"
 			if(!isIt){
-				world.setBlock(x,y,z,blockIds.caveVines | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.caveVines,false,false,false,false)
 			}
 		},
 		hidden:true,
@@ -3793,7 +3790,7 @@ const blockData = [
 			var top = world.getBlock(x,y-1,z)
 			var isIt = blockData[top].name === "caveVines" || blockData[top].name === "caveVinesPlant" || blockData[top].name === "caveVinesLit" || blockData[top].name === "caveVinesPlantLit"
 			if(isIt){
-				world.setBlock(x,y,z,blockIds.caveVinesPlantLit | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.caveVinesPlantLit,false,false,false,false)
 			}
 		},
 		liquidBreakable:"drop",
@@ -3810,7 +3807,7 @@ const blockData = [
 			var top = world.getBlock(x,y-1,z)
 			var isIt = blockData[top].name === "caveVines" || blockData[top].name === "caveVinesPlant" || blockData[top].name === "caveVinesLit" || blockData[top].name === "caveVinesPlantLit"
 			if(!isIt){
-				world.setBlock(x,y,z,blockIds.caveVinesLit | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.caveVinesLit,false,false,false,false)
 			}
 		},
 		hidden:true,
@@ -5723,6 +5720,9 @@ const blockData = [
 		name:"redstoneLamp",
 		Name:"Redstone Lamp",
 		//if you chang this, change colored lamps too
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			this.onpowerupdate(x,y,z,sx,sy,sz,false,world)
+		},
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
 			var block = this.id
@@ -6253,7 +6253,6 @@ const blockData = [
 		ambientSound:"fire.fire",
 		temperature:20,
 		smoothLight:false,
-		hidden:true,
 		liquidBreakable:true,
 		noHitbox:true,
 		tagBits:{
@@ -6707,7 +6706,7 @@ const blockData = [
 			var top = world.getBlock(x,y+1,z)
 			var isIt = blockData[top].name === "kelp" || blockData[top].name === "kelpPlant"
 			if(isIt){
-				world.setBlock(x,y,z,blockIds.kelpPlant | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.kelpPlant,false,false,false,false)
 			}
 		},
 		category:"nature"
@@ -6722,7 +6721,7 @@ const blockData = [
 			var top = world.getBlock(x,y+1,z)
 			var isIt = blockData[top].name === "kelp" || blockData[top].name === "kelpPlant"
 			if(!isIt){
-				world.setBlock(x,y,z,blockIds.kelp | CROSS,false,false,false,false)
+				world.setBlock(x,y,z,blockIds.kelp,false,false,false,false)
 			}
 		},
 		hidden:true
@@ -8974,7 +8973,6 @@ const blockData = [
 		lightLevel:15,
 		pistonPush:false,
 		pistonPull:false,
-		hidden:true,
 		drop:"air",
 		serverontouch: function(x,y,z,ent){
 			if(ent.world.world.event("touchportal", {x,y,z,entity:ent})) return
@@ -9240,6 +9238,9 @@ const blockData = [
 		name:"redRedstoneLamp",
 		Name:"Red Redstone Lamp",
 		textures:"redstoneLamp",
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			this.onpowerupdate(x,y,z,sx,sy,sz,false,world)
+		},
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
 			var block = this.id
@@ -9258,6 +9259,9 @@ const blockData = [
 		name:"yellowRedstoneLamp",
 		Name:"Yellow Redstone Lamp",
 		textures:"redstoneLamp",
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			this.onpowerupdate(x,y,z,sx,sy,sz,false,world)
+		},
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
 			var block = this.id
@@ -9276,6 +9280,9 @@ const blockData = [
 		name:"greenRedstoneLamp",
 		Name:"Green Redstone Lamp",
 		textures:"redstoneLamp",
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			this.onpowerupdate(x,y,z,sx,sy,sz,false,world)
+		},
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
 			var block = this.id
@@ -9294,6 +9301,9 @@ const blockData = [
 		name:"blueRedstoneLamp",
 		Name:"Blue Redstone Lamp",
 		textures:"redstoneLamp",
+		onupdate:function(x,y,z,b,world,sx,sy,sz){
+			this.onpowerupdate(x,y,z,sx,sy,sz,false,world)
+		},
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
 			var power = world.getRedstonePower(x,y,z) || world.getSurroundingBlockPower(x,y,z)
 			var block = this.id
@@ -9322,7 +9332,6 @@ const blockData = [
 		ambientSound:"fire.fire",
 		temperature:20,
 		smoothLight:false,
-		hidden:true,
 		noHitbox:true,
 		getAttached:function(x,y,z,block,getBlockOnly,world){
 			var ax = x, ay = y, az = z
@@ -10571,7 +10580,7 @@ const blockData = [
 					put = true
 				}else if(blockData[to].name === "furnace"){
 					var toTags = world.getTags(tx,ty,tz), toTagName
-					if(!toTags) toTags = blockData[to].setContents(tx,ty,tz,this.world)
+					if(!toTags) toTags = blockData[to].setContents(tx,ty,tz,world)
 					if(top) toTagName = "input"
 					else toTagName = "fuel"
 					var toTag = toTags[toTagName]
@@ -11270,9 +11279,9 @@ const blockData = [
 		tagBits: null,
 		trigger:function(x,y,z,world){
 			let data = world.getTagByName(x,y,z,"data")
-			let running = world.getTagByName(x,y,z,"running")
-			if(data && !running){
-				world.setTagByName(x,y,z,"running",true,false)
+			//let running = world.getTagByName(x,y,z,"running")
+			if(data /*&& !running*/){
+				//world.setTagByName(x,y,z,"running",true,false)
 				runCmd(data,{x,y,z,dimension:world.dimension},world.world,true, output => {
 					let outputHTML = "none"
 					outputHTML = ""
@@ -11280,9 +11289,10 @@ const blockData = [
 						if(i) outputHTML += "<br>"
 						outputHTML += output[i]
 					}
+					let block = world.getBlock(x,y,z)
+					if(blockData[block].id !== this.id) return
 					world.setTagByName(x,y,z,"output",outputHTML,false)
 					let target
-					let block = world.getBlock(x,y,z)
 					switch(block){
 						case this.id:
 						case this.id | FLIP:
@@ -11311,12 +11321,7 @@ const blockData = [
 					}
 					if(output && output[output.length-1] === "error") target |= FLIP
 					if(block !== target) world.setBlock(x,y,z,target,false,false,false,true)
-				}).then(() => world.setTagByName(x,y,z,"running",false,false))
-				.catch(e => {
-					world.setTagByName(x,y,z,"running",false,false)
-					world.setTagByName(x,y,z,"output",e,false)
-					throw e
-				})
+				})//.then(() => world.setTagByName(x,y,z,"running",false,false))
 			}
 		},
 		onpowerupdate:function(x,y,z,sx,sy,sz,blockPowerChanged,world){
@@ -11499,7 +11504,6 @@ const blockData = [
 		solid:false,
 		shadow: false,
 		blastResistance:100,
-		hidden:true,
 		drop:"air",
 		burnChance: 1,
 		burnTime: 15,
@@ -12251,7 +12255,7 @@ const blockData = [
 		category:"tools",
 		durability:10,
 	},
-	{ name: "dirtBall", textures:"podzolTop", shapeName:"ball", hardness:0.5, blastResistance:0.5, transparent:true,shadow:false,smoothLight:false,category:"nature"},
+	{ name: "dirtBall", textures:"dirt", shapeName:"ball", hardness:0.5, blastResistance:0.5, transparent:true,shadow:false,smoothLight:false,category:"nature"},
 	{ name:"leather", Name:"Leather", item:true, category:"misc" },
 	{ name:"leatherHelmet", Name:"Leather Cap", item:true, armor:true, equipmentSlot:"helmet", defense:1, durability:55, stackSize:1, material:"leather", equipmentTexture:"leather" },
 	{ name:"leatherChestplate", Name:"Leather Tunic", item:true, armor:true, equipmentSlot:"chestplate", defense:3, durability:80, stackSize:1, material:"leather", equipmentTexture:"leather" },
@@ -12540,7 +12544,7 @@ function initBlockData(){
 		crafts[arr.join(",")] = crafts[i]
 		
 		//shaped recipes
-		if(crafts[i].shaped){
+		if(crafts[i].shaped || !crafts[i].shapeless){
 			var craft2 = Object.assign({},crafts[i])
 			craft2.hidden = true
 			var xSpace = 3, ySpace = 3
@@ -12687,12 +12691,12 @@ const crafts = {
 	"goldIngot,goldIngot,goldIngot,air,stick,air,air,stick":{name:"goldenPickaxe"},
 	"diamond,diamond,diamond,air,stick,air,air,stick":{name:"diamondPickaxe"},
 	"ironIngot,air,air,air,flint": {name:"flintAndSteel"},
-	"air,_planks,air,air,_planks,air,air,stick": {name:"woodenSword"},
-	"air,_stone,air,air,_stone,air,air,stick": {name:"stoneSword"},
-	"air,ironIngot,air,air,ironIngot,air,air,stick": {name:"ironSword"},
-	"air,goldIngot,air,air,goldIngot,air,air,stick": {name:"goldenSword"},
-	"air,diamond,air,air,diamond,air,air,stick": {name:"diamondSword"},
-	"air,air,air,snowBlock,snowBlock,snowBlock": {name:"snow", amount:6},
+	"_planks,air,air,_planks,air,air,stick": {name:"woodenSword"},
+	"_stone,air,air,_stone,air,air,stick": {name:"stoneSword"},
+	"ironIngot,air,air,ironIngot,air,air,stick": {name:"ironSword"},
+	"goldIngot,air,air,goldIngot,air,air,stick": {name:"goldenSword"},
+	"diamond,air,air,diamond,air,air,stick": {name:"diamondSword"},
+	"snowBlock,snowBlock,snowBlock": {name:"snow", amount:6},
 	"snowball,snowball,air,snowball,snowball": {name:"snowBlock"},
 	"ironIngot,air,ironIngot,air,ironIngot":{name:"bucket"},
 	"_stone,_stone,_stone,_stone,air,_stone,_stone,_stone,_stone":{name:"furnace"},
@@ -12707,21 +12711,21 @@ const crafts = {
 	"ironIngot,ironIngot,air,ironIngot,stick,air,air,stick":{name:"ironAxe"},
 	"goldIngot,goldIngot,air,goldIngot,stick,air,air,stick":{name:"goldenAxe"},
 	"diamond,diamond,air,diamond,stick,air,air,stick":{name:"diamondAxe"},
-	"birchPlanks,birchPlanks":{name:"birchPressurePlate",shapeless:true},
-	"oakPlanks,oakPlanks":{name:"oakPressurePlate",shapeless:true},
-	"junglePlanks,junglePlanks":{name:"junglePressurePlate",shapeless:true},
-	"sprucePlanks,sprucePlanks":{name:"sprucePressurePlate",shapeless:true},
-	"darkOakPlanks,darkOakPlanks":{name:"darkOakPressurePlate",shapeless:true},
-	"acaciaPlanks,acaciaPlanks":{name:"acaciaPressurePlate",shapeless:true},
-	"mangrovePlanks,mangrovePlanks":{name:"mangrovePressurePlate",shapeless:true},
-	"warpedPlanks,warpedPlanks":{name:"warpedPressurePlate",shapeless:true},
-	"crimsonPlanks,crimsonPlanks":{name:"crimsonPressurePlate",shapeless:true},
-	"stone,stone":{name:"stonePressurePlate",shapeless:true},
+	"birchPlanks,birchPlanks":{name:"birchPressurePlate"},
+	"oakPlanks,oakPlanks":{name:"oakPressurePlate"},
+	"junglePlanks,junglePlanks":{name:"junglePressurePlate"},
+	"sprucePlanks,sprucePlanks":{name:"sprucePressurePlate"},
+	"darkOakPlanks,darkOakPlanks":{name:"darkOakPressurePlate"},
+	"acaciaPlanks,acaciaPlanks":{name:"acaciaPressurePlate"},
+	"mangrovePlanks,mangrovePlanks":{name:"mangrovePressurePlate"},
+	"warpedPlanks,warpedPlanks":{name:"warpedPressurePlate"},
+	"crimsonPlanks,crimsonPlanks":{name:"crimsonPressurePlate"},
+	"stone,stone":{name:"stonePressurePlate"},
 	"polishedBlackstone,polishedBlackstone":{name:"polishedBlackstone",shapeless:true},
-	"goldIngot,goldIngot":{name:"lightWeightedPressurePlate",shapeless:true},
-	"ironIngot,ironIngot":{name:"heavyWeightedPressurePlate",shapeless:true},
-	"bambooPlanks,bambooPlanks":{name:"bambooPressurePlate",shapeless:true},
-	"cherryPlanks,cherryPlanks":{name:"cherryPressurePlate",shapeless:true},
+	"goldIngot,goldIngot":{name:"lightWeightedPressurePlate"},
+	"ironIngot,ironIngot":{name:"heavyWeightedPressurePlate"},
+	"bambooPlanks,bambooPlanks":{name:"bambooPressurePlate"},
+	"cherryPlanks,cherryPlanks":{name:"cherryPressurePlate"},
 	"strippedOakLog": {name:"oakPlanks", amount:4, shapeless: true},
 	"strippedAcaciaLog": {name:"acaciaPlanks", amount:4, shapeless: true},
 	"strippedBirchLog": {name:"birchPlanks", amount:4, shapeless: true},
@@ -13680,6 +13684,270 @@ for(let jn in jigsaws){
 	s.variants = [s,sw,ss,se]
 	s.newJigsawTries = s.nextJigsawPos.length ? (s.newJigsawTries === undefined ? 1 : s.newJigsawTries) : 0
 }
+
+// Programmatically generated structures (added after jigsaw processing loop)
+// they are kind of bad, disabled
+/*;(()=>{
+	function addSimpleJigsaw(name, jigsawObj, spawnChance, maxSize) {
+		jigsawObj.nextJigsawPos = []
+		jigsawObj.newJigsaws = {}
+		jigsawObj.newJigsawTries = 0
+		jigsawObj.variants = [jigsawObj, jigsawObj, jigsawObj, jigsawObj]
+		jigsaws[name] = jigsawObj
+		structures.push({ type:"simple", start:[name], chance:spawnChance, maxSize, getY:(x,z,r)=>0 })
+	}
+
+	// Stepped sandstone pyramid (9x9 base, 5 steps)
+	;(()=>{
+		const steps = 5, half = steps - 1, dim = half * 2 + 1
+		const data = []
+		for (let y = 0; y < steps; y++) {
+			const r = steps - 1 - y
+			for (let x = 0; x < dim; x++) {
+				for (let z = 0; z < dim; z++) {
+					const dx = Math.abs(x - half), dz = Math.abs(z - half)
+					if (dx <= r && dz <= r) {
+						const edge = (dx === r || dz === r) && y > 0
+						data.push(x, y, z, edge ? "chiseledSandstone" : "sandstone")
+					}
+				}
+			}
+		}
+		addSimpleJigsaw("sandPyramid", { data, centerPos:[half, 0, half], w:dim, h:steps, d:dim, onGround:true }, 0.04, 10)
+	})()
+
+	// Ruined stone brick tower (5x5 footprint, 6 tall, hollow with crumbled top)
+	;(()=>{
+		const sz = 5, ht = 6, half = 2
+		const data = []
+		for (let y = 0; y < ht; y++) {
+			for (let x = 0; x < sz; x++) {
+				for (let z = 0; z < sz; z++) {
+					const wall = x === 0 || x === sz-1 || z === 0 || z === sz-1
+					if (y === 0) {
+						data.push(x, y, z, (x + z) % 3 === 0 ? "mossyCobble" : "stoneBricks")
+					} else if (wall) {
+						const crumble = y >= ht - 2 && (x*3 + y*7 + z*5) % 8 < (y === ht-1 ? 5 : 3)
+						if (!crumble) data.push(x, y, z, (x + y + z) % 4 === 0 ? "mossyStoneBricks" : "stoneBricks")
+					} else {
+						data.push(x, y, z, "air")
+					}
+				}
+			}
+		}
+		addSimpleJigsaw("ruinTower", { data, centerPos:[half, 0, half], w:sz, h:ht, d:sz, onGround:true }, 0.07, 8)
+	})()
+
+	// Standing stone circle (8 pillars of granite/andesite in a ring, 11x11 footprint)
+	;(()=>{
+		const cx = 5, cz = 5, radius = 4, pillarH = 4
+		const data = []
+		for (let i = 0; i < 8; i++) {
+			const a = i * Math.PI / 4
+			const px = Math.round(cx + radius * Math.cos(a))
+			const pz = Math.round(cz + radius * Math.sin(a))
+			for (let y = 0; y < pillarH; y++) {
+				data.push(px, y, pz, i % 2 === 0 ? "granite" : "andesite")
+			}
+		}
+		data.push(cx, 0, cz, "mossyCobble") // altar stone in center
+		addSimpleJigsaw("standingStones", { data, centerPos:[cx, 0, cz], w:11, h:pillarH, d:11, onGround:true }, 0.05, 12)
+	})()
+
+	// Obsidian spire (5x5 base tapering to a point, 10 tall)
+	;(()=>{
+		const data = []
+		const layers = [
+			[[0,4],[1,3],[2,3],[3,3],[4,4]],   // layer 0: corners only
+			[[0,0],[1,1],[2,1],[3,1],[4,0],[0,4],[1,3],[2,3],[3,3],[4,4]], // layer 0 all edges skipped, just edges
+		]
+		// Simpler: concentric rings shrinking each 2 levels
+		for (let y = 0; y < 10; y++) {
+			const r = Math.max(0, 2 - Math.floor(y / 2))
+			const cx = 2, cz = 2
+			for (let x = 0; x < 5; x++) {
+				for (let z = 0; z < 5; z++) {
+					const dx = Math.abs(x - cx), dz = Math.abs(z - cz)
+					if (Math.max(dx, dz) <= r) {
+						const edge = Math.max(dx, dz) === r
+						data.push(x, y, z, edge ? "obsidian" : "air")
+					}
+				}
+			}
+		}
+		addSimpleJigsaw("obsidianSpire", { data, centerPos:[2, 0, 2], w:5, h:10, d:5, onGround:true }, 0.02, 8)
+	})()
+})()
+
+// Castle compound structure (type:compound with floating rooms)
+;(()=>{
+	const SB = "stoneBricks", MSB = "mossyStoneBricks", GL = "glass", CB = "cobblestone", DB = "darkOakPlanks"
+
+	// Generate all 4 rotation variants (N, W, S, E) for a jigsaw piece
+	function mkVariants(w, h, d, data, center, nextJP, opts, tries) {
+		function makeV(tf, tw, td) {
+			const nd = [], nnp = []
+			for (let i = 0; i < data.length; i += 4) {
+				const [nx, nz] = tf(data[i], data[i+2])
+				nd.push(nx, data[i+1], nz, data[i+3])
+			}
+			for (const [ex, ey, ez, name] of nextJP) {
+				const [nx, nz] = tf(ex, ez)
+				nnp.push([nx, ey, nz, name])
+			}
+			const [cx, cz] = tf(center[0], center[2])
+			const v = Object.assign({
+				data: nd, w: tw, h, d: td,
+				centerPos: [cx, center[1], cz],
+				nextJigsawPos: nnp, newJigsaws: {}
+			}, opts || {})
+			v.newJigsawTries = nnp.length ? (tries || 1) : 0
+			return v
+		}
+		const vN = makeV((x,z)=>[x, z], w, d)
+		const vW = makeV((x,z)=>[d-1-z, w-1-x], d, w)
+		const vS = makeV((x,z)=>[w-1-x, d-1-z], w, d)
+		const vE = makeV((x,z)=>[z, x], d, w)
+		const variants = [vN, vW, vS, vE]
+		vN.variants = vW.variants = vS.variants = vE.variants = variants
+		return vN
+	}
+
+	// ---- Castle Keep: 11x11 central fortress, 7 tall ----
+	;(()=>{
+		const W = 11, H = 7, D = 11
+		const data = []
+		for (let y = 0; y < H; y++) {
+			for (let x = 0; x < W; x++) {
+				for (let z = 0; z < D; z++) {
+					const outer = x < 2 || x >= W-2 || z < 2 || z >= D-2
+					if (y === 0) {
+						data.push(x, y, z, (x+z) % 3 === 0 ? MSB : SB)
+					} else if (outer && y < H-1) {
+						// windows at y=3 on each face center
+						const win = y === 3 && (
+							((x === 0 || x === 1) && z === 5) ||
+							((x === W-1 || x === W-2) && z === 5) ||
+							((z === 0 || z === 1) && x === 5) ||
+							((z === D-1 || z === D-2) && x === 5)
+						)
+						data.push(x, y, z, win ? GL : ((x+y+z) % 7 === 0 ? MSB : SB))
+					} else if (outer && y === H-1) {
+						if ((x+z) % 2 === 0) data.push(x, y, z, SB) // battlements
+					} else if (!outer) {
+						data.push(x, y, z, "air")
+					}
+				}
+			}
+		}
+		// Side connections → wings or turrets (3 entries per side: 2x wing, 1x turret)
+		// Elevated corner connections → floating rooms
+		const nextJP = [
+			[5, 2, 0,    "castleWing"],  [5, 2, 0,    "castleWing"],  [5, 2, 0,    "castleTurret"],
+			[5, 2, D-1,  "castleWing"],  [5, 2, D-1,  "castleWing"],  [5, 2, D-1,  "castleTurret"],
+			[0, 2, 5,    "castleWing"],  [0, 2, 5,    "castleWing"],  [0, 2, 5,    "castleTurret"],
+			[W-1, 2, 5,  "castleWing"],  [W-1, 2, 5,  "castleWing"],  [W-1, 2, 5,  "castleTurret"],
+			[2,   H-1, 2,   "castleFloatRoom"], [2,   H-1, D-3, "castleFloatRoom"],
+			[W-3, H-1, 2,   "castleFloatRoom"], [W-3, H-1, D-3, "castleFloatRoom"],
+		]
+		jigsaws["castleKeep"] = mkVariants(W, H, D, data, [5, 0, 5], nextJP, {onGround:true}, 5)
+	})()
+
+	// ---- Castle Wing: 7x9 connecting hall, 5 tall ----
+	// Center at [3, 2, 8] = the end that connects to the keep/turret
+	// Far end connection at z=0
+	;(()=>{
+		const W = 7, H = 5, D = 9
+		const data = []
+		for (let y = 0; y < H; y++) {
+			for (let x = 0; x < W; x++) {
+				for (let z = 0; z < D; z++) {
+					const wall = x === 0 || x === W-1 || z === 0 || z === D-1
+					if (y === 0) {
+						data.push(x, y, z, (x+z) % 2 === 0 ? SB : CB)
+					} else if (wall && y < H-1) {
+						const win = y === 2 && (x === 0 || x === W-1) && z === 4
+						data.push(x, y, z, win ? GL : SB)
+					} else if (wall && y === H-1) {
+						if ((x+z) % 2 === 0) data.push(x, y, z, SB)
+					} else if (!wall) {
+						data.push(x, y, z, "air")
+					}
+				}
+			}
+		}
+		const nextJP = [
+			[3, 2, 0, "castleWing"], [3, 2, 0, "castleWing"], [3, 2, 0, "castleTurret"],
+			[3, H-1, Math.floor(D/2), "castleFloatRoom"],
+		]
+		jigsaws["castleWing"] = mkVariants(W, H, D, data, [3, 2, D-1], nextJP, {onGround:true}, 2)
+	})()
+
+	// ---- Castle Turret: 5x5 tower, 10 tall, cut corners for round look ----
+	// Center at [2, 2, 4] = one face for connecting to wings/keep
+	;(()=>{
+		const W = 5, H = 10, D = 5
+		const data = []
+		const cut = (x, z) => (x===0&&z===0)||(x===0&&z===D-1)||(x===W-1&&z===0)||(x===W-1&&z===D-1)
+		for (let y = 0; y < H; y++) {
+			for (let x = 0; x < W; x++) {
+				for (let z = 0; z < D; z++) {
+					if (cut(x, z)) continue
+					const wall = x === 0 || x === W-1 || z === 0 || z === D-1
+					if (y === 0) {
+						data.push(x, y, z, SB)
+					} else if (wall && y < H-1) {
+						const win = (y === 3 || y === 6) && (x+z) % 2 === 0
+						data.push(x, y, z, win ? GL : ((x+y+z) % 5 === 0 ? MSB : SB))
+					} else if (wall && y === H-1) {
+						if ((x+z) % 2 === 0) data.push(x, y, z, SB)
+					} else if (!wall) {
+						data.push(x, y, z, "air")
+					}
+				}
+			}
+		}
+		const nextJP = [
+			[2, H-1, 2, "castleFloatRoom"]  // floating room off the top
+		]
+		jigsaws["castleTurret"] = mkVariants(W, H, D, data, [2, 2, D-1], nextJP, {onGround:true}, 1)
+	})()
+
+	// ---- Castle Float Room: 5x5x3, NOT onGround → stays elevated ----
+	// Floats above the keep/turrets connected at elevated jigsaw points
+	;(()=>{
+		const W = 5, H = 3, D = 5
+		const data = []
+		for (let y = 0; y < H; y++) {
+			for (let x = 0; x < W; x++) {
+				for (let z = 0; z < D; z++) {
+					const wall = x === 0 || x === W-1 || z === 0 || z === D-1
+					if (y === 0 || y === H-1) {
+						// full floor and ceiling
+						data.push(x, y, z, y === 0 ? DB : SB)
+					} else if (wall) {
+						// glass walls
+						data.push(x, y, z, GL)
+					} else {
+						data.push(x, y, z, "air")
+					}
+				}
+			}
+		}
+		// onGround omitted → falsy → room stays at the elevation of the connection point
+		jigsaws["castleFloatRoom"] = mkVariants(W, H, D, data, [2, 0, 2], [], {}, 0)
+	})()
+
+	structures.push({
+		type: "compound",
+		start: ["castleKeep"],
+		chance: 0.03,
+		maxSize: 80,
+		jigsawCount: 12,
+		maxTries: 60,
+		getY: (x,z,r) => 0
+	})
+})()*/
 
 function objectify(x, y, z, width, height, textureX, textureY, texXFlip,texYFlip,rotateTex,texW,texH,textureName) {
 	return {
@@ -18064,7 +18332,7 @@ with a function that checks returns a boolean.
 If the function returns true, the things in the
 3rd item are included.
 */
-const packetDimension = ['dimension',"replacerNumber",3,["","nether","end"]]
+const packetDimension = ["dimension","basicString"]//['dimension',"replacerNumber",3,["","nether","end"]]
 //const packetInv = ["inv","object",[["inv","bitArray"],["survivStr","bitArray"],[o=>o.x!==undefined,"includeIf",[["x","int"],["y","int"],["z","int"]]]]]
 const packetGameMode = ['gameMode',"replacerNumber",2,["creative","survival","hardcore","spectator"]]
 const packetSlot = [null,"json",makeBinarySerializer(["id","amount"])]
@@ -18129,6 +18397,7 @@ let packetTypes = [
 	["startBreak",["x","int"],["y","int"],["z","int"]],
 	["containerChangeSign",["data","string"],["side","boolean"]],
 	["portalOut"], ["doEndPoem"],
+	["music", ["id","string"],["url","string"],["elapsed","double"]],
 	/*["test",
 		["a",'string'],['n','number',8,4],
 		["data","array",[null,"string"]],
@@ -18326,6 +18595,7 @@ function bitArrayToPacket(arr,type){
 	}else{
 		let id = reader.read(8)
 		type = packetTypes[id], obj = {type:packetNames[id]}
+		if(!type) throw new Error("No packet type "+id+". The versions might be different.")
 	}
 	bitArrayToPacketLoop(type,obj,reader)
 	return obj
@@ -19746,7 +20016,7 @@ function initBlockDataShapes(){
 						set = id | SLAB | WEST
 						break
 				}
-				world.setBlock(x,y,z,set)
+				if(set) world.setBlock(x,y,z,set)
 				doorSound(x,y,z,"fence_gate",o,world)
 			}).bind({id:baseBlock.id})
 		}
@@ -19796,7 +20066,7 @@ function initBlockDataShapes(){
 			tallcrossBlock.transparent = true
 			potCrossBlock.shape = shapes.bambooPot
 		}
-		if(baseBlock.chest) baseBlock.shape = shapes.chest
+		if(baseBlock.chest) baseBlock.shape = shapes.chest, baseBlock.drop = drop
 		if(baseBlock.pressurePlate){
 			baseBlock.shape = shapes.pressurePlate
 			baseBlock.transparent = true
@@ -20269,6 +20539,7 @@ function initBlockDataShapes(){
 		if(baseBlock.chair){
 			baseBlock.shape = shapes.chair
 			baseBlock.onclick = sit
+			baseBlock.drop = drop
 		}
 		blockData[i | SLAB] = slabBlock
 		blockData[i | STAIR] = stairBlock
@@ -20745,15 +21016,18 @@ function parseTarget(str,pos,world){
 		let closest = Infinity, cp = undefined
 		for(let P of world.world.players){
 			let d = dist3(pos.x,pos.y,pos.z,P.x,P.y,P.z)
-			if(d < closest){
+			if(d < closest && !P.hidden){
 				closest = d
 				cp = P
 			}
 		}
-		return [cp]
+		return cp ? [cp] : []
 	}else{
-		let p = getPlayerByUsername(str,world)
-		return p ? [p] : []
+		let a = []
+		for(let p of world.world.players){
+			if(p.username === str) a.push(p)
+		}
+		return a
 	}
 }
 function getUsage(node, arr=[], prefix="", lazy){
@@ -20818,13 +21092,11 @@ function initDefaultCommands(world){
 		help = CommandNode.l("help", (args,pos,scope) => {
 			let str = `
 MineKhan commands have a similar syntax to Bash.
-Use <span style='color:pink;'>/? all</span> to list all commands.
 Use <span style='color:lightgreen;'>/? command_name</span> to get information about a command.
 
-<span style='color:#5f5;'>
 <b>When typing a command:</b>
-Press tab to autofill commands. Press up and down arrow to select which one to autofill.
-Press the up or down arrow and press shift to go through the commands entered.
+Press tab to auto-complete commands. Press up and down arrow to select which one to auto-complete.
+Press the up or down arrow and press shift to go through the history.
 
 <b>Command syntax</b>
 The capitalization of command names do not matter.
@@ -20832,15 +21104,16 @@ Begin a command with a slash (/) (only required in chat).
 After, add the command name and arguments (the value).
 Spaces can be used to seperate values unless it is inside quotes.
 Surround a value with qoutes to make the spaces inside part of the value.
-You can type multiple commands by separating each by a new line or &&.
+You can type multiple commands by separating each by a slash (/).
 Type $ in front of a value to acess the variable with that name.
+Example: <span style='color:lightblue'>/var myMessage "Hello" /title $myMessage</span>
 Comments starts with # and ends at the end of the line.
 Addition: +
 Subtraction: -
 Multiplication: *
 Division: //
-</span>
-`
+Example: <span style='color:lightblue'>/teleport @p 100 5+8 60-4</span>
+<br><br>`
 			str +=  "List of commands:<br>"
 			str += "<span style='color:lightblue'>"+getUsage(root).join("<br>")+"</span>"
 			return [str,""]
@@ -21005,7 +21278,12 @@ Division: //
 			CommandNode.l("rain", () => {world.weather = "rain"}),
 			CommandNode.l("snow", () => {world.weather = "snow"})
 		),
-		tp = CommandNode.l("teleport",null,"Teleport certain player/self to location/entity/player").then(CommandNode.a("target",null,"target").then(
+		tp = CommandNode.l("teleport",null,"Teleport certain player/self to location/entity/player").then(
+		CommandNode.a("target",(args,pos) => {
+			let to = parseTarget(args.target,pos,world[pos.dimension])[0]
+			if(!to) return ["No such target: "+args.target,"error"]
+			if(pos.tp) pos.tp(to.x,to.y,to.z,to.dimension)
+		},"target").then(
 			CommandNode.a("x",null,"x").then(CommandNode.a("y",null,"y").then(CommandNode.a("z",
 			(args,pos) => {
 				if(isNaN(args.x) || isNaN(args.y) || isNaN(args.z)) return ["x y z must be number","error"]
@@ -21015,7 +21293,7 @@ Division: //
 			CommandNode.a("to_target",
 			(args,pos) => {
 				let arr = parseTarget(args.target,pos,world[pos.dimension]), to = parseTarget(args.to_target,pos,world[pos.dimension])[0]
-				if(!to) return ["No such target: "+args.target,"error"]
+				if(!to) return ["No such target: "+args.to_target,"error"]
 				for(let e of arr) if(e.tp) e.tp(to.x,to.y,to.z,to.dimension)
 			},"target")
 		)),
@@ -21087,6 +21365,10 @@ Division: //
 			else return ["Game mode doesn't exsist: "+m,"error"]
 			world.sendPlayer({type:"gameMode",gameMode:pos.gameMode},pos.id)
 		},"gameMode",false)),
+		CommandNode.l("playMusic",null,"Play music from a URL. It is synced for everyone. Duration and offset are in seconds.",null,true).then(CommandNode.a("url", (args,pos) => {world.playMusic(args.url)}).then(CommandNode.a("duration", (args,pos) => {world.playMusic(args.url,args.duration)}).then(CommandNode.a("offset", (args,pos) => {world.playMusic(args.url,args.duration,args.offset)})))),
+		CommandNode.l("stopMusic", (args,pos) => {
+			for(let [i, m] of world.music) world.stopMusic(i)
+		},"Stops all music."),
 		CommandNode.r("gm",gm),
 		CommandNode.l("clear","client","Clear messages",null,true),
 		CommandNode.l("clearHistory","client","Clears chat history and input history.",null,true),
@@ -21096,16 +21378,16 @@ Division: //
 			if(player){
 				pos.gameMode = "spectator"
 				pos.riding = null
-				if(args.spectatePlayer_remoteControl === true) p.spectateRemoteControl = true
 				world.sendPlayer({type:"gameMode",gameMode:pos.gameMode, spectating:player.id,spectateRemoteControl:false},pos.id)
 			}else return ["Player doesn't exist: "+args.username,"error"]
-		}).then(CommandNode.a("remoteControl",
+		},"target").then(CommandNode.a("remoteControl",
 		(args,pos) =>{
 			let player = getPlayerByUsername(args.username,world[pos.dimension])
 			if(player){
 				pos.gameMode = "spectator"
 				pos.riding = null
-				world.sendPlayer({type:"gameMode",gameMode:pos.gameMode, spectating:player.id,spectateRemoteControl:false,spectateRemoteControl:!!args.remoteControl},pos.id)
+				if(args.remoteControl) pos.spectateRemoteControl = true
+				world.sendPlayer({type:"gameMode",gameMode:pos.gameMode, spectating:player.id,spectateRemoteControl:!!args.remoteControl},pos.id)
 			}else return ["Player doesn't exist: "+args.username,"error"]
 		},"boolean"))),
 		CommandNode.r("sp",sp),
@@ -21126,6 +21408,20 @@ Division: //
 				return [str || "None", ""]
 			}
 		}, null,null,true),
+		/*CommandNode.l("mute", (args,pos) => {
+			pos.voteMute = true
+			let count = 0
+			for(let p of world.players) if(p.voteMute) count++
+			world.mute = count >= world.players.length/10
+			//world.sendAll({type:"message",fromServer:true,data:"§a"+count+"/"+world.players.length+" voted mute."})
+		}, null,null,true),
+		CommandNode.l("unmute", (args,pos) => {
+			pos.voteMute = false
+			let count = 0
+			for(let p of world.players) if(p.voteMute) count++
+			world.mute = count >= world.players.length/10
+			//world.sendAll({type:"message",fromServer:true,data:"§a"+count+"/"+world.players.length+" voted mute."})
+		}, null,null,true),*/
 	)
 	/*args:["target","name","time","level","hide_particles"],
 		argValues:{target:["type:player","@a","@e","@p"], name:["wither","blur"], time:["type:number"], level:"type:number", show_particles:"type:boolean"},
@@ -22463,7 +22759,7 @@ class Player extends Entity{
 			damageZ /= damageBlockAmount
       this.lastBlockHarm = now
       let msg = damageBlock.dieMessage ? damageBlock.dieMessage(this) : damageBlock.burnEnt ? (this.username+" burned up while touching "+damageBlock.Name) : (this.username+" died because of "+damageBlock.name+". You should avoid it next time.")
-      let type = damageBlock.burnEnt ? "fire" : ""
+      let type = damageBlock.burnEnt ? "fire" : "hit"
       this.damage(takeDamage, msg, false, type, damageX, damageY, damageZ)
     }
     this.touchingBurnBlock = damageBlock && damageBlock.burnEnt && true
@@ -22725,7 +23021,7 @@ class Player extends Entity{
 					d = fall*2-2
 					reason = this.username+" fell onto a pointed dripstone and got poked to death"+(this.attackedBy ? " while being attacked by "+this.attackedBy+"." : ".")
 				}
-				this.damage(Math.floor(d*(1-this.damageResistance)), reason, false, fallType)//Math.floor( (p.velocity.y * p.velocity.y * 8));
+				this.damage(Math.floor(d*(1-this.damageResistance)), reason, false, fallType, this.x, this.y-this.height/2, this.z)//Math.floor( (p.velocity.y * p.velocity.y * 8));
 			}
 		}
 		if(this.attackedBy && Date.now()-this.attackedTime > 10000) this.attackedBy = null, this.attackedById = null
@@ -22886,7 +23182,7 @@ class Player extends Entity{
 		}*/
 
     let prev = amount
-    if(type !== "drown" && type !== "freeze"){
+    if(type === "berrybush" || type === "hit" || type&&type.startsWith("fall")){
       if(this.armorDefense > 0){
         let epf = Math.min(20, Math.max(this.armorDefense/5, this.armorDefense - 4*amount/(this.armorToughness+8)))
         amount *= (1 - epf/25)
@@ -22916,7 +23212,7 @@ class Player extends Entity{
     this.harmEffect = 30
     this.lastDamage = prev
 
-		if(typeof x === "number" && !velx && !vely && !velz){
+		if(attackedBy && !velx && !vely && !velz){
 			velx = this.x-x, velz = this.z-z
 			let mag = sqrt(velx*velx+velz*velz)*4
 			velx /= mag, velz /= mag
@@ -22956,8 +23252,8 @@ class Player extends Entity{
 					this.world.playSound(this.x,this.y,this.z,"damage.fallbig")
 					hitSound(this)
           break
-				case "hit":
-					oofSound(this) //also does below
+				//case "hit":
+				//	oofSound(this) //also does below
         default:
           hitSound(this)
           break
@@ -23022,10 +23318,10 @@ entities[entities.length] = class Item extends Entity {
 		let prevComingCloser = this.comingCloser
 		this.comingCloser = false
 		let pickup
-		if(now - this.spawn > 1000){
+		if(now - this.spawn > 500){
 			for(var P of this.world.world.players){
 				if(!P.hidden && !P.die && P.dimension === this.dimension){
-					if(this.goCloserToPlayer(P)) pickup = P
+					if((P.id !== this.from || now - this.spawn > 1000) && this.goCloserToPlayer(P)) pickup = P
 				}
 			}
 		}
@@ -23148,7 +23444,7 @@ let BlockEntity = entities[entities.length] = class BlockEntity extends Entity{
 				var reason
 				if(blockData[this.block].name === "pointedDripstone") reason = ent.username+" got poked to death by a falling pointed dripstone"
 				else if(blockData[this.block].name === "anvil") reason = ent.username+" got hit by an anvil and stuff"
-				ent.damage(d,reason,false,null,this.previousX,this.previousY,this.previousZ)
+				ent.damage(d,reason,false,"hit",this.previousX,this.previousY,this.previousZ)
 			}else if(ent && ent.damage){
 				ent.damage(d)
 			}
@@ -23336,7 +23632,7 @@ entities[entities.length] = class Snowball extends BlockEntity{
 			from = from && (from.username || from.name)
 			if(collided && collided !== this){
 				if(entPlayerCollided){
-					collided.damage(1,from+" killed "+collided.username+" with snowballs.",false,null,this.previousX,this.previousY,this.previousZ)
+					collided.damage(1,from+" killed "+collided.username+" with snowballs.",false,"hit",this.previousX,this.previousY,this.previousZ)
 				}else{
 					if(collided.damage) collided.onhit(1,false, 0,0, this.from)
 				}
@@ -23374,7 +23670,7 @@ entities[entities.length] = class SmallFireball extends BlockEntity{
 			if(collided && collided !== this){
 				if(entPlayerCollided){
 					collided.burnTimer += 8
-					collided.damage(5,collided.username+" was shot by fireballs from "+from+".",false,null,this.previousX,this.previousY,this.previousZ)
+					collided.damage(5,collided.username+" was shot by fireballs from "+from+".",false,"hit",this.previousX,this.previousY,this.previousZ)
 				}else{
 					if(collided.damage) collided.onhit(5,false, 0,0, this.from), collided.burnTimer += 8
 				}
@@ -23410,7 +23706,7 @@ entities[entities.length] = class Egg extends BlockEntity{
 		let from = getEntityOrPlayer(this.from,this.world)
 		from = from && (from.username || from.name)
 		if(collided && collided !== this){
-			if(entPlayerCollided) collided.damage(1,from+" killed "+collided.username+" with eggs.",false,null,this.previousX,this.previousY,this.previousZ)
+			if(entPlayerCollided) collided.damage(1,from+" killed "+collided.username+" with eggs.",false,"hit",this.previousX,this.previousY,this.previousZ)
 			else if(collided.damage) collided.onhit(1,false, 0,0, this.from)
 			this.canDespawn = true
 		}
@@ -23446,7 +23742,7 @@ entities[entities.length] = class SlingshotShot extends BlockEntity{
 		
 		var collided = entCollided(this)
 		if(collided){
-			if(entPlayerCollided) collided.damage(5,collided.username+" got shot.",false,null,this.previousX,this.previousY,this.previousZ)
+			if(entPlayerCollided) collided.damage(5,collided.username+" got shot.",false,"hit",this.previousX,this.previousY,this.previousZ)
 			else if(collided.damage) collided.damage(5)
 			this.canDespawn = true
 		}
@@ -23616,7 +23912,7 @@ entities[entities.length] = class Arrow extends Entity{
 			let d = dist3(this.velx,this.vely,this.velz,0,0,0)*4
 			if(collided && collided !== this){
 				this.canDespawn = true
-				if(entPlayerCollided) collided.damage(d,collided.username+" got killed by an arrow"+(from ? " from "+from+"." : "."),false,null,this.previousX,this.previousY,this.previousZ,null, this.velx/2, undefined,this.velz/2)
+				if(entPlayerCollided) collided.damage(d,collided.username+" got killed by an arrow"+(from ? " from "+from+"." : "."),false,"hit",this.previousX,this.previousY,this.previousZ,null, this.velx/2, undefined,this.velz/2)
 				else if(collided.onhit) collided.onhit(d,false, this.velx/2,this.velz/2, this.from)
 				else this.canDespawn = false
 			}
@@ -23901,7 +24197,9 @@ class Mob extends Entity{
 		this.lastPathFind = 0
 		this.blockAtFeet = 0
 	}
-	findPath(fx, fy, fz, x, y, z) {
+	findPath(x, y, z) {
+		const fx = round(this.x), fy = round(this.y-this.height/2), fz = round(this.z)
+		x = round(x), y = round(y), z = round(z)
 		const canFly = this.canFly, canClimb = this.canClimb
 		if (max(abs(fx-x), abs(fy-y), abs(fz-z)) > 40) return null
 
@@ -23970,7 +24268,8 @@ class Mob extends Entity{
 		let k = bestKey
 		while (k !== sk && path.length < 84) {
 			path.push(fx + (k & 0x7F) - 64, fy + ((k >> 7) & 0x7F) - 64, fz + ((k >> 14) & 0x7F) - 64)
-			k = parent.get(k) ?? sk
+			k = parent.get(k)
+			if(k === undefined) k = sk
 		}
 		return path
 	}
@@ -24016,7 +24315,7 @@ class Mob extends Entity{
 			data = blockData[this.world.getBlock(x,y2,z,this.dimension)]
 			if(!data.solid && !data.liquid) break
 		}
-		this.path = this.findPath(round(this.x),round(this.y-this.height/2),round(this.z),x,y,z) || null
+		this.path = this.findPath(x,y,z) || null
 	}
 	AI(now){
 		if(!this.hasAI) return
@@ -24119,7 +24418,7 @@ class Mob extends Entity{
 			}
 			if(now-this.lastPathFind>1000){
 				this.lastPathFind = now
-				let path = this.findPath(round(this.x),round(this.y-this.height/2),round(this.z),round(follow.x),y,round(follow.z))
+				let path = this.findPath(follow.x,y,follow.z)
 				if(path){
 					path.pop(), path.pop(), path.pop()
 					this.path = path
@@ -24128,8 +24427,8 @@ class Mob extends Entity{
 			if(target && this.attackStrength && this.attackCooldown <= 0 && (d || d === 0) && d <= this.minFollowDist+0.5){
 				let velx = sin(this.yaw)/2, velz = cos(this.yaw)/2
 				if(target.type === "Player"){
-					let msg = this.name ? target.username+"was killed by "+this.name+"." : this.killMessage(target.username)
-					target.damage(this.attackStrength,msg,false,null,this.x,this.y,this.z,this)
+					let msg = this.name ? target.username+" was killed by "+this.name+"." : this.killMessage ? this.killMessage(target.username) : target.username+" was killed by "+this.defaultName+"."
+					target.damage(this.attackStrength,msg,false,"hit",this.x,this.y,this.z,this)
 				}else if(target.onhit) target.onhit(this.attackStrength,false, velx,velz, this.id)
 				this.attackCooldown = this.maxAttackCooldown
 				//this.world.sendAllInChunk({type:"entEvent",event:"mobAttack",id:this.id},this.chunkX,this.chunkZ,this.chunkDimension)
@@ -24854,7 +25153,7 @@ entities[entities.length] = class Wolf extends Mob{
 		}else if(d > 8 && !this.sitting){
 			if(now-this.lastPathFind>1000){
 				this.lastPathFind = now
-				let path = this.findPath(round(this.x),round(this.y-this.height/2),round(this.z),round(owner.x),round(owner.y),round(owner.z))
+				let path = this.findPath(owner.x,owner.y,owner.z)
 				if(path){
 					path.pop(), path.pop(), path.pop()
 					this.path = path
@@ -25745,17 +26044,17 @@ class Section {
 					world.setBlock(x, y, z, blockIds.wheat|TORCH, false,false,false,false, this.type)
 				}else if(blockID === (blockIds.wheat|TORCH)){
 					world.setBlock(x, y, z, blockIds.wheat|LANTERN, false,false,false,false, this.type)
-				}/*cactus fruit*/else if(blockID === (blockIds.newCactusFruit|CROSS)){
-					world.setBlock(x, y, z, blockIds.greenCactusFruit|CROSS, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.greenCactusFruit|CROSS)){
-					world.setBlock(x, y, z, blockIds.redCactusFruit|CROSS, false,false,false,false, this.type)
-				}else if(blockID === (blockIds.redCactusFruit|CROSS)){
-					world.setBlock(x, y, z, blockIds.purpleCactusFruit|CROSS, false,false,false,false, this.type)
-				}/*cactus*/else if(blockID === (blockIds.cactus|CACTUS)){
+				}/*cactus fruit*/else if(block.name === "newCactusFruit"){
+					world.setBlock(x, y, z, blockIds.greenCactusFruit, false,false,false,false, this.type)
+				}else if(block.name === "greenCactusFruit"){
+					world.setBlock(x, y, z, blockIds.redCactusFruit, false,false,false,false, this.type)
+				}else if(block.name === "redCactusFruit"){
+					world.setBlock(x, y, z, blockIds.purpleCactusFruit, false,false,false,false, this.type)
+				}/*cactus*/else if(block.name === "cactus"){
 					var tall = 0
 					var maxTall = 3
 					for(var t=0; t<maxTall; t++){
-						if(world.getBlock(x,y-t,z) === (blockIds.cactus|CACTUS)) tall++
+						if(world.getBlock(x,y-t,z) === blockID) tall++
 						else break
 					}
 					if(tall >= maxTall) return
@@ -25765,7 +26064,7 @@ class Section {
 						if(world.getBlock(x,y+2,z)) return //the cactus fruit can't replace blocks
 						world.setBlock(x,y+2,z, above, false,false,false,false, this.type) //move the cactus fruit up
 					}else if(above) return //there is a block so it can't grow
-					world.setBlock(x,y+1,z, blockIds.cactus|CACTUS, false,false,false,false, this.type)
+					world.setBlock(x,y+1,z, blockIds.cactus, false,false,false,false, this.type)
 				}else if(blockID === blockIds.sweetBerryBush){
 					world.setBlock(x, y, z, blockIds.sweetBerryBush|SLAB, false,false,false,false, this.type)
 				}else if(blockID === (blockIds.sweetBerryBush | SLAB)){
@@ -25822,7 +26121,7 @@ class Section {
 							if(t === 0 && block !== (blockIds.bambooStalk | CROSS)) world.setBlock(x,y-t,z,blockIds.bambooStalk | CROSS,false,false,false,false)
 						}
 					}
-				}else if(blockID === (blockIds.bambooShoot | CROSS)){
+				}else if(block.name === "bambooShoot"){
 					if(world.getBlock(x,y+1,z)) return
 					world.setBlock(x, y, z, blockIds.bambooStalk|CROSS, false,false,false,false, this.type)
 					world.setBlock(x, y+1, z, blockIds.bambooStalk|TALLCROSS, false,false,false,false, this.type)
@@ -25989,6 +26288,8 @@ class Chunk {
 		this.generating = false //is it currently generating?
 		this.populated = false // Trees and ores
 		this.lit = false
+		this.lightDropped = false
+		this.blockSpread = null
 		this.lazy = false
 		this.edited = false
 		this.loaded = false
@@ -26017,7 +26318,7 @@ class Chunk {
 		if (!this.sections[y >> 4]) {
 			do {
 				let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
-				if(this.lit) section.skyLight.fill(15)
+				if(this.lit) section.skyLight.fill(255)
 				this.sections.push(section)
 			} while (!this.sections[y >> 4])
 		}
@@ -26083,7 +26384,7 @@ class Chunk {
 		if (!this.sections[y >> 4]) {
 			do {
 				let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
-				if(this.lit) section.skyLight.fill(15)
+				if(this.lit) section.skyLight.fill(255)
 				this.sections.push(section)
 			} while (!this.sections[y >> 4])
 		}
@@ -26094,9 +26395,13 @@ class Chunk {
 		let s = y >> 4
 		if(s < this.sections.length && s >= 0) return this.sections[s].setTagByName(x, y & 15, z,n,data)
 	}
-	fillLight() {
-		let max = this.sections.length * 16 - 1 + minHeight
+	dropLight(){
+		if (this.lightDropped) return
 		let blockSpread = []
+		this.blockSpread = blockSpread
+		let max = this.sections.length * 16 - 1 + minHeight
+
+		//if(this.wasLit) this.unfillLight()
 
 		// Set virtical columns of light to level 15
 		for (let x = 0; x < 16; x++) {
@@ -26123,26 +26428,40 @@ class Chunk {
 			}
 		}
 
+		this.lightDropped = true
+	}
+	fillLight() {
+		const {world} = this
+		let max = this.sections.length * 16 - 1 + minHeight
+		this.dropLight()
+		let blockSpread = this.blockSpread
+		this.blockSpread = null
+
+		world.getChunk(this.x - 16, this.z).dropLight()
+		world.getChunk(this.x + 16, this.z).dropLight()
+		world.getChunk(this.x, this.z - 16).dropLight()
+		world.getChunk(this.x, this.z + 16).dropLight()
+
 		// Spread the light to places where the virtical columns stopped earlier, plus chunk borders
 		let spread = []
 		for (let x = 0; x < 16; x++) {
 			for (let z = 0; z < 16; z++) {
 				for (let y = this.tops[z * 16 + x] + 1; y <= max; y++) {
-					let light = this.getLight(x, y+1, z, 0)
+					let light = this.getLight(x, y, z, 0)
 					if(!spread[light]) spread[light] = []
-					if (this.getLight(x+1,y,z,0) < light) {
+					if (x === 15 || this.tops[z * 16 + x + 1] > y) {
 						spread[light].push(x + this.x, y, z + this.z)
 						continue
 					}
-					if (this.getLight(x-1,y,z,0) < light) {
+					if (x === 0 || this.tops[z * 16 + x - 1] > y) {
 						spread[light].push(x + this.x, y, z + this.z)
 						continue
 					}
-					if (this.getLight(x,y,z+1,0) < light) {
+					if (z === 15 || this.tops[(z + 1) * 16 + x] > y) {
 						spread[light].push(x + this.x, y, z + this.z)
 						continue
 					}
-					if (this.getLight(x,y,z-z,0) < light) {
+					if (z === 0 || this.tops[(z - 1) * 16 + x] > y) {
 						spread[light].push(x + this.x, y, z + this.z)
 						continue
 					}
@@ -26175,7 +26494,7 @@ class Chunk {
 		if (!this.sections[y >> 4]) {
 			do {
 				let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
-				if(this.lit) section.skyLight.fill(15)
+				if(this.lit) section.skyLight.fill(255)
 				this.sections.push(section)
 			} while (!this.sections[y >> 4])
 		}
@@ -26618,11 +26937,12 @@ class Chunk {
 		this.generating = false
 		this.generated = true
 	}
-	generateOldBlob(replace, blockID, amount, x,y,z, size = 1){
+	generateOldBlob(replace, blockID, amount, x,y,z, size = 1, onlyOne=false){
 		// Blob code from https://biome-testing.lukep0wers.repl.co
 		// generate blobs (ore blobs, dirt blobs, etc)
 		let newX=0, newY=0, newZ=0
 		for(let cv = 0; cv < amount; cv++) {
+			if(!onlyOne||cv<1){ // for changing back to single blocks (old version) without changing order of random
 			var block = this.getBlock(x+newX, y+newY, z+newZ)
 			var canReplace = false
 			if(Array.isArray(replace)){
@@ -26638,6 +26958,7 @@ class Chunk {
 				}
 			}
 			if(canReplace) this.setBlock(x+newX, y+newY, z+newZ,blockID);
+			}
 			newX = round(random(-size, size));
 			newY = round(random(-size, size));
 			newZ = round(random(-size, size));
@@ -26898,13 +27219,13 @@ class Chunk {
 		//Fruit
 		switch(round(rnd*4)){
 			case 0:
-				this.setBlock(i, top+1, k, blockIds.newCactusFruit|CROSS);
+				this.setBlock(i, top+1, k, blockIds.newCactusFruit);
 				break
 			case 1:
-				this.setBlock(i, top+1, k, blockIds.greenCactusFruit|CROSS);
+				this.setBlock(i, top+1, k, blockIds.greenCactusFruit);
 				break
 			case 2:
-				this.setBlock(i, top+1, k, blockIds.redCactusFruit|CROSS);
+				this.setBlock(i, top+1, k, blockIds.redCactusFruit);
 				break
 		}
 	}
@@ -27280,7 +27601,7 @@ class Chunk {
 	spawnBamboo(i,ground,k,wx,wz,old=false){
 		let {type, world} = this
 		if(random() < 0.2){
-			this.setBlock(i, ground+1, k, blockIds.bambooShoot | CROSS)
+			this.setBlock(i, ground+1, k, blockIds.bambooShoot)
 		}else{
 			let h = old ? round(12+random()*6) : round(4+random()*10)
 			let top = ground+h
@@ -28649,7 +28970,7 @@ class Chunk {
 	async populate() {
 		const world = this.world
 		const {trees} = world.world
-		seedHash(world.worldSeed)
+		seedHash(world.world.worldSeed)
 		randomSeed(hash(this.x, this.z) * 210000000)
 		const {noiseProfile} = world.world
 		let wx = 0, wz = 0, ground = 0
@@ -28688,7 +29009,7 @@ class Chunk {
 						this.spawnCactus(i,ground,k)
 					}
 					if (random() < 0.006 && this.getBlock(i, ground, k) && (b === "a_desert" || b === "desert") && ground > 60 && this.type === "") {
-						this.setBlock(i,ground+1,k, blockIds.deadBush | CROSS);
+						this.setBlock(i,ground+1,k, blockIds.deadBush);
 					}
 					
 					// Jungle trees
@@ -28755,7 +29076,7 @@ class Chunk {
 						y = y < ground ? y : ground
 						if (this.getBlock(i, y, k)) {
 							//this.setBlock(i, y < ground ? y : ground, k, blockIds.diamondOre)
-							this.generateOldBlob(blockIds.stone, blockIds.diamondOre, round(random(3, 8)), i,y,k, 10)
+							this.generateOldBlob(blockIds.stone, blockIds.diamondOre, round(random(3, 8)), i,y,k, 10, true)
 						}
 					}
 
@@ -28764,7 +29085,7 @@ class Chunk {
 						y = y < ground ? y : ground
 						if (this.getBlock(i, y, k)) {
 							//this.setBlock(i, y < ground ? y : ground, k, blockIds.ironOre)
-							this.generateOldBlob(blockIds.stone, blockIds.ironOre, round(random(1, 13)), i,y,k, 9)
+							this.generateOldBlob(blockIds.stone, blockIds.ironOre, round(random(1, 13)), i,y,k, 9, true)
 						}
 					}
 					
@@ -28773,7 +29094,7 @@ class Chunk {
 						y = y < ground ? y : ground
 						if (this.getBlock(i, y, k)) {
 							//this.setBlock(i, y < ground ? y : ground, k, blockIds.copperOre)
-							this.generateOldBlob(blockIds.stone, blockIds.copperOre, round(random(1, 16)), i,y,k, 9)
+							this.generateOldBlob(blockIds.stone, blockIds.copperOre, round(random(1, 16)), i,y,k, 9, true)
 						}
 					}
 
@@ -28782,7 +29103,7 @@ class Chunk {
 						y = y < ground ? y : ground
 						if (this.getBlock(i, y, k)) {
 							//this.setBlock(i, y < ground ? y : ground, k, blockIds.coalOre)
-							this.generateOldBlob(blockIds.stone, blockIds.coalOre, round(random(1, 37)), i,y,k, 20)
+							this.generateOldBlob(blockIds.stone, blockIds.coalOre, round(random(1, 37)), i,y,k, 20, true)
 						}
 					}
 
@@ -28791,7 +29112,7 @@ class Chunk {
 						y = y < ground ? y : ground
 						if (this.getBlock(i, y, k)) {
 							//this.setBlock(i, y < ground ? y : ground, k, blockIds.goldOre)
-							this.generateOldBlob(blockIds.stone, blockIds.goldOre, round(random(1, 13)), i,y,k, 9)
+							this.generateOldBlob(blockIds.stone, blockIds.goldOre, round(random(1, 13)), i,y,k, 9, true)
 						}
 					}
 
@@ -28800,7 +29121,7 @@ class Chunk {
 						y = y < ground ? y : ground
 						if (this.getBlock(i, y, k)) {
 							//this.setBlock(i, y < ground ? y : ground, k, blockIds.redstoneOre)
-							this.generateOldBlob(blockIds.stone, blockIds.redstoneOre, round(random(1, 10)), i,y,k, 8)
+							this.generateOldBlob(blockIds.stone, blockIds.redstoneOre, round(random(1, 10)), i,y,k, 8, true)
 						}
 					}
 
@@ -28809,7 +29130,7 @@ class Chunk {
 						y = y < ground ? y : ground
 						if (this.getBlock(i, y, k)) {
 							//this.setBlock(i, y < ground ? y : ground, k, blockIds.lapisOre)
-							this.generateOldBlob(blockIds.stone, blockIds.lapisOre, round(random(1, 9)), i,y,k, 9)
+							this.generateOldBlob(blockIds.stone, blockIds.lapisOre, round(random(1, 9)), i,y,k, 9, true)
 						}
 					}
 					
@@ -28946,7 +29267,6 @@ class Chunk {
 				world.spawnBlock(-1,top+1,0,blockIds.endPortal, true)
 				world.spawnBlock(-1,top+1,1,blockIds.endPortal, true)
 				world.spawnBlock(0,top+1,-1,blockIds.endPortal, true)
-				world.spawnBlock(0,top+1,0,blockIds.endPortal, true)
 				world.spawnBlock(0,top+1,1,blockIds.endPortal, true)
 				world.spawnBlock(1,top+1,-1,blockIds.endPortal, true)
 				world.spawnBlock(1,top+1,0,blockIds.endPortal, true)
@@ -29040,7 +29360,7 @@ class Chunk {
 				}
 			}
 			if(trees) for (let i = 0; i < 16; i++) {
-				let flowerNoiseOffsetX = hash(world.worldSeed,24987398), flowerNoiseOffsetZ = hash(world.worldSeed,91264824)
+				let flowerNoiseOffsetX = hash(world.world.worldSeed,24987398), flowerNoiseOffsetZ = hash(world.world.worldSeed,91264824)
 				wx = this.x + i
 				for (let k = 0; k < 16; k++) {
 					wz = this.z + k
@@ -29234,7 +29554,7 @@ class Chunk {
 							this.spawnJungleTree(i,ground,k,wx,wz)
 						}
 						if(deadBush && under && random(256) < deadBush){
-							this.setBlock(i,ground+1,k, blockIds.deadBush | CROSS);
+							this.setBlock(i,ground+1,k, blockIds.deadBush);
 						}
 						if(cactus && under && random(256) < cactus){
 							this.spawnCactus(i,ground,k)
@@ -29323,7 +29643,7 @@ class Chunk {
 							world.getBlock(wx,ground,wz+1) === blockIds.Water ||
 							world.getBlock(wx,ground,wz-1) === blockIds.Water
 						){
-							let block = random() > biomeData[b][1]*0.2+0.9 ? blockIds.sugarCane|SLAB : blockIds.sugarCane|CROSS
+							let block = random() > biomeData[b][1]*0.2+0.9 ? blockIds.sugarCane|SLAB : blockIds.sugarCane
 							this.setBlock(i,ground+1,k, block)
 							this.setBlock(i,ground+2,k, block)
 							if(random()>0.5) this.setBlock(i,ground+3,k, block)
@@ -29472,7 +29792,7 @@ class Chunk {
 						if(random() > 0.9){
 							let h = round(random(1,6))
 							for(let l=0; l<h; l++){
-								this.setBlock(i, caveMax-1-l, k, (random() > 0.25 ? (l === h-1 ? blockIds.caveVines : blockIds.caveVinesPlant) : (l === h-1 ? blockIds.caveVinesLit : blockIds.caveVinesPlantLit)) | CROSS)
+								this.setBlock(i, caveMax-1-l, k, (random() > 0.25 ? (l === h-1 ? blockIds.caveVines : blockIds.caveVinesPlant) : (l === h-1 ? blockIds.caveVinesLit : blockIds.caveVinesPlantLit)))
 							}
 						}else if(random() > 0.98){
 							this.setBlock(i,caveMax-1,k, blockIds.sporeBlossom)
@@ -29519,7 +29839,7 @@ class Chunk {
 								if(here !== blockIds.grass && here !== blockIds.air) {
 									this.setBlock(i+rX, ground+l, k+rZ, blockIds.rootedDirt);
 								} else if(this.getBlock(i+rX, ground+l+1, k+rZ)===blockIds.rootedDirt) {
-									this.setBlock(i+rX, ground+l, k+rZ, blockIds.hangingRoots | CROSS);
+									this.setBlock(i+rX, ground+l, k+rZ, blockIds.hangingRoots);
 								}
 							}
 						}
@@ -29714,10 +30034,10 @@ class Chunk {
 					for(let s of structures){
 						i++
 						if(hash3(x,z,i)<s.chance){
-							let struct = world.structureData[x+","+z]
-							if(!struct) world.structureData[x+","+z] = struct = this.generateStructureLayout(x,z,s)
+							let struct = world.structureData[x+","+z+","+i]
+							if(!struct) world.structureData[x+","+z+","+i] = struct = this.generateStructureLayout(x,z,s,i-1)
 							genStructs.push(struct)
-							break
+							//break
 						}
 					}
 				}
@@ -29850,8 +30170,8 @@ class Chunk {
 		}
 		return structure.variants[rot]
 	}
-	generateStructureLayout(x,z,structure){
-		randomSeed(hash(x, z) * 210000000)
+	generateStructureLayout(x,z,structure,structureId){
+		randomSeed((structureId>1 ? hash3(x,z,structureId) : hash(x, z)/*don't break old saves*/) * 210000000)
 		let sx = x+Math.floor(random(structureSpacing))//start position
 		let sz = z+Math.floor(random(structureSpacing))
 		let sy = structure.getY(sx,sz,random())
@@ -31638,9 +31958,9 @@ class World{ // aka trueWorld
 			}
 		}
 
-		this.pos = setInterval(this.onpos.bind(this), 500)
 		this.customChunkGenerate = customChunkGenerate
 		this.customChunkPopulate = customChunkPopulate
+		this.music = new Map()
 	}
 	reset(){
 		this.generatedChunks = 0
@@ -31681,23 +32001,25 @@ class World{ // aka trueWorld
 			if(r === "stop") return true
 		}
 	}
-	portals = []
 	addPortal(where, x,y,z,x2,y2,z2, dimension=""){
 		var temp
 		if(x > x2) temp = x, x = x2, x2 = temp
 		if(y > y2) temp = y, y = y2, y2 = temp
 		if(z > z2) temp = z, z = z2, z2 = temp
 		
+		if(!this.portals){
+			this.portals = []
+			this.on("tick", () => {
+				for(var p of this.portals) for(let e of this.players) {
+					if(e.x >= p.x-0.5 && e.x <= p.x2+0.5 && e.y >= p.y-0.5 && e.y <= p.y2+0.5 && e.z >= p.z-0.5 && e.z <= p.z2+0.5 && p.dimension === e.dimension)
+						p.func(e)
+				}
+			})
+		}
 		this.portals.push({
 			func:where,
 			x,y,z,x2,y2,z2, dimension
 		})
-	}
-	tickPortals(){
-		for(var p of this.portals) for(let e of this.players) {
-			if(e.x >= p.x && e.x <= p.x2 && e.y >= p.y && e.y <= p.y2 && e.z >= p.z && e.z <= p.z2 && p.dimension === e.dimension)
-				p.func(e)
-		}
 	}
 	findSpawnPoint(){
 		if(this.worldType === "large"){
@@ -31816,7 +32138,7 @@ class World{ // aka trueWorld
 					holdObj.durability --
 				}
 				return
-			}else if(holding && cblock && blockData[holding].name === "eyeOfEnder" && blockData[cblock].name === "endPortalFrame"){
+			}else if(holding && cblock && blockData[holding].name === "eyeOfEnder" && blockData[cblock].name === "endPortalFrame" && blockData[cblock | SLAB]){
 				this[dimension].setBlock(ox,oy,oz,cblock | SLAB)
 				blockData[cblock].eyeplace(ox,oy,oz,this[dimension])
 				this[dimension].blockSound(holding, "place", ox,oy,oz)
@@ -32084,7 +32406,7 @@ class World{ // aka trueWorld
 			if(ent.type === "Player"){
 				if (this.settings.attack) {
 					let msg = (p.username+" killed "+ent.username+(holdObj && blockData[holdObj.id].attackDamage ? " with "+(holdObj.customName || blockData[holdObj.id].Name) : "")+".")
-					ent.damage(damage,msg,false,null,p.x,p.y,p.z,p)
+					ent.damage(damage,msg,false,"hit",p.x,p.y,p.z,p)
 					//send({type:"hit", username:p.username, id:p.id, damage:damage, velx:pd.x/2, velz:pd.z/2, holding:inventory.hotbar[inventory.hotbarSlot],x:p.x,y:p.y,z:p.z}, ent.id)
 				}
 			}else{
@@ -32154,7 +32476,7 @@ class World{ // aka trueWorld
 		}
 		if ("amount" in ent) obj.amount = ent.amount
 		if ("block" in ent) obj.block = ent.block
-		if ("from" in ent) obj.from = ent.from
+		if (ent.from) obj.from = ent.from
 		if (t === "Item") { obj.data = ent.data }
 		if (t === "BlockEntity") obj.solidOnGround = ent.solidOnGround
 		if (t === "MovingBlock") {
@@ -32239,14 +32561,14 @@ class World{ // aka trueWorld
 			ent.burning = p.burning||false; ent.burnTimer = p.burnTimer||0
 			ent.oxygen = p.oxygen; ent.spinTarget = p.spinTarget
 			ent.path = p.path || null
-			if(p.fur) ent.fur = p.fur
-			if(p.color) ent.color = p.color
-			if(p.eating) ent.eating = p.eating
+			if("fur" in ent) ent.fur = p.fur
+			if("color" in ent) ent.color = p.color
+			if("eating" in ent) ent.eating = p.eating
 			ent.target = p.target
 			if(entType === "Sheep") ent.wool = p.wool
-			if(p.tame) ent.tame = p.tame
-			if(p.sitting) ent.sitting = p.sitting
-			if(p.owner) ent.owner = p.owner
+			if("tame" in ent) ent.tame = p.tame
+			if("sitting" in ent) ent.sitting = p.sitting
+			if("owner" in ent) ent.owner = p.owner
 			ent.holding = p.holding; ent.attractedBy = p.attractedBy||null
 			if(entType === "Creeper"){ ent.explodeAmount = p.explodeAmount; ent.timerStart = now - p.timerStartRelative }
 			ent.attackCooldown = p.attackCooldown||0
@@ -32545,13 +32867,12 @@ class World{ // aka trueWorld
 		}
 		let allSleeping = sleepTotal && sleep === sleepTotal
 		
+		let timeSpeed = allSleeping ? 6.25 : 1000/20/60/20 //20 minutes
 		if(this.settings.dayNightCycle){
-			if(allSleeping){
-				this.time += 6.25
-			}else this.time += 1000/20/60/20 //20 minutes
+			this.time += timeSpeed
 		}
 		if(this.settings.weatherCycle){
-			this.nextWeather -= allSleeping ? 6.25 : 0.125
+			this.nextWeather -= timeSpeed
 			if(this.nextWeather <= 0) {
 				this.nextWeather = 0
 				this.weather = this.weather ? "" : "rain"
@@ -32604,7 +32925,7 @@ class World{ // aka trueWorld
 		this.tickUpdates(this["nether"],tickStart)
 		this.tickUpdates(this["end"],tickStart)
 
-		this.tickPortals()
+		this.tickMusic()
 		this.event("tick")
 
 		if(this.ticking) return
@@ -33622,22 +33943,6 @@ window.parent.postMessage({ready:true}, "*")
 		p.level = parseInt(arr[15]) || 0; p.setLevel()
 	}
 
-	onpos(){
-		/*let entities = this.getEntities(), arr = [], length = 0
-		for(let i=0; i<entities.length; i++){
-			let ent = entities[i]
-			let l = ent.length
-			if(length+l > 10000){
-				this.sendAll({type:"entityPosAll", data: arr})
-				length = 0
-				arr.length = 0
-			}
-			length += l
-			arr.push(ent)
-		}
-		if(length) this.sendAll({type:"entityPosAll", data: arr})*/
-		this.sendAll({type:"settings", data:this.settings, time:this.time, weather:this.weather})
-	}
 	//c must be a connection: {send: function, onmessage, onclose, close: function}	
 	/*p: {
 		loadChunks: chunks that need to be sent to player,
@@ -33662,6 +33967,7 @@ window.parent.postMessage({ready:true}, "*")
 			if(p2.pos && p2 !== p) p.posUpdated[p2.id] = p2.pos
 		}
 		p.lastSendEntities = 0
+		p.lastSendSettings = 0
 		p.updateingLoadedI = 0
 		p.lastChunk = ","
 		p.lastDimension = ""
@@ -33688,25 +33994,26 @@ window.parent.postMessage({ready:true}, "*")
 			let inv = world.playersInv[host ? ":host" : username]
 			if(inv){
 				let preBetaVersion = inv.version && verMoreThan("1.1.0",inv.version.replace(/(Alpha|Beta) /, ''))
+				if(typeof inv.data === "string") inv.data = atoarr(inv.data)
 				if(inv.data && inv.data.length){
 					p.load(inv.data, world)
 				}
 				// legacy fallback
 				if(typeof inv.inv === "string"){
 					if(inv.inv.includes(",")){
-						this.loadOldInv(inv.inv,p), inv.inv = null
+						this.loadOldInv(inv.inv,p)
 					}else{
 						inv.inv = atoarr(inv.inv)
 					}
 				}
 				if(typeof inv.survivStr === "string"){
 					if(inv.survivStr.includes(",")){
-						this.loadOldSurvivStr(inv.survivStr,p), inv.survivStr = null
+						this.loadOldSurvivStr(inv.survivStr,p)
 					}else{
 						inv.survivStr = atoarr(inv.survivStr)
 					}
 				}
-				if(inv.survivStr && inv.survivStr.length){
+				if(inv.survivStr && inv.survivStr.length && typeof inv.survivStr !== "string"){
 					try{
 						world.loadSurvivStr(new BitArrayReader(inv.survivStr), preBetaVersion, p)
 					}catch(e){
@@ -33723,7 +34030,7 @@ window.parent.postMessage({ready:true}, "*")
 					p.x = inv.x, p.y = inv.y, p.z = inv.z
 					delete inv.x, delete inv.y, delete inv.z
 				}
-				if(inv.inv && inv.inv.length){
+				if(inv.inv && inv.inv.length && typeof inv.inv !== "string"){
 					world.loadInv(new BitArrayReader(inv.inv),p,preBetaVersion)
 				}
 			}
@@ -33757,6 +34064,7 @@ window.parent.postMessage({ready:true}, "*")
 			p.sendHealth()
 			p.setRot(p.rx,p.ry,p.bodyRot,true)
 			p.sendEffects()
+			world.sendMusicTo(c)
 		}
 		c.onmessage = async function(data){
 			if(world.event("packet",{player:p,data})) return
@@ -33838,6 +34146,11 @@ window.parent.postMessage({ready:true}, "*")
 					}
 					if(length) p.connection.send({type:"entityPosAll", data: arr})
 				//}
+				if(now - p.lastSendSettings > 1000){
+					p.lastSendSettings = now
+					p.connection.send({type:"settings", data:world.settings, time:world.time, weather:world.weather})
+					world.sendMusicTo(p.connection)
+				}
 				if(p.resendHealth){
 					p.sendHealth()
 					p.resendHealth = false
@@ -33927,7 +34240,7 @@ window.parent.postMessage({ready:true}, "*")
 					}, data.data)
 				}
 			}*/else if(data.type === "remoteControl"){
-				if(host || admin) world.sendPlayer(data,data.TO)
+				if(p.spectateRemoteControl) world.sendPlayer(data,data.TO)
 			}else if(data.type === "runCmd"){
 				runCmd(data.data,p,world,false, (output,newOutputs) => {
 					for(let i=0; i<newOutputs.length; i+=2) c.send({type:"message",data:newOutputs[i],fromServer:true})
@@ -34068,6 +34381,7 @@ window.parent.postMessage({ready:true}, "*")
 				if(anvilUpdate) updateAnvil()
 			}else if(data.type === "hotbar"){
 				p.inventory.hotbarSlot = data.slot
+				p.holding = p.inventory.hotbar[p.inventory.hotbarSlot] ? p.inventory.hotbar[p.inventory.hotbarSlot].id : 0
 			}else if(data.type === "containerChangeAnvil"){
 				p.inventory.anvilRename = data.rename
 				updateAnvil()
@@ -34180,6 +34494,7 @@ window.parent.postMessage({ready:true}, "*")
 					dropSlot(p.inventory.slotIds.anvilMaterial)
 					p.inventory.anvilOutput = null
 				}
+				dropSlot(p.inventory.slotIds.holding)
 			}
 			p.inventory.currentContainer = currentContainer
 			let id = 0
@@ -34270,13 +34585,18 @@ window.parent.postMessage({ready:true}, "*")
 				item = p.inventory[place][idx]
 				p.inventory[place][idx] = null
 			}
-			if(place === "anvilInput" || place === "anvilMaterial" || place === "anvilOutput"){
+			if(place === "anvilInput" || place === "anvilMaterial" || place === "anvilOutput" || place === "holding"){
 				item = p.inventory[place]
 				p.inventory[place] = null
 			}
 			if(item){
-				let d = p.direction
-				world[p.inventory.containerData.dimension].addItem(p.x, p.y, p.z, d.x/4, d.y/4, d.z/4, item, false,p.id)
+				while(item.amount > 0 && p.newInvItem(item)){
+					item.amount--
+				}
+				if(item.amount>0){
+					let d = p.direction
+					world[p.inventory.containerData.dimension].addItem(p.x, p.y, p.z, d.x/4, d.y/4, d.z/4, item, false,p.id)
+				}
 			}
 		}
 		let tempCraftGrid = new Array(9)
@@ -34426,11 +34746,35 @@ window.parent.postMessage({ready:true}, "*")
 	close(){
 		sendAllWorkers({deleteSeed:this.worldSeed})
 		for(let p of this.players) p.connection.close()
-		clearInterval(this.pos)
 		/*if(this.modContainer){
 			this.modContainer.contentWindow.postMessage({close:true})
 			this.modContainer.remove()
 		}*/
+	}
+	playMusic(url, duration=5*60, offset=0){
+		if(!this.musicNextId) this.musicNextId = 0
+		const id = ++this.musicNextId
+		this.music.set(id, {url, startTime: Date.now()/1000 - offset, duration})
+		this.sendAll({type:"music", id, url, elapsed: offset})
+		return id
+	}
+	stopMusic(id){
+		this.music.delete(id)
+		this.sendAll({type:"music", id, url: null, elapsed: 0})
+	}
+	tickMusic(){
+		const now = Date.now()/1000
+		for(let [id, track] of this.music){
+			if(track.duration && now - track.startTime >= track.duration){
+				this.music.delete(id)
+				this.sendAll({type:"music", id, url: null, elapsed: 0})
+			}
+		}
+	}
+	sendMusicTo(connection){
+		for(let [id, track] of this.music){
+			connection.send({type:"music", id, url: track.url, elapsed: Date.now()/1000 - track.startTime})
+		}
 	}
 }
 class WorldDimension{
@@ -34451,7 +34795,7 @@ class WorldDimension{
 	}
 	sendAllInChunk(msg,x,z){
 		for(let p of this.world.players){
-			if(p.dimension === this.dimension && maxDist(x,z,round(p.x/16),round(p.z/16)) <= p.loadDistance){
+			if(p.dimension === this.dimension && maxDist(x,z,p.x>>4,p.z>>4) <= p.loadDistance){
 				p.connection.send(msg)
 			}
 		}
@@ -34590,7 +34934,7 @@ class WorldDimension{
 				let Z = ent.z - z
 				let velx = X/dist*speed, vely = Y/dist*speed, velz = Z/dist*speed
 				let damageTook = (r - dist) * 6
-				ent.damage(damageTook,ent.username+" blew up", false,null, x,y,z, null,velx,vely,velz)
+				ent.damage(damageTook,ent.username+" blew up", false,"hit", x,y,z, null,velx,vely,velz)
 			}
 		}
 		explodeSound(x,y,z, r, this)
@@ -34905,14 +35249,6 @@ class WorldDimension{
 					chunk.spreadLight(blspread, blight - 1, true, 1)
 				}
 			}
-			if (blockLight) { // Light block was removed
-				this.setLight(x, y, z, 0, 1)
-				blspread.push(x, y, z)
-				let respread = []
-				for (let i = 0; i <= 15/*blockLight + 1*/; i++) respread[i] = []
-				chunk.unSpreadLight(blspread, blockLight - 1, respread, 1)
-				chunk.reSpreadLight(respread, 1)
-			}
 		}
 		else if (place && (center !== 0 || blight !== 0)) { // Block was placed; decrease light levels
 			let respread = []
@@ -34920,6 +35256,7 @@ class WorldDimension{
 			chunk.setLight(cx, y, cz, 0, 0)
 			chunk.setLight(cx, y, cz, 0, 1)
 			chunk.setLight(cx, y, cz, 0, 2)
+			chunk.setLight(cx, y, cz, 0, 3)
 			spread[center].push(x, y, z)
 
 			// Sky light
@@ -34956,20 +35293,23 @@ class WorldDimension{
 				chunk.unSpreadLight(blspread, blight - 1, respread, 1)
 				chunk.reSpreadLight(respread, 1)
 			}
-			if (blockLight) { // Light block was placed
-				up = this.getLight(x, y+1, z, 1)
-				down = this.getLight(x, y-1, z, 1)
-				north = this.getLight(x, y, z+1, 1)
-				south = this.getLight(x, y, z-1, 1)
-				east = this.getLight(x+1, y, z, 1)
-				west = this.getLight(x-1, y, z, 1)
-				blight = max(max(up, down, north, south, east, west)-1, blockLight)
-				this.setLight(x, y, z, blight, 1)
-				this.setLight(x, y, z, blockLight, 3)
-				blspread.length = 0
-				blspread.push(x, y, z)
-				chunk.spreadLight(blspread, blight - 1, true, 1)
-			}
+		}
+		if (place && blockLight) { // Light block was placed
+			blight = max(this.getLight(x, y, z, 1), blockLight)
+			this.setLight(x, y, z, blight, 1)
+			this.setLight(x, y, z, blockLight, 3)
+			blspread.length = 0
+			blspread.push(x, y, z)
+			chunk.spreadLight(blspread, blight - 1, true, 1)
+		}
+		else if (!place && blockLight) { // Light block was removed
+			this.setLight(x, y, z, 0, 1)
+			this.setLight(x, y, z, 0, 3)
+			blspread.push(x, y, z)
+			let respread = []
+			for (let i = 0; i <= 15/*blockLight + 1*/; i++) respread[i] = []
+			chunk.unSpreadLight(blspread, blockLight - 1, respread, 1)
+			chunk.reSpreadLight(respread, 1)
 		}
 	}
 	spawnBlock(x, y, z, blockID, force) {
@@ -35098,12 +35438,15 @@ class WorldDimension{
 	}
 	addItems(x,y,z,vx,vy,vz,block,autoSetVel,amount = 1,durability,customName,from){
 		if(!block) return
-		var data = blockData[block]
-		if(!data) return
+		var blockDat = blockData[block]
+		if(!blockDat) return
 		while(amount){
-			var a = min(amount,data.stackSize)
+			var a = min(amount,blockDat.stackSize)
 			amount -= a
-			this.addEntity(new entities[entityIds.Item](x, y, z, vx, vy, vz, {id:block,amount:a,durability,customName}, autoSetVel,from))
+			let data = {id:block,amount:a}
+			if(durability||durability===0) data.durability = durability
+			if(customName) data.customName = customName
+			this.addEntity(new entities[entityIds.Item](x, y, z, vx, vy, vz, data, autoSetVel,from))
 		}
 	}
 	addItem(x,y,z,vx,vy,vz,data,autoSetVel,from){
@@ -35325,6 +35668,7 @@ class WorldDimension{
 		var block = this.getBlock(x,y,z)
 		if(block && blockData[block].noSetPower) return
 		if(type !== null && type !== "weak" && type !== "strong") {type = null; console.error("Oh no! It can only be strong or weak or null. But it was",type)}
+		if(this.getBlockPower(x,y,z, fromDir) === type) return
 		let tagBits = blockData[block].tagBits
 		type = !type ? 0 : (type === "strong" ? 2 : 1)
 		if(tagBits){

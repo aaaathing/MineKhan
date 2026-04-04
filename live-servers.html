@@ -19,7 +19,7 @@
         image-rendering:pixelated;
         filter:brightness(0.4);
         z-index:-1;
-        position:absolute;
+        position:fixed;
         top:0;
         left:0;
         width:100vw;
@@ -70,7 +70,7 @@
       }
       #sigstatus > span{
         display:inline-block;
-        width:240px;
+        width:12em;
       }
     </style>
 
@@ -108,9 +108,14 @@
       }
       onresize()
 
+      let HTMLSafeSanitizer
+      if(window.Sanitizer){
+        HTMLSafeSanitizer = new Sanitizer({})
+        HTMLSafeSanitizer.removeUnsafe()
+      }
       let span = document.createElement("span")
       function formatSimple(str){
-        if(span.setHTML) span.setHTML(str)
+        if(span.setHTML) span.setHTML(str, HTMLSafeSanitizer)
         else span.textContent = str
         return span.innerHTML
       }
@@ -149,13 +154,15 @@
       }
       
       var worlds, username, prevPlayers, players = 0
+      let showingNotif = false
       function ondata(toUpdate){
         updateList(toUpdate)
-        if(players>prevPlayers && Notification.permission === "granted"){
+        if(players>prevPlayers && Notification.permission === "granted" && !showingNotif){
           let n = new Notification('More people!', {
             body: 'There is now more people!'
           });
-          setTimeout(() => n.close(), 2000)
+          showingNotif = true
+          setTimeout(() => {n.close(); showingNotif = false}, 2000)
         }
         prevPlayers = players
         //worlds = data
@@ -188,7 +195,6 @@
 			sigStatus[key] = {text:"connecting", color:"gray"}
 			updateStatus()
       function doPing(){
-        if(conn.list) conn.list()
         conn.sendAll({type:"ping"})
       }
 			let conn = server.connect({
@@ -199,16 +205,6 @@
 					doPing()
 					pingInterval = setInterval(doPing, 5000)
 				},
-        onlist(id){
-          if(!id.startsWith("srv") && !/*old one*/id.startsWith("player")) return
-					let w = worldMap[id]
-					if(!w){
-						w = worldMap[id] = {el:null, players:[]}
-						worlds.push(w)
-					}
-					w.seenPings = 2
-					ondata([w])
-        },
 				onmessage(data){
 					if(data.type !== "pong" || !data.FROM) return
 					let w = worldMap[data.FROM]
