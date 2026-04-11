@@ -3612,6 +3612,8 @@ const blockData = [
 		Name:"Sandstone",
 		textures: ["sandstoneBottom", "sandstoneTop", "sandstone"],
 		category:"nature",
+		hardness:0.8,
+		stoneSound:true,
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,
 		craftSlabs:true, craftStairs:true
 	},
@@ -3619,16 +3621,20 @@ const blockData = [
 		Name:"Chiseled Sandstone",
 		textures: ["sandstoneBottom", "sandstoneTop","chiseledSandstone"],
 		category:"build",
+		hardness:0.8,
+		stoneSound:true,
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true
 	},
 	{ name:"cutSandstone",
 		Name:"Cut Sandstone",
 		textures: ["sandstoneBottom", "sandstoneTop","cutSandstone"],
 		category:"build",
+		hardness:0.8,
+		stoneSound:true,
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,
 		craftSlabs:true, craftStairs:true
 	},
-	{ name:"smoothSandstone", Name:"Smooth Sandstone", textures:"sandstoneTop", category:"nature",randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true },
+	{ name:"smoothSandstone", Name:"Smooth Sandstone", textures:"sandstoneTop", category:"nature", hardness:0.8,stoneSound:true,randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true },
 	{
 		name: "DoubleTallGrass",
 		Name:"Tall Grass",
@@ -5863,6 +5869,8 @@ const blockData = [
 		Name:"Red Sandstone",
 		textures: ["redSandstoneBottom", "redSandstoneTop", "redSandstone"],
 		category:"nature",
+		hardness:0.8,
+		stoneSound:true,
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,
 		craftSlabs:true, craftStairs:true
 	},
@@ -5870,16 +5878,20 @@ const blockData = [
 		Name:"Chiseled Red Sandstone",
 		textures: ["redSandstoneBottom", "redSandstoneTop","chiseledRedSandstone"],
 		category:"build",
+		hardness:0.8,
+		stoneSound:true,
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true
 	},
 	{ name:"cutRedSandstone",
 		Name:"Cut Red Sandstone",
 		textures: ["redSandstoneBottom", "redSandstoneTop","cutRedSandstone"],
 		category:"build",
+		hardness:0.8,
+		stoneSound:true,
 		randomRotate:true,randomRotateTop:true,randomRotateBottom:true,
 		craftSlabs:true, craftStairs:true
 	},
-	{ name:"smoothRedSandstone", Name:"Smooth Red Sandstone", textures:"redSandstoneTop", category:"nature", randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true },
+	{ name:"smoothRedSandstone", Name:"Smooth Red Sandstone", textures:"redSandstoneTop", category:"nature", hardness:0.8,stoneSound:true,randomRotate:true,randomRotateTop:true,randomRotateBottom:true,randomRotateNorth:true,randomRotateSouth:true,randomRotateEast:true,randomRotateWest:true, craftSlabs:true, craftStairs:true },
 	
 	{
 		name:"purpurBlock",
@@ -12239,7 +12251,8 @@ const blockData = [
 		textures: ["dirt","dirtPathTop","dirtPathSide","dirtPathSide","dirtPathSide","dirtPathSide"],
 		solid: true,
 		transparent: true,
-		hardness:0.5, blastResistance:0.5
+		hardness:0.5, blastResistance:0.5,
+		grassSound:true
 	},
 	{
 		name:"gun",
@@ -18926,6 +18939,7 @@ function initBlockDataShapes(){
 		Block.shadow = base ? base.shadow : true
 		Block.transparent = base ? base.transparent : false
 		Block.solid = base ? base.solid : true
+		if(base && base.drop !== undefined) Block.drop = base.drop
 		
 		if(Name) Block.Name = Name
 	}
@@ -19786,12 +19800,12 @@ function initBlockDataShapes(){
 			baseBlock.onclick = clickBed
 			baseBlock.drop = drop
 		}
-		if(baseBlock.rotate) baseBlock.shape = shapes.rotate
+		if(baseBlock.rotate) baseBlock.shape = shapes.rotate, baseBlock.drop = drop
 		if(baseBlock.SW) baseBlock.shape = shapes.SW
 		if(baseBlock.cactus) potCrossBlock.shape = shapes.cactusPot, baseBlock.shape = shapes.cactus
 		if(baseBlock.crop) baseBlock.shape = shapes.crop
 		if(baseBlock.tallCrop)baseBlock.shape = shapes.tallCrop
-		if(baseBlock.anvil) baseBlock.shape = shapes.anvil
+		if(baseBlock.anvil) baseBlock.shape = shapes.anvil, baseBlock.drop = drop
 		if(baseBlock._1PixLower) baseBlock.shape = shapes._1PixLower, baseBlock.transparent = true
 		if(baseBlock.torch) slabBlock.shape = shapes.wallTorch, baseBlock.shape = shapes.torch, slabBlock.drop = drop
 		if(baseBlock.sporeBlossom) baseBlock.shape = shapes.sporeBlossom
@@ -19803,7 +19817,7 @@ function initBlockDataShapes(){
 		}
 		if(baseBlock.pot) baseBlock.shape = shapes.pot
 		if(baseBlock.sunflower) baseBlock.shape = shapes.sunflower
-		if(baseBlock.sideCross){baseBlock.shape = shapes.sideCross; slabBlock.shape = shapes.bottomCross}
+		if(baseBlock.sideCross){baseBlock.shape = shapes.sideCross; baseBlock.drop = drop; slabBlock.shape = shapes.bottomCross; slabBlock.drop = drop}
 		if(baseBlock.layers){
 			torchBlock.shape = shapes.layer1
 			torchBlock.solid = true
@@ -19914,7 +19928,8 @@ function initBlockDataShapes(){
 			baseBlock.drop = drop
 		}
 		if(baseBlock.name === "redstoneLamp"){
-			makeBlock(new Array(6).fill("redstoneLampOn"), shapes.cube, slabBlock)
+			baseBlock.drop = drop
+			makeBlock(new Array(6).fill("redstoneLampOn"), shapes.cube, slabBlock, baseBlock)
 			slabBlock.lightLevel = 15
 		}
 		if(baseBlock.name === "endPortalFrame"){
@@ -19949,10 +19964,14 @@ function initBlockDataShapes(){
 		if(baseBlock.fenceGate){
 			baseBlock.shape = shapes.fenceGate
 			baseBlock.transparent = true
+			baseBlock.drop = drop
 			slabBlock.shape = shapes.fenceGateWall
+			slabBlock.drop = drop
 			stairBlock.shape = shapes.fenceGateOpen
+			stairBlock.drop = drop
 			doorBlock.shape = shapes.fenceGateWallOpen
 			doorBlock.transparent = true
+			doorBlock.drop = drop
 			baseBlock.onclick = (function(x,y,z,world){
 				var b = world.getBlock(x,y,z)
 				var set
@@ -20150,6 +20169,7 @@ function initBlockDataShapes(){
 			blockData[i | PANE | FLIP] = flip
 		}
 		if(baseBlock.redstoneTorch){
+			baseBlock.drop = drop
 			baseBlock.shape = shapes.redstoneTorch
 			makeBlock(baseBlock.textures, shapes.redstoneWallTorch, slabBlock, baseBlock)
 			makeBlock(baseBlock.textures, shapes.torch, crossBlock, baseBlock)
@@ -20160,6 +20180,7 @@ function initBlockDataShapes(){
 			stairBlock.textures = crossBlock.textures
 		}
 		if(baseBlock.lever){
+			baseBlock.drop = drop
 			baseBlock.shape = shapes.leverWall
 			makeBlock(baseBlock.textures, shapes.leverWallOn, slabBlock, baseBlock)
 			makeBlock(baseBlock.textures, shapes.leverFloor, stairBlock, baseBlock)
@@ -20168,12 +20189,14 @@ function initBlockDataShapes(){
 			makeBlock(baseBlock.textures, shapes.leverCeilOn, doorBlock, baseBlock)
 		}
 		if(baseBlock.button){
+			baseBlock.drop = drop
 			makeBlock(baseBlock.textures, shapes.buttonPushed, slabBlock, baseBlock)
 			baseBlock.onclick = buttonOnclick.bind(baseBlock)
 			baseBlock.onupdate = buttonOnupdate.bind(baseBlock)
 			baseBlock.projectileHit = buttonProjectileHit.bind(baseBlock)
 		}
 		if(baseBlock.repeater){
+			baseBlock.drop = drop
 			baseBlock.shape = shapes.repeater1
 			makeBlock(baseBlock.textures, shapes.repeater2, slabBlock, baseBlock)
 			makeBlock(baseBlock.textures, shapes.repeater3, stairBlock, baseBlock)
@@ -20184,6 +20207,7 @@ function initBlockDataShapes(){
 			makeBlock(baseBlock.textures, shapes.repeaterOn4, openTrapdoor, baseBlock)
 		}
 		if(baseBlock.piston){
+			baseBlock.drop = drop
 			var baseBlockTransparent = Object.create(baseBlock)
 			baseBlockTransparent.transparent = true
 			
@@ -20243,6 +20267,7 @@ function initBlockDataShapes(){
 			makeBlock(new Array(6).fill("blank"), shapes.cube, crossBlock, baseBlock)
 		}
 		if(baseBlock.name === "observer"){
+			baseBlock.drop = drop
 			baseBlock.shape = shapes.rotate
 			var t = baseBlock.textures
 			var textures = [t[3],t[2],t[0],t[1],t[4]+"SW",t[5]+"SW"]
@@ -20284,7 +20309,8 @@ function initBlockDataShapes(){
 		if(baseBlock.portal) baseBlock.shape = shapes.portal, baseBlock.drop = drop
 		if(baseBlock.wallFlat) baseBlock.shape = shapes.wallFlat, baseBlock.drop = drop
 		if(baseBlock.coloredRedstoneLamp){
-			makeBlock(new Array(6).fill(baseBlock.name), shapes.cube, slabBlock)
+			baseBlock.drop = drop
+			makeBlock(new Array(6).fill(baseBlock.name), shapes.cube, slabBlock, baseBlock)
 			slabBlock.lightLevel = 15
 		}
 		if(baseBlock.name === "sweetBerryBush"){
@@ -20299,6 +20325,7 @@ function initBlockDataShapes(){
 			crossBlock.dropAmount = [2,3]
 		}
 		if(baseBlock.logicGate){
+			baseBlock.drop = drop
 			var t = baseBlock.textures.slice()
 			t[1] += "On"
 			makeBlock(t, baseBlock.shape, slabBlock, baseBlock)
@@ -20309,6 +20336,7 @@ function initBlockDataShapes(){
 			baseBlock.canHavePower = logicGateCanHavePower
 		}
 		if(baseBlock.name === "pointedDripstone"){
+			baseBlock.drop = drop
 			makeBlock(new Array(6).fill("pointedDripstoneUpTip"), shapes.cross, baseBlock, baseBlock)
 			var flip = Object.create(baseBlock)
 			makeBlock(new Array(6).fill("pointedDripstoneDownTip"), shapes.cross, flip, baseBlock)
@@ -20384,21 +20412,25 @@ function initBlockDataShapes(){
 			crossBlock.dropAmount = [2,5]
 		}
 		if(baseBlock.name === "dropper" || baseBlock.name === "dispenser"){
+			baseBlock.drop = drop
 			baseBlock.shape = shapes.rotate
 			makeBlock(baseBlock.upTextures, shapes.cube, slabBlock)
 			makeBlock(baseBlock.downTextures, shapes.cube, stairBlock)
 		}
 		if(baseBlock.name === "hopper"){
+			baseBlock.drop = drop
 			baseBlock.shape = shapes.hopper
 			makeBlock(baseBlock.textures, shapes.hopperWall, slabBlock, baseBlock)
 		}
 		if(baseBlock.name === "comparator"){
+			baseBlock.drop = drop
 			baseBlock.shape = shapes.comparator
 			makeBlock(baseBlock.textures, shapes.comparatorOn, slabBlock, baseBlock)
 			makeBlock(baseBlock.textures, shapes.comparatorSubtract, stairBlock, baseBlock)
 			makeBlock(baseBlock.textures, shapes.comparatorSubtractOn, doorBlock, baseBlock)
 		}
 		if(baseBlock.name === "daylightDetector"){
+			baseBlock.drop = drop
 			baseBlock.shape = shapes.daylightDetector
 			makeBlock(baseBlock.invertedTextures, shapes.daylightDetector, slabBlock, baseBlock)
 		}
@@ -20496,6 +20528,7 @@ function initBlockDataShapes(){
 			makeBlock(new Array(6).fill("dead"+baseBlock.name[0].toUpperCase()+baseBlock.name.substring(1)), shapes.coralWallFan, verticalSlabBlock,baseBlock)
 		}
 		if(baseBlock.rail){
+			baseBlock.drop = drop
 			baseBlock.shape = shapes.rail
 			makeBlock(baseBlock.textures, shapes.railDiagonal, slabBlock,baseBlock)
 			if(baseBlock.name === "rail"){
@@ -21399,7 +21432,7 @@ Example: <span style='color:lightblue'>/teleport @p 100 5+8 60-4</span>
 		CommandNode.l("sendEval",null,"Send javascript to players. Can only be used by certain people. Target can be: username, @a, @A. If target isn't specified, it sends it to all players except you. If target is @A, it send to everyone including you.").then(CommandNode.a("target",null,"target").then(CommandNode.a("sendEval_data","client"))),
 		CommandNode.l("mod", () => {
 			if(world.mod){
-				return ["<pre style='color:pink'>"+world.mod.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"), ""]
+				return ["<pre style='color:pink'>"+world.mod.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/§/g,"&sect;"), ""]
 			}else{
 				let str = ""
 				for(let a in world.eventListeners) for(let i of world.eventListeners[a]){
@@ -26318,7 +26351,7 @@ class Chunk {
 		if (!this.sections[y >> 4]) {
 			do {
 				let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
-				if(this.lit) section.skyLight.fill(255)
+				if(this.lightDropped) section.skyLight.fill(255)
 				this.sections.push(section)
 			} while (!this.sections[y >> 4])
 		}
@@ -26384,7 +26417,7 @@ class Chunk {
 		if (!this.sections[y >> 4]) {
 			do {
 				let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
-				if(this.lit) section.skyLight.fill(255)
+				if(this.lightDropped) section.skyLight.fill(255)
 				this.sections.push(section)
 			} while (!this.sections[y >> 4])
 		}
@@ -26415,7 +26448,7 @@ class Chunk {
 						this.setLight(x, y, z, data.lightLevel, 1)
 						this.setLight(x, y, z, data.lightLevel, 3)
 					}
-					if (!stop && !data.transparent) {
+					if (!stop && !data.transparent) { // possible bug: transparent block that decreases light. faster if don't fix
 						this.tops[z * 16 + x] = y
 						light = 0
 						stop = true
@@ -26437,6 +26470,7 @@ class Chunk {
 		let blockSpread = this.blockSpread
 		this.blockSpread = null
 
+		// possible but unlikely bug: when block changed between dropLight and fillLight
 		world.getChunk(this.x - 16, this.z).dropLight()
 		world.getChunk(this.x + 16, this.z).dropLight()
 		world.getChunk(this.x, this.z - 16).dropLight()
@@ -26494,7 +26528,7 @@ class Chunk {
 		if (!this.sections[y >> 4]) {
 			do {
 				let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
-				if(this.lit) section.skyLight.fill(255)
+				if(this.lightDropped) section.skyLight.fill(255)
 				this.sections.push(section)
 			} while (!this.sections[y >> 4])
 		}
@@ -26639,7 +26673,7 @@ class Chunk {
 		const hillSize = 0.004 // smaller = bigger; 0.005 to 0.01 seems the be a reasonable range
 		//}
 		let gen = 0, floatGen = 0
-		if(this.world.world.customChunkGenerate && !this.world.world.customChunkGenerate(this)){
+		if(this.world.customChunkGenerate && !this.world.customChunkGenerate(this)){
 		}else if(this.world.world.worldType === "alpha" && this.type === ""){
 		for (let i = 0; i < 16; i++) {
 			for (let k = 0; k < 16; k++) {
@@ -27209,7 +27243,7 @@ class Chunk {
 		let rnd = random()
 		let top = ground + Math.floor(2.5 + rnd*1.5);
 		let rand = Math.floor(random(4096));
-		let tree = blockIds.cactus | CACTUS;
+		let tree = blockIds.cactus;
 
 		//Center
 		for (let j = ground + 1; j <= top; j++) {
@@ -27420,7 +27454,7 @@ class Chunk {
 			}
 			var vh = max(floor(random(ground,vy)), ground)
 			for(; vy > vh && !world.getBlock(vx, vy, vz); vy --){
-				world.spawnBlock(vx,vy,vz, blockIds.vine | WALLFLAT | side)
+				world.spawnBlock(vx,vy,vz, blockIds.vine | side)
 			}
 		}
 	}
@@ -29803,7 +29837,7 @@ class Chunk {
 					let x = wx, z = wz
 					let y = round(random(0,caveMax))
 					if(!this.getBlock(x,y,z)) continue
-					let block = blockIds.glowLichen | WALLFLAT
+					let block = blockIds.glowLichen
 					switch(floor(random()*4)){
 						case 0:
 							z++
@@ -29947,7 +29981,6 @@ class Chunk {
 				var block = worldGenArray.array[rnd][3]
 				let x = worldGenArray.array[rnd][0], y = worldGenArray.array[rnd][1], z = worldGenArray.array[rnd][2]
 				if(block === blockIds.vine){
-					block = block | WALLFLAT
 					switch(floor(random()*4)){
 						case 0:
 							z++
@@ -32379,13 +32412,14 @@ class World{ // aka trueWorld
 			if(blockData[holding].onplace) blockData[holding].onplace(x,y,z,p,this[dimension])
 			if(p.survival) holdObj.amount--
 			if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
+			this[dimension].blockSound(holding, "dig", x, y, z)
 		}else{
 			this[dimension].blockParticles(prevBlock,x,y,z,30, "break")
 			if(blockData[prevBlock].onbreak){
 				blockData[prevBlock].onbreak(x,y,z, prevBlock, prevTags,this[dimension])
 			}
-			this[dimension].blockSound(prevBlock, "dig", x, y, z)
 			if(p.survival && blockData[prevBlock].experience) this[dimension].addEntity(new entities[entityIds.ExperienceOrb](x, y, z, blockData[prevBlock].experience))
+			this[dimension].blockSound(prevBlock, "dig", x, y, z)
 		}
 	}
 	entInteract(id,hit,cooldown,p){
@@ -34166,8 +34200,12 @@ window.parent.postMessage({ready:true}, "*")
 				p.updateingLoadedI++
 				p.loadDistance = data.loadDistance
 				p.loadChunks = data.data
-			}else if(data.type === "mySkin" || data.type === "particles" || data.type === "playSound"){
+			}else if(data.type === "mySkin"){
 				sendOthers(data)
+			}else if(data.type === "particles" || data.type === "playSound"){
+				for(let p2 of world.players){
+					if(p2 !== p && p2.dimension === p.dimension) p2.connection.send(data)
+				}
 			}else if(data.type === "message"){
 				if(world.event("message", {player:p,data})) return
 				data.fromServer = false
@@ -34285,7 +34323,7 @@ window.parent.postMessage({ready:true}, "*")
 						if(place === "anvilOutput" && inventory.anvilCost>p.level && p.survival) return updateContainer(true)
 						if(place === "equipment" && nitem && blockData[nitem.id].equipmentSlot !== inventory.slotMapIdx.get(data.idxs[i])) return updateContainer(true)
 					}
-					if(p.survival && !compareMaps(nmap,pmap)) return updateContainer(true)
+					if((p.survival || !p.cheats) && !compareMaps(nmap,pmap)) return updateContainer(true)
 					/*for(let i=0; i<data.data.length; i++){//check for correctness
 						let ritem = data.data[i]
 						let item = getSlot(data.idxs[i])
@@ -34396,11 +34434,11 @@ window.parent.postMessage({ready:true}, "*")
 				world.entInteract(data.data,data.hit,data.cooldown,p)
 			}else if(data.type === "respawn"){
 				if(p.die){
+					p.respawn()
 					if(p.gameMode === "hardcore"){
 						p.gameMode = "spectator"
-						p.health = 1
 						c.send({type:"gameMode",gameMode:p.gameMode})
-					}else p.respawn()
+					}
 					p.sendHealth()
 					c.send({type:"respawn"})
 				}

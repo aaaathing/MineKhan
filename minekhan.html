@@ -1127,6 +1127,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
       <a onclick="scrollToEl('help_health')">Health</a>
       <a onclick="scrollToEl('help_inventory')">Inventory</a>
       <a onclick="scrollToEl('help_crafting')">Crafting</a>
+      <a onclick="scrollToEl('help_servers')">Server</a>
       <a onclick="scrollToEl('help_rp')">Resource packs</a>
       <a onclick="scrollToEl('help_mod')">Mods</a>
       <a onclick="scrollToEl('help_wiki')">MineKhan Wiki</a>
@@ -1144,7 +1145,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
         One upon a time, there was a game on Khan Academy called Scuscraft.<br>
         One day, Willard spin-offed Scusraft and made MineKhan.<br>
         After many days, he ported it from a pjs program to to a webpage.<br>
-        Then, when Willard made his own website (willard.fun), thingMaker copied the code and programmed it more so soon it became this.<br>
+        Then, when Willard made his own website (willard.fun), thingMaker copied the code and programmed it more and so after many years it became this.<br>
         The End.<br>
 				<br>
 				<a href="updates.txt" target="_blank">Changelog</a>
@@ -1268,6 +1269,12 @@ With touch screen:
         Shaped: The ingredients have a certain shape and the shape can be moved around.<br>
         Shapeless: The ingredients can be arranged on the grid in any way
       </section>
+			<section id="help_servers">
+        <h1>Servers</h1>
+				You can host a server by creating or opening a world, and pausing and clicking Enable Multiplayer.<br><br>
+				There used to be a way to host a server in Node.js, but that was in 2022 to 2024. (many things changed like servers for webrtc)<br>
+				Maybe you can figure out something with <a href="minekhan_server_backup.txt">this code</a>.
+      </section>
 			<section id="help_rp">
         <h1>Resource packs</h1>
         Resource packs for MineKhan are JSON files.<br>
@@ -1279,6 +1286,7 @@ With touch screen:
 <h1>Mods</h1>
 <p>You can write a mod when editing a world. They are JavaScript code that runs when you open a world.</p>
 <p>How: go to Singleplayer, select the world, click Edit, click Edit mod, and write in the big textbox.</p>
+<p>You can type /mod in chat in a world to see the mod.</p>
 <p>You might get errors if your code has syntax errors or does something wrong. Most errors can be hidden. You can always try again.</p>
 <p>There are so many possibilities! Here are some examples:</p>
 <hr>
@@ -6926,8 +6934,8 @@ ROTATION = 0x1800 // Mask for the direction bits
 		},
 		loading: {
 			onenter: startLoad,
-      onexit: (newScene) => {
-        if(newScene !== "play" || loadJoined) return
+      onexit: () => {
+        if(loadJoined) return
 				loadJoined = true
         
         send({type:"joined"})
@@ -6940,11 +6948,11 @@ ROTATION = 0x1800 // Mask for the direction bits
 		},
     netherLoading: {
 			onenter: startLoad,
-			onexit: () => html.loading.onexit(...arguments)
+			onexit: () => html.loading.onexit()
 		},
     endLoading: {
       onenter: startLoad,
-			onexit: () => html.loading.onexit(...arguments)
+			onexit: () => html.loading.onexit()
     },
 		editworld: {
 			enter: [window.boxCenterTop, window.modBoxContainer],
@@ -11662,7 +11670,7 @@ return//*/
 				let pitch = (1/abs(p.y-p.previousY)*0.05+Math.random()*0.2)/(p.width*0.5)
 				if(isFinite(pitch)){//won't play if y stays the same
 					playSound("liquid.splash",0,1,1,posSound(p.x,p.y-p.height*0.5,p.z),pitch/*abs(1/(p.velocity.y+1))*/)
-					send({type:"playSound", data:"liquid.splash", x:p.x,y:p.y-p.height*0.5,z:p.z,pitch})
+					send({type:"playSound", data:"liquid.splash", x:p.x,y:p.y-p.height*0.5,z:p.z, hasPos:true,pitch,volume:1})
 				}
         if(!performFast) for(var i=0; i<10; i++){
           world.addParticle(new entities[entityIds.SplashParticle](p.x,p.y-p.height*0.5,p.z),p.dimension)
@@ -12140,11 +12148,11 @@ return//*/
 		if(!p.prevUsingSpyglass && p.usingSpyglass){
 			p.camera.FOV(settings.fov/10, 300)
 			playSound("spyglass.use")
-			if(multiplayer) send({type:"playSound", data:"spyglass.use", x:p.x,y:p.y,z:p.z})
+			if(multiplayer) send({type:"playSound", data:"spyglass.use", x:p.x,y:p.y,z:p.z, hasPos:true, pitch:1,volume:1})
 		}else if(p.prevUsingSpyglass && !p.usingSpyglass){
 			p.camera.FOV(settings.fov, 300)
 			playSound("spyglass.stop")
-			if(multiplayer) send({type:"playSound", data:"spyglass.stop", x:p.x,y:p.y,z:p.z})
+			if(multiplayer) send({type:"playSound", data:"spyglass.stop", x:p.x,y:p.y,z:p.z, hasPos:true, pitch:1,volume:1})
 		}
 
     p.standingOn = world.getBlock(p2.x,floor(p.y-p.height*0.5),p2.z, p.dimension)
@@ -12154,10 +12162,10 @@ return//*/
 		if(p.prevInLiquid !== p.inLiquid){
 			if(p.inLiquid === blockData[blockIds.Water].inLiquid){
 				playSound("liquid.enter", 0,1,1, posSound(p.x,p.y,p.z))
-     		send({type:"playSound", data:"liquid.enter", x:p.x,y:p.y,z:p.z})
+     		send({type:"playSound", data:"liquid.enter", x:p.x,y:p.y,z:p.z, hasPos:true, pitch:1,volume:1})
 			}else if(p.prevInLiquid === blockData[blockIds.Water].inLiquid){
 				playSound("liquid.exit", 0,1,1, posSound(p.x,p.y,p.z))
-     		send({type:"playSound", data:"liquid.exit", x:p.x,y:p.y,z:p.z})
+     		send({type:"playSound", data:"liquid.exit", x:p.x,y:p.y,z:p.z, hasPos:true, pitch:1,volume:1})
 			}
 			p.prevInLiquid = p.inLiquid
 		}
@@ -12207,12 +12215,13 @@ return//*/
     
     if(harmEffect > 0){
       harmEffect -= 3
-			let amount = (max(harmEffect-15,0) / 15)**2 / 8
+			let amount = (max(harmEffect-10,0) / 20)**2 / 4
 			if(damageX || damageY || damageZ){
 				p.camera.damagerz = -(damageX*p.direction.z + damageZ*-p.direction.x)
 				p.camera.damagerx = -(damageX*p.direction.x + damageZ*p.direction.z)
+				p.camera.damagerx += damageY
 				let mag = sqrt(p.camera.damagerz*p.camera.damagerz+p.camera.damagerx*p.camera.damagerx)/amount
-				p.camera.damagerz /= mag, p.camera.damagerx /= mag
+				if(mag) p.camera.damagerz /= mag, p.camera.damagerx /= mag
 				if(!p.camera.damagerz && !p.camera.damagerx){
 					p.camera.pDamagerz = p.camera.damagerz
 					p.camera.pDamagerx = p.camera.damagerx
@@ -12614,7 +12623,7 @@ return//*/
 		 	p.punchEffect = 10
       
       //play sound
-      blockSound(predictBlock, "place", x,y,z)
+      //blockSound(predictBlock, "place", x,y,z)
 		}
 		}catch(e){e.message+="\nholding:"+holding+" adjholding"+adjholding;logError(e)}
 	}
@@ -14167,7 +14176,7 @@ r 11 y  n  n  n
 			if (!this.sections[y >> 4]) {
 				do {
           let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
-          if(this.lit) section.skyLight.fill(255)
+          if(this.lightDropped) section.skyLight.fill(255)
 					this.sections.push(section)
 				} while (!this.sections[y >> 4])
 			}
@@ -14230,7 +14239,7 @@ r 11 y  n  n  n
 			if (!this.sections[y >> 4]) {
 				do {
           let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
-          if(this.lit) section.skyLight.fill(255)
+          if(this.lightDropped) section.skyLight.fill(255)
 					this.sections.push(section)
 				} while (!this.sections[y >> 4])
 			}
@@ -14241,7 +14250,7 @@ r 11 y  n  n  n
 			if (!this.sections[y >> 4]) {
 				do {
           let section = new Section(this.x, this.sections.length * 16 + minHeight, this.z, this)
-          if(this.lit) section.skyLight.fill(255)
+          if(this.lightDropped) section.skyLight.fill(255)
 					this.sections.push(section)
 				} while (!this.sections[y >> 4])
 			}
@@ -14272,7 +14281,7 @@ r 11 y  n  n  n
 							this.setLight(x, y, z, data.lightLevel, 1)
 							this.setLight(x, y, z, data.lightLevel, 3)
 						}
-						if (!stop && !data.transparent) {
+						if (!stop && !data.transparent) { // possible bug: transparent block that decreases light. faster if don't fix
 							this.tops[z * 16 + x] = y
 							light = 0
 							stop = true
@@ -14308,6 +14317,7 @@ r 11 y  n  n  n
 					if(n && n.loaded) n.loadCopyLight()
 					n = this.world.getChunk(this.x-16,this.z-16,this.type)
 					if(n && n.loaded) n.loadCopyLight()
+					this.lightDropped = true
 					this.lit = true
 					this.wasLit = true
 				}
@@ -14320,6 +14330,7 @@ r 11 y  n  n  n
 			let blockSpread = this.blockSpread
 			this.blockSpread = null
 
+			// possible but unlikely bug: when block changed between dropLight and fillLight
 			world.getChunk(this.x - 16, this.z).dropLight()
 			world.getChunk(this.x + 16, this.z).dropLight()
 			world.getChunk(this.x, this.z - 16).dropLight()
@@ -17791,7 +17802,7 @@ r 11 y  n  n  n
 		get survival(){return this.gameMode==="survival"||this.gameMode==="hardcore"}
 		get spectator(){return this.gameMode==="spectator"}
     setSkin(url){
-			if(this.skinURL) gl.deleteTexture(this.skinTex)
+			if(this.skinURL && this.skinTex !== defaultSkinTexture) gl.deleteTexture(this.skinTex)
       this.skinSet = true
       this.skinURL = url
 			this.skinTex = defaultSkinTexture
@@ -17835,7 +17846,7 @@ r 11 y  n  n  n
     }
 		delete(){
 			super.delete()
-			if(this.skinURL) gl.deleteTexture(this.skinTex)
+			if(this.skinURL && this.skinTex !== defaultSkinTexture) gl.deleteTexture(this.skinTex)
 			if(this.capeURL) gl.deleteTexture(this.capeTex)
 		}
     generateVAO(shape, tx, ty, xScale, yScale){
@@ -21645,7 +21656,7 @@ r 11 y  n  n  n
 					if(addWorldCallback) addWorldCallback(w)
 				}
 			},
-			onerror: e => {addMessageCallback((typeof e === "string" && e) || "Error: Failed to connect to "+key); console.error(e); resolve()},
+			onerror: e => {if(addMessageCallback) addMessageCallback((typeof e === "string" && e) || "Error: Failed to connect to "+key); console.error(e); resolve()},
 			})
 			conns.push(conn)
 			let resolve
@@ -21692,6 +21703,7 @@ r 11 y  n  n  n
     }*/
     return worlds
   }
+	win.getWorlds = getWorlds
 
   var multiplayer = null
   var multiplayerError = null
@@ -22044,7 +22056,7 @@ r 11 y  n  n  n
 
 		function openForServer(key, server){
 			if(sigConns.get(key)) return
-			let sigConn = server.connect({id:"srv"+p.id,
+			let sigConn = server.connect({id:"srv"+serverWorld.id,
 			onmessage:async data => {
 			if(!sigConns || !data) return
 			if(data.type === "offer"){
@@ -22706,6 +22718,7 @@ r 11 y  n  n  n
 			whitelist = null
 			serverWorld.sendAll({type:"message",data:"Whitelist disabled.", fromServer:true})
 		}else if(action === "add") {
+			if(username === undefined) return serverWorld.sendAll({type:"message",data: "§cYou need to add the username.", fromServer:true})
 			if(!whitelist) win.whitelistAction("enable")
 			if(!whitelist.includes(username)){
 				whitelist.push(username)
@@ -24698,10 +24711,10 @@ p.camera.transformation.elements.set(matrix)//*/
     })
 		Button.add(width / 2, height / 2 + 15*ss, 400*ss, 40*ss, "Multiplayer", "main menu", r => {
       changeScene("multiplayer menu")
-    }, () => preVersion && !(userInfo&&userInfo.admin))
+    }, () => preVersion && !(userInfo&&userInfo.admin), () => win.multiplayerNote||null)
     Button.add(width / 2, height / 2 + 70*ss, 400*ss, 40*ss, "Marketplace", "main menu", r => {marketplaceCategory = null; marketplaceSearch.value = ""; changeScene("marketplace")})
 		Button.add(width / 2 - 105*ss, height / 2 + 160*ss, 190*ss, 40*ss, "Options", "main menu", r => changeScene("options"))
-    Button.add(width / 2 + 105*ss, height / 2 + 160*ss, 190*ss, 40*ss, "Quit", "main menu", r => {
+    Button.add(width / 2 + 105*ss, height / 2 + 160*ss, 190*ss, 40*ss, "Quit"+(win.quitNote||""), "main menu", r => {
       if(window.opener !== null || window.history.length === 1){
         close()
       }else{
@@ -24984,10 +24997,10 @@ p.camera.transformation.elements.set(matrix)//*/
     Button.add(width/2-110*ss, height / 2 + 75*ss, 200*ss, 40*ss, "Invite", "pause", r => {
       savebox.classList.remove("hidden")
 			let url = new URL(location.href)
-			url.searchParams.set("target",p.id)
+			url.searchParams.set("target", multiplayer.target || serverWorld&&serverWorld.id)
 			savebox.value = url.href
 			if(navigator.share) navigator.share({title:document.title, url:url.href}).catch(console.error)
-		}, () => !sigConns, () => "Invite someone to this world if it is multiplayer.")
+		}, () => (!multiplayer||!multiplayer.target) && !sigConns, () => "Invite someone to this world if it is multiplayer.")
     //Button.add(width/2+110*ss, height / 2 + -125*ss, 200*ss, 40*ss, "Packet Viewer", "pause", r => changeScene("packetViewer raw"), null, "View data from multiplayer packets.")
     Button.add(width/2+110*ss, height / 2 + -125*ss, 200*ss, 40*ss, "Achievments", "pause", r => changeScene("achievments"), () => cheats)
 		Button.add(width/2+110*ss, height / 2 + -75*ss, 200*ss, 40*ss, "World Options", "pause", r => changeScene("worldSettings"))
@@ -24997,7 +25010,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			if(multiplayerPass){
 				win.disableMultiplayerPass()
 			}else win.enableMultiplayerPass()
-		}, () => (!host||!sigConns), "To make it private and only let some people join, add a password or enable whitelist. <br><br><span style='color:lightblue'>You can also use whitelist by typing this command in chat:<br><small>/whitelist enable<br>/whitelist add \"username1234\"</small></span> ⬅ <small>put other people's username here</small>", () => multiplayerPass?1:0)
+		}, () => (!host||!sigConns), "To make it private and only let some people join, add a password or enable whitelist. <br><small>To use whitelist, type: /whitelist add </small>"+(win.multiplayerNote2||""), () => multiplayerPass?1:0)
 		Button.add(width/2, height / 2 + 125*ss, 420*ss, 40*ss, "Exit", "pause", r => {
 			/*if(!host){
 				multiplayer.sendInvStuff()
@@ -28023,8 +28036,8 @@ p.camera.transformation.elements.set(matrix)//*/
     }
 		if(!p.spectator && (entHitbox.ent || !hitBox.pos)){
 			let pitch = rand(0.5,0.8)
-			playSound("shoot",0,1,pitch)
-      send({type:"playSound", data:"shoot", x:p.x,y:p.y,z:p.z, pitch:pitch})
+			playSound("random.shoot",0,1,pitch)
+      send({type:"playSound", data:"random.shoot", x:p.x,y:p.y,z:p.z, hasPos:true, pitch,volume:1})
 		}
   }
   let placeKeyPressed = () => {
@@ -29298,6 +29311,7 @@ p.camera.transformation.elements.set(matrix)//*/
 	function initPlayer() {
 		p = new Player(true)
 		p.gameMode = Math.random() > 0.5 ? "creative" : "survival"
+		cheats = !p.survival
     p.defaultSpeed = 0.11
 		p.speed = p.defaultSpeed
 		p.velocity = new PVector(0, 0, 0)
@@ -30322,7 +30336,7 @@ p.camera.transformation.elements.set(matrix)//*/
     }
     if(sound){
       playSound(sound, 0, volume, pitch,panner)
-      send({type:"playSound", data:sound, x:x,y:y,z:z})
+      send({type:"playSound", data:sound, x:x,y:y,z:z, hasPos:true, volume,pitch})
     }
   }
   win.blockSound = blockSound
@@ -30356,7 +30370,7 @@ p.camera.transformation.elements.set(matrix)//*/
   function eatSound(){
     var i = Math.ceil(Math.random()*3)
     playSound("random.eat"+i)
-    if(multiplayer) send({type:"playSound", data:"random.eat"+i, x:p.x,y:p.y,z:p.z})
+    if(multiplayer) send({type:"playSound", data:"random.eat"+i, x:p.x,y:p.y,z:p.z, hasPos:true, pitch:1,volume:1})
   }
   
 	let musicObj
@@ -31563,26 +31577,23 @@ p.camera.transformation.elements.set(matrix)//*/
     // See if a user followed a link here.
 		if (urlParams.has("target")) {
       var target = urlParams.get("target")
+			let p = urlParams.has("p")
       changeScene("multiplayer connecting")
       loggedIn().then(logged => {
-        initServersMenu().then(() => {
-					if(searchInterval !== null){
-						clearInterval(searchInterval)
-						searchInterval = null
-						changeScene("main menu")
-					}
-				})
-				let searchInterval = setInterval(() => {
-					let server = servers[target]
-					if(!server) for(let id of Object.keys(servers)){
-						if(id.includes(target)) server = servers[id]
-					}
-					if(server){
+				let found = false
+				getWorlds(server => {
+					servers[server.id] = server
+					if(server.id.includes(target) && !found){
+						if(p){
+							let {banned,whitelist,multiplayerPass} = server
+							if((banned && typeof banned[p.username] === "string") || (whitelist && !whitelist.includes(p.username)) || server.multiplayerPass) return
+						}
+						found = true
 						initMultiplayer(server.id).then(joinWorld)
-						clearInterval(searchInterval)
-						searchInterval = null
 					}
-				}, 500)
+				}).then(() => {
+					if(!found) changeScene("main menu")
+				})
       })
       
 		}
@@ -31790,13 +31801,13 @@ p.camera.transformation.elements.set(matrix)//*/
 
 		drawScreens.play = () => {
       ctx2.clearRect(0,0,width,height)
-      let now = Date.now()
+      let dnow = Date.now()
       
-      if((now - attackCooldownStart) / 1000 * 20 > attackCooldownTime){
+      if((dnow - attackCooldownStart) / 1000 * 20 > attackCooldownTime){
         if(attackCooldown !== 0) updateHUD = true
         attackCooldown = 0
       }else{
-        let prog = (now - attackCooldownStart) / 1000 * 20
+        let prog = (dnow - attackCooldownStart) / 1000 * 20
         attackCooldown = prog / attackCooldownTime
         updateHUD = true
       }
@@ -31826,7 +31837,7 @@ p.camera.transformation.elements.set(matrix)//*/
 					fill(127)
 					ctx.fillRect(width-110*ss,130*ss,100*ss,10*ss)
 					fill(64,64,255)
-					let a = (performance.now()-autosaveTimer)/5000
+					let a = (now-autosaveTimer)/5000
 					ctx.fillRect(width-110*ss,130*ss,100*ss*(1-a),10*ss)
 				}
 				drawAutosave(width-55*ss,100*ss)
@@ -31892,6 +31903,7 @@ p.camera.transformation.elements.set(matrix)//*/
       if(p.survival) ctx.drawImage(canvas2,0,0)
       
       if(titleShowing){
+				let now = dnow
         if(now - (titleFadeIn+titleFadeOut+titleStay) < titleStart){
           let alpha = 1
           if(now - titleFadeIn < titleStart){
@@ -31914,14 +31926,17 @@ p.camera.transformation.elements.set(matrix)//*/
       }
 			if(discoverTime>0){
 				if(tick) discoverTime -= 3
-				let x
-				if(discoverTime > 140){
-					x = 1 - ((discoverTime - 140) / 60)
-				}else if(discoverTime > 20){
+				let diff = (now - p.lastUpdate) / tickTime
+				if (diff > 1) diff = 1
+				let x = -3 * diff + discoverTime-3
+				if(x > 140){
+					x = 1 - ((x - 140) / 60)
+				}else if(x > 20){
 					x = 1
 				}else{
-					x = discoverTime / 20
+					x = x / 20
 				}
+				x = x * x * (3.0 - 2.0 * x)
 				ctx.globalAlpha = x
 				ctx.textAlign = "center"
 				fill(255)
@@ -31934,35 +31949,39 @@ p.camera.transformation.elements.set(matrix)//*/
 				updateHUD = true
 			}
       if(sideMessages.length){
+				let ss = inventory.ss
 				ctx.textAlign = "left"
 				for(let i=0; i<sideMessages.length; i++){
 					let m = sideMessages[i]
 					if(tick) m.time -= 6
-					let w = 200
-					let y = i*50+20
-					ctx.clearRect(width-w,y,w,50)
+					let diff = (now - p.lastUpdate) / tickTime
+					if (diff > 1) diff = 1
+					let x = -6 * diff + m.time-6
+					let w = 200*ss
+					let y = i*50*ss+20*ss
+					ctx.clearRect(width-w,y,w,50*ss)
 					if(m.time <= 0){
 						sideMessages.splice(i,1)
 						i--
 						continue
 					}
-					let x
-					if(m.time > 540){
-						x = 1 - ((m.time - 540) / 60)
-					}else if(m.time > 60){
+					if(x > 540){
+						x = 1 - ((x - 540) / 60)
+					}else if(x > 60){
 						x = 1
 					}else{
-						x = m.time / 60
+						x = x / 60
 					}
+					x = x * x * (3.0 - 2.0 * x)
 					x = width - (x * w)
 					ctx.fillStyle = "#223"
-					ctx.fillRect(x, y,w,50)
+					ctx.fillRect(x, y,w,50*ss)
 					ctx.textBaseline = "top"
 					ctx.fillStyle = "white"
-					ctx.font = "10px thefont"
-					text(m.title, x+5, y+5, w-10)
+					ctx.font = 10*ss+"px thefont"
+					text(m.title, x+5*ss, y+5*ss, w-10*ss)
 					ctx.fillStyle = "#aaa"
-					text(m.content, x+5, y+20, w-10)
+					text(m.content, x+5*ss, y+20*ss, w-10*ss)
 					ctx.textBaseline = "alphabetic"
 				}
       }
