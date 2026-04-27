@@ -2202,6 +2202,7 @@ const blockData = [
 		dropSelfWhenSheared:true,
 		shearDropAmount:1,
 		compostChance:0.5,
+		onupdate:needsSupportingBlocks,
 		liquidBreakable:"drop",
 		category:"nature",
 		invTint:[grassColor.r,grassColor.g,grassColor.b],
@@ -2958,7 +2959,7 @@ const blockData = [
 	
 	{
 		name: "barrier",
-		Name:"That Invisible Block with a 🚫 Icon",
+		Name:"Barrier 🚫",
 		textures: "none",
 		iconTexture: "barrier",
 		flatIcon:true,
@@ -3054,7 +3055,7 @@ const blockData = [
 	
 	{ 
 		name: "cryingObsidian",
-		Name:"Obsidian: 😢",
+		Name:"Crying Obsidian 😢",
 		shadow: false,
 		lightLevel: 10,
 		stoneSound:true,
@@ -3342,6 +3343,7 @@ const blockData = [
 		textures6:new Array(6).fill('wheatStage6'),
 		textures7:new Array(6).fill('wheat'),
 		compostChance:0.65,
+		onupdate:needsSupportingBlocks,
 		category:"nature",
 		growBonemeal:function(x,y,z,world){
 			world.setBlock(x,y,z, this.id|LANTERN)
@@ -3557,10 +3559,10 @@ const blockData = [
 			}
 			world.playSound(x,y,z, "note."+instrument, 1, pitch)
 			
-			world.sendAll({
+			world.sendAllInChunk({
 				type:"particles", particleType:"NoteParticle",
 				x,y:y+0.5,z, dimension:world.dimension, data:note
-			})
+			}, x,z)
 		},
 		noteTypes:(function(obj){
 			var obj2 = {}
@@ -3641,6 +3643,7 @@ const blockData = [
 		solid: false,
 		transparent: true,
 		shadow: false,
+		shade:false,
 		textures: "tallGrassConnected",
 		tallcrossShape: true,
 		drop:function(){
@@ -3654,6 +3657,7 @@ const blockData = [
 			}
 		},
 		compostChance:0.3,
+		onupdate:needsSupportingBlocks,
 		liquidBreakable:"drop",
 		category:"nature",
 		invTint:[grassColor.r,grassColor.g,grassColor.b],
@@ -3965,6 +3969,7 @@ const blockData = [
 		transparent: true,
 		shadow: false,
 		compostChance:0.5,
+		onupdate:needsSupportingBlocks,
 		category:"nature",
 		smoothLight:false,
 		tint:grassTint,
@@ -4229,6 +4234,7 @@ const blockData = [
 		category:"nature",
 		hardness:0.6, blastResistance:0.5,
 		type:"ground",
+		drop:"dirt",
 		tick:function(block,x,y,z,world){
 			var target = this.id
 			for(var X=x-4;X<=x+4;X++){
@@ -5683,6 +5689,8 @@ const blockData = [
 		Name:"Shears",
 		item:true,
 		shears:true,
+		durability:238,
+		stackSize:1,
 		category:"items"
 	},
 	
@@ -6267,6 +6275,7 @@ const blockData = [
 		smoothLight:false,
 		liquidBreakable:true,
 		noHitbox:true,
+		drop:"air",
 		tagBits:{
 			age:[0,8]
 		},
@@ -7314,7 +7323,9 @@ const blockData = [
 		solid: false,
 		crossShape: true,
 		potCross: true,
+		compostChance:0.3,
 		category:"nature",
+		liquidBreakable:"drop",
 		grow: function(x,y,z,world){
 			win.serverSaveWorldGen()
 			world.getChunk(x,z).spawnCherryTree(x&15,y-1,z&15,x,z,true)
@@ -9345,6 +9356,7 @@ const blockData = [
 		temperature:20,
 		smoothLight:false,
 		noHitbox:true,
+		drop:"air",
 		getAttached:function(x,y,z,block,getBlockOnly,world){
 			var ax = x, ay = y, az = z
 			switch(block){
@@ -9508,7 +9520,7 @@ const blockData = [
 	},
 	{
 		name:"pointedDripstone",
-		Name:"Sharp Dripstone",
+		Name:"Pointed Dripstone",
 		flatIcon:true,
 		iconTexture:"pointedDripstone",
 		transparent: true,
@@ -9658,7 +9670,7 @@ const blockData = [
 	},
 	{
 		name:"composter",
-		Name:"Make bonemeal",
+		Name:"Composter",
 		textures:"composter",
 		transparent:true,
 		blastResistance:0.6,
@@ -10020,6 +10032,7 @@ const blockData = [
 		crop: true,
 		drop:"beetrootSeeds",
 		hidden:true,
+		onupdate:needsSupportingBlocks,
 		liquidBreakable:"drop",
 		growBonemeal:function(x,y,z,world){
 			world.setBlock(x,y,z, this.id|CROSS)
@@ -10037,6 +10050,7 @@ const blockData = [
 		crop: true,
 		drop:"potato",
 		hidden:true,
+		onupdate:needsSupportingBlocks,
 		liquidBreakable:"drop"
 	},
 	{
@@ -10051,6 +10065,7 @@ const blockData = [
 		crop: true,
 		drop:"carrot",
 		hidden:true,
+		onupdate:needsSupportingBlocks,
 		liquidBreakable:"drop",
 		growBonemeal:function(x,y,z,world){
 			world.setBlock(x,y,z, this.id|CROSS)
@@ -11118,7 +11133,7 @@ const blockData = [
 	},
 	{
 		name:"gunpowder",
-		Name:"Gray exploding stuff",
+		Name:"Gunpowder",
 		item:true
 	},
 	{
@@ -11209,10 +11224,10 @@ const blockData = [
 		tick:function(block,x,y,z,world){
 			let spawn = world.getTagByName(x,y,z,"spawn")
 			if(spawn){
-				world.sendAll({
+				world.sendAllInChunk({
 					type:"particles", particleType:"flameCube",
 					x,y,z,dimension:world.dimension, amount: 20
-				})
+				}, x,z)
 				for(let i=0; i<10; i++){
 					let sx = x+round(rand(-4.5,4))
 					let sy = y+round(rand(-1.5,1.5))
@@ -11228,10 +11243,10 @@ const blockData = [
 		onclick:function(x,y,z,world,p){
 			if(p.holding && blockData[p.holding].spawnMob){
 				world.setTagByName(x,y,z,"spawn",p.holding)
-				world.sendAll({
+				world.sendAllInChunk({
 					type:"particles", particleType:"flameCube",
 					x,y,z,dimension:world.dimension, amount: 30
-				})
+				}, x,z)
 			}else return true
 		}
 	},
@@ -11789,6 +11804,7 @@ const blockData = [
 		transparent: true,
 		shadow: false,
 		compostChance:0.65,
+		onupdate:needsSupportingBlocks,
 		liquidBreakable:"drop",
 		category:"nature"
 	},
@@ -11818,7 +11834,7 @@ const blockData = [
 	},
 	{
 		name: "torchflower",
-		Name:"\"Torch\" flower",
+		Name:"Torchflower",
 		textures1:new Array(6).fill("torchflowerCropStage0"),
 		textures2:new Array(6).fill("torchflowerCropStage1"),
 		drop:"torchflowerSeeds",
@@ -18411,6 +18427,7 @@ let packetTypes = [
 	["containerChangeSign",["data","string"],["side","boolean"]],
 	["portalOut"], ["doEndPoem"],
 	["music", ["id","string"],["url","string"],["elapsed","double"]],
+	["customMenu", ["data","string"]], ["customMenuAction", ["data","json",makeBinarySerializer()]],
 	/*["test",
 		["a",'string'],['n','number',8,4],
 		["data","array",[null,"string"]],
@@ -19443,7 +19460,7 @@ function initBlockDataShapes(){
 			if(!block || data.liquidBreakable || data.liquid && this.density > data.density){
 				world.setBlock(x,y,z,this.getLevelBlock(level),false,false,false,false)
 				if(data.liquidBreakable === "drop"){
-					world.addItems(x,y,z,0,0,0,block,true)
+					world.dropBlock(x,y,z, block)
 					world.blockParticles(block,x,y,z,30, "break")
 					world.blockSound(block, "dig", x,y,z)
 				}
@@ -19883,6 +19900,7 @@ function initBlockDataShapes(){
 			crossBlock.biomeTintSouth = false
 			crossBlock.biomeTintEast = false
 			crossBlock.biomeTintWest = false
+			crossBlock.drop = drop
 		}
 		if(baseBlock.name === "podzol"){
 			crossBlock.shape = shapes.cube
@@ -19890,6 +19908,7 @@ function initBlockDataShapes(){
 			crossBlock.solid = true
 			crossBlock.transparent = false
 			crossBlock.shadow = true
+			crossBlock.drop = drop
 		}
 		if(baseBlock.name === "farmland"){
 			slabBlock.textures = []
@@ -20574,6 +20593,32 @@ function initBlockDataShapes(){
 			baseBlock.onclick = sit
 			baseBlock.drop = drop
 		}
+		/*if(baseBlock.leaves){
+			makeBlock(baseBlock.textures, shapes.cube, crossBlock, baseBlock, baseBlock.Name+" decays")
+			crossBlock.tick = function(block,x,y,z,world){
+				let decay = true
+				search:
+				for(var d=0;d<=16;d++){
+					for(var dx=-d;dx<=d;dx++){
+						for(var dy=-d;dy<=d;dy++){
+							var onXY=Math.abs(dx)===d||Math.abs(dy)===d
+							if(onXY){
+								for(var dz=-d;dz<=d;dz++){
+									var bl=world.getBlock(x+dx,y+dy,z+dz)
+									if(bl&&blockData[bl].log){decay=false;break search}
+								}
+							} else {
+								var bl=world.getBlock(x+dx,y+dy,z-d)
+								if(bl&&blockData[bl].log){decay=false;break search}
+								bl=world.getBlock(x+dx,y+dy,z+d)
+								if(bl&&blockData[bl].log){decay=false;break search}
+							}
+						}
+					}
+				}
+				if(decay) world.setBlock(x,y,z,0)
+			}
+		}*/
 		blockData[i | SLAB] = slabBlock
 		blockData[i | STAIR] = stairBlock
 		blockData[i | CROSS] = crossBlock
@@ -21063,7 +21108,8 @@ function parseTarget(str,pos,world){
 		return a
 	}
 }
-function getUsage(node, arr=[], prefix="", lazy){
+win.parseTarget = parseTarget
+function getUsage(node, world, arr=[], prefix="", lazy){
 	if(node.type === "literal" || node.type === "redirect"){
 		prefix += node.name+" "
 	}else if(node.type === "argument"){
@@ -21072,13 +21118,13 @@ function getUsage(node, arr=[], prefix="", lazy){
 	if(lazy === 2 && (node.next.length+(node.func?1:0)>1)) arr.push(prefix+"...")
 	else if(node.type === "redirect"){
 		prefix += "→ "
-		getUsage(cmds[node.redirect],arr,prefix,lazy)
+		getUsage(world.commandNodes[node.redirect],world,arr,prefix,lazy)
 	}else{
 		if(!node.next.length || node.func){
 			arr.push(prefix)
 		}
 		for(let n of node.next){
-			getUsage(cmds[n],arr, prefix, lazy ? 2 : undefined)
+			getUsage(world.commandNodes[n],world,arr, prefix, lazy ? 2 : undefined)
 		}
 	}
 	return arr
@@ -21118,6 +21164,7 @@ class CommandNode{
 		return new this("redirect",name,null,null,null,redirect.id)
 	}
 }
+win.CommandNode = CommandNode
 function initDefaultCommands(world){
 	tempWorldForCommand = world
 	let help, tp, gm, sp, sphereoidCmd
@@ -21148,7 +21195,7 @@ Division: //
 Example: <span style='color:lightblue'>/teleport @p 100 5+8 60-4</span>
 <br><br>`
 			str +=  "List of commands:<br>"
-			str += "<span style='color:lightblue'>"+getUsage(root).join("<br>")+"</span>"
+			str += "<span style='color:lightblue'>"+getUsage(root,world).join("<br>")+"</span>"
 			return [str,""]
 		}, null,null,true).then(CommandNode.a("help_with_name", (args,pos,scope) => {
 			let cmd
@@ -21159,7 +21206,7 @@ Example: <span style='color:lightblue'>/teleport @p 100 5+8 60-4</span>
 			}
 			if(cmd){
 				let str = "<h2 style='margin-bottom:0'>"+args.help_with_name+"</h2>"
-				str += getUsage(cmd).join("<br>")
+				str += getUsage(cmd,world).join("<br>")
 				if(cmd.info) str += "<br>Description: "+cmd.info
 				return [str,""]
 			}else return ["There is no information for "+args.help_with_name, "error"]
@@ -21469,6 +21516,7 @@ Example: <span style='color:lightblue'>/teleport @p 100 5+8 60-4</span>
 				if(ent.applyEffect) ent.applyEffect(args.name, level,time,showParticles)
 			}
 		} */
+	return root
 }
 win.initDefaultCommands = initDefaultCommands
 }
@@ -21892,10 +21940,10 @@ class Entity {
 			if(this.liquid && this.wet){
 				let pitch = (1/abs(this.y-this.previousY)*0.05+Math.random()*0.2)/((this.width+this.depth)*0.25/*0.25=average&correct width*/)
 				if(isFinite(pitch)) this.world.playSound(this.x,this.y-this.height/2,this.z,"liquid.splash",1,pitch)
-				this.world.sendAll({
+				this.world.sendAllInChunk({
           type:"particles", particleType:"SplashParticle",
           x:this.x, y:this.y-this.height/2, z:this.z, dimension:this.dimension, amount: 10
-        })
+        }, this.x,this.z)
 			}
 		}
 		this.vely += this.gravityStength
@@ -22437,6 +22485,7 @@ class Player extends Entity{
 			spawn = this.spawnPoint = {x:this.world.world.spawnPoint.x,y:this.world.world.spawnPoint.y,z:this.world.world.spawnPoint.z}
 		}
 		this.x = spawn.x, this.y = spawn.y+0.5+this.height*0.5, this.z = spawn.z
+		this.targetX = this.x, this.targetY = this.y, this.targetZ = this.z
 		this.velx = this.vely = this.velz = 0
 		this.lastY = this.y
 		this.health = 20
@@ -22502,6 +22551,7 @@ class Player extends Entity{
 		if(data[0] !== 1) return // oops, it used to be playerSerializer
 		const d = entitySerializer.decode(data)
 		this.x = d.x || 0; this.y = d.y || 0; this.z = d.z || 0
+		this.targetX = this.x, this.targetY = this.y, this.targetZ = this.z
 		this.dimension = d.dimension || ""
 		this.world = world[this.dimension]
 		this.rx = d.rx || 0; this.ry = d.ry || 0
@@ -22820,6 +22870,61 @@ class Player extends Entity{
 			}
 		}
 	}
+	/*// Returns false and sends tp if derived velocity violates expected physics
+	checkPos(pos, c) {
+		if(this.cheats) return true
+		// Sanitize flags that can't be physically valid
+		if(this.survival) this.flying = false
+		if(!this.spectator) this.spectating = null
+		if(!this.liquid) this.swimming = false
+		let back = this.inventory.equipment && this.inventory.equipment.back
+		if(!back || !blockData[back.id] || !blockData[back.id].wings) this.gliding = false
+		// Validate riding: clear if entity no longer exists
+		if(this.riding && !getEntityOrPlayer(this.riding, this.world)) this.riding = null
+		let now = performance.now()
+		let elapsed = this.lastPosTime ? now - this.lastPosTime : 0  // ms
+		let n = elapsed / 50  // ticks elapsed
+		// this doesn't include drag, can still accelerate too fast if long enough delay
+		const scale = this.scale || 1
+		const xtol = (this.swimming ? 0.5 : this.gliding ? 1.0 : 0.4) * n * scale + 0.1
+		let dvx = (pos.x - this.x) / n
+		let dvy = (pos.y - this.y) / n
+		let dvz = (pos.z - this.z) / n
+		let fail = false
+		if(!this.flying && !this.spectator)
+			if(abs(dvx-this.velx) > xtol || abs(dvz-this.velz) > xtol) fail = true
+		if(!fail && !this.flying) {
+			if(this.riding) {
+				let ridingEnt = getEntityOrPlayer(this.riding, this.world)
+				pos.x = ridingEnt.x + (ridingEnt.rideOffsetX || 0)
+				pos.y = ridingEnt.y + this.height * 0.5 + (ridingEnt.rideOffsetY || 0)
+				pos.z = ridingEnt.z + (ridingEnt.rideOffsetZ || 0)
+			} else if(this.gliding) {
+				if(dvy > this.vely + 8.0 * n * scale) fail = true
+			} else if(this.swimming) {
+				if(dvy > this.vely + 0.5 * n * scale) fail = true
+			} else {
+				let blockHere = this.world.getBlock(round(this.x),round(this.y+this.height*0.5),round(this.z))
+				let blockAtFeet = this.world.getBlock(round(this.x), ceil(this.y-this.height*0.5), round(this.z))
+				let ladder = blockHere && blockData[blockHere].ladder || blockAtFeet && blockData[blockAtFeet].ladder
+				let blockBelow = this.world.getBlock(round(this.x), floor(this.y - this.height*0.5), round(this.z))
+				let blockBelow2 = this.world.getBlock(round(this.x), floor(this.y - this.height*0.5)-1, round(this.z))
+				let pushUp = blockBelow && blockData[blockBelow].solid || blockBelow2 && !blockData[blockBelow2].solid
+				const ytolNormal = (pushUp ? 1 : this.liquid||ladder ? 0.25*n : this.powder||this.quicksand ? 0.05*n : 0)
+				if(dvy > 0 && dvy >= this.vely + ytolNormal) fail = true
+			}
+		}
+		if(fail) {
+			this.confirmPos = true
+			c.send({type:"tp",x:this.x,y:this.y,z:this.z,dimension:this.dimension})
+			this.velx = this.vely = this.velz = 0
+			return false
+		}else{
+			pos.velx = dvx, pos.vely = dvy, pos.velz = dvz
+		}
+		this.lastPosTime = now
+		return true
+	}*/
 	update(){
 		if(this.harmEffect > 0){
 			this.harmEffect -= 3
@@ -22860,7 +22965,7 @@ class Player extends Entity{
 				if(!this.dieHidden) this.world.poof(this.x,this.y,this.z, undefined,this.dimension, this.width,this.height,this.depth,true)
 				this.dieHidden = true
 			}
-			this.dieRotate = (this.dieEffect**4)*Math.PI2
+			this.dieRotate = min(this.dieEffect**2*2,1)*Math.PI2
 		}else{
 			this.dieEffect = 0
 			this.dieRotate = 0
@@ -24025,10 +24130,10 @@ entities[entities.length] = class Minecart extends Entity{
 			if(this.liquid && this.wet){
 				let pitch = (1/abs(this.y-this.previousY)*0.05+Math.random()*0.2)/((this.width+this.depth)*0.25/*0.25=average&correct width*/)
 				if(isFinite(pitch)) this.world.playSound(this.x,this.y-this.height/2,this.z,"liquid.splash",1,pitch)
-				this.world.sendAll({
+				this.world.sendAllInChunk({
           type:"particles", particleType:"SplashParticle",
           x:this.x, y:this.y-this.height/2, z:this.z, dimension:this.dimension, amount: 10
-        })
+        }, this.x,this.z)
 			}
 		}
 		this.vely += this.gravityStength
@@ -24468,7 +24573,7 @@ class Mob extends Entity{
 				this.world.sendEntityPos(this)
 			}
 		}else{
-			if(!this.sitting && rand() > 0.995 && !this.path){
+			if(!this.sitting && rand() > 0.995 && (!this.path || this.panick<=0)){
 				this.randomPath()
 			}else if(rand() > 0.99){
 				this.spinTarget = rand(Math.PId)
@@ -24651,7 +24756,7 @@ class Mob extends Entity{
 		}
 		if(this.die){
 			this.dieEffect += 0.04//0.05 //slower than client side to allow animation
-			this.dieRotate = (this.dieEffect**4)*Math.PI2
+			this.dieRotate = min(this.dieEffect**2*2,1)*Math.PI2
 			if(this.dieEffect > 1){
 				this.canDespawn = true
 				this.dieEffect = 0
@@ -24705,7 +24810,7 @@ class Mob extends Entity{
 	}
 	onhit(damage,remote, vx,vz, from){
 		this.panick = 60
-		if(!this.path) this.randomPath()
+		this.randomPath()
 		//this.world.sendAllInChunk({type:"entEvent",event:"sit",id:this.id, data:this.sitting},this.chunkX,this.chunkZ,this.chunkDimension)
 		this.sitting = false
 
@@ -25127,12 +25232,12 @@ entities[entities.length] = class Wolf extends Mob{
 					this.world.sendAllInChunk({
 						type:"particles",particleType:"smokeCube",
 						x:this.x,y:this.y,z:this.z,dimension:this.dimension,amount:10
-					},this.chunkX,this.chunkZ,this.chunkDimension)
+					},this.x,this.z,this.dimension)
 				}else{
 					this.world.sendAllInChunk({
 						type:"particles",particleType:"hearts",
 						x:this.x,y:this.y,z:this.z,dimension:this.dimension,amount:10
-					},this.chunkX,this.chunkZ,this.chunkDimension)
+					},this.x,this.z,this.dimension)
 					this.world.addEntity(new entities[entityIds.ExperienceOrb](this.x,this.y,this.z, rand(1,7)),false,this.dimension)
 					this.tame = true
 					this.health *= 20/8
@@ -26346,7 +26451,7 @@ class Chunk {
 		if(y<0) return
 		if(this.allGenerated && !user){//used for generating trees after populations
 			user = this.world
-			this.world.sendAllInChunk({type:"setBlock", data:{x:x+this.x, y:py, z:z+this.z, block:blockID, dimension:this.type}},this.x>>4,this.z>>4)
+			//this.world.sendAllInChunk({type:"setBlock", data:{x:x+this.x, y:py, z:z+this.z, block:blockID, dimension:this.type}},this.x,this.z)
 		}
 		if (!this.sections[y >> 4]) {
 			do {
@@ -30425,6 +30530,7 @@ class Chunk {
 			delete this.world.world.loadFrom[str]
 		}
 		this.loaded = true
+		this.world.world.event("chunkload", this)
 		if(this.onload){
 			for(let func of this.onload) func()
 			this.onload = null
@@ -30691,7 +30797,7 @@ Remember to balance optimization with maintainability and readability. Sometimes
 						sectionMap[str][4][(z & 7) << 6 | (x & 7) << 3 | y & 7] = blocks[i]
 						sectionMap[str][5][(z & 7) << 6 | (y & 7) << 3 | x & 7] = blocks[i]
 						if(tags[i]){
-							sectionTags[str][(y & 7) << 6 | (x & 7) << 3 | z & 7] = typeof tags[i] === "number" ? tags[i] : JSON.stringify(tags[i]).substring(0,65535)
+							sectionTags[str][(y & 7) << 6 | (x & 7) << 3 | z & 7] = typeof tags[i] === "number" ? tags[i] : JSON.stringify(tags[i])
 							sectionTagsLength[str]++
 						}
 					}
@@ -30846,7 +30952,7 @@ function needsSupportingBlocks(x,y,z, b,world){ // if block under is gone, dissa
 			var under = world.getBlock(x,y-1,z)
 			if(under && blockData[under].solid) return
 			world.setBlock(x,y,z, 0,false,false,false,false)
-			world.addItems(x,y,z,0,0,0,b&isCube,true)
+			world.dropBlock(x,y,z, b)
 			world.blockParticles(b,x,y,z,30, "break")
 			world.blockSound(b, "dig", x,y,z)
 		}, tickTime, x,y,z)
@@ -31934,7 +32040,7 @@ class World{ // aka trueWorld
 			let c = this.commandNodes[i]
 			if(c.name) this.commandMap[c.id] = c
 		}*/
-		initDefaultCommands(this)
+		this.rootCommandNode = initDefaultCommands(this)
 		this.runCmd = runCmd
 
 		this.worldSeed = 0
@@ -32070,359 +32176,7 @@ class World{ // aka trueWorld
 			this.spawnPoint.y = this.worldType === "superflat" ? 4 : round(this.noiseProfile.noise(this.spawnPoint.x * generator.smooth, this.spawnPoint.z * generator.smooth) * generator.height) + generator.extra
 		}
 	}
-	serverChangeBlock(x,y,z,place,p,face,shift,blockMode,rotate,flip){
-		let {dimension} = p
-		let holding = p.inventory.hotbar[p.inventory.hotbarSlot] ? p.inventory.hotbar[p.inventory.hotbarSlot].id : 0
-		let blockDat = blockData[holding], holdObj = p.inventory.hotbar[p.inventory.hotbarSlot]
-
-		let ox = x, oy = y, oz = z
-		let side = false
-		if(place){
-			switch(face) {
-				case "top":
-					y += 1
-					break
-				case "bottom":
-					y -= 1
-					break
-				case "south":
-					z -= 1
-					side = true
-					break
-				case "north":
-					z += 1
-					side = true
-					break
-				case "west":
-					x -= 1
-					side = true
-					break
-				case "east":
-					x += 1
-					side = true
-					break
-			}
-		}
-		let prevBlock = this[dimension].getBlock(x,y,z)
-		let prevTags = this[dimension].getTags(x,y,z)
-		let dnow = Date.now()
-		let breakTime
-		if(!place && p.survival){
-      breakTime = blockData[prevBlock].hardness*1000
-      let harvestTools = blockData[prevBlock].harvestTools
-			if(harvestTools === true || harvestTools && harvestTools.includes(holding)){
-				breakTime *= 1.5
-	      if(holding && blockData[holding].mineSpeed/*(blockData[holding].pickaxe || (blockData[holding].shovel && breakType === "ground") || (blockData[holding].axe && breakType === "wood") || (blockData[holding].hoe && breakType === "plant2"))*/){
-	        breakTime /= blockData[holding].mineSpeed
-	      }
-			}else breakTime *= 5
-      if(holding && blockData[holding].shears && blockData[prevBlock].shearBreakTime){
-        breakTime = blockData[prevBlock].shearBreakTime
-      }
-      if(p.liquid) breakTime *= 5
-			if(!p.onGround) breakTime *= 5
-		}
-		if(dimension !== p.dimension || breakTime !== undefined && (p.crackPos[0] !== x || p.crackPos[1] !== y || p.crackPos[2] !== z || dnow-p.breakStart<breakTime-250) || dist3(p.x,p.y,p.z,x,y,z)>p.reach+1){
-			return p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:prevBlock, dimension}})
-		}
-		if(place){//placed
-			let cblock = this[dimension].getBlock(ox,oy,oz)
-			if(this.event("click", {player:p, x:ox,y:oy,z:oz, block:cblock, holding, holdObj})) return
-			if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
-			if(blockData[cblock].onclick && !shift){
-				if(!blockData[cblock].onclick(ox,oy,oz,this[dimension],p,holdObj)){
-					if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
-					return
-				}
-			}else if(holding && blockData[holding].shovel){
-				if(cblock === blockIds.grass || cblock === blockIds.dirt || cblock === blockIds.rootedDirt || cblock === blockIds.mycelium || cblock === blockIds.podzol){
-					this[dimension].setBlock(ox,oy,oz,blockIds.dirtPath)
-					holdObj.durability --
-				}
-				if(blockData[cblock].campfire){
-					this[dimension].setBlock(ox,oy,oz,blockData[cblock].id | SLAB)
-					holdObj.durability --
-				}
-				return
-			}else if(holding && cblock && blockData[holding].axe){
-				var name = blockData[cblock].name
-				name = name[0].toUpperCase() + name.substring(1)
-				name = "stripped"+name
-				if(blockIds[name]){
-					this[dimension].setBlock(ox,oy,oz,blockIds[name])
-					holdObj.durability --
-				}
-				return
-			}else if(holding && cblock && blockData[holding].hoe){
-				if((blockData[cblock].name === "grass" || cblock === blockIds.dirt) && !this[dimension].getBlock(ox,oy+1,oz)){
-					this[dimension].setBlock(ox,oy,oz,blockIds.farmland)
-					holdObj.durability --
-				}
-				if(cblock === blockIds.rootedDirt){
-					this[dimension].setBlock(ox,oy,oz,blockIds.dirt)
-					this[dimension].addItems(ox, oy+0.5, oz, 0, 0, 0, blockIds.hangingRoots, true)
-					holdObj.durability --
-				}
-				return
-			}else if(holding && cblock && blockData[holding].shears){
-				if(cblock === blockIds.pumpkin){
-					this[dimension].setBlock(ox,oy,oz,blockIds.carvedPumpkin)
-					this[dimension].addItems(ox, oy+0.5, oz, 0, 0, 0, blockIds.pumpkinSeeds, true, 4)
-					holdObj.durability --
-				}
-				return
-			}else if(holding && cblock && blockData[holding].name === "eyeOfEnder" && blockData[cblock].name === "endPortalFrame" && blockData[cblock | SLAB]){
-				this[dimension].setBlock(ox,oy,oz,cblock | SLAB)
-				blockData[cblock].eyeplace(ox,oy,oz,this[dimension])
-				this[dimension].blockSound(holding, "place", ox,oy,oz)
-				return
-			}
-			if(blockDat.serveronuse && (blockDat.useAnywhere || cblock)){
-				let cont = blockDat.serveronuse(ox,oy,oz,cblock,this[dimension],face,holdObj,p, blockMode)
-				if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
-				if(!cont) return
-			}
-
-			if(holding && blockData[holding].useAs){
-	      let useAs = blockData[holding].useAs
-	      if(typeof useAs === "function"){
-	        useAs = useAs(x,y,z,cblock,face)
-	        if(typeof useAs === "string" && blockIds[useAs]){
-	          holding = blockIds[useAs]
-	        }else holding = useAs
-	      }else{
-	        holding = blockIds[useAs]
-	      }
-	    }
-			if(!holding || blockData[holding].item) return
-			if(!p.cheats) blockMode = 0
-			let under = this[dimension].getBlock(x,y-1,z)
-      let onPot = !side && blockData[under] && blockData[under].pot
-      if(blockData[holding].potCross && onPot){
-        blockMode = POTCROSS
-      }else if(blockData[holding].crossShape){
-        if(onPot && blockIds[blockData[holding].name+"Pot"]){
-          holding = blockIds[blockData[holding].name+"Pot"]
-          blockMode = POTCROSS
-        }
-      }
-      if(blockData[holding].sideCross){
-        if(side){
-          blockMode = CUBE
-        }else if(face === "bottom"){
-          blockMode = SLAB
-        }else blockMode = CROSS
-      }
-      if(blockData[holding].door && blockMode !== SLAB){
-        blockMode = DOOR
-      }
-			if(blockData[holding].torch || blockData[holding].chain || blockData[holding].name === "endRod" || blockData[holding].redstoneTorch || blockData[holding].name === "hopper"){
-        if(side) blockMode = SLAB
-      }
-      if(blockData[holding].lantern){
-        if(this[dimension].getBlock(x,y+1,z)){
-          blockMode = LANTERNHANG
-        }else{
-          blockMode = LANTERN
-        }
-      }
-      if(blockData[holding].pane){
-        if(side) blockMode = SLAB
-      }
-      if(blockData[holding].trapdoor){
-        if(side){
-          blockMode = TRAPDOOROPEN
-        }else{
-          blockMode = TRAPDOOR
-        }
-      }
-      if(blockData[holding].button){
-        blockMode = BUTTON
-      }
-      
-      if(blockData[holding].barrel || blockData[holding].commandBlock){
-        if(side) blockMode = SLAB
-        else if(face === "bottom") blockMode = STAIR
-        else blockMode = CUBE
-      }
-      
-      if(blockData[holding].lever){
-        if(side) blockMode = CUBE
-        else if(face === "top") blockMode = STAIR
-        else if(face === "bottom") blockMode = TALLCROSS
-      }
-      
-      if(blockData[holding].piston){
-        if(face === "top") blockMode = CUBE
-        else if(face === "bottom") blockMode = FLIP
-        else if(side) blockMode = SLAB
-      }
-      
-      if(blockData[holding].name === "observer"){
-        if(face === "top") blockMode = SLAB | FLIP
-        else if(face === "bottom") blockMode = SLAB
-        else blockMode = CUBE
-      }
-      
-      if(blockData[holding].name === "pointedDripstone"){
-        if(face === "top") blockMode = CUBE
-        else blockMode = FLIP
-      }
-      if(blockData[holding].sign){
-        if(side) blockMode = STAIR
-        else blockMode = CUBE
-      }
-      if(blockData[holding].name === "dropper" || blockData[holding].name === "dispenser"){
-        if(face === "top") blockMode = SLAB
-        else if(face === "bottom") blockMode = STAIR
-        else blockMode = CUBE
-      }
-			if(blockData[holding].coralFan){
-				if(side) blockMode = STAIR
-        else blockMode = CUBE
-			}
-      
-      if(side && blockData[holding].swId){
-        holding = blockData[holding].swId
-      }
-      if(blockData[holding].layers){
-        let b = this[dimension].getBlock(ox,oy,oz)
-        let layer = 0
-				let state = b&isState
-        if(state === LAYER1) layer = 1
-        if(state === LAYER2) layer = 2
-        if(state === LAYER3) layer = 3
-        if(state === LAYER4) layer = 4
-        if(state === LAYER5) layer = 5
-        if(state === LAYER6) layer = 6
-        if(state === LAYER7) layer = 7
-        if(state === LAYER8) layer = 8
-        if(((b & isCube) === (holding & isCube)) && layer > 0 && layer < 8){
-					//p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:this[dimension].getBlock(x,y,z), dimension}})
-          x = ox, y = oy, z = oz
-          layer ++
-          switch(layer){
-            case 2:
-              blockMode = LAYER2
-              break
-            case 3:
-              blockMode = LAYER3
-              break
-            case 4:
-              blockMode = LAYER4
-              break
-            case 5:
-              blockMode = LAYER5
-              break
-            case 6:
-              blockMode = LAYER6
-              break
-            case 7:
-              blockMode = LAYER7
-              break
-            case 8:
-              blockMode = LAYER8
-              break
-          }
-        }else{
-          blockMode = LAYER1
-        }
-				holding = holding&isCube
-      }
-			if(!blockData[holding]) throw new Error("no block holding: "+holding+" blockMode: "+blockMode)
-			let shape = blockData[holding|blockMode] && blockData[holding|blockMode].shape
-			if (shape && shape.rotate){
-				if(rotate === SOUTH) blockMode |= SOUTH
-				if(rotate === EAST) blockMode |= EAST
-				if(rotate === WEST) blockMode |= WEST
-			}
-			if (shape && shape.flip){
-				if(flip === FLIP) blockMode |= FLIP
-			}
-			if(blockData[holding|blockMode]) holding |= blockMode
-		}
-		if(this.event("changeblock", {player:p, x,y,z,place,face,shift,blockMode,rotate,flip,holding, prevBlock})){
-			// stop change block
-			return p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:prevBlock, dimension}})
-		}
-		let dropAmount, drop
-		if(p.survival && !place){
-			drop = 0
-			let block = prevBlock
-			let theDrop = blockData[prevBlock].drop
-			let amount = blockData[prevBlock].dropAmount
-			let canDrop = blockData[prevBlock].harvestTools && (blockData[prevBlock].harvestTools === true || blockData[prevBlock].harvestTools.includes(holding))
-			if(!blockData[prevBlock].type) canDrop = true
-			if(canDrop){
-				if(amount === undefined) amount = 1
-				if(amount.length === 2){
-					amount = round(rand(amount[0], amount[1]))
-				}
-				if(holding && blockData[holding].shears && blockData[prevBlock].dropSelfWhenSheared){
-					if(blockData[prevBlock].shearDropAmount){
-						amount = blockData[prevBlock].shearDropAmount
-					}
-				}else{
-					if(typeof theDrop === "number") block = theDrop
-					else if(typeof theDrop === "function"){
-						block = blockIds[theDrop()]
-					}else if(Array.isArray(theDrop)){
-						block = theDrop
-					}else if(theDrop) block = blockIds[theDrop]
-				}
-				if(block){
-					drop = block
-					dropAmount = amount
-				}
-			}
-
-			let breakType = blockData[prevBlock].type
-			if(holding && blockData[holding].pickaxe) {
-				holdObj.durability --
-			}
-			if(holding && blockData[holding].sword) {
-				holdObj.durability -= 2
-			}
-			if(holding && blockData[holding].shovel) {
-				holdObj.durability -= 1
-			}
-			if(holding && blockData[holding].axe) {
-				holdObj.durability -= 1
-			}
-			if(holding && blockData[holding].hoe && breakType !== "plant2") {
-				holdObj.durability -= 1
-			}
-			p.breakStart = dnow
-			p.foodExhaustion += 0.005
-		}
-		let worked = this[dimension].setBlock(x, y, z, place ? holding : 0)
-		if(worked === false) return p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:prevBlock, dimension}})
-		
-		if(drop){
-			if(Array.isArray(drop)){//drop multiple items
-				for(let d of drop){
-					if(typeof d === "string") d = blockIds[d]
-					this[dimension].addItems(x, y, z, 0, 0, 0, d, true, dropAmount,null,null,p.id)
-				}
-			}else{
-				this[dimension].addItems(x, y, z, 0, 0, 0, drop, true, dropAmount,null,null,p.id)
-			}
-		}
-		if(place){
-			if(blockData[holding].onplace) blockData[holding].onplace(x,y,z,p,this[dimension])
-			if(p.survival) holdObj.amount--
-			if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
-			this[dimension].blockSound(holding, "dig", x, y, z)
-		}else{
-			this[dimension].blockParticles(prevBlock,x,y,z,30, "break")
-			if(blockData[prevBlock].onbreak){
-				blockData[prevBlock].onbreak(x,y,z, prevBlock, prevTags,this[dimension])
-			}
-			if(p.survival && blockData[prevBlock].experience) this[dimension].addEntity(new entities[entityIds.ExperienceOrb](x, y, z, blockData[prevBlock].experience))
-			this[dimension].blockSound(prevBlock, "dig", x, y, z)
-		}
-	}
-	entInteract(id,hit,cooldown,p){
+	entInteract(id,hit,p){
 		let ent = getEntityOrPlayer(id,this[p.dimension])
 		if(!ent || dist3(p.x,p.y,p.z,ent.x,ent.y,ent.z)>p.reach+1) return
 		let holdObj = p.inventory.hotbar[p.inventory.hotbarSlot]
@@ -32432,6 +32186,10 @@ class World{ // aka trueWorld
 			let atime = (typeof block.attackTime === "number") ? block.attackTime : 5
 			let attackDamage = (block && block.attackDamage) || 1
 			let damage, critical
+			let time = (Date.now() - (p.attackCooldownStart||Date.now())) / 1000 * tickSpeed
+			let cooldown = 0.2 + ((time + 0.5) / (p.attackCooldownTime||atime)) ** 2 * 0.8
+			p.attackCooldownStart = Date.now()
+			p.attackCooldownTime = atime
 			damage = cooldown
 			if(p.vely < 0 && !p.onGround && !p.liquid && !p.flying && !p.sprinting && damage > 0.848) critical = true
 			damage = max(min(damage, 1), 0.2) * attackDamage
@@ -33543,7 +33301,7 @@ class World{ // aka trueWorld
 				sectionMap[str][4][(z & 7) << 6 | (x & 7) << 3 | y & 7] = blocks[i]
 				sectionMap[str][5][(z & 7) << 6 | (y & 7) << 3 | x & 7] = blocks[i]
 				if(tags[i]){
-					sectionTags[str][(y & 7) << 6 | (x & 7) << 3 | z & 7] = typeof tags[i] === "number" ? tags[i] : JSON.stringify(tags[i]).substring(0,65535)
+					sectionTags[str][(y & 7) << 6 | (x & 7) << 3 | z & 7] = typeof tags[i] === "number" ? tags[i] : JSON.stringify(tags[i])
 					sectionTagsLength[str]++
 				}
 			}
@@ -33992,9 +33750,11 @@ window.parent.postMessage({ready:true}, "*")
 	serverAddPlayer(c, id, username, host = false, admin = false, onclose = null, onjoined = null){
 		let p = new Player()
 		p.id = id
+		p.username = username
 		p.host = host
 		p.connection = c
 		p.admin = admin
+		p.maxUserString = 200
 		p.loadChunks = [], p.loadDistance = 0
 		p.posUpdated = {} //List of updated player positions
 		for(let p2 of this.players){
@@ -34025,6 +33785,7 @@ window.parent.postMessage({ready:true}, "*")
 			p.gameMode = world.gameMode
 
 			p.setDefaults()
+			p.world = world[p.dimension]
 			let inv = world.playersInv[host ? ":host" : username]
 			if(inv){
 				let preBetaVersion = inv.version && verMoreThan("1.1.0",inv.version.replace(/(Alpha|Beta) /, ''))
@@ -34058,6 +33819,7 @@ window.parent.postMessage({ready:true}, "*")
 						p.spawnPoint.y = world.spawnPoint.y
 						p.spawnPoint.z = world.spawnPoint.z
 						p.setDefaults()
+						p.world = world[p.dimension]
 					}
 				}
 				if(inv.x !== undefined){
@@ -34073,7 +33835,7 @@ window.parent.postMessage({ready:true}, "*")
 			c.send({
 				type:"loadSave",
 				name:world.name,
-				mod: world.mod,
+				//mod: world.mod,
 				id: world.id,
 				inv,
 				//resourcePacks:world.resourcePacks,
@@ -34101,12 +33863,10 @@ window.parent.postMessage({ready:true}, "*")
 			world.sendMusicTo(c)
 		}
 		c.onmessage = async function(data){
-			if(world.event("packet",{player:p,data})) return
 			if(data.type === "connect"){
-				username = p.username = username || data.username
 				await p.loadSave()
-				sendOthers(data)
 				world.event("join", {player:p})
+				sendOthers(data)
 			}else if(data.type === "joined"){
 				if(onjoined) onjoined(p)
 			}else if(data.type === "pos"){
@@ -34117,6 +33877,7 @@ window.parent.postMessage({ready:true}, "*")
 						p.confirmPos = false
 					}else canPos = false
 				}
+				//if(canPos) canPos = p.checkPos(pos, c)
 				let posBack = {}
 				if(canPos){
 				p.setPos(pos.x,pos.y,pos.z,pos.velx,pos.vely,pos.velz)
@@ -34166,7 +33927,7 @@ window.parent.postMessage({ready:true}, "*")
 				let now = performance.now()
 				//if(now - p.lastSendEntities > 125){
 					p.lastSendEntities = now
-					let entities = world[p.dimension].getEntities(p), arr = [], length = 0
+					let entities = p.world.getEntities(p), arr = [], length = 0
 					for(let i=0; i<entities.length; i++){
 						let ent = entities[i]
 						let l = ent.length
@@ -34202,12 +33963,19 @@ window.parent.postMessage({ready:true}, "*")
 				p.loadChunks = data.data
 			}else if(data.type === "mySkin"){
 				sendOthers(data)
-			}else if(data.type === "particles" || data.type === "playSound"){
+			}else if(data.type === "particles"){
+				for(let p2 of world.players){ // sendAllInChunk
+					if(p2.dimension === p.dimension && maxDist(p.x>>4,p.z>>4,p2.x>>4,p2.z>>4) <= p2.loadDistance){
+						p2.connection.send(data)
+					}
+				}
+			}else if(data.type === "playSound"){
 				for(let p2 of world.players){
 					if(p2 !== p && p2.dimension === p.dimension) p2.connection.send(data)
 				}
 			}else if(data.type === "message"){
 				if(world.event("message", {player:p,data})) return
+				if(data.data.length > p.maxUserString) return
 				data.fromServer = false
 				data.username = username
 				sendOthers(data)
@@ -34220,7 +33988,7 @@ window.parent.postMessage({ready:true}, "*")
 				sendOthers(data)
 			}*/else if(data.type === "serverChangeBlock"){
 				try{
-				world.serverChangeBlock(data.x,data.y,data.z,data.place,p,data.face,data.shift,data.blockMode,data.rotate,data.flip)
+				p.world.serverChangeBlock(data.x,data.y,data.z,data.place,p,data.face,data.shift,data.blockMode,data.rotate,data.flip)
 				}catch(e){e.message+="\nholding: "+JSON.stringify(p.inventory.hotbar[p.inventory.hotbarSlot]);if(win.logError)logError(e)}
 			}/*else if(data.type === "entityPos"){
 				let ent = world.posEntity(new BitArrayReader(data.data, true), true)
@@ -34289,7 +34057,6 @@ window.parent.postMessage({ready:true}, "*")
 				p.inventory.containerData.x = data.x
 				p.inventory.containerData.y = data.y
 				p.inventory.containerData.z = data.z
-				p.inventory.containerData.dimension = data.dimension
 				orderInvSlots(data.data)
 				if(data.data === "inventory") p.addAchievment("Taking Inventory")
 			}else if(data.type === "containerChange"){
@@ -34298,11 +34065,11 @@ window.parent.postMessage({ready:true}, "*")
 					if(data.data.length === 1){
 						let pitem = getSlot(data.idxs[0])
 						let nitem = data.data[0]//drop item is allowed
-						if(pitem && (!nitem || nitem.amount < pitem.amount && nitem.id === pitem.id && (!nitem.customName && !pitem.custonName || nitem.customName === pitem.customName) && nitem.durability === pitem.durability)){
+						if(pitem && (!nitem || nitem.amount < pitem.amount)){
 							let change = nitem ? pitem.amount-nitem.amount : pitem.amount
 							let d = p.direction
 							let place = inventory.slotMapPlace.get(data.idxs[0])
-							if(p.survival || place !== "holding" && p.cheats) world[p.dimension].addItem(p.x, p.y+p.height/2, p.z, d.x/2, d.y/2, d.z/2, {...pitem, amount:change}, false,p.id)
+							if(p.survival || place !== "holding" && p.cheats) p.world.addItem(p.x, p.y+p.height/2, p.z, d.x/2, d.y/2, d.z/2, {...pitem, amount:change}, false,p.id)
 							break check
 						}
 					}
@@ -34312,11 +34079,11 @@ window.parent.postMessage({ready:true}, "*")
 						if(nitem && (nitem.amount > blockData[nitem.id].stackSize || nitem.amount<=0)) return updateContainer(true)
 						let pitem = getSlot(data.idxs[i])
 						if(nitem){
-							let nname = nitem.id+"|"+(nitem.customName||"")
+							let nname = nitem.id+"|"+(nitem.durability||"")+"|"+(nitem.customName||"")
 							nmap.set(nname,(nmap.get(nname)||0)+nitem.amount)
 						}
 						if(pitem){
-							let pname = pitem.id+"|"+(pitem.customName||"")
+							let pname = pitem.id+"|"+(pitem.durability||"")+"|"+(pitem.customName||"")
 							pmap.set(pname,(pmap.get(pname)||0)+pitem.amount)
 						}
 						let place = inventory.slotMapPlace.get(data.idxs[i])
@@ -34360,7 +34127,7 @@ window.parent.postMessage({ready:true}, "*")
 				}
 				if(toHolding){
 					let d = p.direction
-					if(inventory.holding) world[p.dimension].addItem(p.x, p.y+p.height/2, p.z, d.x/2, d.y/2, d.z/2, toHolding, false,p.id)
+					if(inventory.holding) p.world.addItem(p.x, p.y+p.height/2, p.z, d.x/2, d.y/2, d.z/2, toHolding, false,p.id)
 					else inventory.holding = toHolding
 				}
 				if(craftUpdate) updateCraftingGrid()
@@ -34412,26 +34179,29 @@ window.parent.postMessage({ready:true}, "*")
 						p.setLevel()
 						p.resendHealth = true
 					}
-					world[p.dimension].playSound(p.x,p.y,p.z,"anvil.land")
-					setTimeout(()=>world[p.dimension].playSound(p.x,p.y,p.z,"anvil.land"),500)
-					setTimeout(()=>world[p.dimension].playSound(p.x,p.y,p.z,"anvil.land"),1000)
+					p.world.playSound(p.x,p.y,p.z,"anvil.land")
+					setTimeout(()=>p.world.playSound(p.x,p.y,p.z,"anvil.land"),500)
+					setTimeout(()=>p.world.playSound(p.x,p.y,p.z,"anvil.land"),1000)
 				}
 				if(anvilUpdate) updateAnvil()
 			}else if(data.type === "hotbar"){
 				p.inventory.hotbarSlot = data.slot
 				p.holding = p.inventory.hotbar[p.inventory.hotbarSlot] ? p.inventory.hotbar[p.inventory.hotbarSlot].id : 0
 			}else if(data.type === "containerChangeAnvil"){
+				if(data.rename.length > p.maxUserString) return
 				p.inventory.anvilRename = data.rename
 				updateAnvil()
 			}else if(data.type === "containerChangeCommandBlock"){
 				let {containerData} = p.inventory
-				world[containerData.dimension].setTagByName(containerData.x,containerData.y,containerData.z,"data",data.data,false)
+				if(data.data.length > p.maxUserString) return p.world.updateTags(containerData.x,containerData.y,containerData.z)
+				p.world.setTagByName(containerData.x,containerData.y,containerData.z,"data",data.data,false)
 			}else if(data.type === "containerChangeSign"){
 				let {containerData} = p.inventory
-				world[containerData.dimension].setTagByName(containerData.x,containerData.y,containerData.z,data.side?"text2":"text",data.data)
+				if(data.data.length > p.maxUserString) return p.world.updateTags(containerData.x,containerData.y,containerData.z)
+				p.world.setTagByName(containerData.x,containerData.y,containerData.z,data.side?"text2":"text",data.data)
 				world.event("signchange", {...containerData, player:p, data})
 			}else if(data.type === "entInteract"){
-				world.entInteract(data.data,data.hit,data.cooldown,p)
+				world.entInteract(data.data,data.hit,p)
 			}else if(data.type === "respawn"){
 				if(p.die){
 					p.respawn()
@@ -34444,6 +34214,7 @@ window.parent.postMessage({ready:true}, "*")
 				}
 				world.event("respawn", {player:p})
 			}else if(data.type === "gameMode"){
+				if(data.gameMode.length > p.maxUserString) return
 				if(p.cheats){
 					p.gameMode = data.gameMode
 					c.send({type:"gameMode",gameMode:p.gameMode})
@@ -34455,6 +34226,8 @@ window.parent.postMessage({ready:true}, "*")
 				p.crackPos[1] = data.y
 				p.crackPos[2] = data.z
 				p.breakStart = Date.now()
+			}else if(data.type === "customMenuAction"){
+				world.event("customMenuAction", {player:p,data:data.data})
 			}
 		}
 		c.onclose = function(){
@@ -34477,7 +34250,7 @@ window.parent.postMessage({ready:true}, "*")
 						item.durability = blockData[item.id].durability
 					}else if(item.durability <= 0){
 						p.inventory.hotbar[i] = 0
-						world[p.dimension].playSound(p.x,p.y,p.z,"random.break")
+						p.world.playSound(p.x,p.y,p.z,"random.break")
 					}
 				}
 			}
@@ -34498,7 +34271,7 @@ window.parent.postMessage({ready:true}, "*")
 			for(let i=0; i<p.loadChunks.length; i+=2){
 				if(this.updateingLoadedI !== id) break
 				let x = p.loadChunks[i], z = p.loadChunks[i+1]
-				let chunk = world[p.dimension].getChunk(x*16,z*16)
+				let chunk = p.world.getChunk(x*16,z*16)
 				if(chunk && chunk.canSendClient){
 					p.loadChunks.splice(i,2)
 					i -= 2
@@ -34593,16 +34366,16 @@ window.parent.postMessage({ready:true}, "*")
 				p.inventory[place] = item
 			}else if(place === "furnaceInput"){
 				containerData.data.input = item
-				world[containerData.dimension].updateTags(containerData.x,containerData.y,containerData.z)
+				p.world.updateTags(containerData.x,containerData.y,containerData.z)
 			}else if(place === "furnaceOutput"){
 				containerData.data.output = item
-				world[containerData.dimension].updateTags(containerData.x,containerData.y,containerData.z)
+				p.world.updateTags(containerData.x,containerData.y,containerData.z)
 			}else if(place === "furnaceFuel"){
 				containerData.data.fuel = item
-				world[containerData.dimension].updateTags(containerData.x,containerData.y,containerData.z)
+				p.world.updateTags(containerData.x,containerData.y,containerData.z)
 			}else if(place === "chest" || place === "dispenser" || place === "hopper"){
 				containerData.data.contents[idx] = item
-				world[containerData.dimension].updateTags(containerData.x,containerData.y,containerData.z)
+				p.world.updateTags(containerData.x,containerData.y,containerData.z)
 			}else if(place === "equipment"){
 				p.inventory.equipment[idx] = item
 			}
@@ -34633,7 +34406,7 @@ window.parent.postMessage({ready:true}, "*")
 				}
 				if(item.amount>0){
 					let d = p.direction
-					world[p.inventory.containerData.dimension].addItem(p.x, p.y, p.z, d.x/4, d.y/4, d.z/4, item, false,p.id)
+					p.world.addItem(p.x, p.y, p.z, d.x/4, d.y/4, d.z/4, item, false,p.id)
 				}
 			}
 		}
@@ -34694,13 +34467,13 @@ window.parent.postMessage({ready:true}, "*")
 			//below: for containers
 			if(p.inventory.currentContainer === "furnace" || p.inventory.currentContainer === "chest" || p.inventory.currentContainer === "dispenser" || p.inventory.currentContainer === "hopper"){
 				let containerData = p.inventory.containerData
-				let tags = world[containerData.dimension].getTags(containerData.x,containerData.y,containerData.z)
-				let block = world[containerData.dimension].getBlock(containerData.x, containerData.y, containerData.z)
+				let tags = p.world.getTags(containerData.x,containerData.y,containerData.z)
+				let block = p.world.getBlock(containerData.x, containerData.y, containerData.z)
 				let {currentContainer} = p.inventory
 				const bname = blockData[block].name
 				if(currentContainer === "furnace" && bname === "furnace" || currentContainer === "chest" && (bname === "chest" || bname === "barrel") || currentContainer === "dispenser" && (bname === "dispenser" || bname === "dropper") || currentContainer === "hopper" && bname === "hopper"){
 					if(!blockData[block].hasContents(tags)){
-						tags = blockData[block].setContents(containerData.x,containerData.y,containerData.z,world[containerData.dimension])
+						tags = blockData[block].setContents(containerData.x,containerData.y,containerData.z,p.world)
 					}
 				}else{
 					p.inventory.currentContainer = null
@@ -34709,18 +34482,18 @@ window.parent.postMessage({ready:true}, "*")
 				}
 				if(p.inventory.currentContainer === "furnace"){
 					c.send({type:"containerChangeFurnace",burnProgress:tags.burnProgress,progress:tags.progress})
-					blockData[blockIds.furnace].update(containerData.x,containerData.y,containerData.z,world[containerData.dimension])
+					blockData[blockIds.furnace].update(containerData.x,containerData.y,containerData.z,p.world)
 				}
 				p.inventory.containerData.data = tags
 			}else if(p.inventory.currentContainer === "commandBlock" || p.inventory.currentContainer === "sign"){
 				let containerData = p.inventory.containerData
-				let tags = world[containerData.dimension].getTags(containerData.x,containerData.y,containerData.z)
-				let block = world[containerData.dimension].getBlock(containerData.x, containerData.y, containerData.z)
+				let tags = p.world.getTags(containerData.x,containerData.y,containerData.z)
+				let block = p.world.getBlock(containerData.x, containerData.y, containerData.z)
 				let {currentContainer} = p.inventory
 				if(currentContainer === "commandBlock" && blockData[block].commandBlock){
 					if(!tags || !tags.commandBlock){
 						tags = {commandBlock:true,data:"",output:""}
-						world[containerData.dimension].setTags(containerData.x, containerData.y, containerData.z,tags)
+						p.world.setTags(containerData.x, containerData.y, containerData.z,tags)
 					}
 				}else if(currentContainer === "sign" && blockData[block].sign && tags && tags.sign){
 				}else{
@@ -34754,6 +34527,8 @@ window.parent.postMessage({ready:true}, "*")
 			}
 			if(changeData) c.send({type:"containerChange",data:changeData,idxs:changeIdx})
 		}
+		p.sendMessage = (data) => c.send({type:"message", data, fromServer:true})
+		this.event("connect", {player:p})
 	}
 	sendAll(msg){
 		for(let p of this.players) p.connection.send(msg)
@@ -34833,16 +34608,388 @@ class WorldDimension{
 	}
 	sendAllInChunk(msg,x,z){
 		for(let p of this.world.players){
-			if(p.dimension === this.dimension && maxDist(x,z,p.x>>4,p.z>>4) <= p.loadDistance){
+			if(p.dimension === this.dimension && maxDist(x>>4,z>>4,p.x>>4,p.z>>4) <= p.loadDistance){
 				p.connection.send(msg)
 			}
 		}
 	}
+	dropBlock(x,y,z, block){ // without holding
+		let theDrop = blockData[block].drop
+		let amount = blockData[block].dropAmount
+		if(amount === undefined) amount = 1
+		if(amount.length === 2){
+			amount = round(rand(amount[0], amount[1]))
+		}
+		if(typeof theDrop === "number") block = theDrop
+		else if(typeof theDrop === "function"){
+			block = blockIds[theDrop()]
+		}else if(Array.isArray(theDrop)){
+			for(let d of theDrop){
+				if(typeof d === "string") d = blockIds[d]
+				this.addItems(x, y, z, 0, 0, 0, d, true, amount)
+			}
+			return
+		}else if(theDrop) block = blockIds[theDrop]
+
+		this.addItems(x, y, z, 0, 0, 0, block, true, amount)
+	}
+	serverChangeBlock(x,y,z,place,p,face,shift,blockMode,rotate,flip){
+		let {dimension} = p
+		let holding = p.inventory.hotbar[p.inventory.hotbarSlot] ? p.inventory.hotbar[p.inventory.hotbarSlot].id : 0
+		let blockDat = blockData[holding], holdObj = p.inventory.hotbar[p.inventory.hotbarSlot]
+
+		let ox = x, oy = y, oz = z
+		let side = false
+		if(place){
+			switch(face) {
+				case "top":
+					y += 1
+					break
+				case "bottom":
+					y -= 1
+					break
+				case "south":
+					z -= 1
+					side = true
+					break
+				case "north":
+					z += 1
+					side = true
+					break
+				case "west":
+					x -= 1
+					side = true
+					break
+				case "east":
+					x += 1
+					side = true
+					break
+			}
+		}
+		let prevBlock = this.getBlock(x,y,z)
+		let prevTags = this.getTags(x,y,z)
+		let dnow = Date.now()
+		let breakTime
+		if(!place && p.survival){
+      breakTime = blockData[prevBlock].hardness*1000
+      let harvestTools = blockData[prevBlock].harvestTools
+			if(harvestTools === true || harvestTools && harvestTools.includes(holding)){
+				breakTime *= 1.5
+	      if(holding && blockData[holding].mineSpeed/*(blockData[holding].pickaxe || (blockData[holding].shovel && breakType === "ground") || (blockData[holding].axe && breakType === "wood") || (blockData[holding].hoe && breakType === "plant2"))*/){
+	        breakTime /= blockData[holding].mineSpeed
+	      }
+			}else breakTime *= 5
+      if(holding && blockData[holding].shears && blockData[prevBlock].shearBreakTime){
+        breakTime = blockData[prevBlock].shearBreakTime
+      }
+      if(p.liquid) breakTime *= 5
+			if(!p.onGround) breakTime *= 5
+		}
+		if(dimension !== p.dimension || breakTime !== undefined && (p.crackPos[0] !== x || p.crackPos[1] !== y || p.crackPos[2] !== z || dnow-p.breakStart<breakTime-250) || !p.cheats&&dist3(p.x,p.y,p.z,x,y,z)>p.reach+1){
+			return p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:prevBlock, dimension}})
+		}
+		if(place){//placed
+			let cblock = this.getBlock(ox,oy,oz)
+			if(this.world.event("click", {player:p, x:ox,y:oy,z:oz, block:cblock, holding, holdObj})) return
+			if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
+			if(blockData[cblock].onclick && !shift){
+				if(!blockData[cblock].onclick(ox,oy,oz,this,p,holdObj)){
+					if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
+					return
+				}
+			}else if(holding && blockData[holding].shovel){
+				if(cblock === blockIds.grass || cblock === blockIds.dirt || cblock === blockIds.rootedDirt || cblock === blockIds.mycelium || cblock === blockIds.podzol){
+					this.setBlock(ox,oy,oz,blockIds.dirtPath)
+					holdObj.durability --
+				}
+				if(blockData[cblock].campfire){
+					this.setBlock(ox,oy,oz,blockData[cblock].id | SLAB)
+					holdObj.durability --
+				}
+				return
+			}else if(holding && cblock && blockData[holding].axe){
+				var name = blockData[cblock].name
+				name = name[0].toUpperCase() + name.substring(1)
+				name = "stripped"+name
+				if(blockIds[name]){
+					this.setBlock(ox,oy,oz,blockIds[name])
+					holdObj.durability --
+				}
+				return
+			}else if(holding && cblock && blockData[holding].hoe){
+				if((blockData[cblock].name === "grass" || cblock === blockIds.dirt) && !this.getBlock(ox,oy+1,oz)){
+					this.setBlock(ox,oy,oz,blockIds.farmland)
+					holdObj.durability --
+				}
+				if(cblock === blockIds.rootedDirt){
+					this.setBlock(ox,oy,oz,blockIds.dirt)
+					this.addItems(ox, oy+0.5, oz, 0, 0, 0, blockIds.hangingRoots, true)
+					holdObj.durability --
+				}
+				return
+			}else if(holding && cblock && blockData[holding].shears){
+				if(cblock === blockIds.pumpkin){
+					this.setBlock(ox,oy,oz,blockIds.carvedPumpkin)
+					this.addItems(ox, oy+0.5, oz, 0, 0, 0, blockIds.pumpkinSeeds, true, 4)
+					holdObj.durability --
+				}
+				return
+			}else if(holding && cblock && blockData[holding].name === "eyeOfEnder" && blockData[cblock].name === "endPortalFrame" && blockData[cblock | SLAB]){
+				this.setBlock(ox,oy,oz,cblock | SLAB)
+				blockData[cblock].eyeplace(ox,oy,oz,this)
+				this.blockSound(holding, "place", ox,oy,oz)
+				return
+			}
+			if(blockDat.serveronuse && (blockDat.useAnywhere || cblock)){
+				let cont = blockDat.serveronuse(ox,oy,oz,cblock,this,face,holdObj,p, blockMode)
+				if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
+				if(!cont) return
+			}
+
+			if(holding && blockData[holding].useAs){
+	      let useAs = blockData[holding].useAs
+	      if(typeof useAs === "function"){
+	        useAs = useAs(x,y,z,cblock,face)
+	        if(typeof useAs === "string" && blockIds[useAs]){
+	          holding = blockIds[useAs]
+	        }else holding = useAs
+	      }else{
+	        holding = blockIds[useAs]
+	      }
+	    }
+			if(!holding || blockData[holding].item) return
+			if(!p.cheats) blockMode = 0
+			let under = this.getBlock(x,y-1,z)
+      let onPot = !side && blockData[under] && blockData[under].pot
+      if(blockData[holding].potCross && onPot){
+        blockMode = POTCROSS
+      }else if(blockData[holding].crossShape){
+        if(onPot && blockIds[blockData[holding].name+"Pot"]){
+          holding = blockIds[blockData[holding].name+"Pot"]
+          blockMode = POTCROSS
+        }
+      }
+      if(blockData[holding].sideCross){
+        if(side){
+          blockMode = CUBE
+        }else if(face === "bottom"){
+          blockMode = SLAB
+        }else blockMode = CROSS
+      }
+      if(blockData[holding].door && blockMode !== SLAB){
+        blockMode = DOOR
+      }
+			if(blockData[holding].torch || blockData[holding].chain || blockData[holding].name === "endRod" || blockData[holding].redstoneTorch || blockData[holding].name === "hopper"){
+        if(side) blockMode = SLAB
+      }
+      if(blockData[holding].lantern){
+        if(this.getBlock(x,y+1,z)){
+          blockMode = LANTERNHANG
+        }else{
+          blockMode = LANTERN
+        }
+      }
+      if(blockData[holding].pane){
+        if(side) blockMode = SLAB
+      }
+      if(blockData[holding].trapdoor){
+        if(side){
+          blockMode = TRAPDOOROPEN
+        }else{
+          blockMode = TRAPDOOR
+        }
+      }
+      if(blockData[holding].button){
+        blockMode = BUTTON
+      }
+      
+      if(blockData[holding].barrel || blockData[holding].commandBlock){
+        if(side) blockMode = SLAB
+        else if(face === "bottom") blockMode = STAIR
+        else blockMode = CUBE
+      }
+      
+      if(blockData[holding].lever){
+        if(side) blockMode = CUBE
+        else if(face === "top") blockMode = STAIR
+        else if(face === "bottom") blockMode = TALLCROSS
+      }
+      
+      if(blockData[holding].piston){
+        if(face === "top") blockMode = CUBE
+        else if(face === "bottom") blockMode = FLIP
+        else if(side) blockMode = SLAB
+      }
+      
+      if(blockData[holding].name === "observer"){
+        if(face === "top") blockMode = SLAB | FLIP
+        else if(face === "bottom") blockMode = SLAB
+        else blockMode = CUBE
+      }
+      
+      if(blockData[holding].name === "pointedDripstone"){
+        if(face === "top") blockMode = CUBE
+        else blockMode = FLIP
+      }
+      if(blockData[holding].sign){
+        if(side) blockMode = STAIR
+        else blockMode = CUBE
+      }
+      if(blockData[holding].name === "dropper" || blockData[holding].name === "dispenser"){
+        if(face === "top") blockMode = SLAB
+        else if(face === "bottom") blockMode = STAIR
+        else blockMode = CUBE
+      }
+			if(blockData[holding].coralFan){
+				if(side) blockMode = STAIR
+        else blockMode = CUBE
+			}
+      
+      if(side && blockData[holding].swId){
+        holding = blockData[holding].swId
+      }
+      if(blockData[holding].layers){
+        let b = this.getBlock(ox,oy,oz)
+        let layer = 0
+				let state = b&isState
+        if(state === LAYER1) layer = 1
+        if(state === LAYER2) layer = 2
+        if(state === LAYER3) layer = 3
+        if(state === LAYER4) layer = 4
+        if(state === LAYER5) layer = 5
+        if(state === LAYER6) layer = 6
+        if(state === LAYER7) layer = 7
+        if(state === LAYER8) layer = 8
+        if(((b & isCube) === (holding & isCube)) && layer > 0 && layer < 8){
+					//p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:this.getBlock(x,y,z), dimension}})
+          x = ox, y = oy, z = oz
+          layer ++
+          switch(layer){
+            case 2:
+              blockMode = LAYER2
+              break
+            case 3:
+              blockMode = LAYER3
+              break
+            case 4:
+              blockMode = LAYER4
+              break
+            case 5:
+              blockMode = LAYER5
+              break
+            case 6:
+              blockMode = LAYER6
+              break
+            case 7:
+              blockMode = LAYER7
+              break
+            case 8:
+              blockMode = LAYER8
+              break
+          }
+        }else{
+          blockMode = LAYER1
+        }
+				holding = holding&isCube
+      }
+			if(!blockData[holding]) throw new Error("no block holding: "+holding+" blockMode: "+blockMode)
+			let shape = blockData[holding|blockMode] && blockData[holding|blockMode].shape
+			if (shape && shape.rotate){
+				if(rotate === SOUTH) blockMode |= SOUTH
+				if(rotate === EAST) blockMode |= EAST
+				if(rotate === WEST) blockMode |= WEST
+			}
+			if (shape && shape.flip){
+				if(flip === FLIP) blockMode |= FLIP
+			}
+			if(blockData[holding|blockMode]) holding |= blockMode
+		}
+		if(this.world.event("changeblock", {player:p, x,y,z,place,face,shift,blockMode,rotate,flip,holding, prevBlock})){
+			// stop change block
+			return p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:prevBlock, dimension}})
+		}
+		let dropAmount, drop
+		if(p.survival && !place){
+			drop = 0
+			let block = prevBlock
+			let theDrop = blockData[prevBlock].drop
+			let amount = blockData[prevBlock].dropAmount
+			let canDrop = blockData[prevBlock].harvestTools && (blockData[prevBlock].harvestTools === true || blockData[prevBlock].harvestTools.includes(holding))
+			if(!blockData[prevBlock].type) canDrop = true
+			if(canDrop){
+				if(amount === undefined) amount = 1
+				if(amount.length === 2){
+					amount = round(rand(amount[0], amount[1]))
+				}
+				if(holding && blockData[holding].shears && blockData[prevBlock].dropSelfWhenSheared){
+					if(blockData[prevBlock].shearDropAmount){
+						amount = blockData[prevBlock].shearDropAmount
+					}
+				}else{
+					if(typeof theDrop === "number") block = theDrop
+					else if(typeof theDrop === "function"){
+						block = blockIds[theDrop()]
+					}else if(Array.isArray(theDrop)){
+						block = theDrop
+					}else if(theDrop) block = blockIds[theDrop]
+				}
+				if(block){
+					drop = block
+					dropAmount = amount
+				}
+			}
+
+			let breakType = blockData[prevBlock].type
+			if(holding && blockData[holding].pickaxe) {
+				holdObj.durability --
+			}
+			if(holding && blockData[holding].sword) {
+				holdObj.durability -= 2
+			}
+			if(holding && blockData[holding].shovel) {
+				holdObj.durability -= 1
+			}
+			if(holding && blockData[holding].axe) {
+				holdObj.durability -= 1
+			}
+			if(holding && blockData[holding].hoe && breakType !== "plant2") {
+				holdObj.durability -= 1
+			}
+			p.breakStart = dnow
+			p.foodExhaustion += 0.005
+		}
+		let worked = this.setBlock(x, y, z, place ? holding : 0)
+		if(worked === false) return p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:prevBlock, dimension}})
+		
+		if(drop){
+			if(Array.isArray(drop)){//drop multiple items
+				for(let d of drop){
+					if(typeof d === "string") d = blockIds[d]
+					this.addItems(x, y, z, 0, 0, 0, d, true, dropAmount,null,null,p.id)
+				}
+			}else{
+				this.addItems(x, y, z, 0, 0, 0, drop, true, dropAmount,null,null,p.id)
+			}
+		}
+		if(place){
+			if(blockData[holding].onplace) blockData[holding].onplace(x,y,z,p,this)
+			if(p.survival) holdObj.amount--
+			if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
+			this.blockSound(holding, "dig", x, y, z)
+		}else{
+			this.blockParticles(prevBlock,x,y,z,30, "break")
+			if(blockData[prevBlock].onbreak){
+				blockData[prevBlock].onbreak(x,y,z, prevBlock, prevTags,this)
+			}
+			if(p.survival && blockData[prevBlock].experience) this.addEntity(new entities[entityIds.ExperienceOrb](x, y, z, blockData[prevBlock].experience))
+			this.blockSound(prevBlock, "dig", x, y, z)
+		}
+	}
 	blockParticles(block,x,y,z,amount, type, dir, remote){
-    if(!remote) this.sendAll({
+    if(!remote) this.sendAllInChunk({
       type:"particles", particleType:"blockParticles",
       x,y,z,amount,dimension:this.dimension,data:{block,thisType:type,dir}
-    })
+    }, x,z)
   }
 	explode(x,y,z, r, type){
 		/*world.setBlock(x,y,z,blockIds.air);
@@ -34882,59 +35029,21 @@ class WorldDimension{
 				}
 			}
 		}*/
-		//create rays rays coming from the center of the cube to each outer edge
+		// cast rays from box surface; resolution scales with radius
+		const res = r
 		let destroyed = {}, particles = []
-		for(var cx=0; cx<16; cx++){
-			for(var cy=0; cy<16; cy++){
-				for(var cz=0; cz<16; cz++){
-					if(!(cx === 0 || cx === 15 || cy === 0 || cy === 15 || cz === 0 || cz === 15)) continue
-					
-					var intensity =  (0.7 + rand(0.6)) * r
-					var x2 = cx / 16, y2 = cy / 16, z2 = cz / 16
-					//step 0.3 blocks each time
-					var d = abs(dist3(0,0,0, (x2-0.5)*2*r,(y2-0.5)*2*r,(z2-0.5)*2*r))
-					var step = (0.3/d)/2 //how much to go along ray
-					for(var i=0; i<1; i+=step){
-						var sx = round(lerp(i, x, (x2-0.5)*2*r+x))
-						var sy = round(lerp(i, y, (y2-0.5)*2*r+y))
-						var sz = round(lerp(i, z, (z2-0.5)*2*r+z))
-						intensity -= 0.3 * 0.75
-						var block = this.getBlock(sx,sy,sz)
-						var isDestroyed = destroyed[sx+","+sy+","+sz]
-						//if block isn't air, reduce intensity based on blast resistance
-						if(block && !isDestroyed){
-							var br = blockData[block].blastResistance || 0
-							intensity -= (br + 0.3) * 0.3
-							if(intensity > 0) {
-								destroyed[sx+","+sy+","+sz] = true
-								if(!type){
-									if(blockData[block].ongetexploded){
-										blockData[block].ongetexploded(sx,sy,sz,block,this)
-									}
-									this.setBlock(sx, sy, sz, 0)
-									if(round(rand(r-1)) === 0){
-										this.addItems(sx, sy, sz, 0, 0, 0, block, true)
-									}
-								}
-								if(block === blockIds.tnt){
-									blockData[blockIds.tnt].explode(sx,sy,sz, "explosion",this)
-								}else if(block === blockIds.untnt){
-									blockData[blockIds.untnt].explode(sx,sy,sz, "explosion",this)
-								}
-							}/*end if(intensity > 0)*/else{
-								continue
-							}
-						}
-						if(intensity > 0 && type === "original" && !isDestroyed){
-							this.setBlock(sx,sy,sz, this.getOriginalBlock(sx,sy,sz))
-						}
-						if(intensity > 0 && rand() > 0.995){
-							let time = rand()*1000
-							particles.push(sx,sy,sz,this.dimension,time)
-						}
-					}
-				}//end for loop
-			}
+		// 6 faces from -res to res, edges/corners counted once
+		for(var cu=-8; cu<=8; cu++) for(var cv=-8; cv<=8; cv++){
+			this.explodeRay(x,y,z,r,type,destroyed,particles, -8,cu,cv)
+			this.explodeRay(x,y,z,r,type,destroyed,particles,  8,cu,cv)
+		}
+		for(var cu=-8+1; cu<=8-1; cu++) for(var cv=-8; cv<=8; cv++){
+			this.explodeRay(x,y,z,r,type,destroyed,particles, cu,-8,cv)
+			this.explodeRay(x,y,z,r,type,destroyed,particles, cu, 8,cv)
+		}
+		for(var cu=-8+1; cu<=8-1; cu++) for(var cv=-8+1; cv<=8-1; cv++){
+			this.explodeRay(x,y,z,r,type,destroyed,particles, cu,cv,-8)
+			this.explodeRay(x,y,z,r,type,destroyed,particles, cu,cv, 8)
 		}
 		this.sendAll({type:"particles", particleType:"explosion", data:particles, dimension:this.dimension})
 		
@@ -34977,6 +35086,49 @@ class WorldDimension{
 		}
 		explodeSound(x,y,z, r, this)
 	}
+	explodeRay(x, y, z, r, type, destroyed, particles, dx, dy, dz){
+		var d = dist3(0,0,0, dx,dy,dz)
+		dx /= d, dy /= d, dz /= d
+		var intensity = (0.7 + rand(0.6)) * r
+		for(var i=0; i<r; i+=0.3){
+			var sx = round(x + dx*i)
+			var sy = round(y + dy*i)
+			var sz = round(z + dz*i)
+			intensity -= 0.3 * 0.75
+			var block = this.getBlock(sx,sy,sz)
+			var isDestroyed = destroyed[sx+","+sy+","+sz]
+			if(block && !isDestroyed){
+				var br = blockData[block].blastResistance || 0
+				intensity -= (br + 0.3) * 0.3
+				if(intensity > 0) {
+					destroyed[sx+","+sy+","+sz] = true
+					if(!type){
+						if(blockData[block].ongetexploded){
+							blockData[block].ongetexploded(sx,sy,sz,block,this)
+						}
+						this.setBlock(sx, sy, sz, 0)
+						if(round(rand(r-1)) === 0){
+							this.dropBlock(sx,sy,sz, block)
+						}
+					}
+					if(block === blockIds.tnt){
+						blockData[blockIds.tnt].explode(sx,sy,sz, "explosion",this)
+					}else if(block === blockIds.untnt){
+						blockData[blockIds.untnt].explode(sx,sy,sz, "explosion",this)
+					}
+				}else{
+					break
+				}
+			}
+			if(intensity > 0 && type === "original" && !isDestroyed){
+				this.setBlock(sx,sy,sz, this.getOriginalBlock(sx,sy,sz))
+			}
+			if(intensity > 0 && rand() > 0.999){
+				particles.push(sx,sy,sz)
+			}
+			intensity -= 0.225
+		}
+	}
 	blockSound(blockID, type, x,y,z, volume){
     let block = blockData[blockID]
 		if(typeof volume !== "number") volume = 1
@@ -35017,16 +35169,16 @@ class WorldDimension{
 	}
 	poof(x,y,z,amount,dimension, w,h,d, unremote){
 		if(!amount) amount = w*h*d*20
-    if(unremote) this.sendAll({
+    if(unremote) this.sendAllInChunk({
       type:"particles",particleType:"poof",
       x,y,z,dimension:this.dimension,amount,data:{w,h,d}
-    })
+    }, x,z)
   }
 	glint(x,y,z,dimension,remote){
-    if(!remote) this.sendAll({
+    if(!remote) this.sendAllInChunk({
       type:"particles", particleType:"glint",
       x,y,z,dimension:this.dimension
-    })
+    }, x,z)
   }
 	updateBlock(x, y, z, lazy, noOnupdate, sx,sy,sz) {
 		let chunk = this.chunks[x >> 4] && this.chunks[x >> 4][z >> 4]
@@ -35100,7 +35252,7 @@ class WorldDimension{
 			}
 		}
 		
-		if(!remote) this.sendAllInChunk({type:"setBlock", data:{x:x, y:y, z:z, block:blockID, dimension:this.dimension, keepTags:keepTags}},x>>4,z>>4)
+		if(!remote) this.sendAllInChunk({type:"setBlock", data:{x:x, y:y, z:z, block:blockID, dimension:this.dimension, keepTags:keepTags}},x,z)
 		
 		let nameChanged = blockData[prev].name !== blockData[blockID || 0].name
 		if(!noOnupdate && prev && blockData[prev].ondelete && nameChanged){
@@ -35160,7 +35312,7 @@ class WorldDimension{
 			this.tagUpdate(x,y,z+1,t)
 		}
 		if(!remote){
-			this.sendAllInChunk({type:"setTags", x, y, z, data:t, dimension:this.dimension, lazy},x>>4,z>>4)
+			this.sendAllInChunk({type:"setTags", x, y, z, data:t, dimension:this.dimension, lazy},x,z)
 		}
 	}
 	getTags(x,y,z){
@@ -35412,7 +35564,7 @@ class WorldDimension{
 		if(!ent || remote && ent.noRemoteDelete) return
 		id = ent.id
 		if(!remote){
-			this.sendAllInChunk({type:"entityDelete", id}, ent.chunkX,ent.chunkZ)
+			this.sendAllInChunk({type:"entityDelete", id}, ent.x,ent.z)
 		}
 		this.world.entities.delete(id)
 		/*if(ent.alwaysRender){
@@ -35424,7 +35576,7 @@ class WorldDimension{
 		if(chunk) delete chunk.entities.delete(id)
 	}
 	sendEntityPos(ent){
-		this.sendAllInChunk({type:"entityPos", data:this.world.getEntPos(ent,performance.now(), true)}, ent.chunkX,ent.chunkZ)
+		this.sendAllInChunk({type:"entityPos", data:this.world.getEntPos(ent,performance.now(), true)}, ent.x,ent.z)
 	}
 	
 	getEntities(p){

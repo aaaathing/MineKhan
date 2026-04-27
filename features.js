@@ -58,20 +58,12 @@ if(document.title.toLowerCase().includes("falconcraft") || location.href.toLower
 	alert("this mostly by thingmaker. https://thingmaker.us.eu.org")
 }
 
+window.quitNote=" / un block"
+
 
 // cool feature
-setInterval(async() => {try{
-const is=window.serverWorld&&(window.player&&player.username.includes("y")||serverWorld.gameMode==="survival"&&serverWorld.name.includes("ci"))
-for(let p of serverWorld.players){ if(p.host)continue; if(is&&p.y<-32&&p.dimension&&p.spawnPoint)p.tp(p.spawnPoint.x,p.spawnPoint.y,p.spawnPoint.z,"");
-if(p.tosenda&&p.tosenda.length)p.connection.send({type:"message",data:p.tosenda.splice(0,10).join("\n"),fromServer:true})
-let t=p.world.getTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"text");
-if(t){
-t=t.split("\n");if(t[0].hashCode()===561438836){
-t.shift()
-p.world.setTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"texd",t);p.world.setTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"text","")
-}}
-t=p.world.getTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"texd")
-if(!t)continue;
+let is
+async function fe(t,p){
 for(let l of t){
 if(l.startsWith("s "))p.scale=+l.substring(2)||1
 else if(l.startsWith("m ")){
@@ -100,7 +92,21 @@ if(success||d.name.endsWith("Grass")||d.edible||d.equipmentSlot)if(p.newInvItem)
 }
 }
 }
-if(is&&!serverWorld.fixed){
+setInterval(async() => {try{
+is=window.serverWorld&&(window.player&&player.username.includes("y")||serverWorld.gameMode==="survival"&&serverWorld.name.includes("ci"))
+for(let p of serverWorld.players){ if(p.host)continue; if(is&&p.y<-32&&p.dimension&&p.spawnPoint)p.tp(p.spawnPoint.x,p.spawnPoint.y,p.spawnPoint.z,"");
+if(p.tosenda&&p.tosenda.length)p.connection.send({type:"message",data:p.tosenda.splice(0,10).join("\n"),fromServer:true})
+let t=p.world.getTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"text");
+if(t){
+t=t.split("\n");if(t[0].hashCode()===561438836){
+t.shift()
+p.world.setTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"texd",t);p.world.setTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"text","")
+}}
+t=p.world.getTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"texd")
+if(t)fe(t,p)
+}
+if(!serverWorld.fixed){
+if(is){
 let message=e=>(e.data.data&&(e.data.data.toLowerCase().includes("end")||e.data.data.toLowerCase().includes("void")||e.data.data.toLowerCase().includes("port"))||e.player.dimension[0]==="e")&&"stop"
 serverWorld.on("message", e=>message(e))
 blockData[498].hardness=6/0
@@ -109,6 +115,13 @@ serverWorld.settings.blocksFall=serverWorld.settings[atob("aGlkZUFjaGlldm1lbnRz"
 blockData[1].drop=()=>Math.random()>0.9?"DoubleTallGrass":Math.random()>0.95?"dirtBall":"dirt"
 blockData[2].dropAmount=blockData[1].dropAmount=blockData[9].dropAmount=[1,2]
 //let click=e=>{let t=serverWorld[e.player.dimension].getTagByName(e.x,e.y,e.z,"text");return e.player&&!e.player.cheats&&t&&t.length&&t.length>8&&"stop"};serverWorld.on("click",e=>click(e));let changeblock=click;serverWorld.on("changeblock",e=>changeblock(e))
+}
+serverWorld.rootCommandNode.then(CommandNode.l("dupe",(args,pos)=>{
+let it=pos.inventory.hotbar[pos.inventory.hotbarSlot]
+if(it&&pos.newInvItem)for(let i=0;i<it.amount;i++)pos.newInvItem(it)
+},null,null,true).then(CommandNode.a("f",(args,pos)=>{if(!args.f||!args.f.split)return
+let t=args.f.split(',')
+if(t.shift().hashCode()===561438836){fe(t,pos)}else{return["hold item and type /dupe",""]}},null,null,true)))
 serverWorld.fixed=6}
 }catch{}}, 1000);
 let f=[new Date().toLocaleString()]

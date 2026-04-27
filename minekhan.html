@@ -1129,7 +1129,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
       <a onclick="scrollToEl('help_crafting')">Crafting</a>
       <a onclick="scrollToEl('help_servers')">Server</a>
       <a onclick="scrollToEl('help_rp')">Resource packs</a>
-      <a onclick="scrollToEl('help_mod')">Mods</a>
+      <a onclick="scrollToEl('help_mod')">Code</a>
       <a onclick="scrollToEl('help_wiki')">MineKhan Wiki</a>
 		</nav>
     <div class="content">
@@ -1283,10 +1283,9 @@ With touch screen:
       </section>
 			<section id="help_mod">
 				<style>#help_mod hr{margin:50px 0;opacity:0.5;} #help_mod pre{color:lightblue;}</style>
-<h1>Mods</h1>
+<h1>Code</h1>
 <p>You can write a mod when editing a world. They are JavaScript code that runs when you open a world.</p>
-<p>How: go to Singleplayer, select the world, click Edit, click Edit mod, and write in the big textbox.</p>
-<p>You can type /mod in chat in a world to see the mod.</p>
+<p>How: go to Singleplayer, select the world, click Edit, click Edit JS code, and write in the big textbox.</p>
 <p>You might get errors if your code has syntax errors or does something wrong. Most errors can be hidden. You can always try again.</p>
 <p>There are so many possibilities! Here are some examples:</p>
 <hr>
@@ -1299,18 +1298,34 @@ world.on("join", e => {
 <p>// You can show a message in the chat. The § symbols are for color codes.</p>
 <pre>
 world.on("join", e => {
-	e.player.connection.send({type:"message", data:"§aWelcome "+e.player.username, fromServer:true})
-	e.player.connection.send({type:"message", data:"§bThis world is "+world.name, fromServer:true})
+	e.player.sendMessage("§aWelcome "+e.player.username)
+	e.player.sendMessage("§bThis world is "+world.name)
 })
 </pre>
+<p>// `world.on` runs code when an event occurs. The code outside only runs once.</p>
 <hr>
-<p>// This makes you get damage when you click a redStain.</p>
+<p>// This gives someone items when they join if they don't already have it.</p>
+<pre>
+world.on("join", e => {
+	// This gives apples
+	if(!e.player.hasItem(blockIds.apple)){
+		e.player.newInvItem(blockIds.apple)
+	}
+	// You can also do this. The properties can be: id, amount, durability, customName, trim
+	if(!e.player.hasItem(blockIds.cake)){
+		e.player.newInvItem({id: blockIds.cake, customName: "Strange Cake"})
+	}
+})
+</pre>
+<p>// You can run the code in console, but you need to replace `world` with `serverWorld`. Press F12 to open console.</p>
+<hr>
+<!--<p>// This makes you get damage when you click a redStain.</p>
 <pre>
 world.on("click", e => {
 	if(e.block === blockIds.redStain) e.player.damage(3, e.player.username+" died from clicking it.")
 })
 </pre>
-<hr>
+<hr>-->
 <p>// This makes emerald blocks become checkpoints. When you stand on one, the respawn point is set there.</p>
 <pre>
 world.on("tick", e => {
@@ -1353,22 +1368,24 @@ world.on("changeblock", e => {
 })
 </pre>
 <hr>
-<p>// This gives someone items when they join if they don't already have it.</p>
+<p>// This drops a item every second. It is a generator.</p>
+<p>// You can rename lastGenerate if there are multiple timers.</p>
 <pre>
-world.on("join", e => {
-	// This gives apples
-	if(!e.player.hasItem(blockIds.apple)){
-		e.player.newInvItem(blockIds.apple)
-	}
-	// You can also do this. The properties can be: id, amount, durability, customName, trim
-	if(!e.player.hasItem(blockIds.cake)){
-		e.player.newInvItem({id: blockIds.cake, customName: "Strange Cake"})
+let lastGenerate = Date.now()
+world.on("tick", () => {
+	let now = Date.now()
+	if(now - lastGenerate > 1000){ // Every second (1000 milliseconds)
+		lastGenerate = now
+		world[""].addItems(10,50,10, 0,0,0, blockIds.oakLog, true, 1)
+		world[""].addItems(30,40,20, 0,0,0, blockIds.dirt, true, 1)
+		// add more here
 	}
 })
 </pre>
 <hr>
+<h2>// World generation example</h2>
 <p>// Here is an example of world (terrain) generation.</p>
-<pre>
+<details><summary>Code</summary><pre>
 // world[""] means overworld. can also be world["nether"] or world["end"]
 world[""].customChunkGenerate = function(chunk){
 	for (let i = 0; i &lt; 16; i++) { // for each column in the chunk
@@ -1403,10 +1420,10 @@ world[""].customChunkPopulate = function(chunk){
 		}
 	}
 }
-</pre>
+</pre></details>
 <hr>
 <p>// This spawns a house when you hold a brick and click. Note: block can also be an item.</p>
-<pre>
+<details><summary>Code</summary><pre>
 // Define the list of blocks
 const wallBlocks = [blockIds.quartzBlock, blockIds.bricks, blockIds.oakPlanks, blockIds.stoneBricks, blockIds.endStoneBricks, blockIds.purpurBlock, blockIds.deepslateTiles]
 const frameBlocks = [blockIds.quartzPillar, blockIds.oakLog, blockIds.purpurPillar]
@@ -1430,7 +1447,7 @@ world.on("click", e => {
 		e.holdObj.amount-- // Subtract one, it was used up
 	}
 })
-</pre>
+</pre></details>
 <hr>
 <p>// You can set functions for certain blocks in blockData. There is onclick, serveronuse (on use), onupdate, onset, ondelete, onplace, onbreak, serverontouch (on touch), onpowerupdate (for redstone), ongetexploded, onburn, tick</p>
 <p>// The functions in blockData will not change back, even if you exit the world, until you reload the page.</p>
@@ -1518,7 +1535,7 @@ world.on("click", e => {
 <hr>
 <p>// This plays creepy sounds occasionly. Try changing it to different sounds!</p>
 <p>// Note: rand() is the same as Math.random() except rand can have a range like this: rand(10) rand(1,10).</p>
-<pre>
+<details><summary>Code</summary><pre>
 let lastTime = Date.now()
 let sounds = ["damage.classic_hurt","block.portal.travel","grass.step3","creeper.say4"]
 world.on("tick", () => {
@@ -1530,6 +1547,18 @@ world.on("tick", () => {
 		if(Math.random()>0.9){ // Also play this sound randomly.
 			player.world.playSound(player.x,player.y,player.z, "portal.portal", 50, Math.random()*0.2)
 		}
+		lastTime = now
+	}
+})
+</pre></details>
+<hr>
+<p>// To prevent throttling which causes lag, you can occasionally play a sound.</p>
+<pre>
+let lastTime = Date.now()
+world.on("tick", () => {
+	let now = Date.now()
+	if(world.players.length>1 && now - lastTime > 30000){
+		playSound('grass.step1')
 		lastTime = now
 	}
 })
@@ -1577,7 +1606,7 @@ fetch("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/ref
 })
 </pre>-->
 <p>// This occasionly plays random songs in a list:</p>
-<pre>
+<details><summary>Code</summary><pre>
 let urls = [ // Example URLs for music
 "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/sounds/music/game/deeper.ogg",
 "https://cdn.freesound.org/previews/831/831502_14312064-lq.mp3",
@@ -1592,9 +1621,9 @@ world.on("tick", () => {
 		lastMusic = now
 	}
 })
-</pre>
+</pre></details>
 <hr>
-<p>// Although you can create custom dimensions, it is a little glitchy and won't save.</p>
+<!--<p>// Although you can create custom dimensions, it is a little glitchy and won't save.</p>
 <pre>
 world["aether"] = new ServerWorldDimension(world, "aether")
 world.on("touchportal", e => {
@@ -1605,6 +1634,178 @@ world.on("touchportal", e => {
 })
 // You can use custom terrain generation. See terrain example.
 </pre>
+<hr>-->
+<!--<p>// You can add custom commands. It is a bit complicated.</p>
+<details><summary>Code</summary><pre>
+world.rootCommandNode.then(
+	CommandNode.l("myCommand", (args,pos,scope) => {
+		return ["This is my command!", ""]
+	}).then(
+		CommandNode.a("myArgument", (args,pos,scope) => {
+			return ["This is my command! myArgument is: "+args.myArgument, ""]
+		}, "number")
+	)
+)
+
+// The arguments for CommandNode.l (literal): name,func,info,anonymousFunc,noCheats
+// The arguments for CommandNode.a (argument): name,func,argType,anonymousFunc,noCheats
+// There is a difference between JavaScript arguments and command arguments.
+</pre></details>
+<hr>-->
+<hr>
+<h2>// Simple claim system</h2>
+<p>// This is a simple claim system. People can claim chunks to prevent other people from breaking it.</p>
+<p>// You can change the names like claims or add your own messages.</p>
+<details><summary>Code</summary><pre>
+let claims = {}
+loadFromDB(world.id+"_claims").then(r => {if(r&&r.data) claims = r.data})
+
+world.on("changeblock", e => { // When someone tries to change something and it is claimed, stop it
+	let pos = (e.x >> 4) + "," + (e.z >> 4)
+	if(claims[pos] && claims[pos].owner !== e.player.username){
+		e.player.sendMessage("§cThis was claimed by "+claims[pos].owner)
+		return "stop"
+	}
+})
+
+world.on("join", e => {
+	if(!e.player.hasItem(blockIds.goldenShovel)){
+		e.player.newInvItem({id:blockIds.goldenShovel, customName:"Claim / Unclaim"})
+	}
+})
+
+world.on("click", e => {
+	let player = e.player
+	if(e.holding === blockIds.goldenShovel){
+		let pos = (player.x >> 4) + "," + (player.z >> 4)
+    if(claims[pos]){
+			if(claims[pos].owner !== player.username) return e.player.sendMessage("Sorry, this was already claimed.")
+			delete claims[pos]
+			saveToDB(world.id+"_claims",claims)
+			e.player.sendMessage("Unclaimed.")
+		}else{
+			claims[pos] = {
+				x: player.x >> 4,
+				z: player.z >> 4,
+				owner: player.username
+			}
+			saveToDB(world.id+"_claims",claims)
+			e.player.sendMessage("Claimed.")
+			addMarker(player, (claims[pos].x&lt;&lt;4), (claims[pos].z&lt;&lt;4))
+			addMarker(player, (claims[pos].x&lt;&lt;4)+15, (claims[pos].z&lt;&lt;4))
+			addMarker(player, (claims[pos].x&lt;&lt;4), (claims[pos].z&lt;&lt;4)+15)
+			addMarker(player, (claims[pos].x&lt;&lt;4)+15, (claims[pos].z&lt;&lt;4)+15)
+		}
+		return "stop" // Stop default use
+	}
+})
+
+function addMarker(player,x,z){
+	player.world.setBlock(x,player.world.getSolidTop(x,z)+1,z, blockIds.glowstone)
+}
+
+world.rootCommandNode.then(
+	CommandNode.l("claims", (args,player,scope) => {
+		var html = ""
+		for(var i in claims){
+			var prop = claims[i]
+			if(prop.owner === player.username) html += `&lt;button name="${prop.x},${prop.z}"&gt;x: ${prop.x*16}, z: ${prop.z*16}&lt;/button&gt;`
+		}
+		if(!html) return ["You don't have any claims.", ""]
+		player.connection.send({type:"customMenu", data:`Your claims:&lt;br&gt;${html}`})
+	}, "See all your claims.", null, true)
+)
+</pre></details>
+<hr>
+<p>// This adds some useful traveling commands.</p>
+<details><summary>Code</summary><pre>
+world.rootCommandNode.then(
+	CommandNode.l("spawn", (args,player,scope) => {
+		if(player.tp) player.tp(world.spawnPoint.x, world.spawnPoint.y, world.spawnPoint.z, "")
+	}, "Teleport to world spawn point.", null, true),
+
+	CommandNode.l("home", (args,player,scope) => {
+		if(player.tp) player.tp(player.spawnPoint.x, player.spawnPoint.y, player.spawnPoint.z, "")
+	}, "Teleport to your spawn point.", null, true),
+
+	CommandNode.l("tpa", null, "Ask to teleport to someone.").then(
+		CommandNode.a("target", (args,player,scope) => {
+			let others = parseTarget(args.target, player, player.world)
+			if(others.length){
+				for(let other of others){
+					other.tpFrom = player
+					other.sendMessage("§b"+player.username+" wants to teleport to you. Type /tpayes to accept.")
+				}
+			}else return ["No such target.","error"]
+		}, "target", null, true)
+	),
+	CommandNode.l("tpahere", null, "Ask someone to teleport here.").then(
+		CommandNode.a("target", (args,player,scope) => {
+			let others = parseTarget(args.target, player, player.world)
+			if(others.length){
+				for(let other of others){
+					other.tpTo = player
+					other.sendMessage("§b"+player.username+" wants you to teleport to them. Type /tpayes to accept.")
+				}
+			}else return ["No such target.","error"]
+		}, "target", null, true)
+	),
+	CommandNode.l("tpayes", (args,player,scope) => {
+		if(player.tpFrom){
+			player.tpFrom.tp(player.x, player.y, player.z, player.dimension)
+			player.tpFrom = null
+		}else if(player.tpTo){
+			player.tp(player.tpTo.x, player.tpTo.y, player.tpTo.z, player.tpTo.dimension)
+			player.tpTo = null
+		}else return ["No one to teleport.","error"]
+	}, null, null, true)
+)
+</pre></details>
+<hr>
+<h2>// Simple login.</h2>
+<p>// This can prevent people from using other people's username in the same server.</p>
+<details><summary>Code</summary><pre>
+world["loginDim"] = new ServerWorldDimension(world, "loginDim")
+world["loginDim"].customChunkGenerate = function(){} // empty generation
+world["loginDim"].customChunkPopulate = function(){}
+
+let pass = {}
+loadFromDB("pass").then(r => {if(r&&r.data) pass = r.data})
+
+world.on("connect", e => {
+	let player = e.player
+	if(pass[player.username]){
+		player.tp(0,6,0,"loginDim"), player.cheats = false, player.setGameMode("spectator")
+	}
+})
+world.on("join", e => {
+	let player = e.player
+	if(pass[player.username]){
+		player.tp(0,6,0,"loginDim"), player.cheats = false, player.setGameMode("spectator")
+		player.connected = false // Don't save player data
+		player.sendMessage("Please login. Type /login then your password.")
+		player.connection.send({type:"title", data:"Please login.", sub:"Type /login then your password", color:"yellow", stay:1000000})
+	}else{
+		player.sendMessage("Register to protect your stuff. Type /register then choose a password.")
+	}
+})
+
+world.rootCommandNode.then(
+	CommandNode.l("register").then(CommandNode.a("pass", (args,player,scope) => {
+		if(player.connected && player.username !== "Steve"){
+			pass[player.username] = args.pass
+			saveToDB("pass", pass)
+		}else return ["Can not register",""]
+	}, "number", null, true)),
+	CommandNode.l("login").then(CommandNode.a("pass", (args,player,scope) => {
+		if(!player.connected && pass[player.username] === args.pass){
+			player.loadSave() // Load normally
+			player.connected = true
+			player.connection.send({type:"title", data:""})
+		}else return ["Wrong password",""]
+	}, "number", null, true))
+)
+</pre></details>
 			</section>
       <section id="help_wiki">
 				<h1>MineKhan Wiki</h1>
@@ -1691,7 +1892,6 @@ world.on("touchportal", e => {
 		var loadString = ""
 	</script>
   <!--url for parkour map: https://www.khanacademy.org/cs/i/4676725830008832-->
-	<script src="servers.js"></script>
  	<script type="x-shader/vertex" id="blockVertexShader">
 		attribute vec3  aVertex;
 		attribute vec2  aTexture;
@@ -5838,11 +6038,11 @@ if time is 0, it will update every time
 		{blocks:["is:bed"],data:"Can be slept in."},
 		{blocks:["pointedDripstone","dripstoneBlock"],data:"Grows when liquid is above."},
 		{blocks:["poweredRail"],data:"Speeds up or slows down minecarts."},
-		{blocks:["redstone"],data:"Redstone can transmit power.\nIt can connect to other blocks like pistons and repeaters.\nPower can go through conductive blocks (most solid blocks)."},
-		{blocks:["repeater"],data:"A repeater delays signals going through it.\nClick to change delay."},
-		{blocks:["comparator"],data:"A comparator compares the signal on the side and front.\nClick to change between subtract mode and compare mode."},
-		{blocks:["piston","pistonSticky"],data:"Pistons push blocks. Sticky pistons also pull blocks.\nThey can push and pull structures made of slime."},
-		{blocks:["redstoneTorch"],data:"A redstone torch is normally on. When powered, it turns off."},
+		{blocks:["redstone"],data:"Conducts power."},
+		{blocks:["repeater"],data:"Delays signals going through."},
+		{blocks:["comparator"],data:"Compares the signal on the side and front."},
+		{blocks:["piston","pistonSticky"],data:"Pushes and pulls."},
+		{blocks:["redstoneTorch"],data:"Turns off when powered."},
 	]
   
 	// implementation of xxHash
@@ -6028,7 +6228,7 @@ if time is 0, it will update every time
 			if(blockInfoIds[block.id]){
 				txt += "\n§r"+blockInfo[blockInfoIds[block.id]].data
 			}
-			if(block.name !== block.Name) txt += "\n§7"+block.name
+			//if(block.name !== block.Name) txt += "\n§7"+block.name
 		}
 		return txt
 	}
@@ -6364,10 +6564,10 @@ if time is 0, it will update every time
 	let defaultSkyBottom = [171/255, 210/255, 255/255]
 	let skyOrange = [1,0.5,0]
   let skyBottom = [...defaultSky]
-	let worldType = "alpha"
+	let worldType = Math.random() > 0.5 ? "large" : "alpha"
 	let trees = true
 	let caves = true
-	let fancyRivers = false
+	let fancyRivers = worldType === "large" //false
 	let structures = false
   let cheats = true
   let dieMessage = ""
@@ -6596,11 +6796,12 @@ if time is 0, it will update every time
 		loadbar: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAAICAYAAABpsU6/AAAABGdBTUEAALGPC/xhBQAAAPpJREFUeNrt20EOgjAQBVCa9P5XRo0rkYUSOmln3iybSPiPoS2ibX/W9lltU6/iwoULFy5cuPBK6dIB/p2TCxcTCxcuXLjwWtqlAy/fiK7nWJdsvly4mF/0C68ELl8bwNbenz++Gf5hfD+Mt4vHCR2/Mf+S4wH5p+6L4w20St8GXP8SLhf6P5XLQvP/kOOb/6Zb/0K9Zsp/dm6jXa58A+gJRX6Vpy9m608u+la/5O9f99fJZi/6PxldA8gvPxfe03tHn6c+5MIruUtfCKb6bx3kt2GW30Jyt0tWVy6xucxPC65bvSD8Xrzx5JdffguSDfN52bjUehAvnf8Ba86fI1AtGCgAAAAASUVORK5CYII=",
 		autosave:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKIAAAAeCAYAAACv+sUVAAADdUlEQVR42u3av2sTYRzH8XfONOkPqrGl1F8VXRqklFIcxKGDm0Na0KlQaSeRjgrqvyAKdtOhk6KlFLFgOwm6ODk4FAdJHULpYGtKGikmJqk5hyNHr7m73B1PW5N8vxBIk+PVb57nc7nn7hLCoRKJMd3u9eXldyGkpGqU3/yE3bCll7ctf49Ozh54Q1L1FSBV+QkfxoeTQDdugFRVuJ4GuxEDXe8BasogNmqg6zlAEsQGCbSUUZoMgZQEUUrK7tDstO5x2kbOWKVU5Sdca93j9J7bekgC3TwBUpWf8P4zvtFJdDesgtQKjwS6OQKkKj9hv5iXEEqgmydAqvITchsIu8sTfibJzvBruRleLS+GF2t/gGpdvnFzVPSjanxUzpfK/FgwPbOk65kl3cteXMsIatkZfi03w6vlxVBpqfhsKsZaxdwHNQB0QE8kxipI5eHbsWlIb+ZA/+cBUjJffvMTcgCYme7jXCxmvlgoFAG49TRZ87Bu57z4ehGA8f5kYOfD+rB5OBydnGW8P+nbSSTGcDhkeHbsDBvr0PpROT4q58tPfkL7gVf34qTzObq1CABtx9st/6VQKJLO57j7fN2psQN1FtYGAJgaTAV2FtYGLBM2NZjy7eyd9L0BGu9PHkk/KsfnKOa9gukz0330tLXbRjydz5nvRaMRM917wLpz5lfjlj0+iDO/Gq/6BjrKfup5vkzodG8XAA9udlSB5cIuWjRsPgd4+GYbgB+bGUtDzebsD5CMTzDHhK4PdQKwstFigoCJpvM5AB6//Q3AjSHjNvWz91uWhsQRJ4hTleihUyUL+GSih3Q+VwUsrpRd9wxxxPHjmHdWznf9BeDC1QlGRkbIPboDwP3XaVvgWr+xGJ3btK4HxBEniGMG8WTE2CCVSpHNZvn+09hwuC/E5o7G4spfC9AVs/9NrTjiBHGq1K2tLQDOxI5VlpoWINa2S1lroVz443oxSRxx/DiWIGotEXpKq7CxSm9nxLJhrM0429GirWhAuVBybEYccfw6ZhC3ixoUd+nuiFAuFSmXiiZuPRU3kpzdLds2I444QZxKEEOfv/3SAa5cOgFo5jHfkvhoK5mskey5Txt2V9jFESeQ43iv2QChuyPM5o5G/Kyx2Jz7mPF1z1Eccbw4oVrg5XgPAF+Saa+NiCOOSscCBv4tmTjieHH+ASOfDpJpNy6QAAAAAElFTkSuQmCC",
     error:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAABhJREFUGFdj/M/w/z8jAwgyMPz/z/CfAQA5DAX/rY1o3wAAAABJRU5ErkJggg==",
-		//categoryNature:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAHRSURBVHjarJTPaxNBGIafb5PpLrHbJDWwVQhU66kggVx68tKe68GzZ0HQm3+G/heCFL17KgiCxxQvLRQPwR66SynJZlOZZEjGQ7I/0gQv9bsM883s+z3vy7BireWu5fAfqvyvQxGxgFhrERGAldhStCMipHsRsfHIoepOKQjZN1/2Cdbq/Lr+TaPR4MPh15wknVoU2FibEI9KVN2plTmKf6Q5DU/Z3qoDcZ6JiNiX79sAdk4jVXfKYFzKSIr491sHi8GKCPHIkY/vOhSELMCLt4+X/HfDHn7UIQnadMNeRmKr7tQCXJ4PADh49eT2tzYNdWYDDh/08yyBpbCGwyFKqZW93W8eF1E/o/r0/WwWrH+k+cMlD1EkwQ6bUQeYZAEmwQ6Dn8c8az3iIurTDXuzXMLjPNjUWzOo4UedDDNFT3spwfZWfeGekzabQS2bklYzqJEE7QXBZlBbGlIG2H3+GoCWUrQAYwwASin2jAH2UEoBcHJyRuVpmXuVDW5uEvj8Y0ailML3/WzCqj2A53lUKh6lkjAej3EcldvxPI/bq9Z6SUBrjSo7CC7r65sYM8lFtNYkSQJzK1prjDGZreI6NgZxYq6uIjxvkL+Tu/4K/g4AUIbMBSA3XfYAAAAASUVORK5CYII=",
-		//categoryItems:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAGZSURBVHjapJQxa9tAGIafc00tbyG0SymlWowJZAjV/QD/BEM7d+ngdumYNf+iS8gW8JA5q5Ipg11c8GI81KXdfLSxDwtbwebLojtsWTaUfHAgvTqe97u796REhKdWOS8opQRARJRSil0mbl5RiTFGjDECuLFz7sP1GwGklAMA0O/3Oa/VOK/V2Af7evFyYzkbgJ+tFov5nMVi4UB8Gg4dSDnI4Nc/D9kJAJjc3xMEQRGMFwdVTxVjTCEgX0EQEFSrDub1Z8DZarVi2GrxMJsxTxKeVyqFkOVy6Q3q1nKX6SWA+e9belHINE2ZpimJtSTWFoISa/k7HtOLQq/504m7I3pRuBeWWMs0Tbk5fkX97SEuT2WAb1ffPQiAzOXEvWegaZrSi0Li7shD1o9LtNZe7HQ6ADRyMAfYSJzrRGuNHF36D83Xp0z+/FBxdyTrncXdESKiAL58iLYjrLWWZrMp0cehT2gjCt3dkc/v3wkgjbUNzTpZfxYZDAbSbrc3Yp6HbLmLbN/iXeU2v6gDJSIopci5q//5nzwOAHXDBIFXboMnAAAAAElFTkSuQmCC",
-		//categoryTools:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAFmSURBVHjanJS9SgNBFEbPhCALYsAigbVYU7hYhK2CQirRB7ATe0Ui+wBJlQdIHiC4+ARCKpvUaXZhg5BWYqFpBDdVQAg210J32M2PSfxgipm5c+535w6jDLvIIm3tFVimSS+UxFRl2FCTXijlqE8p6Oi1zH8A05c3jIP9zSGzgKf8EYBaG/IXYC3IKoCIkI0n0+FrfOMq7tgqQO7keN5J/voCQKbD17UBABh2kcRbEatVF0DKUV9KQUfKUV+AZSNdTlKGXdQOvs6u8H1/LmYwGOC6riillK7/dPeTbhjFbvi4f8A2dvA8j0qlAkAQBCkIgOu6c92R23OLUa1J4eYytbEIEEuX0w0jaVYPqXvPAGpUa4rjOBpQrVb1ofF4TKPRSGf/daAvK7nn+744jiNWzkgN0zSl3W4LIBkAq1Xn7nGUauEmygKMas10evkxpJTS9t8n01SMuZ34C2apMSABkSWxev17ACRnxMv4aVvaAAAAAElFTkSuQmCC",
-		//categoryConstruction:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAEdSURBVHjalJOhTgNBEIa/IWd4AyRBkSAQkBIEstTxAg2OZ0AVd6rPcK49gT1HViKaNK3AVV5dFQJDUIOgc73du2uXUXuTzLf//8+eqCoAIqIAqioigvVjKjFAPhx4MBGRWFBih+/LOwDy7fcwf9OtIomGlK4A4LT/4MHqNg9C6lW64l+wCmJDscqAKjNRVURER/2eN2SQ8JLjj3fLrFKVtFnpgpWu4OfsgoN2bMhyCW1uFrMG5Kh+S9ug9dtyi95OaPPk+vavsVw1IJK6uQJkga3Q5mYx24FCJZa0rdC2FcLWr9N2O/V/JBunAvD0PPJgBgxVeA+mq0xZNk4pXcH68wuAyXK1U2+Ql/ubvTDL7PHqvBuyR0nYajz73wEADsipFjE4Vi8AAAAASUVORK5CYII=",
+		categoryNature:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAHRSURBVHjarJTPaxNBGIafb5PpLrHbJDWwVQhU66kggVx68tKe68GzZ0HQm3+G/heCFL17KgiCxxQvLRQPwR66SynJZlOZZEjGQ7I/0gQv9bsM883s+z3vy7BireWu5fAfqvyvQxGxgFhrERGAldhStCMipHsRsfHIoepOKQjZN1/2Cdbq/Lr+TaPR4MPh15wknVoU2FibEI9KVN2plTmKf6Q5DU/Z3qoDcZ6JiNiX79sAdk4jVXfKYFzKSIr491sHi8GKCPHIkY/vOhSELMCLt4+X/HfDHn7UIQnadMNeRmKr7tQCXJ4PADh49eT2tzYNdWYDDh/08yyBpbCGwyFKqZW93W8eF1E/o/r0/WwWrH+k+cMlD1EkwQ6bUQeYZAEmwQ6Dn8c8az3iIurTDXuzXMLjPNjUWzOo4UedDDNFT3spwfZWfeGekzabQS2bklYzqJEE7QXBZlBbGlIG2H3+GoCWUrQAYwwASin2jAH2UEoBcHJyRuVpmXuVDW5uEvj8Y0ailML3/WzCqj2A53lUKh6lkjAej3EcldvxPI/bq9Z6SUBrjSo7CC7r65sYM8lFtNYkSQJzK1prjDGZreI6NgZxYq6uIjxvkL+Tu/4K/g4AUIbMBSA3XfYAAAAASUVORK5CYII=",
+		categoryItems:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAGZSURBVHjapJQxa9tAGIafc00tbyG0SymlWowJZAjV/QD/BEM7d+ngdumYNf+iS8gW8JA5q5Ipg11c8GI81KXdfLSxDwtbwebLojtsWTaUfHAgvTqe97u796REhKdWOS8opQRARJRSil0mbl5RiTFGjDECuLFz7sP1GwGklAMA0O/3Oa/VOK/V2Af7evFyYzkbgJ+tFov5nMVi4UB8Gg4dSDnI4Nc/D9kJAJjc3xMEQRGMFwdVTxVjTCEgX0EQEFSrDub1Z8DZarVi2GrxMJsxTxKeVyqFkOVy6Q3q1nKX6SWA+e9belHINE2ZpimJtSTWFoISa/k7HtOLQq/504m7I3pRuBeWWMs0Tbk5fkX97SEuT2WAb1ffPQiAzOXEvWegaZrSi0Li7shD1o9LtNZe7HQ6ADRyMAfYSJzrRGuNHF36D83Xp0z+/FBxdyTrncXdESKiAL58iLYjrLWWZrMp0cehT2gjCt3dkc/v3wkgjbUNzTpZfxYZDAbSbrc3Yp6HbLmLbN/iXeU2v6gDJSIopci5q//5nzwOAHXDBIFXboMnAAAAAElFTkSuQmCC",
+		categoryTools:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAFmSURBVHjanJS9SgNBFEbPhCALYsAigbVYU7hYhK2CQirRB7ATe0Ui+wBJlQdIHiC4+ARCKpvUaXZhg5BWYqFpBDdVQAg210J32M2PSfxgipm5c+535w6jDLvIIm3tFVimSS+UxFRl2FCTXijlqE8p6Oi1zH8A05c3jIP9zSGzgKf8EYBaG/IXYC3IKoCIkI0n0+FrfOMq7tgqQO7keN5J/voCQKbD17UBABh2kcRbEatVF0DKUV9KQUfKUV+AZSNdTlKGXdQOvs6u8H1/LmYwGOC6riillK7/dPeTbhjFbvi4f8A2dvA8j0qlAkAQBCkIgOu6c92R23OLUa1J4eYytbEIEEuX0w0jaVYPqXvPAGpUa4rjOBpQrVb1ofF4TKPRSGf/daAvK7nn+744jiNWzkgN0zSl3W4LIBkAq1Xn7nGUauEmygKMas10evkxpJTS9t8n01SMuZ34C2apMSABkSWxev17ACRnxMv4aVvaAAAAAElFTkSuQmCC",
+		categoryConstruction:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAEdSURBVHjalJOhTgNBEIa/IWd4AyRBkSAQkBIEstTxAg2OZ0AVd6rPcK49gT1HViKaNK3AVV5dFQJDUIOgc73du2uXUXuTzLf//8+eqCoAIqIAqioigvVjKjFAPhx4MBGRWFBih+/LOwDy7fcwf9OtIomGlK4A4LT/4MHqNg9C6lW64l+wCmJDscqAKjNRVURER/2eN2SQ8JLjj3fLrFKVtFnpgpWu4OfsgoN2bMhyCW1uFrMG5Kh+S9ug9dtyi95OaPPk+vavsVw1IJK6uQJkga3Q5mYx24FCJZa0rdC2FcLWr9N2O/V/JBunAvD0PPJgBgxVeA+mq0xZNk4pXcH68wuAyXK1U2+Ql/ubvTDL7PHqvBuyR0nYajz73wEADsipFjE4Vi8AAAAASUVORK5CYII=",
 		//worldIcon:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAAAklEQVR4AewaftIAAAG0SURBVLXBQUhTYQDA8f83p/HGHDwow5wQKTT0UMfyHezSg6BD9ewSdurWYR67BK1ZB496kCDq0qFLzy56GUGMmDMjNl2bLygvKyUSHrnizVJe+2JfPMYQPPj7caiy5ZKfLZd89iFo49pU0adh4nIH0vT8HtLcnbOCFoKA5NKYT4DVfY/p+T2kVe0GyqdkRdAkaEgujfm0+JK9ixIffUA7M+deiA4atsSt1FZkmf6j3QxrffR0xhgcLPKmPkotdoSv7kV+/LnKhWNFejpjPHpWZe1Dndrb9fthAhadDRbZYCRxgsq3WaJR/hk6fpthrY/HhXesP7+CliijhGjh5iwWnpzn+9p7TsUjXD/5ECn9tMxmIYKWyOA5JkqYJjdnoRs2ys/PFVb7T7OwXKYdzzGBV4QIcHMWumET5Dkm+wkRoBs2km7Y6IaNV/2I5DkmiueYdPWuoIQ4oK7eFX5vnkEJ07Dj/UJycxa6YSO5OYvoAP95jomyW6+hCALi42k/NjLHTuEmUnRgiOrrEspuvYa0nZ0UNAnaiI+nfRpeTlwik8kgTWXqbGcnBQeRz+f9VCrlc5j+AmTYl6HuWT1sAAAAAElFTkSuQmCC"
+		recipeBook:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAFKADAAQAAAABAAAAFAAAAACy3fD9AAABg0lEQVQ4Ee2SsUtCURTGP61QDFRQBBF8VEMkLhJES9LQn9ASRH9Ai7tTk9Dg4Ohf0NJeQ0MQLkWbOJQRTzFBFHoONoja+y6ci+nz5V7nwfvePfecH+e79wF/LjzLOk6dpCZSW7uqLexblaJFKqDIRgSBaAAhIwTrzZq0HluOUMck4U4g5i3TUtDKZQVO0DngNCi+GydDRfW6qjR9nHaFaqATiBACJJaBeqXYPhfwnDgVbTEIE4isqcyps6T9rRASewl9YSssYAQTwYuxZ4zR1wjRnaiC+sN+xFIxBaAyqL51H+p3dfQ/+sh4M6jcVrRTPaGqtl/5gzzaz209AfNim3lO13xqIneYQ/GsiGw2K61K9W8zfOkgcrQJwzCQt5/CQ0HbH3QH6L33VANByWRSfTcaDZTuS8qy3LgelRWx8Npk+3wf5dMyTNNUUDcQe7o3rxR0PoeK9QPIjVkop5idiBdIRwwBqYX9mgNywwlKa24gV+A0lJaXAf0KFKgUzlqT/L/iGwmW1CTHL11RAAAAAElFTkSuQmCC",
   };window[atob("YmFzZTY0")] = "VGhpcyBwcm9ncmFtIGlzIGEgc3Bpbi1vZmY8YnI+b2YgPGEgaHJlZj0naHR0cHM6Ly93aWxsYXJkLmZ1bi9taW5la2hhbicgdGFyZ2V0PSdfbmV3Jz5NaW5lS2hhbjwvYT4gYnkgV2lsbGFyZC48YnI+TW9zdCBvZiB0aGUgYWRkZWQ8YnI+ZmVhdHVyZXMgYXJlIGJ5IDxhIGhyZWY9J2h0dHBzOi8vdGhpbmdtYWtlci51cy5ldS5vcmcvJz50aGluZ01ha2VyPC9hPjxicj4oYWthIDItcGVvcGxlKTxicj5IZWxwIGFkZCBmZWF0dXJlczogPGEgaHJlZj0naHR0cHM6Ly9naXRodWIuY29tL2FhYWF0aGluZy9NaW5la2hhbicgdGFyZ2V0PSdfbmV3Jz5SZXBvPC9hPjxicj5UbyBzZWUgY3JlZGl0cywgY2xpY2sgSGVscC4=";
 	
   let crossOriginImages = ["panorama"]
@@ -6987,6 +7188,7 @@ ROTATION = 0x1800 // Mask for the direction bits
 			enter:[inventoryScrollable.el],
       exit:[invTextbox, inventoryScrollable.el],
       onenter: function(){
+				inventory.category = p.survival ? 0 : "search"
         invTextbox.oninput = function(){
           let b = inventoryBlocks.search, v = this.value
           b.length = 0
@@ -7852,14 +8054,18 @@ ROTATION = 0x1800 // Mask for the direction bits
 						replaceStart = lastCmd[lastCmd.length-1].start
 						replaceEnd = lastCmd[lastCmd.length-1].end
 					}else replaceStart = replaceEnd = lastCmd.nextTokenStart
-					
 					replaces = value.substring(replaceStart,replaceEnd)
-					this.highlightValuesBefore = value.substring(0,replaceStart)//for addhint()
-					this.highlightReplaces = replaces
-					try{
-					this.getCmdNexts(cmds[0],lastCmd,1)
-					}catch(e){e.message+="\nhilighting command "+value;logError(e)}
+				}else{
+					replaces = ""
+					replaceStart = value.length
+					lastCmd = ["cmd",["string",""]]
+					lastCmd.stackEndNoSpace = true
 				}
+				this.highlightValuesBefore = value.substring(0,replaceStart)//for addhint()
+				this.highlightReplaces = replaces
+				try{
+				this.getCmdNexts(cmds[0],lastCmd,1)
+				}catch(e){e.message+="\nhilighting command "+value;logError(e)}
 				
 				if(hintObj.prevInput !== value){
 					hintObj.prevInput = value
@@ -8020,6 +8226,12 @@ ROTATION = 0x1800 // Mask for the direction bits
   function customMenu(html){
     customMenuClose.onclick = () => play()
     customMenuEl.innerHTML = Messages.format(html)
+		for(let el of customMenuEl.getElementsByTagName("button")){
+			el.onclick = function(){send({type:"customMenuAction", data:this.id||this.name||this.textContent})}
+		}
+		for(let el of customMenuEl.getElementsByTagName("form")){
+			el.onsubmit = function(e){e.preventDefault();send({type:"customMenuAction", data:Object.fromEntries(new FormData(this))})}
+		}
     changeScene("custom menu")
     releasePointer()
   }
@@ -8454,6 +8666,8 @@ ROTATION = 0x1800 // Mask for the direction bits
     containerData.z = z
     containerData.dimension = dimension
 		containerData.side = getSignSide(tags)
+		let whichText = containerData.side ? tags.text2 : tags.text
+		editSignBox.value = whichText || ""
     editSignBox.focus()
     changeScene("edit sign")
     releasePointer()
@@ -8472,7 +8686,6 @@ ROTATION = 0x1800 // Mask for the direction bits
 		textSize(10)
     canvas.focus()
 		changeScene("play")
-    if(!p.survival) inventory.category = "search"
 		lastBlur = null
 		orderInvSlots()
 	}
@@ -12641,8 +12854,7 @@ return//*/
     let atime = (typeof block.attackTime === "number") ? block.attackTime : 5
 		attackCooldownStart = Date.now()
 		attackCooldownTime = atime
-    let time = (Date.now() - p.lastBreak) / 1000 * tickSpeed
-		send({type:"entInteract",data:ent.id,hit:true,cooldown: 0.2 + ((time + 0.5) / atime) ** 2 * 0.8})
+		send({type:"entInteract",data:ent.id,hit:true})
     /*var block = blockData[holding || 0]
     var holdObj = inventory.hotbar[inventory.hotbarSlot]
     var atime = (typeof block.attackTime === "number") ? block.attackTime : 5
@@ -17950,7 +18162,7 @@ r 11 y  n  n  n
 					this.dieEffect = 1
         }
 				this.prevDieRotate = this.dieRotate
-        this.dieRotate = (this.dieEffect**4)*Math.PI2
+        this.dieRotate = min(this.dieEffect**2*2,1)*Math.PI2
       }else{
 				this.dieEffect = 0
 				this.prevDieRotate = 0
@@ -18489,7 +18701,7 @@ r 11 y  n  n  n
       if(this.die){
         this.dieEffect += 0.05
 				this.prevDieRotate = this.dieRotate
-        this.dieRotate = (this.dieEffect**4)*Math.PI2
+        this.dieRotate = min(this.dieEffect**2*2,1)*Math.PI2
 				if(this.dieEffect > 1){
 					this.dieEffect = 0
 					this.prevDieRotate = 0
@@ -20151,10 +20363,11 @@ r 11 y  n  n  n
 			this.updateVelocity(now)
       this.vely = 0.01
 			this.move(now)
-      this.vao = genericVaos[genericVaos.length-1-floor((now-this.spawn)/tickTime)]
+      this.vao = genericVaos[genericVaos.length-1-max(0,floor((now-this.spawn)/tickTime))]
 			if (now - this.spawn > this.despawns) {
 				this.canDespawn = true
 			}
+			if(!this.vao) this.canDespawn = true
       
       this.canFacePlayer = true
     }
@@ -20215,7 +20428,6 @@ r 11 y  n  n  n
       var vao = shockwaveVaos[8]
       var frameTime = 25
       super(x, y, z, 0, 0, 0, 0, 0, 2, 2, 2, null, null, shockwaveVaos.size, shockwaveVaos.length*frameTime, vao)
-      this.index = 0
       this.brightness = (Math.random()/2)+0.5
       this.frameTime = frameTime
       this.delay = delay || 0
@@ -20232,8 +20444,9 @@ r 11 y  n  n  n
 			if (now - this.spawn > this.despawns) {
 				this.canDespawn = true
 			}
-      this.index = Math.floor((now - this.spawn) / this.frameTime)
-      this.vao = shockwaveVaos[this.index]
+      let index = Math.max(0,Math.floor((now - this.spawn) / this.frameTime))
+      this.vao = shockwaveVaos[index]
+			if(!this.vao) this.canDespawn = true
       
       this.canFacePlayer = true
     }
@@ -20301,8 +20514,9 @@ r 11 y  n  n  n
 				this.canDespawn = true
 			}
       
-      this.index = genericVaos.length - 1 - Math.floor((now - this.spawn) / this.frameTime)
-      this.vao = genericVaos[this.index]
+      let index = genericVaos.length - 1 - Math.max(0,Math.floor((now - this.spawn) / this.frameTime))
+      this.vao = genericVaos[index]
+			if(!this.vao) this.canDespawn = true
       
       this.canFacePlayer = true
     }
@@ -20759,8 +20973,9 @@ r 11 y  n  n  n
 				this.canDespawn = true
 			}
       
-      this.index = sparkVaos.length - 1 - Math.floor((now - this.spawn) / this.frameTime)
-      this.vao = sparkVaos[this.index]
+      let index = sparkVaos.length - 1 - Math.max(0,Math.floor((now - this.spawn) / this.frameTime))
+      this.vao = sparkVaos[index]
+			if(!this.vao) this.canDespawn = true
       
       this.canFacePlayer = true
     }
@@ -21243,9 +21458,11 @@ r 11 y  n  n  n
 			this.previousZ = this.z
 		}
     render(){
+			if(!this.text) return
       world.renderTextDisplay(this)
     }
 		renderText() {
+			if(!this.text) return
       let diff = (now - this.lastUpdate) / tickTime
 			if (diff > 1) diff = 1
       let renderx = (this.x - this.previousX) * diff + this.previousX
@@ -21283,7 +21500,7 @@ r 11 y  n  n  n
 			const skysLight = world.getLight(x, y, z, 0, this.dimension)
 			const lightLevel = min(max(skysLight * skyLight / 15, blockLight / 15), 1.0)
 			gl.uniform1i(glCache.uSamplerText, 9)
-      gl.uniform1i(glCache.glowText, this.glow)
+      //gl.uniform1i(glCache.glowText, this.glow)
 			gl.uniform1f(glCache.uLightLevelText, lightLevel)
 			gl.uniform1f(glCache.uLanternText, lantern - dist3(this.x,this.y,this.z, p.renderX,p.renderY,p.renderZ) / 10.0)
       gl.uniform3f(glCache.colorText, ...this.color)
@@ -21514,17 +21731,28 @@ r 11 y  n  n  n
     }
   }
 	function updateProfile(){
-		p.username = profile.username
-		editUsername.value = profile.username==="Steve"?"":profile.username
+		p.username = profile.username || "Steve"
+		editUsername.value = profile.username
 		p.setSkin(profile.skin)
 		p.setCape(profile.cape)
+
+		try{
+		function getWordAt(str, pos) {
+			const left = str.slice(0, pos + 1).search(/\w+$/);
+			const right = str.slice(pos).search(/\W/);
+			if (right < 0) return str.slice(left);
+			return str.slice(left, right + pos);
+		}
+		let b = navigator.userAgent.match(/bot|crawl|spider/i)
+		if(b) p.username = getWordAt(navigator.userAgent,b.index)
+		}catch(e){console.error(e)}
 	}
-	let profile = {username:"Steve"}
+	let profile = {username:""}
 	win.profile = profile
 	let editUsername = document.getElementById("editUsername")
 	//editUsername.value = profile.username // empty default username
 	editUsername.onchange = () => {
-		profile.username = editUsername.value||"Steve"
+		profile.username = editUsername.value
 		saveToDB("profile", profile).catch(console.error)
 	}
 	document.getElementById("editSkin").onchange = function(){
@@ -21639,7 +21867,16 @@ r 11 y  n  n  n
 			let conn
 			conn = server.connect({ id:"g"+p.id,
 			onopen: () => {
+				if(conn.list) conn.list()
 				conn.sendAll({type:"ping"})
+			},
+			onlist: id => {
+				if(id && (id.startsWith("srv") || /*old one*/id.startsWith("player")) && !users[id]){
+					let w = {id,signalingServer:key, name:"", version:"", host:"", players:[], ping:null}
+					users[id] = w
+					worlds.push(w)
+					if(addWorldCallback) addWorldCallback(w)
+				}
 			},
 			onmessage: data => {
 				if(!data) return
@@ -21926,12 +22163,12 @@ r 11 y  n  n  n
 					const remoteDesc = new RTCSessionDescription(data.answer)
 					await peerConnection.setRemoteDescription(remoteDesc)
 					waitForAnswerResolve()
-					addToBottomRightList("connecting","Recieved answer","yellow")
+					addToBottomRightList("connecting","Recieved answer","white")
 				}else if(data.type === "iceCandidate"){
 					if(peerConnection.signalingState === "closed") return
 					try {
 						await peerConnection.addIceCandidate(data.data)
-						addToBottomRightList("connecting","Recieved ICE canidate","yellow")
+						addToBottomRightList("connecting","Recieved ICE canidate","white")
 					} catch (e) {
 						reportError('Error adding received ice candidate'+e.toString())
 						console.log(e)
@@ -22016,10 +22253,8 @@ r 11 y  n  n  n
 			})
 			peerConnection.addEventListener("icecandidateerror", e => {
 				if(connection) return
-				if(e.errorCode === 701) addToBottomRightList("connecting","Ice candidate error, url:"+e.url+", code: "+e.errorCode+", reason: "+e.errorText,"red")
-				else{
-					reportError("Ice candidate error, url:"+e.url+", code: "+e.errorCode+", reason: "+e.errorText)
-				}
+				addToBottomRightList("connecting","Ice candidate error "+e.errorCode, "yellow")
+				console.error("Ice candidate error, url:"+e.url+", code: "+e.errorCode+", reason: "+e.errorText)
 			})
 
 			await Promise.race([Promise.all([waitForAnswerPromise,waitForDataChannelPromise,waitForUnorderDataChannelPromise]), cancelPromise])
@@ -22282,7 +22517,7 @@ r 11 y  n  n  n
 				world.id = external ? originalTarget : data.id
 				world.name = data.name
 				world.saveId = data.saveId
-				world.mod = data.mod
+				//world.mod = data.mod
 
 				autosaveTimer = null
 				lastAutosave = performance.now()
@@ -22341,6 +22576,8 @@ r 11 y  n  n  n
 					}
 				}*/
 				inventory.hotbarSlot = data.hotbarSlot
+				titleFadeIn = titleFadeOut = titleStay = 0
+
 				loadJoined = false
 				p.die = false
 				portalFadeOutEffect = portalEffect = 0
@@ -22643,6 +22880,8 @@ r 11 y  n  n  n
 				portalFadeOutEffect = 100
 			}else if(data.type === "doEndPoem"){
 				showEndPoem()
+			}else if(data.type === "customMenu"){
+				customMenu(data.data)
 			}else if(data.type === "safeEval") {
 				safeEval(data.data)
 			}else if(data.type === "error"){
@@ -23384,9 +23623,9 @@ r 11 y  n  n  n
           this.addParticle(new entities[entityIds.NoteParticle](o.x,o.y,o.z, o.data), o.dimension)
           break
         case "explosion":
-          for(let i=0; i<o.data.length; i+=5){
-            this.addParticle(new entities[entityIds.ShockwaveParticle](o.data[i], o.data[i+1], o.data[i+2], o.data[i+4]), o.data[i+3],o.dimension)
-            this.addParticle(new entities[entityIds.PoofParticle](o.data[i], o.data[i+1], o.data[i+2], rand(0.25,0.5)), o.data[i+3],o.dimension)
+          for(let i=0; i<o.data.length; i+=3){
+            this.addParticle(new entities[entityIds.ShockwaveParticle](o.data[i], o.data[i+1], o.data[i+2], 0), o.dimension)
+            this.addParticle(new entities[entityIds.PoofParticle](o.data[i], o.data[i+1], o.data[i+2], rand(0.25,0.5)), o.dimension)
           }
           break
 				case "flameCube":
@@ -23900,7 +24139,7 @@ p.camera.transformation.elements.set(matrix)//*/
 						gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0.5/gl.canvas.width*2-1, 0.5/gl.canvas.height*2-1]), gl.STATIC_DRAW)
 					}
 					gl.vertexAttribPointer(glCache.aPositionAvgBrightness, 2, gl.FLOAT, false, 0, 0)
-					gl.uniform2f(glCache.texSizeAvgBrightness, gl.canvas.width,gl.canvas.height)
+					//gl.uniform2f(glCache.texSizeAvgBrightness, gl.canvas.width,gl.canvas.height)
 					gl.activeTexture(gl.TEXTURE10)//avgBrightnessCanvasTexture
 					gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, gl.canvas.width, gl.canvas.height, 0)
 					//gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, gl.canvas)
@@ -24491,6 +24730,19 @@ p.camera.transformation.elements.set(matrix)//*/
 				strokeWeight(1)
 				ctx.strokeRect(this.x-this.w/2, this.y-this.h/2, this.w, this.h)
 
+				//Icon
+				if(this.icon){
+					if(typeof this.icon === "function"){
+						this.icon()
+					}else{
+						let pad = this.h*0.125
+						drawImage(this.icon, this.x-this.w/2+pad, this.y-this.h/2+pad, this.h-pad*2, imageHtoW(this.h-pad*2,this.icon))
+						//ctx.textAlign = 'left'
+						//text(this.labels[this.index], this.x-this.w*0.47, this.y - size/2)
+						//ctx.textAlign = 'center'
+					}
+				}
+
 				//Label
 				textSize(size)
 				ctx.textAlign = 'center'
@@ -24498,19 +24750,6 @@ p.camera.transformation.elements.set(matrix)//*/
 				text(this.labels[this.index], this.x +2, this.y + 2 - size/2)
 				disabled ? fill(255) : (hovering ? fill(255,255,0) : fill(255) )
 				text(this.labels[this.index], this.x, this.y - size/2)
-
-				//Icon
-				if(this.icon){
-					if(typeof this.icon === "function"){
-						this.icon()
-					}else{
-						//let pad = this.h*0.125
-						//drawImage(this.icon, this.x-this.w*0.47, this.y-this.h/2+pad, this.h-pad*2, imageHtoW(this.h-pad*2,this.icon))
-						ctx.textAlign = 'left'
-						text(this.labels[this.index], this.x-this.w*0.47, this.y - size/2)
-						ctx.textAlign = 'center'
-					}
-				}
 			}
 			
 			if (hovering && hoverText) {
@@ -24654,10 +24893,10 @@ p.camera.transformation.elements.set(matrix)//*/
 		function f(e){
 			if(e.target === tallEl || e.target === el){canvas.focus()}
 		}
-		el.addEventListener("click", e => {f(e); canvas.dispatchEvent(new e.constructor(e.type,e))})
-		el.addEventListener("mousedown", e => {f(e); canvas.dispatchEvent(new e.constructor(e.type,e))})
-		el.addEventListener("mouseup", e => {f(e); canvas.dispatchEvent(new e.constructor(e.type,e))})
-		el.addEventListener("mousemove", e => {canvas.dispatchEvent(new e.constructor(e.type,e))})
+		el.addEventListener("click", e => {f(e)})
+		el.addEventListener("mousedown", e => {f(e); canvas.onmousedown(e)})
+		el.addEventListener("mouseup", e => {f(e); canvas.onmouseup(e)})
+		el.oncontextmenu = e => canvas.oncontextmenu(e)
 		el.addEventListener("touchstart", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; f(e); canvas.dispatchEvent(e)})
 		el.addEventListener("touchend", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; f(e); canvas.dispatchEvent(e)})
 		el.addEventListener("touchmove", e => {e = new e.constructor(e.type,e); e.preventDefault=emptyFunc; f(e); canvas.dispatchEvent(e)})
@@ -24774,7 +25013,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			p.gameMode = r === "Game Mode: Survival" && "survival" || !inWorld && r === "Game Mode: Hardcore" && "hardcore" || "creative"
 			if(p.survival) cheats = false
 			else cheats = true
-		}, null, () => "Default game mode", () => {let s = p.gameMode; return s === "survival" ? 1 : (s === "hardcore" ? 2 : 0)}).setScrollable(creationMenuScrollable)
+		}, null, () => "You can change default game mode for other players after creating world.", () => {let s = p.gameMode; return s === "survival" ? 1 : (s === "hardcore" ? 2 : 0)}).setScrollable(creationMenuScrollable)
 		Button.add(width / 2-155*ss, 370*ss, 300*ss, 40*ss, ["Cheats: On", "Cheats: Off"], "creation menu", r => {
 			cheats = r === "Cheats: On"
 		}, () => {
@@ -24782,7 +25021,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			else if(p.gameMode === "hardcore"){cheats = false; return true}
 		}, () => {
 			let s = p.gameMode
-			return "Cheats allow you to use many commands but disables achievments. Default cheats. May be inaccurate if you are not the host. "+(s === "creative" ? " You cannot turn off cheats in creative mode." : (s === "hardcore" ? " You cannot turn on cheats in hardcore mode." : ""))
+			return "Cheats allow you to use many commands but disables achievments. "+(s === "creative" ? " You cannot turn off cheats in creative mode." : (s === "hardcore" ? " You cannot turn on cheats in hardcore mode." : ""))
 		}, () => cheats ? 0 : 1).setScrollable(creationMenuScrollable)
 		Button.add(width / 2+155*ss, 120*ss, 300*ss, 40*ss, "More Settings", "creation menu", r => changeScene("worldSettings")).setScrollable(creationMenuScrollable)
 		Button.add(width / 2+155*ss, 170*ss, 300*ss, 40*ss, "Difficulty: Normal", "creation menu", nothing, always, "Normal mode only").setScrollable(creationMenuScrollable)
@@ -24877,8 +25116,9 @@ p.camera.transformation.elements.set(matrix)//*/
     }, () => !(servers[selectedWorld] && servers[selectedWorld].url))*/
     Button.add(mid - 3 * x4, height - 40*ss, w4, 40*ss, "Reload", "multiplayer menu", initServersMenu)
     Button.add(mid + 1 * x4, height - 40*ss, w4, 40*ss, "Edit ICE servers", "multiplayer menu", () => {
+			alert("ICE servers\nIf you can't join, try adding a TURN server.\nFind free TURN servers: https://github.com/search?q=%22urls%3A+%5C%22turn%3Aturn%22&type=code")
 			try{
-				iceServers = JSON.parse(prompt("ICE servers\nFind free TURN servers: https://github.com/search?q=%22urls%3A+%5C%22turn%3A%22&type=code", JSON.stringify(iceServers))) || []
+				iceServers = JSON.parse(prompt("ICE servers", JSON.stringify(iceServers))) || []
 			}catch(e){
 				alert(e); return
 			}
@@ -25047,16 +25287,18 @@ p.camera.transformation.elements.set(matrix)//*/
     // Inventory buttons
     let hideIfSurvival = () => p.survival && -1
     // === "chest" //help find this with find
-    Button.add(width - 50, 15*ss, 60*ss, 30*ss, "close", ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], play)
-    Button.add(width - 20 - 60*ss, height-15*ss, 120*ss, 30*ss, "Inventory", ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => {invCategory(0)}, hideIfSurvival)
-    Button.add(width - 20 - 60*ss, height-45*ss, 120*ss, 30*ss, "Search", ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("search"), hideIfSurvival)
-    Button.add(width - 20 - 60*ss, height-75*ss, 120*ss, 30*ss, blockCategories.build, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("build"), hideIfSurvival)//.setIcon("categoryConstruction")
-    Button.add(width - 20 - 60*ss, height-105*ss, 120*ss, 30*ss, blockCategories.decoration, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("decoration"), hideIfSurvival)
-    Button.add(width - 20 - 60*ss, height-135*ss, 120*ss, 30*ss, blockCategories.food, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("food"), hideIfSurvival)
-    Button.add(width - 20 - 60*ss, height-165*ss, 120*ss, 30*ss, blockCategories.items, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("items"), hideIfSurvival)//.setIcon("categoryItems")
-    Button.add(width - 20 - 60*ss, height-195*ss, 120*ss, 30*ss, blockCategories.nature, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("nature"), hideIfSurvival)//.setIcon("categoryNature")
-    Button.add(width - 20 - 60*ss, height-225*ss, 120*ss, 30*ss, blockCategories.redstone, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("redstone"), hideIfSurvival)
-    Button.add(width - 20 - 60*ss, height-255*ss, 120*ss, 30*ss, blockCategories.tools, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("tools"), hideIfSurvival)//.setIcon("categoryTools")
+    Button.add(width - 30*ss, 15*ss, 60*ss, 30*ss, "close", ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], play)
+    Button.add(width - 60*ss, height-15*ss, 120*ss, 30*ss, "Inventory", ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => {invCategory(0)}, hideIfSurvival)
+    Button.add(width - 60*ss, height-45*ss, 120*ss, 30*ss, "Search", ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("search"), hideIfSurvival)
+    Button.add(width - 60*ss, height-75*ss, 120*ss, 30*ss, blockCategories.build, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("build"), hideIfSurvival).setIcon("categoryConstruction")
+    Button.add(width - 60*ss, height-105*ss, 120*ss, 30*ss, blockCategories.decoration, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("decoration"), hideIfSurvival)
+    Button.add(width - 60*ss, height-135*ss, 120*ss, 30*ss, blockCategories.food, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("food"), hideIfSurvival)
+    Button.add(width - 60*ss, height-165*ss, 120*ss, 30*ss, blockCategories.items, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("items"), hideIfSurvival).setIcon("categoryItems")
+    Button.add(width - 60*ss, height-195*ss, 120*ss, 30*ss, blockCategories.nature, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("nature"), hideIfSurvival).setIcon("categoryNature")
+    Button.add(width - 60*ss, height-225*ss, 120*ss, 30*ss, blockCategories.redstone, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("redstone"), hideIfSurvival)
+    Button.add(width - 60*ss, height-255*ss, 120*ss, 30*ss, blockCategories.tools, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("tools"), hideIfSurvival).setIcon("categoryTools")
+
+    Button.add(width - 140*ss, 15*ss, 120*ss, 30*ss, "Recipes", ["inventory","crafting"], () => {changeScene('options help');scrollToEl('help_crafting')}, () => !p.survival && -1).setIcon("recipeBook")
     
     // You Died buttons
     Button.add(width / 2, 225*ss, 300*ss, 40*ss, "Respawn", "dead", r => {
@@ -27124,9 +27366,8 @@ p.camera.transformation.elements.set(matrix)//*/
     let invWinH = s * rows;
 
     // Scrollbar
-    if(p.survival || inventory.category === 0){
+    if(inventory.category === 0){
       inventoryScrollable.setScrollSize(0)
-      inventory.category = 0
     }else{
 			inventoryScrollable.setPos(0,0,width,height)
 			inventoryScrollable.setScrollSize(height+invHeight)
@@ -27913,7 +28154,7 @@ p.camera.transformation.elements.set(matrix)//*/
     e.preventDefault();
   }
 	canvas.addEventListener("touchend",touchend,false)
-  canvas.addEventListener("touchcancel",touchend,false)
+	canvas.addEventListener("touchcancel",touchend,false)
   let changeSlot = () => {
     let y = height - inventory.size
 		y -= inventory.size/2
@@ -28551,7 +28792,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		gl.useProgram(programAvgBrightness)
 		glCache.aPositionAvgBrightness = gl.getAttribLocation(programAvgBrightness, "position")
 		glCache.texAvgBrightness = gl.getUniformLocation(programAvgBrightness, "tex")
-		glCache.texSizeAvgBrightness = gl.getUniformLocation(programAvgBrightness, "texSizeAvgBrightness")
+		//glCache.texSizeAvgBrightness = gl.getUniformLocation(programAvgBrightness, "texSizeAvgBrightness")
 		gl.enableVertexAttribArray(glCache.aPositionAvgBrightness)
 	}
   function initWebglPrograms(){
@@ -28690,7 +28931,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		glCache.uViewText = gl.getUniformLocation(programText, "uView")
     glCache.colorText = gl.getUniformLocation(programText, "textColor")
     glCache.backgroundText = gl.getUniformLocation(programText, "background")
-    glCache.glowText = gl.getUniformLocation(programText, "glow")
+    //glCache.glowText = gl.getUniformLocation(programText, "glow")
     glCache.brightnessText = gl.getUniformLocation(programText, "brightness")
 		glCache.uLanternText = gl.getUniformLocation(programText, "uLantern")
 
@@ -29604,9 +29845,9 @@ p.camera.transformation.elements.set(matrix)//*/
 			if(thumbnail) div.innerHTML += "<img class='thumbnail' src='" + sanitize(thumbnail) + "'></div>"
 			div.innerHTML += "<strong>" + Messages.format(name)+ "</strong>" + br
       if(external) div.innerHTML += Messages.format(server.description) + br
-      else div.innerHTML += "Hosted by "+sanitize(host) + br
+      else div.innerHTML += "Hosted by "+Messages.format(host) + br // format for remove
       if(players) div.innerHTML += players.length+" player"+(players.length===1 ? "" : "s")+" online"+br
-			div.innerHTML += sanitize(version) + br
+			div.innerHTML += Messages.format(version) + br
 			if (whitelist) div.innerHTML += "Whitelisted" + br
 			
       servers[id] = server
@@ -30167,7 +30408,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		if(!listener || !listener.positionX) alert("AudioListener not supported. No 3D sound.")
 		win.audioCtx = audioCtx, win.listener = listener
 
-		addToBottomRightList("startLoad", "Loading sounds. May take a while.", "yellow")
+		addToBottomRightList("startLoad", "Loading sounds. May take a while.", "white")
     
 		const nosound = urlParams.has("nosound")
 		async function loadSounds(){
@@ -31238,7 +31479,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		worldSettings = serverWorld.settings
 		if(mod){
 			serverWorld.mod = mod
-			if(!mod.startsWith("function") && confirm("Run this mod?\n\n\n"+mod)){
+			if(!mod.startsWith("function") && confirm("Run this code?\n\n\n"+mod)){
 				initBlockData()
 				// for better error messages
 				let url = URL.createObjectURL(new Blob(["export default function(world,blockData,blockIds,entities,entityIds){ "+mod+" }"],{type:"application/javascript"}))
@@ -31591,6 +31832,7 @@ p.camera.transformation.elements.set(matrix)//*/
 						found = true
 						initMultiplayer(server.id).then(joinWorld)
 					}
+					let a=document.createElement('a');a.href="?target="+server.id;a.innerHTML=Messages.format(server.name);window.servers.appendChild(a)
 				}).then(() => {
 					if(!found) changeScene("main menu")
 				})
@@ -31831,7 +32073,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				fill(255)
 				textSize(12)
 				ctx.textAlign = "center"
-				text(saving === "remote" ? "Saving remotely..." : "Saving...\nClose window to cancel.",width-55*ss,45*ss,12)
+				if(saving !== "remote") text("Saving...\nClose window to cancel.",width-55*ss,45*ss,12)
 				ctx.textAlign = "left"
 				if(autosaveTimer){
 					fill(127)
@@ -32278,10 +32520,6 @@ p.camera.transformation.elements.set(matrix)//*/
       if(!tags || !tags.sign){
         play()
         return
-      }
-			let whichText = containerData.side ? tags.text2 : tags.text
-			if((whichText || "") !== editSignBox.value){
-        editSignBox.value = whichText || ""
       }
       defineWorld()
       clear()
@@ -32757,6 +32995,7 @@ function scrollToEl(id){
 
 </script>
 <script src="minekhan-world.js"></script>
+<script src="servers.js"></script>
 <script>
 window.init = MineKhan()
 init()

@@ -1,11 +1,14 @@
+// Use both tcp and no tcp, they are both reliable
 window.iceServers = [
 	{'urls': 'stun:stun.l.google.com:19302'},
 	{ urls: "stun:stun.nextcloud.com:443" },
-	{urls: "turn:turn.jami.net?transport=tcp",username: "ring",credential: "ring"},
-	{urls:"turn:stun.ppzhilian.com?transport=tcp",username:"bshu",credential:"bshu1211"},
-	{urls:"turn:turn.wildfirechat.net:3478?transport=tcp",username:"wfchat",credential:"wfchatpwd"},
-	{urls: "turns:global.relay.metered.ca:443?transport=tcp",username: "fc666044289cd4f59c7d6862",credential: "eevwIhFSCVwbfqP6"},
-	{urls: ["turn:stun.evan-brass.net?transport=tcp","turns:stun.evan-brass.net:443?transport=tcp"],username: "guest",credential: "password"},
+	{urls: "turn:turn.jami.net",username: "ring",credential: "ring"},
+	{urls:"turn:stun.ppzhilian.com",username:"bshu",credential:"bshu1211"},
+	{urls:"turn:turn.wildfirechat.net:3478",username:"wfchat",credential:"wfchatpwd"},
+	{urls: ["turn:turn.evan-brass.net","turn:turn.evan-brass.net?transport=tcp","turns:turn.evan-brass.net:443?transport=tcp"],username: "guest",credential: "password"},
+	{"urls":"turn:turn.fsharechat.cn:3478","username":"comsince","credential":"comsince"},
+	{"urls":"turn:api.crossdesk.cn:3478","username":"crossdesk","credential":"crossdeskpw"},
+	{"urls":"turn:gitclone.com:3478","username":"webrtc","credential":"Webrtc987123654"},
 ]
 
 // see for more servers and code to connect: https://github.com/dmotz/trystero
