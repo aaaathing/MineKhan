@@ -34,7 +34,7 @@ thingMaker's credits
  * I created the survival mode and mob shapes and mob code.
  * The biomes were originally made to look like Minecraft biomes, but have been improved after I looked at a lot of images (possibly hundreds).
  * For terrain generation, some methods came from https://github.com/misode/deepslate
- * I made most of the added features.
+ * I made most of the added features like survival, many shapes, mob code, terrain generation.
 Q&A:
 	why is there world in arguments? so it works when copied to servers with multiple worlds 
 
@@ -1127,7 +1127,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
       <a onclick="scrollToEl('help_health')">Health</a>
       <a onclick="scrollToEl('help_inventory')">Inventory</a>
       <a onclick="scrollToEl('help_crafting')">Crafting</a>
-      <a onclick="scrollToEl('help_servers')">Server</a>
+      <a onclick="scrollToEl('help_servers')">Servers</a>
       <a onclick="scrollToEl('help_rp')">Resource packs</a>
       <a onclick="scrollToEl('help_mod')">Code</a>
       <a onclick="scrollToEl('help_wiki')">MineKhan Wiki</a>
@@ -1140,7 +1140,6 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
         MineKhan is a sandbox game.<br>
         MineKhan has things Minecraft doesn't.<br>
         MineKhan doesn't have some things Minecraft has.<br>-->
-        If you want to suggest stuff, you should go to the website that this is on: <a href="/" target="_blank">here</a>
         <h2>Where MineKhan came from</h2>
         One upon a time, there was a game on Khan Academy called Scuscraft.<br>
         One day, Willard spin-offed Scusraft and made MineKhan.<br>
@@ -1151,6 +1150,7 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 				<a href="updates.txt" target="_blank">Changelog</a>
 				<br><br>
 				<img src="assets/images/sij.png" loading="lazy">
+        If you want to suggest stuff, you should go to the <a href="/" target="_blank">website that this is on</a> or <a href="https://github.com/aaaathing/MineKhan">here</a>
 				<pre id="credits"></pre>
       </section>
 			<section>
@@ -1468,7 +1468,7 @@ blockData[blockIds.blackConcrete].tick = function(block,x,y,z,world){
 }
 
 // This makes rose bush give blur effect
-blockData[blockIds.roseBush].serverontouch = (x,y,z,ent) => ent.applyEffect("blur",1,2,false)
+blockData[blockIds.roseBush].serverontouch = (x,y,z,ent) => {if(ent.applyEffect) ent.applyEffect("blur",1,2,false)}
 
 // When you touch poppy, become small. (reset with scale=1)
 blockData[blockIds.poppy].serverontouch = (x,y,z,ent) => ent.scale = 0.75
@@ -1585,9 +1585,11 @@ world.addPortal(player => {
 <pre>
 world.on("join", e => {
 	if(!world.music.size){ // If no music is playing, play a new one
-		world.playMusic("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/sounds/records/chirp.ogg")
+		world.playMusic("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/sounds/records/chirp.ogg", 300)
 	}
 })
+
+// The arguments are: url, duration, volume, pitch. Duration is in seconds. Volume and pitch are normally 1.
 </pre>
 <!--<p>// This keeps playing random songs:</p>
 <pre>
@@ -2341,7 +2343,7 @@ world.rootCommandNode.then(
 				skyLight *= 0.82;
 				blockLight = blockLight*blockLight*1.5;
 			#endif
-			float light = max(lightMethod == 2 ? 0. : skyLight, blockLight);
+			float light = max(lightMethod == 2 ? 0. : skyLight, blockLight) * 0.9 + 0.1;
 			if(lightMethod == 1 || lightMethod == 2){
 				light = light*0.5+0.5;
 			}
@@ -6564,10 +6566,10 @@ if time is 0, it will update every time
 	let defaultSkyBottom = [171/255, 210/255, 255/255]
 	let skyOrange = [1,0.5,0]
   let skyBottom = [...defaultSky]
-	let worldType = Math.random() > 0.5 ? "large" : "alpha"
+	let worldType = "alpha"
 	let trees = true
 	let caves = true
-	let fancyRivers = worldType === "large" //false
+	let fancyRivers = false
 	let structures = false
   let cheats = true
   let dieMessage = ""
@@ -6690,7 +6692,7 @@ if time is 0, it will update every time
       let moonPhase = round(worldTime/1000) % 8
       if(this.moonPhase !== moonPhase){
         this.moonPhase = moonPhase
-        let tex = textureCoords[textureMap["moonPhases"+moonPhase]]
+        let tex = textureCoords[textureMap["moonPhases"+moonPhase]] || textureCoords[textureMap.error]
 				if(this.moon) deleteVAO(this.moon.vao)
         this.moon = generateVAO(shapes.sun, tex[0],tex[1],tex[2]-tex[0],tex[5]-tex[1])
       }
@@ -6796,13 +6798,13 @@ if time is 0, it will update every time
 		loadbar: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAAICAYAAABpsU6/AAAABGdBTUEAALGPC/xhBQAAAPpJREFUeNrt20EOgjAQBVCa9P5XRo0rkYUSOmln3iybSPiPoS2ibX/W9lltU6/iwoULFy5cuPBK6dIB/p2TCxcTCxcuXLjwWtqlAy/fiK7nWJdsvly4mF/0C68ELl8bwNbenz++Gf5hfD+Mt4vHCR2/Mf+S4wH5p+6L4w20St8GXP8SLhf6P5XLQvP/kOOb/6Zb/0K9Zsp/dm6jXa58A+gJRX6Vpy9m608u+la/5O9f99fJZi/6PxldA8gvPxfe03tHn6c+5MIruUtfCKb6bx3kt2GW30Jyt0tWVy6xucxPC65bvSD8Xrzx5JdffguSDfN52bjUehAvnf8Ba86fI1AtGCgAAAAASUVORK5CYII=",
 		autosave:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKIAAAAeCAYAAACv+sUVAAADdUlEQVR42u3av2sTYRzH8XfONOkPqrGl1F8VXRqklFIcxKGDm0Na0KlQaSeRjgrqvyAKdtOhk6KlFLFgOwm6ODk4FAdJHULpYGtKGikmJqk5hyNHr7m73B1PW5N8vxBIk+PVb57nc7nn7hLCoRKJMd3u9eXldyGkpGqU3/yE3bCll7ctf49Ozh54Q1L1FSBV+QkfxoeTQDdugFRVuJ4GuxEDXe8BasogNmqg6zlAEsQGCbSUUZoMgZQEUUrK7tDstO5x2kbOWKVU5Sdca93j9J7bekgC3TwBUpWf8P4zvtFJdDesgtQKjwS6OQKkKj9hv5iXEEqgmydAqvITchsIu8sTfibJzvBruRleLS+GF2t/gGpdvnFzVPSjanxUzpfK/FgwPbOk65kl3cteXMsIatkZfi03w6vlxVBpqfhsKsZaxdwHNQB0QE8kxipI5eHbsWlIb+ZA/+cBUjJffvMTcgCYme7jXCxmvlgoFAG49TRZ87Bu57z4ehGA8f5kYOfD+rB5OBydnGW8P+nbSSTGcDhkeHbsDBvr0PpROT4q58tPfkL7gVf34qTzObq1CABtx9st/6VQKJLO57j7fN2psQN1FtYGAJgaTAV2FtYGLBM2NZjy7eyd9L0BGu9PHkk/KsfnKOa9gukz0330tLXbRjydz5nvRaMRM917wLpz5lfjlj0+iDO/Gq/6BjrKfup5vkzodG8XAA9udlSB5cIuWjRsPgd4+GYbgB+bGUtDzebsD5CMTzDHhK4PdQKwstFigoCJpvM5AB6//Q3AjSHjNvWz91uWhsQRJ4hTleihUyUL+GSih3Q+VwUsrpRd9wxxxPHjmHdWznf9BeDC1QlGRkbIPboDwP3XaVvgWr+xGJ3btK4HxBEniGMG8WTE2CCVSpHNZvn+09hwuC/E5o7G4spfC9AVs/9NrTjiBHGq1K2tLQDOxI5VlpoWINa2S1lroVz443oxSRxx/DiWIGotEXpKq7CxSm9nxLJhrM0429GirWhAuVBybEYccfw6ZhC3ixoUd+nuiFAuFSmXiiZuPRU3kpzdLds2I444QZxKEEOfv/3SAa5cOgFo5jHfkvhoK5mskey5Txt2V9jFESeQ43iv2QChuyPM5o5G/Kyx2Jz7mPF1z1Eccbw4oVrg5XgPAF+Saa+NiCOOSscCBv4tmTjieHH+ASOfDpJpNy6QAAAAAElFTkSuQmCC",
     error:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAABhJREFUGFdj/M/w/z8jAwgyMPz/z/CfAQA5DAX/rY1o3wAAAABJRU5ErkJggg==",
-		categoryNature:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAHRSURBVHjarJTPaxNBGIafb5PpLrHbJDWwVQhU66kggVx68tKe68GzZ0HQm3+G/heCFL17KgiCxxQvLRQPwR66SynJZlOZZEjGQ7I/0gQv9bsM883s+z3vy7BireWu5fAfqvyvQxGxgFhrERGAldhStCMipHsRsfHIoepOKQjZN1/2Cdbq/Lr+TaPR4MPh15wknVoU2FibEI9KVN2plTmKf6Q5DU/Z3qoDcZ6JiNiX79sAdk4jVXfKYFzKSIr491sHi8GKCPHIkY/vOhSELMCLt4+X/HfDHn7UIQnadMNeRmKr7tQCXJ4PADh49eT2tzYNdWYDDh/08yyBpbCGwyFKqZW93W8eF1E/o/r0/WwWrH+k+cMlD1EkwQ6bUQeYZAEmwQ6Dn8c8az3iIurTDXuzXMLjPNjUWzOo4UedDDNFT3spwfZWfeGekzabQS2bklYzqJEE7QXBZlBbGlIG2H3+GoCWUrQAYwwASin2jAH2UEoBcHJyRuVpmXuVDW5uEvj8Y0ailML3/WzCqj2A53lUKh6lkjAej3EcldvxPI/bq9Z6SUBrjSo7CC7r65sYM8lFtNYkSQJzK1prjDGZreI6NgZxYq6uIjxvkL+Tu/4K/g4AUIbMBSA3XfYAAAAASUVORK5CYII=",
-		categoryItems:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAGZSURBVHjapJQxa9tAGIafc00tbyG0SymlWowJZAjV/QD/BEM7d+ngdumYNf+iS8gW8JA5q5Ipg11c8GI81KXdfLSxDwtbwebLojtsWTaUfHAgvTqe97u796REhKdWOS8opQRARJRSil0mbl5RiTFGjDECuLFz7sP1GwGklAMA0O/3Oa/VOK/V2Af7evFyYzkbgJ+tFov5nMVi4UB8Gg4dSDnI4Nc/D9kJAJjc3xMEQRGMFwdVTxVjTCEgX0EQEFSrDub1Z8DZarVi2GrxMJsxTxKeVyqFkOVy6Q3q1nKX6SWA+e9belHINE2ZpimJtSTWFoISa/k7HtOLQq/504m7I3pRuBeWWMs0Tbk5fkX97SEuT2WAb1ffPQiAzOXEvWegaZrSi0Li7shD1o9LtNZe7HQ6ADRyMAfYSJzrRGuNHF36D83Xp0z+/FBxdyTrncXdESKiAL58iLYjrLWWZrMp0cehT2gjCt3dkc/v3wkgjbUNzTpZfxYZDAbSbrc3Yp6HbLmLbN/iXeU2v6gDJSIopci5q//5nzwOAHXDBIFXboMnAAAAAElFTkSuQmCC",
-		categoryTools:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAFmSURBVHjanJS9SgNBFEbPhCALYsAigbVYU7hYhK2CQirRB7ATe0Ui+wBJlQdIHiC4+ARCKpvUaXZhg5BWYqFpBDdVQAg210J32M2PSfxgipm5c+535w6jDLvIIm3tFVimSS+UxFRl2FCTXijlqE8p6Oi1zH8A05c3jIP9zSGzgKf8EYBaG/IXYC3IKoCIkI0n0+FrfOMq7tgqQO7keN5J/voCQKbD17UBABh2kcRbEatVF0DKUV9KQUfKUV+AZSNdTlKGXdQOvs6u8H1/LmYwGOC6riillK7/dPeTbhjFbvi4f8A2dvA8j0qlAkAQBCkIgOu6c92R23OLUa1J4eYytbEIEEuX0w0jaVYPqXvPAGpUa4rjOBpQrVb1ofF4TKPRSGf/daAvK7nn+744jiNWzkgN0zSl3W4LIBkAq1Xn7nGUauEmygKMas10evkxpJTS9t8n01SMuZ34C2apMSABkSWxev17ACRnxMv4aVvaAAAAAElFTkSuQmCC",
-		categoryConstruction:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAEdSURBVHjalJOhTgNBEIa/IWd4AyRBkSAQkBIEstTxAg2OZ0AVd6rPcK49gT1HViKaNK3AVV5dFQJDUIOgc73du2uXUXuTzLf//8+eqCoAIqIAqioigvVjKjFAPhx4MBGRWFBih+/LOwDy7fcwf9OtIomGlK4A4LT/4MHqNg9C6lW64l+wCmJDscqAKjNRVURER/2eN2SQ8JLjj3fLrFKVtFnpgpWu4OfsgoN2bMhyCW1uFrMG5Kh+S9ug9dtyi95OaPPk+vavsVw1IJK6uQJkga3Q5mYx24FCJZa0rdC2FcLWr9N2O/V/JBunAvD0PPJgBgxVeA+mq0xZNk4pXcH68wuAyXK1U2+Ql/ubvTDL7PHqvBuyR0nYajz73wEADsipFjE4Vi8AAAAASUVORK5CYII=",
+		//categoryNature:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAHRSURBVHjarJTPaxNBGIafb5PpLrHbJDWwVQhU66kggVx68tKe68GzZ0HQm3+G/heCFL17KgiCxxQvLRQPwR66SynJZlOZZEjGQ7I/0gQv9bsM883s+z3vy7BireWu5fAfqvyvQxGxgFhrERGAldhStCMipHsRsfHIoepOKQjZN1/2Cdbq/Lr+TaPR4MPh15wknVoU2FibEI9KVN2plTmKf6Q5DU/Z3qoDcZ6JiNiX79sAdk4jVXfKYFzKSIr491sHi8GKCPHIkY/vOhSELMCLt4+X/HfDHn7UIQnadMNeRmKr7tQCXJ4PADh49eT2tzYNdWYDDh/08yyBpbCGwyFKqZW93W8eF1E/o/r0/WwWrH+k+cMlD1EkwQ6bUQeYZAEmwQ6Dn8c8az3iIurTDXuzXMLjPNjUWzOo4UedDDNFT3spwfZWfeGekzabQS2bklYzqJEE7QXBZlBbGlIG2H3+GoCWUrQAYwwASin2jAH2UEoBcHJyRuVpmXuVDW5uEvj8Y0ailML3/WzCqj2A53lUKh6lkjAej3EcldvxPI/bq9Z6SUBrjSo7CC7r65sYM8lFtNYkSQJzK1prjDGZreI6NgZxYq6uIjxvkL+Tu/4K/g4AUIbMBSA3XfYAAAAASUVORK5CYII=",
+		//categoryItems:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAGZSURBVHjapJQxa9tAGIafc00tbyG0SymlWowJZAjV/QD/BEM7d+ngdumYNf+iS8gW8JA5q5Ipg11c8GI81KXdfLSxDwtbwebLojtsWTaUfHAgvTqe97u796REhKdWOS8opQRARJRSil0mbl5RiTFGjDECuLFz7sP1GwGklAMA0O/3Oa/VOK/V2Af7evFyYzkbgJ+tFov5nMVi4UB8Gg4dSDnI4Nc/D9kJAJjc3xMEQRGMFwdVTxVjTCEgX0EQEFSrDub1Z8DZarVi2GrxMJsxTxKeVyqFkOVy6Q3q1nKX6SWA+e9belHINE2ZpimJtSTWFoISa/k7HtOLQq/504m7I3pRuBeWWMs0Tbk5fkX97SEuT2WAb1ffPQiAzOXEvWegaZrSi0Li7shD1o9LtNZe7HQ6ADRyMAfYSJzrRGuNHF36D83Xp0z+/FBxdyTrncXdESKiAL58iLYjrLWWZrMp0cehT2gjCt3dkc/v3wkgjbUNzTpZfxYZDAbSbrc3Yp6HbLmLbN/iXeU2v6gDJSIopci5q//5nzwOAHXDBIFXboMnAAAAAElFTkSuQmCC",
+		//categoryTools:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAFmSURBVHjanJS9SgNBFEbPhCALYsAigbVYU7hYhK2CQirRB7ATe0Ui+wBJlQdIHiC4+ARCKpvUaXZhg5BWYqFpBDdVQAg210J32M2PSfxgipm5c+535w6jDLvIIm3tFVimSS+UxFRl2FCTXijlqE8p6Oi1zH8A05c3jIP9zSGzgKf8EYBaG/IXYC3IKoCIkI0n0+FrfOMq7tgqQO7keN5J/voCQKbD17UBABh2kcRbEatVF0DKUV9KQUfKUV+AZSNdTlKGXdQOvs6u8H1/LmYwGOC6riillK7/dPeTbhjFbvi4f8A2dvA8j0qlAkAQBCkIgOu6c92R23OLUa1J4eYytbEIEEuX0w0jaVYPqXvPAGpUa4rjOBpQrVb1ofF4TKPRSGf/daAvK7nn+744jiNWzkgN0zSl3W4LIBkAq1Xn7nGUauEmygKMas10evkxpJTS9t8n01SMuZ34C2apMSABkSWxev17ACRnxMv4aVvaAAAAAElFTkSuQmCC",
+		//categoryConstruction:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAEdSURBVHjalJOhTgNBEIa/IWd4AyRBkSAQkBIEstTxAg2OZ0AVd6rPcK49gT1HViKaNK3AVV5dFQJDUIOgc73du2uXUXuTzLf//8+eqCoAIqIAqioigvVjKjFAPhx4MBGRWFBih+/LOwDy7fcwf9OtIomGlK4A4LT/4MHqNg9C6lW64l+wCmJDscqAKjNRVURER/2eN2SQ8JLjj3fLrFKVtFnpgpWu4OfsgoN2bMhyCW1uFrMG5Kh+S9ug9dtyi95OaPPk+vavsVw1IJK6uQJkga3Q5mYx24FCJZa0rdC2FcLWr9N2O/V/JBunAvD0PPJgBgxVeA+mq0xZNk4pXcH68wuAyXK1U2+Ql/ubvTDL7PHqvBuyR0nYajz73wEADsipFjE4Vi8AAAAASUVORK5CYII=",
 		//worldIcon:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAARCAYAAADUryzEAAAAAklEQVR4AewaftIAAAG0SURBVLXBQUhTYQDA8f83p/HGHDwow5wQKTT0UMfyHezSg6BD9ewSdurWYR67BK1ZB496kCDq0qFLzy56GUGMmDMjNl2bLygvKyUSHrnizVJe+2JfPMYQPPj7caiy5ZKfLZd89iFo49pU0adh4nIH0vT8HtLcnbOCFoKA5NKYT4DVfY/p+T2kVe0GyqdkRdAkaEgujfm0+JK9ixIffUA7M+deiA4atsSt1FZkmf6j3QxrffR0xhgcLPKmPkotdoSv7kV+/LnKhWNFejpjPHpWZe1Dndrb9fthAhadDRbZYCRxgsq3WaJR/hk6fpthrY/HhXesP7+CliijhGjh5iwWnpzn+9p7TsUjXD/5ECn9tMxmIYKWyOA5JkqYJjdnoRs2ys/PFVb7T7OwXKYdzzGBV4QIcHMWumET5Dkm+wkRoBs2km7Y6IaNV/2I5DkmiueYdPWuoIQ4oK7eFX5vnkEJ07Dj/UJycxa6YSO5OYvoAP95jomyW6+hCALi42k/NjLHTuEmUnRgiOrrEspuvYa0nZ0UNAnaiI+nfRpeTlwik8kgTWXqbGcnBQeRz+f9VCrlc5j+AmTYl6HuWT1sAAAAAElFTkSuQmCC"
 		recipeBook:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAFKADAAQAAAABAAAAFAAAAACy3fD9AAABg0lEQVQ4Ee2SsUtCURTGP61QDFRQBBF8VEMkLhJES9LQn9ASRH9Ai7tTk9Dg4Ohf0NJeQ0MQLkWbOJQRTzFBFHoONoja+y6ci+nz5V7nwfvePfecH+e79wF/LjzLOk6dpCZSW7uqLexblaJFKqDIRgSBaAAhIwTrzZq0HluOUMck4U4g5i3TUtDKZQVO0DngNCi+GydDRfW6qjR9nHaFaqATiBACJJaBeqXYPhfwnDgVbTEIE4isqcyps6T9rRASewl9YSssYAQTwYuxZ4zR1wjRnaiC+sN+xFIxBaAyqL51H+p3dfQ/+sh4M6jcVrRTPaGqtl/5gzzaz209AfNim3lO13xqIneYQ/GsiGw2K61K9W8zfOkgcrQJwzCQt5/CQ0HbH3QH6L33VANByWRSfTcaDZTuS8qy3LgelRWx8Npk+3wf5dMyTNNUUDcQe7o3rxR0PoeK9QPIjVkop5idiBdIRwwBqYX9mgNywwlKa24gV+A0lJaXAf0KFKgUzlqT/L/iGwmW1CTHL11RAAAAAElFTkSuQmCC",
-  };window[atob("YmFzZTY0")] = "VGhpcyBwcm9ncmFtIGlzIGEgc3Bpbi1vZmY8YnI+b2YgPGEgaHJlZj0naHR0cHM6Ly93aWxsYXJkLmZ1bi9taW5la2hhbicgdGFyZ2V0PSdfbmV3Jz5NaW5lS2hhbjwvYT4gYnkgV2lsbGFyZC48YnI+TW9zdCBvZiB0aGUgYWRkZWQ8YnI+ZmVhdHVyZXMgYXJlIGJ5IDxhIGhyZWY9J2h0dHBzOi8vdGhpbmdtYWtlci51cy5ldS5vcmcvJz50aGluZ01ha2VyPC9hPjxicj4oYWthIDItcGVvcGxlKTxicj5IZWxwIGFkZCBmZWF0dXJlczogPGEgaHJlZj0naHR0cHM6Ly9naXRodWIuY29tL2FhYWF0aGluZy9NaW5la2hhbicgdGFyZ2V0PSdfbmV3Jz5SZXBvPC9hPjxicj5UbyBzZWUgY3JlZGl0cywgY2xpY2sgSGVscC4=";
+  };window[atob("YmFzZTY0")] = "VGhpcyBwcm9ncmFtIGlzIGEgc3Bpbi1vZmY8YnI+b2YgPGEgaHJlZj0naHR0cHM6Ly93aWxsYXJkLmZ1bi9taW5la2hhbicgdGFyZ2V0PSdfbmV3Jz5NaW5lS2hhbjwvYT4gYnkgV2lsbGFyZC48YnI+TW9zdCBvZiB0aGUgYWRkZWQ8YnI+ZmVhdHVyZXMgYXJlIGJ5IDxhIGhyZWY9J2h0dHBzOi8vdGhpbmdtYWtlci51cy5ldS5vcmcvJz50aGluZ01ha2VyPC9hPjxicj4oYWthIDItcGVvcGxlKTxicj5UbyBzZWUgY3JlZGl0cywgY2xpY2sgSGVscC4=";
 	
   let crossOriginImages = ["panorama"]
   function loadImage(i,images){
@@ -7028,7 +7030,7 @@ ROTATION = 0x1800 // Mask for the direction bits
 	let blockMode   = CUBE
   win.changeBlockMode = m => blockMode = m
   function cycleBlockShapes(){
-		if(!cheats) return blockMode = CUBE
+		if(p.survival) return blockMode = CUBE
     blockMode = blockMode === CUBE ? SLAB : (
       blockMode === SLAB ? VERTICALSLAB : (
         blockMode === VERTICALSLAB ? STAIR : (
@@ -7570,15 +7572,11 @@ ROTATION = 0x1800 // Mask for the direction bits
 			world.delete()
 		},
 		ban_username: args => {
-			if(win.ban && ban(args.ban_username, args.ban_reason)){
-				Messages.add("Error: can't ban.","error")
-			}
+			if(win.ban) ban(args.ban_username, args.ban_reason)
 		},
 		ban_reason: args => clientCmdFuncs.ban_username(args),
 		unban_username: args => {
-			if(win.unban && unban(args.unban_username)){
-				Messages.add("Error: can't unban.","error")
-			}
+			if(win.unban) unban(args.unban_username)
 		},
 		whitelist_action: args => {
 			if(win.whitelistAction) win.whitelistAction(args.whitelist_action)
@@ -7836,8 +7834,7 @@ ROTATION = 0x1800 // Mask for the direction bits
       messageInput.focus()
     },
     submitInput(){
-			let toPlay = !messageInput.value
-      if(toPlay) play()
+			play()
 
 			if(messageInput.value[0] === "/"){
         this.add("<span style='font-family:thefont;'>"+messageOverlay.innerHTML+"</span>")
@@ -7960,6 +7957,10 @@ ROTATION = 0x1800 // Mask for the direction bits
 								this.addHint("s")
 								this.addHint("spectator")
 								this.addHint("l")
+								break
+							case "boolean":
+								this.addHint("true")
+								this.addHint("false")
 								break
 						}
 					}
@@ -8113,6 +8114,7 @@ ROTATION = 0x1800 // Mask for the direction bits
     },
 		
     format(str){
+			if(!str) str = str+""
 			str = str.replace(/\n/g,"<br>")
 			if(str.includes("§")){
 				let arr = str.split("§")
@@ -11125,7 +11127,7 @@ return//*/
 		hitBox.closest = 1e9
     entHitbox.ent = null
     entHitbox.player = false
-    if(!cheats) settings.reach = 5
+    if(p.survival) settings.reach = 5
 		let reach = settings.reach
 
 		let blockState = world.getBlock(p2.x, p2.y, p2.z, p.dimension)
@@ -11852,7 +11854,7 @@ return//*/
       p.z = s.z
       p.velocity.x = p.velocity.y = p.velocity.z = 0
 			p.previousX = s.previousX, p.previousY = s.previousY, p.previousZ = s.previousZ
-      goToDimension(s.dimension)
+      //goToDimension(s.dimension)
       switch(s.type){
         case "Player":
           p.walking = s.walking
@@ -11870,7 +11872,7 @@ return//*/
 			p.x = ent.x+ent.rideOffsetX
       p.y = ent.y+p.height*0.5+ent.rideOffsetY
       p.z = ent.z+ent.rideOffsetZ
-			goToDimension(ent.dimension)
+			//goToDimension(ent.dimension)
       p.velocity.x = ent.velx || 0
 			p.velocity.y = ent.vely || 0
 			p.velocity.z = ent.velz || 0
@@ -12581,7 +12583,7 @@ return//*/
 		prevInLiquid = inLiquid
     if(p.health < 5) updateHUD = true //for hearts shaking
 
-		if(!cheats && blockMode) blockMode = CUBE
+		if(p.survival && blockMode) blockMode = CUBE
 
     if(inventory.showName > 0){
       inventory.showName -= 0.06
@@ -15899,13 +15901,13 @@ r 11 y  n  n  n
 		updateChunk(){
 			let chunkX = this.x >> 4, chunkZ = this.z >> 4
 			if(this.chunkX !== chunkX || this.chunkZ !== chunkZ || this.dimension !== this.chunkDimension){
-				let oldChunk = this.world.getChunk(this.chunkX<<4,this.chunkZ<<4,this.chunkDimension)
-				let chunk = this.world.getChunk(chunkX<<4,chunkZ<<4,this.dimension)
+				let oldChunk = this.world.getChunk(this.chunkX<<4,this.chunkZ<<4)
+				let chunk = this.world.getChunk(chunkX<<4,chunkZ<<4)
 				this.chunkX = chunkX
 				this.chunkZ = chunkZ
 				this.chunkDimension = this.dimension
 				if(oldChunk && oldChunk.entities[this.id]) delete oldChunk.entities[this.id]
-				if(chunk) chunk.entities[this.id] = this
+				if(chunk && this.dimension === chunk.type) chunk.entities[this.id] = this
 			}
 		}
     moveTowards(x,y,z, rw, rh, rd, slowDown = 1, gravity){
@@ -17991,7 +17993,6 @@ r 11 y  n  n  n
 
       this.walkRot = 0
       this.punchEffect = 0
-      this.pOffsetry = this.offsetry = 0
       this.offsetZ = this.pOffsetZ = 0
       
       this.skinSet = false
@@ -18220,7 +18221,6 @@ r 11 y  n  n  n
         part.pry2 = part.ry2
         part.lastUpdate = now
       }
-      this.pOffsetry = this.offsetry
       
       if(this.swimming !== this.prevSwimming || this.gliding !== this.prevGliding){
         this.prevSwimming = this.swimming
@@ -18405,17 +18405,17 @@ r 11 y  n  n  n
 					this.punchEffect = 0
 				}else if(this.eating){}
 				else if(this.punchEffect <= 0){
-					this.parts.rightArm.rx -= 10*Math.PI/8*max(this.rx/Math.PI*2*0.5+0.5,0.25)
+					this.parts.rightArm.rx += (-max((this.rx+Math.PI/2),Math.PI/4) - this.parts.rightArm.rx)
 				}
       }
       
       if(this.punchEffect > 0){
+        var punchEffect = this.punchEffect
+        this.parts.rightArm.rx += (punchEffect/10)*(-max((this.rx+Math.PI/2),Math.PI/4) - this.parts.rightArm.rx)
+        this.parts.rightArm.ry2 = sin(punchEffect*Math.PI/10)*Math.PI/8
+        //this.parts.body.ry += this.parts.rightArm.ry2 / 2
         this.punchEffect -= 1.5
         if(this.punchEffect < 0) this.punchEffect = 0
-        var punchEffect = this.punchEffect
-        this.parts.rightArm.rx -= punchEffect*Math.PI/8*max(this.rx/Math.PI*2*0.5+0.5,0.25)
-        this.parts.rightArm.ry2 = sin(punchEffect*Math.PI/10)*Math.PI/8
-        //this.offsetry = this.parts.rightArm.ry2 / 3
       }
       
       if(this.eating){
@@ -18547,8 +18547,6 @@ r 11 y  n  n  n
 			let rendery = (this.y - this.previousY) * diff + this.previousY + this.offsetY
 			let renderz = (this.z - this.previousZ) * diff + this.previousZ
       
-      let offsetry = lerp(diff, this.pOffsetry, this.offsetry)
-      
       //set texture to skin
       gl.activeTexture(gl.TEXTURE7)
       gl.bindTexture(gl.TEXTURE_2D, this.skinTex)
@@ -18581,8 +18579,6 @@ r 11 y  n  n  n
 			if(!this.swimming) rendery += this.offsetY
       let pscale = this.scale
 			this.scale = scale
-
-      let offsetry = this.offsetry
       
       //set texture to skin
       gl.activeTexture(gl.TEXTURE7)
@@ -21857,7 +21853,7 @@ r 11 y  n  n  n
 
 	let getWorldsWs
   async function getWorlds(addWorldCallback, addMessageCallback){
-    if(!navigator.onLine) return "You are offline. Connect to the internet first."
+    //if(!navigator.onLine) return "You are offline. Connect to the internet first."
     let worlds = []
 		let conns = []
 		let firstError = null
@@ -22380,7 +22376,7 @@ r 11 y  n  n  n
 					type:"pong",
 					id:data.id,
 					data:{
-						name: world.name, version:version+" - "+location.href,
+						name: world.name, version:version+" - "+(location.href.startsWith('file://')?"file":location.href), href:location.href,
 						host:p.username, players: serverWorld.players.map(r => r.username),
 						whitelist, banned, multiplayerPass:multiplayerPass?true:false,
 					}
@@ -22924,8 +22920,7 @@ r 11 y  n  n  n
 				data: username,
 				reason:why
 			})
-			return true
-		}
+		}else Messages.add("Error: can't ban.")
 		//if(!ban.includes(username)) ban.push(username)
 	}
 	win.unban = username => {
@@ -22940,10 +22935,10 @@ r 11 y  n  n  n
 				type:"unban",
 				data: username
 			})
-			return true
-		}
+		}else Messages.add("Error: can't unban.")
 	}
 	win.whitelistAction = (action,username) => {
+		if(!host) return
 		if(action === "enable") {
 			whitelist = []
 			for(let p of serverWorld.players.slice()){
@@ -23807,10 +23802,9 @@ r 11 y  n  n  n
       if(p.dimension === "nether" || p.dimension === "end"){
         skyLight = 0.5
       }else{ //if you change this, change server
-        if(time > 725 && time < 800) skyLight = mapFrom(time, 800,725) //get darker
-        else if(time > 200 && time < 275) skyLight = mapFrom(time, 200,275) //get brighter
-        else if(time >= 800 || time <= 200) skyLight = 0
-        else skyLight = 1
+				let x = -cos(time * Math.PI / 500)
+				let t = Math.min(Math.max((x - -0.25) / (0.08 - -0.25), 0.0), 1.0)
+				skyLight = t * t * (3.0 - 2.0 * t) // smoothstep
       }
 			let skylightAmount = min(abs(250-time)/50, abs(750-time)/50, 1)//1 at most times, 0 at sunrise and sunset
 			let orange = 0
@@ -24982,7 +24976,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		creationMenuScrollable.setPos(0,0,width,height)
 		Button.add(width / 2-155*ss, 120*ss, 300*ss, 40*ss, ["World Type: Alpha", "World Type: Large", "World Type: Superflat", "World Type: Island", "World Type: Void"], "creation menu", r => {
 			worldType = r === "World Type: Superflat" ? "superflat" : r === "World Type: Island" ? "island" : r === "World Type: Void" ? "void" : r === "World Type: Large" ? "large" : "alpha"
-			if(worldType !== "large") fancyRivers = false
+			fancyRivers = worldType === "large"
 			if(worldType === "superflat") trees = caves = structures = false
 		}, null, () => worldType === "alpha" ? "Old world type with trees and biomes." : worldType === "large" ? "Mountains, hills, forests, rivers, big rocks, and more." : worldType === "void" ? "To start building in void, use setblock command." : worldType === "island" ? "A very big island with a volcano. Surrounded by infinite ocean." : null,
 		() => {
@@ -24995,18 +24989,14 @@ p.camera.transformation.elements.set(matrix)//*/
 		Button.add(width / 2-155*ss, 170*ss, 300*ss, 40*ss, ["Trees: On", "Trees: Off"], "creation menu", r => trees = r === "Trees: On", function() {
 			if (worldType === "void") {
 				trees = false
-			}else if(!cheats){
-        trees = true
-      }
-			return worldType === "void" || !cheats
+			}
+			return worldType === "void"
 		}, null, () => trees ? 0 : 1).setScrollable(creationMenuScrollable)
 		Button.add(width / 2-155*ss, 220*ss, 300*ss, 40*ss, ["Caves: On", "Caves: Off"], "creation menu", r => caves = r === "Caves: On", function() {
 			if (worldType === "void") {
 				caves = false
-			}else if(!cheats){
-        caves = true
-      }
-			return worldType === "void" || !cheats
+			}
+			return worldType === "void"
 		}, null, () => caves ? 0 : 1).setScrollable(creationMenuScrollable)
 		placeElementScrollable(seedBox, width / 2-155*ss, 270*ss, 300*ss, 40*ss, creationMenuScrollable)
 		Button.add(width / 2-155*ss, 320*ss, 300*ss, 40*ss, ["Game Mode: Creative", "Game Mode: Survival", "Game Mode: Hardcore"], "creation menu", r => {
@@ -25035,7 +25025,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				fancyRivers = false
 			}
 			return worldType !== "large"
-		}, "Rivers that flow down! May slow down world generation. Requires large world type.", () => fancyRivers ? 0 : 1).setScrollable(creationMenuScrollable)
+		}, "Rivers that flow downhill, carving the terrain! Requires large world type.", () => fancyRivers ? 0 : 1).setScrollable(creationMenuScrollable)
 		Button.add(width / 2+155*ss, 270*ss, 300*ss, 40*ss, "Seeds", "creation menu", () => changeScene("seed templates"), null, "Choose a specific seed to control how the world generates.").setScrollable(creationMenuScrollable)
 		creationMenuScrollable.setScrollSize(height+300*ss)
 		Button.add(width / 2+155*ss, 320*ss, 300*ss, 40*ss, ["Structures: On", "Structures: Off"], "creation menu", r => structures = r === "Structures: On", function() {
@@ -25257,7 +25247,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				multiplayer.sendPos(true)
 			}*/
       updateTitle(false)
-			multiplayer.close()
+			if(multiplayer) multiplayer.close()
 			if(!host){
 				if(websocket) websocket.close()
 				changeScene("multiplayer menu")
@@ -25290,13 +25280,13 @@ p.camera.transformation.elements.set(matrix)//*/
     Button.add(width - 30*ss, 15*ss, 60*ss, 30*ss, "close", ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], play)
     Button.add(width - 60*ss, height-15*ss, 120*ss, 30*ss, "Inventory", ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => {invCategory(0)}, hideIfSurvival)
     Button.add(width - 60*ss, height-45*ss, 120*ss, 30*ss, "Search", ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("search"), hideIfSurvival)
-    Button.add(width - 60*ss, height-75*ss, 120*ss, 30*ss, blockCategories.build, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("build"), hideIfSurvival).setIcon("categoryConstruction")
+    Button.add(width - 60*ss, height-75*ss, 120*ss, 30*ss, blockCategories.build, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("build"), hideIfSurvival)//.setIcon("categoryConstruction")
     Button.add(width - 60*ss, height-105*ss, 120*ss, 30*ss, blockCategories.decoration, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("decoration"), hideIfSurvival)
     Button.add(width - 60*ss, height-135*ss, 120*ss, 30*ss, blockCategories.food, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("food"), hideIfSurvival)
-    Button.add(width - 60*ss, height-165*ss, 120*ss, 30*ss, blockCategories.items, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("items"), hideIfSurvival).setIcon("categoryItems")
-    Button.add(width - 60*ss, height-195*ss, 120*ss, 30*ss, blockCategories.nature, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("nature"), hideIfSurvival).setIcon("categoryNature")
+    Button.add(width - 60*ss, height-165*ss, 120*ss, 30*ss, blockCategories.items, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("items"), hideIfSurvival)//.setIcon("categoryItems")
+    Button.add(width - 60*ss, height-195*ss, 120*ss, 30*ss, blockCategories.nature, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("nature"), hideIfSurvival)//.setIcon("categoryNature")
     Button.add(width - 60*ss, height-225*ss, 120*ss, 30*ss, blockCategories.redstone, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("redstone"), hideIfSurvival)
-    Button.add(width - 60*ss, height-255*ss, 120*ss, 30*ss, blockCategories.tools, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("tools"), hideIfSurvival).setIcon("categoryTools")
+    Button.add(width - 60*ss, height-255*ss, 120*ss, 30*ss, blockCategories.tools, ["inventory","crafting","furnace","chest","anvil","dispenser","hopper"], () => invCategory("tools"), hideIfSurvival)//.setIcon("categoryTools")
 
     Button.add(width - 140*ss, 15*ss, 120*ss, 30*ss, "Recipes", ["inventory","crafting"], () => {changeScene('options help');scrollToEl('help_crafting')}, () => !p.survival && -1).setIcon("recipeBook")
     
@@ -25400,8 +25390,8 @@ p.camera.transformation.elements.set(matrix)//*/
     
     // World settings buttons
 		// if you change any needsCheats, change createNewWorld
-		Button.add(width / 4, height/2 + -185*ss, width / 3, 40*ss, ["TNT Explodes: On","TNT Explodes: Off"], "worldSettings", r => worldSettings.tntExplode = r === "TNT Explodes: On", () => !host&&inWorld, null, () => worldSettings.tntExplode ? 0 : 1)
-    Button.add(width / 4, height/2 + -125*ss, width / 3, 40*ss, ["Kill command enabled","Kill command disabled"], "worldSettings", r => worldSettings.killCmdOff = r === "Kill command disabled", () => !host&&inWorld, null, () => worldSettings.killCmdOff ? 1 : 0)
+		Button.add(width / 4, height/2 + -185*ss, width / 3, 40*ss, ["TNT Explodes: On","TNT Explodes: Off"], "worldSettings", r => worldSettings.tntExplode = r === "TNT Explodes: On", null, null, () => worldSettings.tntExplode ? 0 : 1)
+    Button.add(width / 4, height/2 + -125*ss, width / 3, 40*ss, ["Kill command enabled","Kill command disabled"], "worldSettings", r => worldSettings.killCmdOff = r === "Kill command disabled", null, null, () => worldSettings.killCmdOff ? 1 : 0)
     Button.add(width / 4, height/2 + -65*ss, width / 3, 40*ss, ["Daylight Cycle: On", "Daylight Cycle: Off", "Daylight Cycle: 24 Hours"], "worldSettings", r => worldSettings.dayNightCycle = r !== "Daylight Cycle: Off", needsCheats, noCheatsThenSayIt("dayNightCycle",true), () => worldSettings.dayNightCycle ? 0 : 1)
     Button.add(width / 4, height/2 + -5*ss, width / 3, 40*ss, ["Blocks Fall: On", "Blocks Fall: Off"], "worldSettings", r => worldSettings.blocksFall = r === "Blocks Fall: On", needsCheats, noCheatsThenSayIt("blocksFall",true), () => worldSettings.blocksFall ? 0 : 1)
 		Button.add(width / 4, height/2 + 55*ss, width / 3, 40*ss, ["Default Game Mode: Creative", "Default Game Mode: Survival", "Default Game Mode: Hardcore"], "worldSettings", r => {
@@ -25412,7 +25402,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			}else if(host){
 				serverWorld.gameMode = r === "Default Game Mode: Survival" && "survival" || !inWorld && r === "Default Game Mode: Hardcore" && "hardcore" || "creative"
 			}
-		}, () => inWorld && (!host || !cheats), () => (inWorld && !cheats && "This requires cheats. " || "") + "Default Game Mode for new players joining. Own game mode can be changed with commands after world creation. May be inaccurate if you are not the host.", () => {let s = inWorld && host ? serverWorld.gameMode : p.gameMode; return s === "survival" ? 1 : (s === "hardcore" ? 2 : 0)})
+		}, () => inWorld && (!host || !cheats), () => (inWorld && !cheats && "This requires cheats. " || "") + "Default Game Mode for new players joining.", () => {let s = inWorld && host ? serverWorld.gameMode : p.gameMode; return s === "survival" ? 1 : (s === "hardcore" ? 2 : 0)})
 		Button.add(width / 4, height/2 + 115*ss, width / 3, 40*ss, ["Default Cheats: On", "Default Cheats: Off"], "worldSettings", r => {
 			if(!inWorld){
 				cheats = r === "Default Cheats: On"
@@ -30645,7 +30635,7 @@ p.camera.transformation.elements.set(matrix)//*/
     }
   }
 
-  function handleWorldMusic({id, url, elapsed}) {
+  function handleWorldMusic({id, url, elapsed, pitch, volume}) {
     if(!url) {
       const track = worldMusic[id]
       if(track) {
@@ -30656,26 +30646,32 @@ p.camera.transformation.elements.set(matrix)//*/
       return
     }
     if(document.hidden) return
+		if(!pitch && pitch !== 0) pitch = 1
+		if(!volume && volume !== 0) volume = 1
     let track = worldMusic[id]
     if(!track) {
       const audio = new Audio()
       audio.crossOrigin = ""
       audio.loop = false
+			audio.preservesPitch = false
       const source = audioCtx.createMediaElementSource(audio)
       const gainNode = audioCtx.createGain()
       gainNode.gain.value = 0
       source.connect(gainNode)
       gainNode.connect(audioCtx.destination)
-      track = {audio, gainNode, targetGain: 0, startTime: Date.now()/1000-elapsed}
+      track = {audio, gainNode, targetGain: 0, startTime: Date.now()-elapsed, volume, pitch}
       worldMusic[id] = track
     }
+		let time = elapsed/1000*pitch
     if(track.audio.src !== url) {
       track.audio.src = url
-      track.audio.currentTime = elapsed
-    } else if(Math.abs(track.audio.currentTime - elapsed) > 0.5) {
-			if(track.audio.duration && elapsed>track.audio.duration) return
-      track.audio.currentTime = elapsed
+      track.audio.currentTime = time
+    } else if(Math.abs(track.audio.currentTime - time) > 0.5) {
+			if(track.audio.duration && time>track.audio.duration) return
+      track.audio.currentTime = time
     }
+		if(track.audio.volume !== volume) track.audio.volume = volume
+		if(track.audio.playbackRate !== pitch) track.audio.playbackRate = pitch
     track.audio.play().catch(console.warn)
     worldMusicFadeTo(track, 1)
   }
@@ -30685,9 +30681,9 @@ p.camera.transformation.elements.set(matrix)//*/
     for(const id in worldMusic) {
       const track = worldMusic[id]
       if(visible) {
-				let elapsed = Date.now()/1000-track.startTime
-				if(track.audio.duration && elapsed>track.audio.duration) return
-				track.audio.currentTime = elapsed
+				let time = (Date.now()-track.startTime)/1000*track.pitch
+				if(track.audio.duration && time>track.audio.duration) return
+				track.audio.currentTime = time
         track.audio.play().catch(console.warn)
       } else {
         setTimeout(() => {if(track.targetGain === 0) track.audio.pause()}, MUSIC_FADE_TIME * 1000)
@@ -31254,34 +31250,30 @@ p.camera.transformation.elements.set(matrix)//*/
 			name:"Jungle",
 			seeds:[203157613]
 		},
-		{
+		/*{
 			name:"Bamboo forest ahead",
 			seeds:[1750048288]
-		},
+		},*/
 		{
 			name:"Peaks",
-			seeds:[320977315,"good",-1678774288/*hash of "river contash"*/,1367041089]
+			seeds:[320977315,"good",-1678774288/*hash of "river contash"*/,1367041089,2045680738]
 		},
-		{
+		/*{
 			name:"Boring forest",
 			seeds:[1350698308,1405766867]
-		},
+		},*/
 		{
 			name:"Badland valley",
 			seeds:[953324472]
 		},
 		{
 			name:"Old growth taiga",
-			seeds:[1880851319]
+			seeds:[1880851319, 1543576784,284573285,1363713395,648694160,1557057873,209663001,1243749009,1483165089, /*pine*/1110966901,239411838,1444953357,547276209,1950575278,2090531263]
 		},
-		{
-			name:"Really hilly forest",
-			seeds:[0]
-		},
-		{
+		/*{
 			name:"Birch forest with streams nearby",
 			seeds:[745659810]
-		},
+		},*/
 		{
 			name:"Sparse jungle",
 			seeds:[923024760]
@@ -31289,6 +31281,22 @@ p.camera.transformation.elements.set(matrix)//*/
 		{
 			name:"Steep taiga",
 			seeds:[188809457]
+		},
+		{
+			name:"Shrubland",
+			seeds:[1507469566,1657426992,411261530,811548604,1421774673,1507200581, /*dry shrubland*/1579501253,87346126,1602048876,1279931820,1039174358,1597486993,1990761070]
+		},
+		{
+			name:"Rocky plains",
+			seeds:[868934054,916636895,1903519170]
+		},
+		{
+			name:"Windswept gravelly hills",
+			seeds:[845584051,980240375,1403146505]
+		},
+		{
+			name:"Bamboo forest (not jungle)",
+			seeds:[651469073,67484676,1932141078,299219159,1031474587]
 		},
 	]
 	function initSeedTemplatesMenu(){
@@ -31495,6 +31503,66 @@ p.camera.transformation.elements.set(matrix)//*/
 		changeScene("multiplayer connecting")
 		joinWorld(initSingleplayer())
   }
+win.aW=async function(id,cb=emptyFunc,noDoMap=false){
+	if(win.initServerEverything){
+		initServerEverything()
+		win.initServerEverything = null
+	}
+	let iw=inWorld
+	if(!iw){
+	for(let i in worlds)if(worlds[i].id.startsWith(id))data=worlds[i]
+	serverWorld = new ServerWorld({operators:[p.username],trees,caves,fancyRivers,worldType,structures,gameMode:p.gameMode,cheats,settings:worldSettings})
+	serverWorld.setSeed(seedBox.value ? seed : (Math.random() * 2000000000 | 0))
+	serverWorld.name="Starter World"
+	win.serverWorld = serverWorld
+	cb()
+	}
+	let thumbnail=worlds[selectedWorld]&&worlds[selectedWorld].thumbnail
+	genWorldImage=()=>thumbnail
+	if(!iw){
+	let data
+	initWorldsMenu()
+	await sleep(200)
+	if(data){
+	serverWorld.loadSave(data.code)
+	serverWorld.playersInv = data.playersInv || {}
+	serverWorld.mod=data.mod
+	}else if(!noDoMap){
+	while(!marketplaceData||!marketplaceData.length){
+	marketplaceData=null
+	try{await initMarketplace()}catch{}
+	await sleep(1000)
+	}
+	let save=marketplaceData[floor(Math.random()*marketplaceData.length)]
+	if(save.file){
+	let file = JSON.parse(save.file)
+	serverWorld.loadSave(file.code)
+	serverWorld.playersInv = file.playersInv || {}
+	serverWorld.mod=file.mod
+	}else if(save.code){
+	serverWorld.loadSave(save.code)
+	serverWorld.mod=save.mod
+	}
+	}
+	serverWorld.id = serverWorld.id || id+generateID()
+	if(serverWorld.mod){
+	if(!serverWorld.mod.startsWith("function")){
+		initBlockData()
+		let url = URL.createObjectURL(new Blob(["export default function(world,blockData,blockIds,entities,entityIds){ "+mod+" }"],{type:"application/javascript"}))
+		try{let e = await import(url);e.default(serverWorld,blockData,blockIds,serverEntities,serverEntityIds)}catch(e){}
+	}
+	}
+	host = true
+	joinWorld(initSingleplayer())
+	}
+	document.title=document.title.replace(/i/g,"i​")
+	await sleep(200)
+	if(multiplayer)multiplayer.onclose=emptyFunc,multiplayer.close()
+	if(!iw&&serverWorld.players[0])serverWorld.players[0].connection.close()
+	await sleep(200)
+	changeScene("main menu")
+	enableMultiplayer()
+}
 	function deleteSelectedWorld(){
 		if (worlds[selectedWorld] && confirm(`Are you sure you want to delete ${worlds[selectedWorld].name}? This will also delete it from the cloud (if it exists) and the backup (if it exists).`)) {
 			deleteFromDB(selectedWorld)

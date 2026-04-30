@@ -2183,7 +2183,7 @@ const blockData = [
 		shadow: false,
 		potCross: true,
 		crossShape: true,
-		serverontouch: (x,y,z,ent) => ent.applyEffect("wither",1,2,false),
+		serverontouch: (x,y,z,ent) => ent.applyEffect && ent.applyEffect("wither",1,2,false),
 		compostChance:0.65,
 		liquidBreakable:"drop",
 		category:"nature",
@@ -10682,8 +10682,8 @@ const blockData = [
 		itemOnTop(x,y,z,ent){
 			let world = ent.world
 			if(this.isLocked(x,y,z,world)) return
-			var amount = ent.amount
-			while(amount){
+			var amount = ent.data&&ent.data.amount
+			while(amount>0){
 				if(!putItemInContainer(x,y,z,ent.data,false,world)) break
 				amount--
 			}
@@ -18426,7 +18426,7 @@ let packetTypes = [
 	["startBreak",["x","int"],["y","int"],["z","int"]],
 	["containerChangeSign",["data","string"],["side","boolean"]],
 	["portalOut"], ["doEndPoem"],
-	["music", ["id","string"],["url","string"],["elapsed","double"]],
+	["music", ["id","string"],["url","string"],["elapsed","double"],["volume","double"],["pitch","double"]],
 	["customMenu", ["data","string"]], ["customMenuAction", ["data","json",makeBinarySerializer()]],
 	/*["test",
 		["a",'string'],['n','number',8,4],
@@ -21342,14 +21342,14 @@ Example: <span style='color:lightblue'>/teleport @p 100 5+8 60-4</span>
 				for(let i of arr){
 					if(i.type === "Player"){
 						i.health = 0
-						i.damage(1,args.message)
+						i.damage(1,"kill: "+args.message)
 					}else if(i.id){
 						world[i.dimension].deleteEntity(i.id)
 					}
 				}
 			}else return ["No such target: "+args.target,"error"]
 		}))),
-		CommandNode.l("time",null,"mode can be: set, add. n is the time to set to. 1000 is a day. n an also be: day, night").then(
+		CommandNode.l("time", () => [world.time+"",""], "mode can be: set, add. n is the time to set to. 1000 is a day. n an also be: day, night").then(
 			CommandNode.l("set").then(CommandNode.a("time", args => {world.time = args.time === "day" ? 500 : (args.time === "night" ? 0 : (parseFloat(args.time)||0))},"number")),
 			CommandNode.l("add").then(CommandNode.a("amount", args => {world.time += parseFloat(args.amount)||0},"number"))
 		),
@@ -21444,12 +21444,35 @@ Example: <span style='color:lightblue'>/teleport @p 100 5+8 60-4</span>
 			else if(m === "spectator" || m === "l") pos.gameMode = "spectator", pos.riding = null
 			else return ["Game mode doesn't exsist: "+m,"error"]
 			world.sendPlayer({type:"gameMode",gameMode:pos.gameMode},pos.id)
-		},"gameMode",false)),
-		CommandNode.l("playMusic",null,"Play music from a URL. It is synced for everyone. Duration and offset are in seconds.",null,true).then(CommandNode.a("url", (args,pos) => {world.playMusic(args.url)}).then(CommandNode.a("duration", (args,pos) => {world.playMusic(args.url,args.duration)}).then(CommandNode.a("offset", (args,pos) => {world.playMusic(args.url,args.duration,args.offset)})))),
+		},"gameMode",false),
+		CommandNode.a("target",null,"target").then(CommandNode.a("mode",(args,pos) => {
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
+			for(let p of arr){
+				let m = args.mode
+				if(m === "creative" || m === "c") p.gameMode = "creative"
+				else if(m === "survival" || m === "s") p.gameMode = "survival"
+				else if(m === "spectator" || m === "l") p.gameMode = "spectator", p.riding = null
+				else return ["Game mode doesn't exsist: "+m,"error"]
+				world.sendPlayer({type:"gameMode",gameMode:p.gameMode},p.id)
+			}
+		},"gameMode").then(CommandNode.a("cheats",
+		(args,pos) => {
+			let arr = parseTarget(args.target,pos,world[pos.dimension])
+			for(let p of arr){
+				let m = args.mode
+				if(m === "creative" || m === "c") p.gameMode = "creative"
+				else if(m === "survival" || m === "s") p.gameMode = "survival"
+				else if(m === "spectator" || m === "l") p.gameMode = "spectator", p.riding = null
+				else return ["Game mode doesn't exsist: "+m,"error"]
+				p.cheats = !!args.cheats
+				world.sendPlayer({type:"gameMode",gameMode:p.gameMode},p.id)
+			}
+		},"boolean")))),
+		CommandNode.r("gm",gm),
+		CommandNode.l("playMusic",null,"Play music from a URL. It is synced for everyone. Duration is in seconds.",null,true).then(CommandNode.a("url", (args,pos) => {world.playMusic(args.url)}).then(CommandNode.a("duration", (args,pos) => {world.playMusic(args.url,args.duration)}).then(CommandNode.a("volume", (args,pos) => {world.playMusic(args.url,args.duration,+args.volume)}).then(CommandNode.a("pitch", (args,pos) => {world.playMusic(args.url,args.duration,+args.volume,+args.pitch)}))))),
 		CommandNode.l("stopMusic", (args,pos) => {
 			for(let [i, m] of world.music) world.stopMusic(i)
 		},"Stops all music."),
-		CommandNode.r("gm",gm),
 		CommandNode.l("clear","client","Clear messages",null,true),
 		CommandNode.l("clearHistory","client","Clears chat history and input history.",null,true),
 		sp = CommandNode.l("spectatePlayer",null,"Spectate a player. If remote_control is set to true and you are the host or certain people, remote control will be enabled.").then(CommandNode.a("username",
@@ -21689,7 +21712,7 @@ function parseValue(reader){
 		ret = ["~"]
 	}else{
 		let v = reader.read("string")
-		if(!isNaN(v)) v = +v
+		if(!isNaN(v) && v===v.trim()) v = +v
 		else if(v === "true") v = true
 		else if(v === "false") v = false
 		ret = ["string",v]
@@ -22090,7 +22113,7 @@ class Entity {
 						var under = this.world.getBlock(x,y-1,z,this.dimension)
 						if(me.isThis(under) && under !== me.id) this.vely -= 1/128
 					}
-					if(blockData[block].ontouch){
+					if(blockData[block].serverontouch){
 						let dist = max(abs(x-this.x),abs(z-this.z),abs(y-this.y))
 						if(dist<closestTouch){
 							closestTouch = dist
@@ -22254,7 +22277,7 @@ class Entity {
 		let chunkX = this.x >> 4, chunkZ = this.z >> 4
 		if(this.chunkX !== chunkX || this.chunkZ !== chunkZ || this.dimension !== this.chunkDimension){
 			let oldChunk = this.world.getChunk(this.chunkX<<4,this.chunkZ<<4)
-			this.world = this.world.world[this.chunkDimension]
+			this.world = this.world.world[this.dimension]
 			let chunk = this.world.getOrNewChunk(chunkX<<4,chunkZ<<4)
 			this.chunkX = chunkX
 			this.chunkZ = chunkZ
@@ -22972,6 +22995,14 @@ class Player extends Entity{
 			this.dieHidden = false
 		}
 		this.hidden = this.dieHidden || this.spectator
+		if(this.spectator && this.spectating){
+			let e = getEntityOrPlayer(this.spectator,this.world)
+			if(e && this.dimension !== e.dimension) this.tp(e.x,e.y,e.z,e.dimension)
+		}
+		if(this.riding){
+			let e = getEntityOrPlayer(this.riding,this.world)
+			if(e && this.dimension !== e.dimension) this.tp(e.x,e.y+this.height*0.5+e.rideOffsetY,e.z,e.dimension)
+		}
 		this.move(now)
 		if(!this.die && this.survival){
 			if(this.y < minHeight){
@@ -23312,7 +23343,10 @@ class Player extends Entity{
 	}
 	damage(amount, why, nosound,type, x,y,z, attackedBy, velx=0,vely=0,velz=0){
 		if(this.world.world.event("damage", {player:this,why,type,x,y,z,attackedBy})) return
-		if(!this.survival) return
+		if(!this.survival){
+			this.dieMessage = why
+			return
+		}
 		/*let h = inventory.hotbar[inventory.hotbarSlot]
 		if(h && h.id && p.usingItem && blockData[h.id].sword){
 			amount /= blockData[h.id].durability/30
@@ -23565,7 +23599,7 @@ let BlockEntity = entities[entities.length] = class BlockEntity extends Entity{
 			var b = this.world.getBlock(x, y, z, this.dimension)
 			if(b && !blockData[b].liquid){
 				// non cube block breaks falling blocks
-				this.world.addItems(x,y,z, 0,0,0, this.block)
+				this.world.dropBlock(x,y,z,this.block)
 			}else{
 				this.world.setBlock(x,y,z, this.block,false,false,false,false,this.dimension)
 				this.world.blockSound(this.block, "land", x,y,z)
@@ -26449,9 +26483,9 @@ class Chunk {
 		let py = y
 		y -= minHeight
 		if(y<0) return
-		if(this.allGenerated && !user){//used for generating trees after populations
+		if(this.allGenerated && !user){//used for generating trees (from saplings) after populations
 			user = this.world
-			//this.world.sendAllInChunk({type:"setBlock", data:{x:x+this.x, y:py, z:z+this.z, block:blockID, dimension:this.type}},this.x,this.z)
+			this.world.sendAllInChunk({type:"setBlock", data:{x:x+this.x, y:py, z:z+this.z, block:blockID, dimension:this.type}},this.x,this.z)
 		}
 		if (!this.sections[y >> 4]) {
 			do {
@@ -27920,7 +27954,7 @@ class Chunk {
 		var leafBottom = 6
 		var branchCount
 		//var branchSlope = 0.381
-		let tree = blockIds.oakLog
+		let tree = blockIds.oakWood
 		let leaf = blockIds.oakLeaves
 		
 		let branches = []
@@ -30947,7 +30981,7 @@ function fall(x,y,z,b,world, instant, solid = true){
 function needsSupportingBlocks(x,y,z, b,world){ // if block under is gone, dissapear
 	if(!world.world.settings.blocksFall) return
 	var under = world.getBlock(x,y-1,z)
-	if(!under || !blockData[under].solid){
+	if((!under || !blockData[under].solid) && blockData[under].id !== blockData[b].id){
 		world.setTimeout(() => {
 			var under = world.getBlock(x,y-1,z)
 			if(under && blockData[under].solid) return
@@ -31260,7 +31294,7 @@ const {
 		return currentRandom.nextDouble() * (max - min) + min;
 	};
 	win.serverRandomRandom = () => currentRandom = new Marsaglia(Math.random() * 210000000)
-	win.serverRestoreRandom = () => currentRandom = currentRandom[currentRandomId]//prevent random in populate from messing up because it is async
+	win.serverRestoreRandom = () => currentRandom = currentRandoms[currentRandomId]//prevent random in populate from messing up because it is async
 
 	return {
 		randomSeed,
@@ -32178,7 +32212,7 @@ class World{ // aka trueWorld
 	}
 	entInteract(id,hit,p){
 		let ent = getEntityOrPlayer(id,this[p.dimension])
-		if(!ent || dist3(p.x,p.y,p.z,ent.x,ent.y,ent.z)>p.reach+1) return
+		if(!ent || p.survival&&dist3(p.x,p.y,p.z,ent.x,ent.y,ent.z)>p.reach+1) return
 		let holdObj = p.inventory.hotbar[p.inventory.hotbarSlot]
 		let block = blockData[holdObj ? holdObj.id : 0]
 		if(hit){
@@ -32235,7 +32269,7 @@ class World{ // aka trueWorld
 	}
 	// for older version
 	static entityPacketType = [
-		["version","constant",0],["id","basicString"],["entId","byte"],["x","double"],["y","double"],["z","double"],packetDimension,
+		["version","constant",0],["id","basicString"],["entId","byte"],["x","double"],["y","double"],["z","double"],['dimension',"replacerNumber",3,["","nether","end"]],
 		["pitch","double"],["yaw","double"],["velx","double"],["vely","double"],["velz","double"],["spawnRelative","double"],
 		[ent=>ent.type==="Item"||ent.type==="ExperienceOrb","includeIf",[["amount","double"]]],
 		[ent=>ent.type==="Item"||(ent instanceof BlockEntity),"includeIf",[["block","uint"]]],
@@ -32687,10 +32721,10 @@ class World{ // aka trueWorld
 
 		let time = this.time % 1000
 		//if you change this, change client
-		if(time > 725 && time < 800) this.skyLight = mapFrom(time, 800,725) //get darker
-		else if(time > 200 && time < 275) this.skyLight = mapFrom(time, 200,275) //get brighter
-		else if(time >= 800 || time <= 200) this.skyLight = 0
-		else this.skyLight = 1
+		let x = -cos(time * Math.PI / 500)
+		let t = Math.min(Math.max((x - -0.25) / (0.08 - -0.25), 0.0), 1.0)
+		this.skyLight = t * t * (3.0 - 2.0 * t) // smoothstep
+		
 		for(let i in this.players){
 			this.players[i].update()
 			this.players[i].updateLoaded()
@@ -33395,12 +33429,12 @@ class World{ // aka trueWorld
 		inventory.hotbarSlot = reader.read(4)
 		for(let i=0;i<9;i++){
 			let id = reader.read(32), amount = reader.read(7)
-			inventory.hotbar[i] = amount && {id,amount}
+			inventory.hotbar[i] = amount && id && {id,amount}
 		}
 		let invLen = 27
 		for(let i=0;i<invLen;i++){
 			let id = reader.read(32), amount = reader.read(7)
-			inventory.main[i] = amount && {id,amount}
+			inventory.main[i] = amount && id && {id,amount}
 		}
 		let durability = reader.read(4), durabilityInv = reader.read(5)
 		for(let i=0;i<durability;i++){
@@ -33446,12 +33480,12 @@ class World{ // aka trueWorld
 		inventory.hotbarSlot = reader.read(4)
 		for(let i=0;i<9;i++){
 			let id = reader.read(32), amount = reader.read(7)
-			inventory.hotbar[i] = amount && {id,amount}
+			inventory.hotbar[i] = amount && id && {id,amount}
 		}
 		let invLen = 13*9
 		for(let i=0;i<invLen;i++){
 			let id = reader.read(32), amount = reader.read(7)
-			inventory.main[i] = amount && {id,amount}
+			inventory.main[i] = amount && id && {id,amount}
 		}
 		let durability = reader.read(4), durabilityInv = reader.read(5)
 		for(let i=0;i<durability;i++){
@@ -34046,7 +34080,7 @@ window.parent.postMessage({ready:true}, "*")
 					}, data.data)
 				}
 			}*/else if(data.type === "remoteControl"){
-				if(p.spectateRemoteControl) world.sendPlayer(data,data.TO)
+				if(p.spectateRemoteControl) world.sendPlayer(data,data.spectating)
 			}else if(data.type === "runCmd"){
 				runCmd(data.data,p,world,false, (output,newOutputs) => {
 					for(let i=0; i<newOutputs.length; i+=2) c.send({type:"message",data:newOutputs[i],fromServer:true})
@@ -34069,7 +34103,7 @@ window.parent.postMessage({ready:true}, "*")
 							let change = nitem ? pitem.amount-nitem.amount : pitem.amount
 							let d = p.direction
 							let place = inventory.slotMapPlace.get(data.idxs[0])
-							if(p.survival || place !== "holding" && p.cheats) p.world.addItem(p.x, p.y+p.height/2, p.z, d.x/2, d.y/2, d.z/2, {...pitem, amount:change}, false,p.id)
+							if(p.survival || place !== "holding" && !p.survival) p.world.addItem(p.x, p.y+p.height/2, p.z, d.x/2, d.y/2, d.z/2, {...pitem, amount:change}, false,p.id)
 							break check
 						}
 					}
@@ -34090,7 +34124,7 @@ window.parent.postMessage({ready:true}, "*")
 						if(place === "anvilOutput" && inventory.anvilCost>p.level && p.survival) return updateContainer(true)
 						if(place === "equipment" && nitem && blockData[nitem.id].equipmentSlot !== inventory.slotMapIdx.get(data.idxs[i])) return updateContainer(true)
 					}
-					if((p.survival || !p.cheats) && !compareMaps(nmap,pmap)) return updateContainer(true)
+					if((p.survival || p.spectator && !p.cheats) && !compareMaps(nmap,pmap)) return updateContainer(true)
 					/*for(let i=0; i<data.data.length; i++){//check for correctness
 						let ritem = data.data[i]
 						let item = getSlot(data.idxs[i])
@@ -34193,7 +34227,7 @@ window.parent.postMessage({ready:true}, "*")
 				updateAnvil()
 			}else if(data.type === "containerChangeCommandBlock"){
 				let {containerData} = p.inventory
-				if(data.data.length > p.maxUserString) return p.world.updateTags(containerData.x,containerData.y,containerData.z)
+				if(!p.cheats) return p.world.updateTags(containerData.x,containerData.y,containerData.z)
 				p.world.setTagByName(containerData.x,containerData.y,containerData.z,"data",data.data,false)
 			}else if(data.type === "containerChangeSign"){
 				let {containerData} = p.inventory
@@ -34564,11 +34598,12 @@ window.parent.postMessage({ready:true}, "*")
 			this.modContainer.remove()
 		}*/
 	}
-	playMusic(url, duration=5*60, offset=0){
+	playMusic(url, duration=5*60, volume = 1, pitch = 1){
 		if(!this.musicNextId) this.musicNextId = 0
+		duration *= 1000
 		const id = ++this.musicNextId
-		this.music.set(id, {url, startTime: Date.now()/1000 - offset, duration})
-		this.sendAll({type:"music", id, url, elapsed: offset})
+		this.music.set(id, {url, startTime: Date.now(), duration, volume,pitch})
+		this.sendAll({type:"music", id, url, elapsed: 0, volume, pitch})
 		return id
 	}
 	stopMusic(id){
@@ -34576,7 +34611,7 @@ window.parent.postMessage({ready:true}, "*")
 		this.sendAll({type:"music", id, url: null, elapsed: 0})
 	}
 	tickMusic(){
-		const now = Date.now()/1000
+		const now = Date.now()
 		for(let [id, track] of this.music){
 			if(track.duration && now - track.startTime >= track.duration){
 				this.music.delete(id)
@@ -34586,7 +34621,7 @@ window.parent.postMessage({ready:true}, "*")
 	}
 	sendMusicTo(connection){
 		for(let [id, track] of this.music){
-			connection.send({type:"music", id, url: track.url, elapsed: Date.now()/1000 - track.startTime})
+			connection.send({type:"music", id, url: track.url, elapsed: Date.now() - track.startTime, volume:track.volume, pitch:track.pitch})
 		}
 	}
 }
@@ -34685,7 +34720,7 @@ class WorldDimension{
       if(p.liquid) breakTime *= 5
 			if(!p.onGround) breakTime *= 5
 		}
-		if(dimension !== p.dimension || breakTime !== undefined && (p.crackPos[0] !== x || p.crackPos[1] !== y || p.crackPos[2] !== z || dnow-p.breakStart<breakTime-250) || !p.cheats&&dist3(p.x,p.y,p.z,x,y,z)>p.reach+1){
+		if(dimension !== p.dimension || breakTime !== undefined && (p.crackPos[0] !== x || p.crackPos[1] !== y || p.crackPos[2] !== z || dnow-p.breakStart<breakTime-250) || p.survival&&dist3(p.x,p.y,p.z,x,y,z)>p.reach+1 || p.spectator){
 			return p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:prevBlock, dimension}})
 		}
 		if(place){//placed
@@ -34758,7 +34793,7 @@ class WorldDimension{
 	      }
 	    }
 			if(!holding || blockData[holding].item) return
-			if(!p.cheats) blockMode = 0
+			if(p.survival) blockMode = 0
 			let under = this.getBlock(x,y-1,z)
       let onPot = !side && blockData[under] && blockData[under].pot
       if(blockData[holding].potCross && onPot){
@@ -36823,12 +36858,17 @@ function getHeight(x,z,heightmaps,extra,top=0){
 			let scale = getHeight.scale
 			if(extra === true) chunk[(z&15)*16+(x&15)] = 0//(noise2d((x+getHeight.offsetX)*0.4,(z+getHeight.offsetZ)*0.4, 2)-0.25)*0.04*iteration
 			else{
-				chunk[(z&15)*16+(x&15)] = getBottomHeight((x+getHeight.offsetX)*scale,(z+getHeight.offsetZ)*scale,scale) * (1-getRiver(x,z,extra)*0.5)
+				chunk[(z&15)*16+(x&15)] = getBottomHeight((x+getHeight.offsetX)*scale,(z+getHeight.offsetZ)*scale,scale)
 				chunk[(z&15)*16+(x&15)+256] = getBottomHeight.topHeight
 				chunk[(z&15)*16+(x&15)+512] = getBottomHeight.cantSpawnRiver
 			}
 		}
-		return chunk[(z&15)*16+(x&15) + top*256]
+		let h = chunk[(z&15)*16+(x&15) + top*256]
+		if(!top && extra && extra !== true){
+			let lh = getRiver(x,z,extra)
+			if(lh) h = h + (lh - h) * getRiver(x,z,riverDists)
+		}
+		return h
 }
 /*Chunk format: 11 by 11 grid
 
@@ -36863,6 +36903,12 @@ function maxLower(x,z,rivers,value){
     let grid = rivers[(cx+center)*lwidth+(cz+center)] || (rivers[(cx+center)*lwidth+(cz+center)] = new Float32Array(256))
     grid[(z&15)*16+(x&15)] = Math.max(value,(grid[(z&15)*16+(x&15)]||0))
 }
+function minLower(x,z,rivers,value){
+    let cx = x>>4, cz = z>>4
+    let grid = rivers[(cx+center)*lwidth+(cz+center)] || (rivers[(cx+center)*lwidth+(cz+center)] = new Float32Array(256))
+    let idx = (z&15)*16+(x&15)
+    if(!grid[idx] || value < grid[idx]) grid[idx] = value
+}
 function addGridXZ(x,z,rivers,value,xOrZ=0){//if xOrZ=0, x    if xOrZ=1, z
 	let cx = x>>4, cz = z>>4
 	let grid = rivers[(cx+center)*lwidth+(cz+center)] || (rivers[(cx+center)*lwidth+(cz+center)] = new Float32Array(512))
@@ -36888,533 +36934,249 @@ function copyGridFloat(cx,cz,rivers,arr){
 function dirToInt(x){return x===1?1:(x===-1?2:0)}
 function intToDir(i){return i===1?1:(i===2?-1:0)}
 
-const diagonalMult = 1, diagonal2Mult = 0.8
-let tempRiverArr = []
-function generateBaseRivers(cx,cz,rcx,rcz,rivers,heightmaps,prevRivers,iteration,riverLowers,scale,riverDists,prevRiverDists){
-	let river = tempRiverArr
+const diagonalMult = 1
+// riverPaths: array of {nodes:[x,z,x,z,...] floats, width:number}
+const chunkRiverCache = new Map()
+function generateBaseRivers(cx,cz,rcx,rcz,heightmaps,iteration,riverLowers,scale,riverDists,riverPaths,prevRiverRef){
 	let random = new Marsaglia(hash3(rcx,rcz,iteration))
 	getHeight.scale = scale
 	getHeight.iteration = iteration
 	getHeight.offsetX = (rcx-cx)*16
 	getHeight.offsetZ = (rcz-cz)*16
-	const tries = iteration===1 ? 16 : 8//Math.round(2/iteration + random.nextDouble()*0.5)
-	//const scaleHigher = 1-(1-scale)**2
-	const minDist = 4*4/iteration
+	let offX = getHeight.offsetX, offZ = getHeight.offsetZ
+	/*let cacheKey = rcx + ',' + rcz + ',' + iteration
+	if(chunkRiverCache.has(cacheKey)){
+		for(let p of chunkRiverCache.get(cacheKey)){
+			let pi = riverPaths.length
+			riverPaths.push({nodes: p.nodes.slice(), heights: p.heights.slice(), width: p.width, connectedNode: p.connectedNode, scale: p.scale})
+			for(let i=0; i<p.nodes.length; i+=2){
+				setRiver(p.nodes[i]+offX, p.nodes[i+1]+offZ, rivers, 1)
+				prevRiverRef.set(p.nodes[i]+','+p.nodes[i+1], {pi, ni:i})
+			}
+		}
+		getHeight.scale = null; return
+	}*/
+	let pathsStart = riverPaths.length
+	const tries = 16//iteration===1 ? 16 : 8
+	const minDist = 64//4*4/iteration
+	const lowerAmount = 0.125*scale
 	main:for(let i=0; i<tries; i++){
-			let ox = random.nextDouble(), oz = random.nextDouble()
-			if(iteration===1){
-				//for more even distribution
-				ox = ((i&3)+ox)*0.25
-				oz = ((i>>2)+oz)*0.25
-			}
-			ox = Math.floor(ox*16)+cx*16;
-			oz = Math.floor(oz*16)+cz*16;
-			//getTemperatureAndRainfall((getHeight.offsetX+ox)*scale/generateRiverChunk.riverScale,(getHeight.offsetZ+oz)*scale/generateRiverChunk.riverScale,true)
-			//if(random.nextDouble()*(4-rainfallHere)>iteration*0.25+0.75) continue//dryer places have less big rivers
-			let height = getHeight(ox,oz,heightmaps,riverLowers)
-			if(height<0 || getHeight(ox,oz,heightmaps,riverLowers,2)) continue
-			let x = ox, z = oz
-			let thisheight, heightdiff
-			river.length = 0
-			let topHeight = getHeight(x,z,heightmaps,riverLowers,1)
-			let maxUpHeight, upMode = false, pdx, pdz, pdouble2, pnx, pnz, upModeDownEnd
-			//upMode happens when river stuck and makes them keep going in the same direction until it can go down
-			while(topHeight>0 && !getRiver(x,z,prevRivers)){
-					let nx, nz//next position
-					let dx = 0, dz = 0, double2 //position for diagonal if diagonal
-					let maxHeightDiff = 0
-					
-					if(upMode){
-						nx = pnx, nz = pnz, dx = pdx, dz = pdz, double2 = pdouble2
-						if(nx === undefined) continue main
-						let thisheight = getHeight(x+nx,z+nz,heightmaps,riverLowers)
-						if(thisheight > maxUpHeight) continue main//it can't go up that much
-						if(thisheight < height){
-							if(upModeDownEnd === undefined) upModeDownEnd = height-0.025//it has to go down a certain amount to count
-							if(thisheight < upModeDownEnd){
-								upMode = false//going down place found
-								upModeDownEnd = undefined
-							}
-						}else upModeDownEnd = undefined
-						height = thisheight
-					}else{
-						//4 basic directions
-						thisheight = getHeight(x+1,z,heightmaps,riverLowers), heightdiff = height-thisheight//+getHeight(x+1,z,extraNoisemaps,1)
-						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 1, nz = 0
-						thisheight = getHeight(x-1,z,heightmaps,riverLowers), heightdiff = height-thisheight//+getHeight(x-1,z,extraNoisemaps,1)
-						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -1, nz = 0
-						thisheight = getHeight(x,z+1,heightmaps,riverLowers), heightdiff = height-thisheight//+getHeight(x,z+1,extraNoisemaps,1)
-						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 0, nz = 1
-						thisheight = getHeight(x,z-1,heightmaps,riverLowers), heightdiff = height-thisheight//+getHeight(x,z-1,extraNoisemaps,1)
-						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 0, nz = -1
-						
-						//between directions
-						thisheight = getHeight(x+1,z+1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x+1,z+1,extraNoisemaps,1)*/)*diagonalMult
-						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 1, nz = 1, dx = 1, dz = 0
-						thisheight = getHeight(x+1,z-1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x+1,z-1,extraNoisemaps,1)*/)*diagonalMult
-						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 1, nz = -1, dx = 0, dz = -1
-						thisheight = getHeight(x-1,z+1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x-1,z+1,extraNoisemaps,1)*/)*diagonalMult
-						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -1, nz = 1, dx = 0, dz = 1
-						thisheight = getHeight(x-1,z-1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x-1,z-1,extraNoisemaps,1)*/)*diagonalMult
-						if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -1, nz = -1, dx = -1, dz = 0
-						
-						//between between directions
-						//thisheight = getHeight(x-1,z+2,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x-1,z+2,extraNoisemaps,1)*/)*diagonal2Mult
-						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -1, nz = 2, dx = 0, dz = 1, double2 = true
-						//thisheight = getHeight(x+1,z+2,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x+1,z+2,extraNoisemaps,1)*/)*diagonal2Mult
-						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 1, nz = 2, dx = 0, dz = 1, double2 = true
-						//thisheight = getHeight(x+2,z+1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x+2,z+1,extraNoisemaps,1)*/)*diagonal2Mult
-						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 2, nz = 1, dx = 1, dz = 0, double2 = true
-						//thisheight = getHeight(x+2,z-1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x+2,z-1,extraNoisemaps,1)*/)*diagonal2Mult
-						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 2, nz = -1, dx = 1, dz = 0, double2 = true
-						//thisheight = getHeight(x+1,z-2,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x+1,z-2,extraNoisemaps,1)*/)*diagonal2Mult
-						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 1, nz = -2, dx = 0, dz = -1, double2 = true
-						//thisheight = getHeight(x-1,z-2,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x-1,z-2,extraNoisemaps,1)*/)*diagonal2Mult
-						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -1, nz = -2, dx = 0, dz = -1, double2 = true
-						//thisheight = getHeight(x-2,z-1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x-2,z-1,extraNoisemaps,1)*/)*diagonal2Mult
-						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -2, nz = -1, dx = -1, dz = 0, double2 = true
-						//thisheight = getHeight(x-2,z+1,heightmaps,riverLowers), heightdiff = (height-thisheight/*+getHeight(x-2,z+1,extraNoisemaps,1)*/)*diagonal2Mult
-						//if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -2, nz = 1, dx = -1, dz = 0, double2 = true
-
-						if(nx === undefined || xyArrayHas(river,x+nx,z+nz)) {
-							upMode = true //river is stuck
-							maxUpHeight = height+0.025
-							continue
-						}
-					}
-					/*if(dx || dz){
-							river.push(x+dx,z+dz)
-							if(double2) river.push(x+nx-dx,z+nz-dz)
-					}*/
-					x += nx, z += nz
-					river.push(x,z)
-					pnx = nx, pnz = nz, pdx = dx, pdz = dz, pdouble2 = double2
-					topHeight = getHeight(x,z,heightmaps,riverLowers,1)
-					if(river.length>1600 || Math.max(Math.abs(x-ox),Math.abs(z-oz)) > 32 || getHeight(x,z,heightmaps,riverLowers,2)) continue main
-					if((dx || dz) && (getRiver(x+dx,z,prevRivers)||getRiver(x,z+dz,prevRivers))) break//prevent diagonal going through another diagonal
-			}
-			if((x-ox)**2+(z-oz)**2<minDist) continue main//too short
-			//startt if(topHeight > 0 && random.nextDouble() < getRiver(x,z,prevRiverStartDists)) continue main //if not connecting to start, it is rarer
-			//if(topHeight <= 0 && iteration>3 && random.nextDouble()*iteration>3) continue main //prevent small rivers going into ocean to much
-			for(let j=0, f=0; j<river.length; j+=2, f++){
-				if(j<river.length-2){
-					let riverWidth = (maxZoom-iteration+1)*384//1 to 4096
-					let prevRiverWidth = getRiver(river[j],river[j+1],rivers)>>>4
-					if(prevRiverWidth) riverWidth = riverWidth+prevRiverWidth
-					setRiver(river[j],river[j+1],rivers, (riverWidth-1)<<4 | dirToInt(river[j+2]-river[j])<<2 | dirToInt(river[j+3]-river[j+1]))
+		let ox = random.nextDouble(), oz = random.nextDouble()
+		/*if(iteration===1){
+			ox = ((i&3)+ox)*0.25
+			oz = ((i>>2)+oz)*0.25
+		}*/
+		//if(iteration===1)return
+		ox = Math.floor(ox*16)+cx*16
+		oz = Math.floor(oz*16)+cz*16
+		let height = getHeight(ox,oz,heightmaps,riverLowers)
+		if(height<0.1 || getHeight(ox,oz,heightmaps,riverLowers,2)) continue
+		let x = ox, z = oz
+		let river = [], heights = []
+		let lastHeight = height
+		let thisheight, heightdiff
+		let connectedNode
+		//let topHeight = getHeight(x,z,heightmaps,riverLowers,1)
+		let upMode = false, pdx, pdz, pnx, pnz
+		while(height>-0.1 && !prevRiverRef.get(x+","+z)){
+			let nx, nz
+			let dx = 0, dz = 0
+			let maxHeightDiff = 0
+			if(upMode){
+				nx = pnx, nz = pnz, dx = pdx, dz = pdz
+				if(nx === undefined) continue main
+				let thisheight = getHeight(x+nx,z+nz,heightmaps,riverLowers)
+				if(thisheight > lastHeight+1*scale) continue main
+				if(thisheight < height) upMode = false
+				height = thisheight
+			}else{
+				thisheight = getHeight(x+1,z,heightmaps,riverLowers), heightdiff = height-thisheight
+				if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 1, nz = 0
+				thisheight = getHeight(x-1,z,heightmaps,riverLowers), heightdiff = height-thisheight
+				if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -1, nz = 0
+				thisheight = getHeight(x,z+1,heightmaps,riverLowers), heightdiff = height-thisheight
+				if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 0, nz = 1
+				thisheight = getHeight(x,z-1,heightmaps,riverLowers), heightdiff = height-thisheight
+				if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 0, nz = -1
+				thisheight = getHeight(x+1,z+1,heightmaps,riverLowers), heightdiff = (height-thisheight)*diagonalMult
+				if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 1, nz = 1, dx = 1, dz = 0
+				thisheight = getHeight(x+1,z-1,heightmaps,riverLowers), heightdiff = (height-thisheight)*diagonalMult
+				if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = 1, nz = -1, dx = 0, dz = -1
+				thisheight = getHeight(x-1,z+1,heightmaps,riverLowers), heightdiff = (height-thisheight)*diagonalMult
+				if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -1, nz = 1, dx = 0, dz = 1
+				thisheight = getHeight(x-1,z-1,heightmaps,riverLowers), heightdiff = (height-thisheight)*diagonalMult
+				if(heightdiff>maxHeightDiff) maxHeightDiff = heightdiff, height = thisheight, nx = -1, nz = -1, dx = -1, dz = 0
+				if(nx === undefined || xyArrayHas(river,x+nx,z+nz)){
+					upMode = true
+					continue
 				}
-				for(let x=-1;x<=1;x++){
-						for(let z=-1;z<=1;z++){
-								const d = Math.abs(x/1)+Math.abs(z/1)//(x/16)**2+(z/16)**2
-								if(d>=1) continue
-								const lower = 1-d //1-approxCbrt(d*d) //Math.max((d-riverFlatDist),0)*riverFlatMult
-								maxLower(river[j]+x,river[j+1]+z,riverDists,lower)
-						}
-				}
-				//startt let startDist = scaleHigher*Math.min(f*0.125,1)*0.25
-				//maxLower(river[j],river[j+1],riverStartDists,startDist)//start of river has lower value, other parts are higher
-				//maxLower(river[j]+1,river[j+1],riverStartDists,startDist)
-				//maxLower(river[j]-1,river[j+1],riverStartDists,startDist)
-				//maxLower(river[j],river[j+1]+1,riverStartDists,startDist)
-				//maxLower(river[j],river[j+1]-1,riverStartDists,startDist)
 			}
-			//if(rivlog<1)console.log("river at",(ox+(rcx-cx)*16)*scale/generateRiverChunk.riverScale,(oz+(rcz-cz)*16)*scale/generateRiverChunk.riverScale),rivlog++
+			x += nx, z += nz
+			river.push(x,z)
+			lastHeight = Math.min(height, lastHeight)
+			heights.push(Math.max(Math.min(0,height), lastHeight-lowerAmount*Math.min(heights.length/4, 1)/*less lower at start*/))
+			pnx = nx, pnz = nz, pdx = dx, pdz = dz
+			//topHeight = getHeight(x,z,heightmaps,riverLowers,1)
+			if(river.length>1600 || Math.max(Math.abs(x-ox),Math.abs(z-oz)) > 32 || getHeight(x,z,heightmaps,riverLowers,2)) continue main
+			connectedNode = (prevRiverRef.get((x+dx)+","+z)||prevRiverRef.get(x+","+(z+dz)))
+			if((dx || dz) && connectedNode) break
+		}
+		if((x-ox)**2+(z-oz)**2<minDist) continue main
+		let riverWidth = (maxZoom-iteration+1)*384
+		if(river.length >= 4){
+			let pi = riverPaths.length
+			let path = {nodes: river, heights, width: riverWidth, connectedNode, scale: 2}
+			riverPaths.push(path)
+			for(let i=0; i<river.length; i+=2) prevRiverRef.set(river[i]+','+river[i+1], {pi, ni:i})
+		}
 	}
+	/*if(chunkRiverCache.size >= 512) chunkRiverCache.delete(chunkRiverCache.keys().next().value)
+	chunkRiverCache.set(cacheKey, riverPaths.slice(pathsStart).map(p => ({nodes: p.nodes.slice(), heights: p.heights.slice(), width: p.width, connectedNode: p.connectedNode, scale: p.scale})))*/
 	getHeight.scale = null
 }
-//let rivlog=0,aaa={stuck:0,nom:0,short:0,total:0}
-const riverFlatDist = (1/8)**2, riverFlatMult = 1/(1-riverFlatDist)
-function interpolateRivers(cx,cz,scaleBy,prevRivers,newRivers,newPrevRivers,offsetX,offsetZ,prevRiverLowers,newRiverLowers,prevRiverDists,prevPrevRiverDists,newPrevRiverDists,scale,riverNormalDists,prevRiverNormalDists,prevRiverTwists,newRiverTwists){
-    //let pcx = Math.round(rcx*scaleBy), pcz = Math.round(rcz*scaleBy)
-    //let offsetX = cx*scaleBy - pcx + cx, offsetZ = cz*scaleBy - pcz + cz
-    offsetX *= 16, offsetZ *= 16
-		let lowerAmount = scale//1-(1-scale)**2
-    for(let x=0;x<16;x++){
-        for(let z=0;z<16;z++){
-            let rx = Math.floor(x*scaleBy+offsetX), rz = Math.floor(z*scaleBy+offsetZ)
-            let ix = x*scaleBy+offsetX-rx, iz = z*scaleBy+offsetZ-rz
-						let newX = x+cx*16, newZ = z+cz*16
-
-						if(!ix && !iz){
-							let river = getRiver(rx,rz,prevRivers)
-							//make rivers in previous scale longer in new scale
-							if(river){
-								let dirX = intToDir((river>>>2)&3), dirZ = intToDir(river&3)
-								for(let i=0, rx=0, rz=0; i<1; i+=scaleBy, rx+=dirX, rz+=dirZ){
-									setRiver(newX+rx,newZ+rz,newRivers,river)
-									setRiver(newX+rx,newZ+rz,newPrevRivers,river)
-								}
-							}
-						}
-            let lower = lerp(ix,
-                lerp(iz,
-                    getRiver(rx,rz,prevRiverLowers),
-                    getRiver(rx,rz+1,prevRiverLowers)
-                ),
-                lerp(iz,
-                    getRiver(rx+1,rz,prevRiverLowers),
-                    getRiver(rx+1,rz+1,prevRiverLowers)
-                )
-            )
-						let prevDist = lerp(ix, //prevPrevRiverDists is from before the previous ones set
-							lerp(iz,
-								getRiver(rx,rz,prevPrevRiverDists),
-								getRiver(rx,rz+1,prevPrevRiverDists)
-							),
-							lerp(iz,
-								getRiver(rx+1,rz,prevPrevRiverDists),
-								getRiver(rx+1,rz+1,prevPrevRiverDists)
-							)
-						)
-						let newDist = lerp(ix, //prevRiverDists is the newly set ones
-							lerp(iz,
-								getRiver(rx,rz,prevRiverDists),
-								getRiver(rx,rz+1,prevRiverDists)
-							),
-							lerp(iz,
-								getRiver(rx+1,rz,prevRiverDists),
-								getRiver(rx+1,rz+1,prevRiverDists)
-							)
-						)
-						let prevRiverNormalDist = lerp(ix,
-							lerp(iz,
-									getRiver(rx,rz,riverNormalDists),
-									getRiver(rx,rz+1,riverNormalDists)
-							),
-							lerp(iz,
-									getRiver(rx+1,rz,riverNormalDists),
-									getRiver(rx+1,rz+1,riverNormalDists)
-							)
-						)
-						let twistX = lerp(ix,
-							lerp(iz,
-								getGridXZ(rx,rz,prevRiverTwists),
-								getGridXZ(rx,rz+1,prevRiverTwists)
-							),
-							lerp(iz,
-								getGridXZ(rx+1,rz,prevRiverTwists),
-								getGridXZ(rx+1,rz+1,prevRiverTwists)
-							)
-						)
-						let twistZ = lerp(ix,
-							lerp(iz,
-								getGridXZ(rx,rz,prevRiverTwists,1),
-								getGridXZ(rx,rz+1,prevRiverTwists,1)
-							),
-							lerp(iz,
-								getGridXZ(rx+1,rz,prevRiverTwists,1),
-								getGridXZ(rx+1,rz+1,prevRiverTwists,1)
-							)
-						)
-						lower = lerp(prevDist,lowerAmount*newDist/*scale controls deepness*/,lower)
-            setGridFloat(newX,newZ,newRiverLowers,lower)
-            setGridFloat(newX,newZ,newPrevRiverDists,Math.max(newDist,prevDist))
-						setGridFloat(newX,newZ,prevRiverNormalDists, Math.max((newDist*2)-1,(prevRiverNormalDist/scaleBy)-(1/scaleBy-1),0))
-            setGridXZ(newX,newZ,newRiverTwists,twistX/scaleBy)
-            setGridXZ(newX,newZ,newRiverTwists,twistZ/scaleBy,1)
-        }
-    }
+function smoothRiverPaths(riverPaths, scale, startIdx=0, wx=0, wz=0, smoothIteration){
+	let strength = 1 / twistIterations
+	let offX = Math.floor(wx/scale)*16, offZ = Math.floor(wz/scale)*16
+	for(let pi=startIdx; pi<riverPaths.length; pi++){
+		let path = riverPaths[pi]
+		let n = path.nodes, prev = n.slice()
+		let cp = path.connectedNode&&path.connectedNode.pi, cn = path.connectedNode&&path.connectedNode.ni
+		let endX = cp !== undefined ? riverPaths[cp].nodes[cn]   : prev[n.length-2]
+		let endZ = cp !== undefined ? riverPaths[cp].nodes[cn+1] : prev[n.length-1]
+		for(let i=2; i<n.length; i+=2){
+			let nx = i < n.length-2 ? prev[i+2] : endX
+			let nz = i < n.length-2 ? prev[i+3] : endZ
+			n[i]   = prev[i]   + (prev[i-2] + nx - 2*prev[i])   * strength + (smoothIteration ? 0 : (hash3(Math.round(prev[i]+offX), Math.round(prev[i+1]+offZ), 0) - 0.5))
+			n[i+1] = prev[i+1] + (prev[i-1] + nz - 2*prev[i+1]) * strength + (smoothIteration ? 0 : (hash3(Math.round(prev[i]+offX), Math.round(prev[i+1]+offZ), 1) - 0.5))
+		}
+		if(cp !== undefined){
+			n[n.length-2] = riverPaths[cp].nodes[cn]
+			n[n.length-1] = riverPaths[cp].nodes[cn+1]
+		}
+	}
 }
-const blocksPerFinalChunk = 2
-let maxZoom = 2//5
+const blocksPerFinalChunk = 1
+let maxZoom = 2
 let zoomScaleBy = 0.5
-const twistIterations = 2, twistAmount = zoomScaleBy**(maxZoom-1)*0.45/*will be scaled up in interpolate*/
-function twistRivers(cx,cz,prevRiverTwists,rivers,scale,riverTwists,maxDist){
-	maxDist *= 16
-	copyGridFloat(cx,cz,riverTwists,prevRiverTwists)
-	for(let x=0;x<16;x++){
-		for(let z=0;z<16;z++){
-			let newX = x+cx*16, newZ = z+cz*16
-			let river = getRiver(newX,newZ,rivers)
-			if(river){
-				let dirX = intToDir((river>>>2)&3), dirZ = intToDir(river&3)
-				let strength = twistAmount/scale/twistIterations
-				let pullX = dirX ? strength*(getGridXZ(newX+dirX,newZ+dirZ,prevRiverTwists)+dirX-getGridXZ(newX,newZ,prevRiverTwists)) : 0
-				let pullZ = dirZ ? strength*(getGridXZ(newX+dirX,newZ+dirZ,prevRiverTwists,1)+dirZ-getGridXZ(newX,newZ,prevRiverTwists,1)) : 0
-				addGridXZ(newX,newZ,riverTwists, pullX)//pull this one closer to other
-				addGridXZ(newX,newZ,riverTwists, pullZ, 1)//pull this one closer to other
-				if(getRiver(newX+dirX,newZ+dirZ,rivers) && newX+dirX<maxDist+16 && newX+dirX>=-maxDist && newZ+dirZ<maxDist+16 && newZ+dirZ>=-maxDist){
-					addGridXZ(newX+dirX,newZ+dirZ,riverTwists, -pullX)//pull other one closer to this
-					addGridXZ(newX+dirX,newZ+dirZ,riverTwists, -pullZ, 1)//pull other one closer to this
-				}
-			}else{//keep space between nodes equal
-				setGridXZ(newX,newZ,riverTwists, (getGridXZ(newX+1,newZ,prevRiverTwists)+getGridXZ(newX-1,newZ,prevRiverTwists)+getGridXZ(newX,newZ+1,prevRiverTwists)+getGridXZ(newX,newZ-1,prevRiverTwists))*0.25)
-				setGridXZ(newX,newZ,riverTwists, (getGridXZ(newX,newZ+1,prevRiverTwists,1)+getGridXZ(newX,newZ-1,prevRiverTwists,1)+getGridXZ(newX+1,newZ,prevRiverTwists,1)+getGridXZ(newX-1,newZ,prevRiverTwists,1))*0.25, 1)
-			}
-			/*if(dirZ){
-				addGridXZ(newX,newZ+dirZ,riverTwists, -dirZ*strength,1)//pull other one closer to this
-				addGridXZ(newX,newZ,riverTwists, dirZ*strength,1)//pull this one closer to other
-			}*/
+const twistIterations = 2, twistAmount = zoomScaleBy**(maxZoom-1)*0.45
+let riverLowers = [], riverDists = [], temp
+let riverPaths = [], prevRiverPathIdxs = [], prevRiverNodeIdxs = []
+const riverCache = Array.from({length: maxZoom}, () => new Map())
+function copyPaths(paths){ return paths.map(p => ({nodes: p.nodes.slice(), heights: p.heights.slice(), width: p.width, connectedNode: p.connectedNode, scale: p.scale})) }
+function generateChunk(x,z,seed){let ox=x,oz=z
+	x *= generateChunk.riverScale, z *= generateChunk.riverScale
+	let heightmaps = [], Scale = 1, prevScale
+	for(let i of riverLowers) if(i) i.fill(0)
+	for(let i of riverDists) if(i) i.fill(0)
+	riverPaths.length = 0
+	let startZoom = 0
+	for(let zoom=maxZoom-1; zoom>=0; zoom--){
+		let s = zoomScaleBy ** zoom
+		let key = Math.floor(x/s) + ',' + Math.floor(z/s)
+		if(riverCache[zoom].has(key)){
+			for(let p of riverCache[zoom].get(key)) riverPaths.push({nodes: p.nodes.slice(), heights: p.heights.slice(), width: p.width, connectedNode: p.connectedNode, scale: p.scale})
+			Scale = s
+			startZoom = zoom + 1
+			break
 		}
 	}
-}
-function limitTwistRivers(cx,cz,riverTwists){
-	for(let x=0;x<16;x++){
-		for(let z=0;z<16;z++){
-			let newX = x+cx*16, newZ = z+cz*16
-			let twistX = getGridXZ(newX,newZ,riverTwists), twistZ = getGridXZ(newX,newZ,riverTwists,1)
-			let changed
-			if(twistX<-0.45) twistX = -0.45, twistZ *= -0.45/twistX, changed = true
-			else if(twistX>0.45) twistX = 0.45, twistZ *= 0.45/twistX, changed = true
-			if(twistZ<-0.45) twistZ = -0.45, twistX *= -0.45/twistZ, changed = true
-			else if(twistZ>0.45) twistZ = 0.45, twistX *= 0.45/twistZ, changed = true
-			if(changed){
-				setGridXZ(newX,newZ,riverTwists,twistX)
-				setGridXZ(newX,newZ,riverTwists,twistZ,1)
+	let prevRiverRef = null
+	for(let zoom=startZoom; zoom<maxZoom; zoom++){
+		prevRiverRef = new Map()
+		if(zoom){
+			prevScale = Scale
+			Scale *= zoomScaleBy
+			// Correct for origin shift between zoom levels: when frac(x/prevScale) >= 0.5,
+			// Math.floor(x/Scale) != 2*Math.floor(x/prevScale), so a plain *2 puts coarse
+			// paths one chunk off from where fine-level paths expect them.
+			let adjX = (Math.floor(x/prevScale) * 2 - Math.floor(x/Scale)) * 16
+			let adjZ = (Math.floor(z/prevScale) * 2 - Math.floor(z/Scale)) * 16
+			for(let path of riverPaths){
+				for(let i=0; i<path.nodes.length; i+=2){
+					path.nodes[i]   = path.nodes[i]   / zoomScaleBy + adjX
+					path.nodes[i+1] = path.nodes[i+1] / zoomScaleBy + adjZ
+				}
+				path.scale /= zoomScaleBy
 			}
+			for(let i of riverDists) if(i) i.fill(0)
+			for(let i of riverLowers) if(i) i.fill(0)
+		}
+		for(let cx=-5; cx<=5; cx++)
+			for(let cz=-5; cz<=5; cz++)
+				getHeightmap(cx,cz,heightmaps,(Math.floor(x/Scale)+cx),(Math.floor(z/Scale)+cz),Scale,riverLowers,true)
+		for(let pi=0; pi<riverPaths.length; pi++){
+			let path = riverPaths[pi], n = path.nodes, radius = path.scale
+			for(let ni=0, hi=0; ni<n.length-2; ni+=2, hi++){
+				let x1=n[ni], z1=n[ni+1], x2=n[ni+2], z2=n[ni+3]
+				let x0=Math.floor(Math.min(x1,x2)-radius), x1b=Math.ceil(Math.max(x1,x2)+radius)
+				let z0=Math.floor(Math.min(z1,z2)-radius), z1b=Math.ceil(Math.max(z1,z2)+radius)
+				for(let cx=x0;cx<=x1b;cx++) for(let cz=z0;cz<=z1b;cz++){
+					if(cx<-80||cx>=96||cz<-80||cz>=96) continue
+					let d = Math.sqrt(lineToPointSq(cx,cz,x1,z1,x2,z2))
+					if(d > radius) continue
+					let strength = 1 - d/radius
+					maxLower(cx,cz,riverDists,strength)
+					minLower(cx,cz,riverLowers,lerp(lineToPointSq.param,path.heights[hi],path.heights[hi+1]))
+					// this doesn't smooth the lowered heights between nodes
+
+					if(d<1) prevRiverRef.set(cx+','+cz, {pi, ni})
+				}
+			}
+		}
+		let pathCountBefore = riverPaths.length
+		for(let cx=-3; cx<=3; cx++)
+			for(let cz=-3; cz<=3; cz++)
+				generateBaseRivers(cx,cz,Math.floor(x/Scale)+cx,Math.floor(z/Scale)+cz,heightmaps,zoom+1,riverLowers,Scale,riverDists,riverPaths,prevRiverRef)
+		for(let t=0; t<twistIterations; t++)
+			smoothRiverPaths(riverPaths, Scale, pathCountBefore, x, z, t)
+		let cache = riverCache[zoom]
+		if(cache.size >= 32) cache.delete(cache.keys().next().value)
+		cache.set(Math.floor(x/Scale) + ',' + Math.floor(z/Scale), copyPaths(riverPaths))
+	}
+	let scaleBy = blocksPerFinalChunk/16
+	prevScale = Scale, Scale *= scaleBy
+	let offsetX = (Math.floor(x/Scale)*scaleBy - Math.floor(x/prevScale))*16
+	let offsetZ = (Math.floor(z/Scale)*scaleBy - Math.floor(z/prevScale))*16
+	let fcs = 16/blocksPerFinalChunk
+	let drawRivers = []
+	for(let path of riverPaths){
+		let n = path.nodes, w = path.width/4096*16/blocksPerFinalChunk, pw = Math.sqrt(w)
+		for(let i=0; i<n.length-2; i+=2){
+			let x1=(n[i]-offsetX)*fcs, z1=(n[i+1]-offsetZ)*fcs
+			let x2=(n[i+2]-offsetX)*fcs, z2=(n[i+3]-offsetZ)*fcs
+			if(Math.max(x1,x2)+pw<0||Math.min(x1,x2)-pw>16) continue
+			if(Math.max(z1,z2)+pw<0||Math.min(z1,z2)-pw>16) continue
+			drawRivers.push(x1,z1,x2,z2,w)
 		}
 	}
-}
-//One chunk is 1 unit
-//code to convert chunk idx to position: a=60; ((a%lwidth)-center)+","+Math.floor(a/lwidth-center)
-let rivers = [], prevRivers = [], newRivers = [], temp, riverLowers = [], newRiverLowers = [], riverDists = [], prevRiverDists = [], newPrevRiverDists = [], riverNormalDists = [], prevRiverNormalDists = [], riverTwists = [], newRiverTwists = []
-let isRiverWithWidth = new Float32Array(256)
-function generateChunk(x,z,seed){
-    x*=generateChunk.riverScale, z*=generateChunk.riverScale
-    let heightmaps = []
-    let Scale = 1, prevScale;
-    
-		for(let i of rivers){
-			if(i) i.fill(0)
-		}
-		for(let i of prevRivers){
-			if(i) i.fill(0)
-		}
-		for(let i of riverLowers){
-			if(i) i.fill(0)
-		}
-		for(let i of riverDists){
-			if(i) i.fill(0)
-		}
-		for(let i of prevRiverDists){
-			if(i) i.fill(0)
-		}
-		for(let i of riverNormalDists){
-			if(i) i.fill(0)
-		}
-		for(let i of prevRiverNormalDists){
-			if(i) i.fill(0)
-		}
-		for(let i of riverTwists){
-			if(i) i.fill(0)
-		}
-    for(let zoom=0; zoom<maxZoom; zoom++){
-        if(zoom){
-            //Zoom in and generate smaller rivers connecting to the previous rivers
-						for(let i of newRivers){
-								if(i) i.fill(0)
-						}
-						for(let i of prevRivers){
-								if(i) i.fill(0)
-						}
-						for(let i of newRiverLowers){
-								if(i) i.fill(0)
-						}
-            prevScale = Scale;
-            let scaleBy = zoomScaleBy;
-            Scale *= scaleBy;
-            for(let cx=-3; cx<=3; cx++){
-                for(let cz=-3; cz<=3; cz++){
-                    let offsetX = Math.floor(x/Scale)*scaleBy - Math.floor(x/prevScale)+cx*scaleBy
-                    let offsetZ = Math.floor(z/Scale)*scaleBy - Math.floor(z/prevScale)+cz*scaleBy
-                    interpolateRivers(cx,cz,scaleBy,rivers,newRivers,prevRivers,offsetX,offsetZ,riverLowers,newRiverLowers,riverDists,prevRiverDists,newPrevRiverDists,Scale,riverNormalDists,prevRiverNormalDists,riverTwists,newRiverTwists)
-                }
-            }
-						temp = rivers
-            rivers = newRivers
-						newRivers = temp
-						temp = riverLowers
-            riverLowers = newRiverLowers
-						newRiverLowers = temp
-						for(let i of riverDists){
-							if(i) i.fill(0)
-						}
-						temp = prevRiverDists
-						prevRiverDists = newPrevRiverDists
-						newPrevRiverDists = temp
-						temp = prevRiverNormalDists
-						prevRiverNormalDists = riverNormalDists
-						riverNormalDists = temp
-						temp = riverTwists
-						riverTwists = newRiverTwists
-						newRiverTwists = temp
-        }
-        
-        //Create a heightmap for the rivers to flow down
-				//done only if needed
-        for(let cx=-5; cx<=5; cx++){
-            for(let cz=-5; cz<=5; cz++){
-                getHeightmap(cx,cz,heightmaps,(Math.floor(x/Scale)+cx),(Math.floor(z/Scale)+cz),Scale,riverLowers,true);
-            }
-        }
-       	for(let cx=-3; cx<=3; cx++){
-            for(let cz=-3; cz<=3; cz++){
-                generateBaseRivers(cx,cz,Math.floor(x/Scale)+cx,Math.floor(z/Scale)+cz,rivers,heightmaps,prevRivers,zoom+1,riverLowers,Scale,riverDists,prevRiverDists)
-            }
-        }
-				for(let i=0; i<twistIterations; i++){
-					for(let cx=-1; cx<=1; cx++){
-						for(let cz=-1; cz<=1; cz++){
-							twistRivers(cx,cz,riverTwists,rivers,Scale,newRiverTwists,1)
-						}
-					}
-					for(let cx=-1; cx<=1; cx++){
-						for(let cz=-1; cz<=1; cz++){
-							limitTwistRivers(cx,cz,newRiverTwists)
-						}
-					}
-					let temp = riverTwists
-					riverTwists = newRiverTwists
-					newRiverTwists = temp
-				}
-				/*let riverThreshold = 5-(zoom/2)
-				for(let cx=-3; cx<=3; cx++){
-					for(let cz=-3; cz<=3; cz++){
-						let w = wetness[(cx+center)*lwidth+cz+center]
-						if(w) for(let i=0; i<w.length; i++){
-							if(w[i] > riverThreshold){
-								setRiver(cx+(i&15),cz+(i>>4),rivers)
-								let rx = i&15, rz = i>>4
-								for(let bx=-16;bx<=16;bx++){
-									for(let bz=-16;bz<=16;bz++){
-										const d = Math.abs(bx/16)+Math.abs(bz/16)//(x/16)**2+(z/16)**2
-										if(d>=1) continue
-										const lower = 1-approxCbrt(d/*Math.max((d-riverFlatDist),0)*riverFlatMult*-/)
-										maxLower(rx+bx,rz+bz,riverDists,lower)
-									}
-								}
-							}
-						}
-					}
-				}*/
-    }
-    
-		//getHeightmap(0,0,heightmaps,Math.floor(x/Scale),Math.floor(z/Scale),Scale,riverLowers);//Create a heightmap for the result
-		let scaleBy = blocksPerFinalChunk/16
-		prevScale = Scale, Scale *= scaleBy
-		let offsetX = (Math.floor(x/Scale)*scaleBy - Math.floor(x/prevScale))*16
-		let offsetZ = (Math.floor(z/Scale)*scaleBy - Math.floor(z/prevScale))*16
-		let drawRivers = []
-		for(let bx=offsetX-3; bx<offsetX+blocksPerFinalChunk+3; bx++){
-			for(let bz=offsetZ-3; bz<offsetZ+blocksPerFinalChunk+3; bz++){
-				let river = getRiver(bx,bz,rivers)
-				if(!river) continue
-				let pointingX = intToDir((river>>>2)&3), pointingZ = intToDir(river&3)
-				let riverWidth = ((river>>>4)+1)/4096*16/blocksPerFinalChunk //1.5**(maxZoom-(river>>>4))-0.5
-				let riverPrevWidth = riverWidth*blocksPerFinalChunk/16
-				let twistX = getGridXZ(bx,bz,riverTwists), twistZ = getGridXZ(bx,bz,riverTwists,1)
-				let twistPointingX = getGridXZ(bx+pointingX,bz+pointingZ,riverTwists), twistPointingZ = getGridXZ(bx+pointingX,bz+pointingZ,riverTwists,1)
-				if(
-					(bx+pointingX+twistPointingX+riverPrevWidth<offsetX || bx+pointingX+twistPointingX-riverPrevWidth>offsetX+blocksPerFinalChunk || bz+pointingZ+twistPointingZ+riverPrevWidth<offsetZ || bz+pointingZ+twistPointingZ-riverPrevWidth>offsetZ+blocksPerFinalChunk) &&
-					(bx+twistX+riverPrevWidth<offsetX || bx+twistX-riverPrevWidth>offsetX+blocksPerFinalChunk || bz+twistZ+riverPrevWidth<offsetZ || bz+twistZ-riverPrevWidth>offsetZ+blocksPerFinalChunk)
-				) continue
-				let fcs = 16/blocksPerFinalChunk
-				drawRivers.push((bx-offsetX+twistX)*fcs,(bz-offsetZ+twistZ)*fcs,(bx-offsetX+twistPointingX+pointingX)*fcs,(bz-offsetZ+twistPointingZ+pointingZ)*fcs, riverWidth)
+	for(let bx=0; bx<16; bx++){
+		for(let bz=0; bz<16; bz++){
+			let river=0, riverSize=0
+			for(let di=0; di<drawRivers.length; di+=5){
+				let t = 1-lineToPointSq(bx,bz,drawRivers[di],drawRivers[di+1],drawRivers[di+2],drawRivers[di+3])/drawRivers[di+4]
+				river = Math.max(river,t)
+				if(t>0) riverSize = Math.max(riverSize,drawRivers[di+4]*t)
 			}
-		}
-		/*for(let cx=-1; cx<=1; cx++){
-			for(let cz=-1; cz<=1; cz++){
-				for(let bx=0;bx<16;bx++){
-					for(let bz=0;bz<16;bz++){
-						let bx2 = bx+cx*16, bz2 = bz+cz*16
-						let river = getRiver(bx2,bz2,rivers)
-						if(river){
-							let riverWidth = 1.5**(maxZoom-(river>>>4))-0.75
-							let deepness = 1-(river>>>4)/maxZoom
-							if(bx2<-riverWidth || bx2>riverWidth+16 || bz2<-riverWidth || bz2>riverWidth+16) continue
-							for(let rx=Math.round(Math.min(Math.max(bx2-riverWidth,0),15)); rx<=Math.round(Math.min(Math.max(bx2+riverWidth,0),15)); rx++){//this clamps so it only sets in current chunk
-								for(let rz=Math.round(Math.min(Math.max(bz2-riverWidth,0),15)); rz<=Math.round(Math.min(Math.max(bz2+riverWidth,0),15)); rz++){
-									let dist = (rx-bx2)*(rx-bx2)/riverWidth + (rz-bz2)*(rz-bz2)/riverWidth
-									if(dist<1) isRiverWithWidth[rx*16+rz] = Math.max(isRiverWithWidth[rx*16+rz], (1-dist)*deepness)
-								}
-							}
-						}
-					}
+			riverHeights[bz*16+bx] = riverSize/2
+			let gx=bx*scaleBy+offsetX, gz=bz*scaleBy+offsetZ
+			let fd = 0, loweredHeight = 0, loweredHeightW = 0
+			for(let pi=0; pi<riverPaths.length; pi++){
+				let pn=riverPaths[pi].nodes, pr=riverPaths[pi].scale, ph=riverPaths[pi].heights
+				for(let ni=0, hi=0; ni<pn.length-2; ni+=2, hi++){
+					let d = Math.sqrt(lineToPointSq(gx,gz,pn[ni],pn[ni+1],pn[ni+2],pn[ni+3]))
+					let strength = 1 - d/pr
+					if(strength <= 0) continue
+					if(strength > fd) fd = strength
+					let lh2 = lerp(lineToPointSq.param, ph[hi], ph[hi+1])
+					loweredHeight += lh2*strength
+					loweredHeightW += strength
 				}
 			}
-		}*/
-    for(let bx=0;bx<16;bx++){
-        for(let bz=0;bz<16;bz++){
-						//let finalHeight = getHeight(bx,bz,heightmaps)
-						let river = 0//isRiverWithWidth[bx*16+bz]
-						let riverSize = 0
-						for(let di=0; di<drawRivers.length; di+=5){
-							let thisriver = 1-lineToPointSq(bx,bz, drawRivers[di],drawRivers[di+1],drawRivers[di+2],drawRivers[di+3])/drawRivers[di+4]
-							river = Math.max(river, thisriver)
-							if(thisriver>0) riverSize = Math.max(riverSize, drawRivers[di+4]*thisriver)
-						}
-						//isRiverWithWidth[bx*16+bz] = 0
-						//rivers[center*lwidth+center/*middle*/]&&rivers[center*lwidth+center/*middle*/][bz*16+bx]||0
-						let btx, btz, btlax, btlaz//before twist, before twist lerp amount
-						btloop:for(btx=offsetX-2; btx<offsetX+blocksPerFinalChunk+2; btx++){
-							for(btz=offsetZ-2; btz<offsetZ+blocksPerFinalChunk+2; btz++){
-								let x1 = btx+getGridXZ(btx,btz,riverTwists), z1 = btz+getGridXZ(btx,btz,riverTwists,1)
-								let x2 = btx+1+getGridXZ(btx+1,btz,riverTwists), z2 = btz+getGridXZ(btx+1,btz,riverTwists,1)
-								let x3 = btx+1+getGridXZ(btx+1,btz+1,riverTwists), z3 = btz+1+getGridXZ(btx+1,btz+1,riverTwists,1)
-								let x4 = btx+getGridXZ(btx,btz+1,riverTwists), z4 = btz+1+getGridXZ(btx,btz+1,riverTwists,1)
-								if(pointInQuad(x1,z1,x2,z2,x3,z3,x4,z4, bx*scaleBy+offsetX, bz*scaleBy+offsetZ)){
-									transformQuadri(x1,z1,x2,z2,x3,z3,x4,z4, bx*scaleBy+offsetX, bz*scaleBy+offsetZ)
-									btlax = transformQuadri.xc
-									btlaz = transformQuadri.yc
-									break btloop
-								}
-							}
-						}
-						//if(isNaN(btlax)) throw new Error("river twisted grid node not found")
-						//let lower = getRiver(bx,bz,riverLowers)||0, dist = Math.max(getRiver(bx,bz,riverDists)||0,getRiver(bx,bz,prevRiverDists)||0)
-						/*if(river){
-							riverHeight = river//mapFrom(getRiver(bx,bz,riverScales)||0, Scale*0.8,1)//mapFrom(r,0.4,1)*255
-							//finalHeight = Math.max(finalHeight,0)-0.025
-						}*/
-						//if(dist>0.8) finalHeight -= map(dist,0.8,1,0,0.01)
-						getHeight.scale = prevScale
-						getHeight.offsetX = Math.floor(x/prevScale)*16
-						getHeight.offsetZ = Math.floor(z/prevScale)*16
-						riverHeights[bz*16+bx] = riverSize/2
-						/*riverFinalLowers[bz*16+bx] = lerp(btlax,
-							lerp(btlaz,
-								getRiver(btx,btz,riverLowers),
-								getRiver(btx,btz+1,riverLowers)
-							),
-							lerp(btlaz,
-								getRiver(btx+1,btz,riverLowers),
-								getRiver(btx+1,btz+1,riverLowers)
-							)
-						)*/
-						riverLoweredHeight[bz*16+bx] = lerp(btlax,
-							lerp(btlaz,
-								getHeight(btx,btz,heightmaps,riverLowers),
-								getHeight(btx,btz+1,heightmaps,riverLowers)
-							),
-							lerp(btlaz,
-								getHeight(btx+1,btz,heightmaps,riverLowers),
-								getHeight(btx+1,btz+1,heightmaps,riverLowers)
-							)
-						)
-						riverFinalDists[bz*16+bx] = lerp(btlax,
-							lerp(btlaz,
-								Math.max(getRiver(btx,btz,riverDists),getRiver(btx,btz,prevRiverDists)),
-								Math.max(getRiver(btx,btz+1,riverDists),getRiver(btx,btz+1,prevRiverDists))
-							),
-							lerp(btlaz,
-								Math.max(getRiver(btx+1,btz,riverDists),getRiver(btx+1,btz,prevRiverDists)),
-								Math.max(getRiver(btx+1,btz+1,riverDists),getRiver(btx+1,btz+1,prevRiverDists))
-							)
-						)
-						riverFinalNormalDists[bz*16+bx] = lerp(btlax,
-							lerp(btlaz,
-								getRiver(btx,btz,riverNormalDists),
-								getRiver(btx,btz+1,riverNormalDists)
-							),
-							lerp(btlaz,
-								getRiver(btx+1,btz,riverNormalDists),
-								getRiver(btx+1,btz+1,riverNormalDists)
-							)
-						)
-						//if(btlax<0.1 || btlax>0.9 || btlaz<0.1||btlaz>0.9)finalHeight=-1
-						//if(btlax!==undefined)riverLoweredHeight[bz*16+bx]=-hash(btx,btz)
-        }
-    }
+			riverFinalDists[bz*16+bx] = Math.max(0, fd)
+			riverFinalNormalDists[bz*16+bx] = Math.max(0, fd)
+			riverLoweredHeight[bz*16+bx] = loweredHeight/(loweredHeightW||1)
+		}
+	}
 }
 generateChunk.riverScale = blocksPerFinalChunk/16 * zoomScaleBy**(maxZoom-1)
 generateRiverChunk = generateChunk
@@ -37438,10 +37200,12 @@ function lineToPointSq(x, y, x1, y1, x2, y2) {
   if (param < 0) {
     xx = x1;
     yy = y1;
+		param = 0
   }
   else if (param > 1) {
     xx = x2;
     yy = y2;
+		param = 1
   }
   else {
     xx = x1 + param * C;
@@ -37452,6 +37216,7 @@ function lineToPointSq(x, y, x1, y1, x2, y2) {
   var dy = y - yy;
   lineToPointSq.xx = xx;
   lineToPointSq.yy = yy;
+	lineToPointSq.param = param
   return dx * dx + dy * dy;
 }
 
@@ -38119,7 +37884,7 @@ const biomeGenerator = {
 			return "mushroomFields"
 		}else if(continentalness<-0.2){
 			return this.oceanBiome(temperature,continentalness)
-		}else if((jaggedness > 0.3 || jagged > 30) && continentalness<-0.4){
+		}else if((jaggedness > 0.3 || jagged > 30) /*&& continentalness<-0.4*/){
 			return this.peakBiome(temperature,rainfall,weirdness,ridges,erosion,jaggedness)
 		}else if((erosion < -0.6 && temperature<3 || erosion < -0.375 && temperature === 0) && weirdness<0 && ridgesBig>0 && continentalness>-0.12){
 			return rainfall > 1 ? (temperature > 2 ? "alpineHills" : "grove") : "snowySlopes"
@@ -38258,14 +38023,14 @@ function getBottomHeight(x,z,scale){ //used for river generator
 	//let useLowQuality = scale > 0//8//allows more rivers to generate
 	const baseWeirdness = complicatedNoise(x*0.25,z*0.25, noiseSettings.weirdness)
 	const ridges = (Math.abs(Math.abs(baseWeirdness)-0.666666667)-0.333333333)*-3
-	const ridgesBig = (1-Math.abs(complicatedNoise(x*0.25,z*0.25, noiseSettings.weirdnessBig)))*2-1
+	const ridgesBig = ridges//(1-Math.abs(complicatedNoise(x*0.25,z*0.25, noiseSettings.weirdnessBig)))*2-1
 	const continentalness = complicatedNoise(x*0.25,z*0.25, /*useLowQuality ? noiseSettings.continentalnessLowQuality : */noiseSettings.continentalness)
 	const erosion = complicatedNoise(x*0.25,z*0.25, /*useLowQuality ? noiseSettings.erosionLowQuality : */noiseSettings.erosion)
 	const offsetValue = getSplineLayer(splineData.offset,continentalness,erosion,ridges,baseWeirdness,ridgesBig)
 	const factorValue = getSplineLayer(splineData.factor,continentalness,erosion,ridges,baseWeirdness,ridgesBig)
 	const jaggedness = getSplineLayer(splineData.jaggedness,continentalness,erosion,ridges,baseWeirdness,ridgesBig)
 	getBottomHeight.topHeight = offsetValue + (1/factorValue)/2.5
-	getBottomHeight.cantSpawnRiver = jaggedness > 0.25 || factorValue<2
+	getBottomHeight.cantSpawnRiver = false //jaggedness > 0.25 || factorValue<2
 	return offsetValue// - (1/factorValue)/8
 }
 let temperatureHere, rainfallHere
@@ -38279,6 +38044,27 @@ function getTemperatureAndRainfall(x,z,noTemp){
 		+map(noise2d(z*0.33, x*0.33, 2),0.25,0.5,-1,1)*0.01
 	)
 }
+/*function findSeed(resultBiome){
+	for(let i=0;i<100;i++){
+		let seed=Math.random() * 2100000000 | 0;
+		newNoise(seed)
+		useNoise(seed)
+		const trueX=0,trueZ=0,i=0,k=0
+		const erosion = complicatedNoise((trueX + i)*0.25, (trueZ + k)*0.25, noiseSettings.erosion)
+		const continentalness = complicatedNoise((trueX+i)*0.25,(trueZ+k)*0.25,noiseSettings.continentalness)
+		const baseWeirdness = complicatedNoise((trueX + i)*0.25, (trueZ + k)*0.25, noiseSettings.weirdness)
+		const ridges = (Math.abs(Math.abs(baseWeirdness)-0.666666667)-0.333333333)*-3
+		const ridgesBig = (1-Math.abs(complicatedNoise((trueX + i)*0.25,(trueZ + k)*0.25, noiseSettings.weirdnessBig)))*2-1
+		getTemperatureAndRainfall(trueX + i, trueZ + k)
+		const temperatureFloat = temperatureHere, temperature = Math.round(temperatureFloat)//Temperature and Rainfall for biome generation
+		const rainfallFloat = rainfallHere, rainfall = Math.round(rainfallFloat)
+		const jaggedness = getSplineLayer(splineData.jaggedness,continentalness,erosion,ridges,baseWeirdness,ridgesBig)
+		let jagged = (jaggedness ? 128*(noise2dDouble((trueX + i) * 0.01, (trueZ + k) * 0.01, 4)*0.5+0.5)*jaggedness : 0)
+		let biome = biomeGenerator.get(temperature,rainfall,baseWeirdness,ridges,continentalness,erosion,0,jaggedness,0,rainfallFloat,temperatureFloat,jagged,ridgesBig)
+		if(biome===resultBiome)return console.log(seed)
+		deleteNoise(seed)
+	}
+}*/
 function generate(trueX,trueZ,seed,fancyRivers,caves){
 	useNoise(seed)
 	tops = new Int16Array(256)
@@ -38299,7 +38085,7 @@ function generate(trueX,trueZ,seed,fancyRivers,caves){
 			const continentalness = complicatedNoise((trueX+i)*0.25,(trueZ+k)*0.25,noiseSettings.continentalness)
 			const baseWeirdness = complicatedNoise((trueX + i)*0.25, (trueZ + k)*0.25, noiseSettings.weirdness)
 			const ridges = (Math.abs(Math.abs(baseWeirdness)-0.666666667)-0.333333333)*-3
-			const ridgesBig = (1-Math.abs(complicatedNoise((trueX + i)*0.25,(trueZ + k)*0.25, noiseSettings.weirdnessBig)))*2-1
+			const ridgesBig = ridges//(1-Math.abs(complicatedNoise((trueX + i)*0.25,(trueZ + k)*0.25, noiseSettings.weirdnessBig)))*2-1
 			getTemperatureAndRainfall(trueX + i, trueZ + k)
 			const temperatureFloat = temperatureHere, temperature = Math.round(temperatureFloat)//Temperature and Rainfall for biome generation
 			const rainfallFloat = rainfallHere, rainfall = Math.round(rainfallFloat)
@@ -38315,11 +38101,11 @@ function generate(trueX,trueZ,seed,fancyRivers,caves){
 			//if(riverLowerHeight<0)setBlock(i,80+Math.round(riverLowerHeight*10),k,blockIds.orangeConcrete),setBlock(i,91,k,blockIds.glass)
 
 			const offsetValue = lerp(riverDist,getSplineLayer(splineData.offset,continentalness,erosion,ridges,baseWeirdness,ridgesBig),riverLowerHeight)
-			const factorValue = 1/lerp(riverNormalDist,1/getSplineLayer(splineData.factor,continentalness,erosion,ridges,baseWeirdness,ridgesBig),0.015625)
+			const factorValue = 1/lerp(riverNormalDist*riverNormalDist*riverNormalDist,1/getSplineLayer(splineData.factor,continentalness,erosion,ridges,baseWeirdness,ridgesBig),0.015625)
 			const jaggedness = getSplineLayer(splineData.jaggedness,continentalness,erosion,ridges,baseWeirdness,ridgesBig)
 			const addFactor = (1/factorValue)*64
 			const adjOffset = offsetValue*128+64
-			let jagged = (jaggedness ? 128*(noise2dDouble((trueX + i) * 0.01, (trueZ + k) * 0.01, 4)*0.5+0.5)*jaggedness : 0)
+			let jagged = (jaggedness ? lerp(riverDist,128*(noise2dDouble((trueX + i) * 0.01, (trueZ + k) * 0.01, 4)*0.5+0.5)*jaggedness,0) : 0)
 			let noiseBottom = Math.max(adjOffset - addFactor*0.25/*because of quadruplePositive*/ + jagged,0)
 			let noiseTop = Math.max(adjOffset + addFactor + jagged,0)
 			let noiseMiddle = Math.max(adjOffset+jagged,0)
@@ -38502,7 +38288,7 @@ function isLand(x,z){
 	const trueX = x*16+8, trueZ = z*16+8
 	const baseWeirdness = complicatedNoise(trueX*0.25, trueZ*0.25, noiseSettings.weirdness)
 	const ridges = (Math.abs(Math.abs(baseWeirdness)-0.666666667)-0.333333333)*-3
-	const ridgesBig = (1-Math.abs(complicatedNoise(x*0.25,z*0.25, noiseSettings.weirdnessBig)))*2-1
+	const ridgesBig = ridges//(1-Math.abs(complicatedNoise(x*0.25,z*0.25, noiseSettings.weirdnessBig)))*2-1
 	const continentalness = complicatedNoise(trueX*0.25,trueZ*0.25,noiseSettings.continentalness)
 	const erosion = complicatedNoise(trueX*0.25, trueZ*0.25, noiseSettings.erosion)
 	const offsetValue = getSplineLayer(splineData.offset,continentalness,erosion,ridges,baseWeirdness,ridgesBig)
