@@ -1416,7 +1416,7 @@ const blockData = [
 					}
 					p.tp(x,dy-5+0.5+p.height*0.5,z)
 					p.lastY = p.y
-				}else world.sendAll({type:"message",fromServer:true,data:"§cFailed to find and place portal"})
+				}else world.world.sendAll({type:"message",fromServer:true,data:"§cFailed to find and place portal"})
 			}
 		}
 	},
@@ -22662,7 +22662,7 @@ class Player extends Entity{
     //sideMessage("Achievment Made: "+a.name, a.description)
 		//showTitle("§bAchievment Made",a.name)
     this.connection.send({type:"achievment",data:id})
-		if(!this.world.world.settings.hideAchievments) this.world.sendAll({type:"message",fromServer:true,data:this.username+" achieved: "+a.name})
+		if(!this.world.world.settings.hideAchievments) this.world.world.sendAll({type:"message",fromServer:true,data:this.username+" achieved: "+a.name})
 	}
 	addDiscovery(block){
 		if(this.cheats || blockData[block].tool) return
@@ -22677,7 +22677,7 @@ class Player extends Entity{
 			discoverBlock = id>>9
 		}*/
     this.connection.send({type:"achievment",data:id})
-		if(!this.world.world.settings.hideAchievments) this.world.sendAll({type:"message",fromServer:true,data:this.username+" discovered: "+blockData[block].Name})
+		if(!this.world.world.settings.hideAchievments) this.world.world.sendAll({type:"message",fromServer:true,data:this.username+" discovered: "+blockData[block].Name})
 	}
 	setGameMode(mode){
 		this.gameMode = mode
@@ -22978,8 +22978,8 @@ class Player extends Entity{
 				if(this.totalXP > 0) this.world.addEntity(new entities[entityIds.ExperienceOrb](this.x,this.y,this.z,this.totalXP),false,this.dimension)
 			}
 			this.world.world.event("die", {player:this})
-			this.world.sendAll({type:"die",id:this.id,message:this.dieMessage})
-			this.world.sendAll({type:"message",data:"§6"+this.dieMessage,fromServer:true})
+			this.world.world.sendAll({type:"die",id:this.id,message:this.dieMessage})
+			this.world.world.sendAll({type:"message",data:"§6"+this.dieMessage,fromServer:true})
 		}
 		if(this.die){
 			this.dieEffect += 0.05
@@ -23432,7 +23432,7 @@ class Player extends Entity{
       }
     }
     this.dieMessage = why
-    this.world.sendAll({type:"harmEffect",id:this.id})
+    this.world.world.sendAll({type:"harmEffect",id:this.id})
 		this.sendHealth()
 		if(this.connection) this.connection.send({type:"damage",x,y,z,lastHealth:prevHealth,velx,vely,velz})
   }
@@ -27954,7 +27954,7 @@ class Chunk {
 		var leafBottom = 6
 		var branchCount
 		//var branchSlope = 0.381
-		let tree = blockIds.oakWood
+		let tree = blockIds.oakLog
 		let leaf = blockIds.oakLeaves
 		
 		let branches = []
@@ -29539,7 +29539,7 @@ class Chunk {
 					wz = this.z + k
 					ground = this.tops[k * 16 + i]
 					let b = biomes[this.biomes[k * 16 + i]]
-					let waterTop = this.waterTops[k*16+i]
+					let waterTop = this.waterTops && this.waterTops[k*16+i]
 					let birchAndOak, bigOak, oak, birch, tallBirch, cocoa, bigJungle, spruce, pine, bigSpruce, bigPine, acacia, bigAcacia, bigBirch, tallSpruce, darkOak, cherry, swampOak
 					let deadBush, cactus, sugarcane = 0.2, melonPatch, kelp, hugeMushroom, shrubBush, bush, shrubBushType = "big", lilyPad, bamboo, bambooWithLeaves, jungleBush
 					let rock = ground > 90 ? 0.15 : 0.05, rockType = ground > 90 ? "flat" : "medium", iceberg
@@ -30084,7 +30084,7 @@ class Chunk {
 							}
 						}
 					}
-					top = this.waterTops[k*16+i]
+					top = this.waterTops && this.waterTops[k*16+i]
 					block = this.getBlock(i,top,k)
 					if(top){
 						let times = 0
@@ -33804,6 +33804,7 @@ window.parent.postMessage({ready:true}, "*")
 		p.inventory.prevSlots = []
 		p.world = this[""]//temporaryily
 		p.connected = false
+		if(this.event("connect", {player:p})) return
 		this.players.push(p)
 		let world = this
 		function sendOthers(msg){
@@ -33999,7 +34000,7 @@ window.parent.postMessage({ready:true}, "*")
 				sendOthers(data)
 			}else if(data.type === "particles"){
 				for(let p2 of world.players){ // sendAllInChunk
-					if(p2.dimension === p.dimension && maxDist(p.x>>4,p.z>>4,p2.x>>4,p2.z>>4) <= p2.loadDistance){
+					if(p2 !== p && p2.dimension === p.dimension && maxDist(p.x>>4,p.z>>4,p2.x>>4,p2.z>>4) <= p2.loadDistance){
 						p2.connection.send(data)
 					}
 				}
@@ -34227,7 +34228,6 @@ window.parent.postMessage({ready:true}, "*")
 				updateAnvil()
 			}else if(data.type === "containerChangeCommandBlock"){
 				let {containerData} = p.inventory
-				if(!p.cheats) return p.world.updateTags(containerData.x,containerData.y,containerData.z)
 				p.world.setTagByName(containerData.x,containerData.y,containerData.z,"data",data.data,false)
 			}else if(data.type === "containerChangeSign"){
 				let {containerData} = p.inventory
@@ -34562,7 +34562,6 @@ window.parent.postMessage({ready:true}, "*")
 			if(changeData) c.send({type:"containerChange",data:changeData,idxs:changeIdx})
 		}
 		p.sendMessage = (data) => c.send({type:"message", data, fromServer:true})
-		this.event("connect", {player:p})
 	}
 	sendAll(msg){
 		for(let p of this.players) p.connection.send(msg)
@@ -37072,7 +37071,7 @@ function generateChunk(x,z,seed){let ox=x,oz=z
 	let startZoom = 0
 	for(let zoom=maxZoom-1; zoom>=0; zoom--){
 		let s = zoomScaleBy ** zoom
-		let key = Math.floor(x/s) + ',' + Math.floor(z/s)
+		let key = Math.floor(x/s) + ',' + Math.floor(z/s) + ',' + seed
 		if(riverCache[zoom].has(key)){
 			for(let p of riverCache[zoom].get(key)) riverPaths.push({nodes: p.nodes.slice(), heights: p.heights.slice(), width: p.width, connectedNode: p.connectedNode, scale: p.scale})
 			Scale = s
@@ -37131,7 +37130,7 @@ function generateChunk(x,z,seed){let ox=x,oz=z
 			smoothRiverPaths(riverPaths, Scale, pathCountBefore, x, z, t)
 		let cache = riverCache[zoom]
 		if(cache.size >= 32) cache.delete(cache.keys().next().value)
-		cache.set(Math.floor(x/Scale) + ',' + Math.floor(z/Scale), copyPaths(riverPaths))
+		cache.set(Math.floor(x/Scale) + ',' + Math.floor(z/Scale) + ',' + seed, copyPaths(riverPaths))
 	}
 	let scaleBy = blocksPerFinalChunk/16
 	prevScale = Scale, Scale *= scaleBy

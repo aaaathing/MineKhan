@@ -1284,9 +1284,11 @@ With touch screen:
 			<section id="help_mod">
 				<style>#help_mod hr{margin:50px 0;opacity:0.5;} #help_mod pre{color:lightblue;}</style>
 <h1>Code</h1>
-<p>You can write a mod when editing a world. They are JavaScript code that runs when you open a world.</p>
+<p>You can write JavaScript code that runs when you open a world.</p>
 <p>How: go to Singleplayer, select the world, click Edit, click Edit JS code, and write in the big textbox.</p>
 <p>You might get errors if your code has syntax errors or does something wrong. Most errors can be hidden. You can always try again.</p>
+<p>Use AI? Give it these examples or the URL.</p>
+<p>For more methods and variables, see the code: https://github.com/aaaathing/MineKhan/blob/main/minekhan-world.js</p>
 <p>There are so many possibilities! Here are some examples:</p>
 <hr>
 <p>// This shows a welcome message when someone joins. Try changing the message and color!</p>
@@ -1404,7 +1406,6 @@ world[""].customChunkGenerate = function(chunk){
 			chunk.tops[k*16+i] = height
 		}
 	}
-	chunk.waterTops = new Uint8Array(256)
 }
 world[""].customChunkPopulate = function(chunk){
 	for (let i = 0; i &lt; 16; i++) {
@@ -6508,6 +6509,7 @@ if time is 0, it will update every time
       banned, whitelist, multiplayerPass,
 			activeResourcePacks:serverWorld.activeResourcePacks
 		}
+		serverWorld.event("save", obj)
 		if(!getObj) await saveToDB(serverWorld.id, obj)
 		if(!getObj){
 			let str = JSON.stringify(obj, saveJSONReplacer)
@@ -6581,6 +6583,7 @@ if time is 0, it will update every time
 		if(!doc.title.includes("MineKhan")) return
     doc.title = (Messages.unreadCount ? "("+Messages.unreadCount+") " : "")+(inWorld ? world.name+" | " : "")+"MineKhan-thingmaker "+version
   }
+	win.updateTitle = updateTitle
   
   win.eachFrame = null, win.eachTick = null
 	let lastBlur = 0
@@ -7498,6 +7501,7 @@ ROTATION = 0x1800 // Mask for the direction bits
   
   var speakVoices
   function speak(what, rate, pitch){
+		if(!win.speechSynthesis) return
     var utterThis = new SpeechSynthesisUtterance(what);
     for(var voice of speakVoices){
       if(voice.name === settings.narratorVoice) utterThis.voice = voice
@@ -7517,6 +7521,7 @@ ROTATION = 0x1800 // Mask for the direction bits
   win.speak = speak
   function speakIt(){if(settings.narrator)speak("hello")}
   function populateVoicesList(){// put options in the select
+		if(!win.speechSynthesis) return
     speakVoices = win.speechSynthesis.getVoices();
     if(!speakVoices.length) return
     var select = narratorVoiceSelect
@@ -7540,9 +7545,12 @@ ROTATION = 0x1800 // Mask for the direction bits
       speakIt()
     }
   }
+	if(win.speechSynthesis){
   populateVoicesList()
   win.speechSynthesis.onvoiceschanged = populateVoicesList;
+	}
   function selectVoiceFromList(name){
+		if(!win.speechSynthesis) return
     var select = narratorVoiceSelect
     for(var option of select.children){
       if(option.getAttribute("data-name") === name){
@@ -7635,8 +7643,8 @@ ROTATION = 0x1800 // Mask for the direction bits
 		return Messages.span.innerHTML
 	}
 	
-	const HTMLSafeElements = new Set(["h1","h2","h3","h4","h5","h6","p","img","video","audio","a","ul","ol","li","pre","code","br","b","i","big","center","small","span","strike","strong","sub","sup","table","tbody","td","tfoot","th","thead","tr","hr","button","details","summary","div","blockquote","q"])
-	const HTMLSafeAttributes = new Set(["align","alt","width","height","href","src","media","title","style","target","controls","loop"])
+	const HTMLSafeElements = new Set(["h1","h2","h3","h4","h5","h6","p","img","video","audio","a","ul","ol","li","pre","code","br","b","i","big","center","small","span","strike","strong","sub","sup","table","tbody","td","tfoot","th","thead","tr","hr","button","details","summary","div","blockquote","q","form","input"])
+	const HTMLSafeAttributes = new Set(["align","alt","width","height","href","src","media","title","style","target","controls","loop","name","type","value","placeholder"])
 	const HTMLEvalAttributes = new Set(["onclick","onmousemove","onmousedown","onmouseup","onmouseover","onmouseout","onmouseenter","onmouseleave","onmousewheel","onwheel"])
 	let safeTemplate = document.createElement("template")
 	function makeHTMLSafeElement(el,attrcb,elcb){
@@ -7660,7 +7668,9 @@ ROTATION = 0x1800 // Mask for the direction bits
 	let HTMLSafeSanitizer
 	if(window.Sanitizer){
 		HTMLSafeSanitizer = new Sanitizer({})
-		HTMLSafeSanitizer.removeUnsafe()
+		if(HTMLSafeSanitizer.removeUnsafe){
+			HTMLSafeSanitizer.removeUnsafe()
+		}else HTMLSafeSanitizer = null
 	}
 
 	let unsupported = []
@@ -7792,7 +7802,7 @@ ROTATION = 0x1800 // Mask for the direction bits
 			}
 			this.lastUpdate = now
 		},
-    add(msg, lazy, dissapearTime = 10000){
+    add(msg, lazy, dissapearTime = 10000, nofilter = false){
       if(!this.focused && !lazy){
         this.unreadCount++
         if(this.unreadCount === 1) this.add("<h2 style='background:green;'>Unread Messages</h2>", true)
@@ -7800,7 +7810,7 @@ ROTATION = 0x1800 // Mask for the direction bits
       }
 			//this span will be moved back and forth between the chat screen
       let span = document.createElement("span")
-			span.innerHTML = this.format(msg)
+			span.innerHTML = this.format(msg, nofilter)
 			span.dissapearTime = Date.now()+dissapearTime
       this.array.push(span)
       this.all.push(span)
@@ -7822,7 +7832,7 @@ ROTATION = 0x1800 // Mask for the direction bits
     },
     write(msg, from, lazy){
       if(!from && !msg) return
-      this.add((from || p.username)+": "+msg, lazy)
+      this.add((from || p.username)+": "+msg, lazy, undefined, !from)
       if(!from && multiplayer){
         send({type:"message", data:msg, username:p.username})
       }
@@ -8113,7 +8123,7 @@ ROTATION = 0x1800 // Mask for the direction bits
       messageInput.prevValue = value
     },
 		
-    format(str){
+    format(str, nofilter=false){
 			if(!str) str = str+""
 			str = str.replace(/\n/g,"<br>")
 			if(str.includes("§")){
@@ -8136,11 +8146,11 @@ ROTATION = 0x1800 // Mask for the direction bits
 				res += "</span>".repeat(spans)
 				str = res
 			}
-      if(userInfo ? userInfo.profanityFilter : true) for(var obj of this.remove){ //remove bad words
+      if(!nofilter) if(userInfo ? userInfo.profanityFilter : true) for(var obj of this.remove){ //remove bad words
         str = str.replace(obj.replace, obj.with)//"<span style='color:red; background:black;'>"+obj.with+"</span>")
       } //if you change this change it at canvas text
 
-			if(this.span.setHTML) this.span.setHTML(str, {sanitizer:HTMLSafeSanitizer})
+			if(this.span.setHTML&&HTMLSafeSanitizer) this.span.setHTML(str, {sanitizer:HTMLSafeSanitizer})
 			else return makeHTMLSafe(str)
 			return this.span.innerHTML
     }
@@ -21889,14 +21899,17 @@ r 11 y  n  n  n
 					if(addWorldCallback) addWorldCallback(w)
 				}
 			},
+			onclose: e => {resolve()},
 			onerror: e => {if(addMessageCallback) addMessageCallback((typeof e === "string" && e) || "Error: Failed to connect to "+key); console.error(e); resolve()},
 			})
 			conns.push(conn)
 			let resolve
-			await new Promise(r => { resolve=r; setTimeout(r,10000) })
+			await new Promise(r => { resolve=r; /*setTimeout(r,10000)*/ })
 			conn.close()
 		}
-		getWorldsWs = {close(){conns.forEach(c=>{try{c.close()}catch(e){}})}}
+		if(getWorldsWs) getWorldsWs.close()
+		getWorldsWs = {close(){conns.forEach(c=>{try{c.close()}catch(e){}}); getWorldsWs=null; win.getWorldsWs = null}}
+		win.getWorldsWs = getWorldsWs
 		let promises = []
 		for(let [key,server] of Object.entries(signalingServers)){
 			promises.push(getFromServer(key,server))
@@ -22112,6 +22125,8 @@ r 11 y  n  n  n
 	async function initMultiplayer(target){
 		if(preVersion && !(userInfo&&userInfo.admin)) return alert("Multiplayer is not available on this version")
 		if(multiplayer || websocket) return
+
+		if(typeof target === "object") servers[target.id] = target, target = target.id
 		
 		external = false, isSafe = true, originalTarget = target
 		host = false
@@ -22141,6 +22156,7 @@ r 11 y  n  n  n
 			await new Promise(resolve => {ws.onopen = resolve})
 			return new WebSocketClientContainer(ws)
 		}else{
+			let connection, peerConnection //for webrtc
 			let cAnCeLcOnNectION = false
 			let sigKey = servers[target].signalingServer //|| Object.keys(signalingServers)[0]
 			let sigServer = signalingServers[sigKey]
@@ -22190,9 +22206,6 @@ r 11 y  n  n  n
 
 			await openPromise
 
-			let connection
-
-			let peerConnection //for webrtc
 			let waitForDataChannelResolve
 			let waitForDataChannelPromise = new Promise(resolve => waitForDataChannelResolve = resolve)
 			let waitForUnorderDataChannelResolve
@@ -22354,6 +22367,7 @@ r 11 y  n  n  n
 				if(cAnCeLcOnNectION) return
 				let c = new RTCClientContainer(channel,peerConnection,unorderChannel)
 
+				if(serverWorld.event("beforeconnect", {connection:c,data})) return
 				if(rejected){
 					c.send({type:"error",data:rejected})
 					c.close()
@@ -22372,7 +22386,7 @@ r 11 y  n  n  n
 					console.log(e)
 				}
 			}else if(data.type === "ping"){
-				sigConn.send({
+				let obj = {
 					type:"pong",
 					id:data.id,
 					data:{
@@ -22380,7 +22394,9 @@ r 11 y  n  n  n
 						host:p.username, players: serverWorld.players.map(r => r.username),
 						whitelist, banned, multiplayerPass:multiplayerPass?true:false,
 					}
-				}, data.FROM)
+				}
+				serverWorld.event("ping",obj)
+				sigConn.send(obj, data.FROM)
 			}
 			},
 			onclose:() => { // onclose might be called more than once
@@ -22412,6 +22428,7 @@ r 11 y  n  n  n
 		let canSendPos = true //if internet is slow, don't send positions too fast because it will slow down the connection
 		multiplayerError = null
 		multiplayer = connection
+		win.multiplayer = multiplayer
 		addToBottomRightList("connecting","Entering world...")
 		send({
 			type:"connect",
@@ -22877,7 +22894,8 @@ r 11 y  n  n  n
 			}else if(data.type === "doEndPoem"){
 				showEndPoem()
 			}else if(data.type === "customMenu"){
-				customMenu(data.data)
+				if(data.data) customMenu(data.data)
+				else play()
 			}else if(data.type === "safeEval") {
 				safeEval(data.data)
 			}else if(data.type === "error"){
@@ -24976,7 +24994,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		creationMenuScrollable.setPos(0,0,width,height)
 		Button.add(width / 2-155*ss, 120*ss, 300*ss, 40*ss, ["World Type: Alpha", "World Type: Large", "World Type: Superflat", "World Type: Island", "World Type: Void"], "creation menu", r => {
 			worldType = r === "World Type: Superflat" ? "superflat" : r === "World Type: Island" ? "island" : r === "World Type: Void" ? "void" : r === "World Type: Large" ? "large" : "alpha"
-			fancyRivers = worldType === "large"
+			//fancyRivers = worldType === "large"
 			if(worldType === "superflat") trees = caves = structures = false
 		}, null, () => worldType === "alpha" ? "Old world type with trees and biomes." : worldType === "large" ? "Mountains, hills, forests, rivers, big rocks, and more." : worldType === "void" ? "To start building in void, use setblock command." : worldType === "island" ? "A very big island with a volcano. Surrounded by infinite ocean." : null,
 		() => {
@@ -25025,7 +25043,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				fancyRivers = false
 			}
 			return worldType !== "large"
-		}, "Rivers that flow downhill, carving the terrain! Requires large world type.", () => fancyRivers ? 0 : 1).setScrollable(creationMenuScrollable)
+		}, "Rivers that flow downhill, carving the terrain! Requires large world type. \n\ni want to replace this with multi-material multi-resolution erosion simulation, but it's too hard.", () => fancyRivers ? 0 : 1).setScrollable(creationMenuScrollable)
 		Button.add(width / 2+155*ss, 270*ss, 300*ss, 40*ss, "Seeds", "creation menu", () => changeScene("seed templates"), null, "Choose a specific seed to control how the world generates.").setScrollable(creationMenuScrollable)
 		creationMenuScrollable.setScrollSize(height+300*ss)
 		Button.add(width / 2+155*ss, 320*ss, 300*ss, 40*ss, ["Structures: On", "Structures: Off"], "creation menu", r => structures = r === "Structures: On", function() {
@@ -25069,14 +25087,15 @@ p.camera.transformation.elements.set(matrix)//*/
     // Edit world menu
 		Button.add(mid, height - 75*ss, w2, 40*ss, "Save", "editworld", r => {
 			let w = worlds[selectedWorld]
-			if(w.code !== boxCenterTop.value){
-			if (typeof w.code === "string") {
+			if(w.name !== boxCenterTop.value){
+			if (typeof w.code === "string" && w.code.includes(",")) {
 				// Legacy world saves
 				w.name = boxCenterTop.value
 				let split = w.code.split(";")
 				split[0] = w.name
 				w.code = split.join(";")
 			} else {
+				if(typeof w.code === "string") w.code = atoarr(w.code)
 				let oldLength = w.code[0]
 				w.name = boxCenterTop.value
 				let name = new TextEncoder().encode(w.name)
@@ -25117,7 +25136,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		Button.add(mid + 3 * x4, height - 40*ss, w4, 40*ss, "Back", "multiplayer menu", r => changeScene("main menu"))
 		
     //multiplayer connecting buttons
-    Button.add(mid, height / 2 + 40, w2, 40, "Cancel", "multiplayer connecting", r => {multiplayer && multiplayer.close()})
+    Button.add(mid, height / 2 + 40, w2, 40, "Cancel", "multiplayer connecting", r => {if(multiplayer){multiplayer.close()}else if(getWorldsWs) {getWorldsWs.close(); changeScene("main menu")}})
     
     //multiplayer lost buttons
     Button.add(mid, height / 2 + 40, w2, 40, "Back", "multiplayer lost", r => changeScene("multiplayer menu"))
@@ -26114,6 +26133,7 @@ p.camera.transformation.elements.set(matrix)//*/
 	let fontDataBold, fontPixelsPerEm
   let textCoords, textTexture, textCoordsPixels
   async function initFont(){
+		if(!win.FontFace) alert("FontFace not supported. no font.")
 		fontPixelsPerEm = {}
 		let thefontdata = generateFont(fontData,fontSegments,{},fontPixelsPerEm)
 		let fontFace = new FontFace("thefont", thefontdata)
@@ -26593,14 +26613,13 @@ p.camera.transformation.elements.set(matrix)//*/
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 		if(images.weather.naturalWidth){
+		gl.activeTexture(gl.TEXTURE3)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images.weather)
+		}
+		images.weather.addEventListener("load", function(){
 			gl.activeTexture(gl.TEXTURE3)
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images.weather)
-		}else{
-			images.weather.addEventListener("load", function(){
-				gl.activeTexture(gl.TEXTURE3)
-				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images.weather)
-			})
-		}
+		})
     
     // Endstone texture for the background
 		let endPixels = new Uint8Array(getPixels(customResources.textures.endStone || textures.endStone))
@@ -26624,14 +26643,13 @@ p.camera.transformation.elements.set(matrix)//*/
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 		if(images.panorama.naturalWidth){
+		gl.activeTexture(gl.TEXTURE4)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images.panorama)
+		}
+		images.panorama.addEventListener("load", function(){
 			gl.activeTexture(gl.TEXTURE4)
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images.panorama)
-		}else{
-			images.panorama.addEventListener("load", function(){
-				gl.activeTexture(gl.TEXTURE4)
-				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images.panorama)
-			})
-		}
+		})
     
 		//texture 6 for avgBrightnessResultTexture
     
@@ -26644,14 +26662,13 @@ p.camera.transformation.elements.set(matrix)//*/
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 		if(images.skin.naturalWidth){
-    	gl.activeTexture(gl.TEXTURE7)
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images.skin)
-		}else{
-			images.skin.addEventListener("load", function(){
-    		gl.activeTexture(gl.TEXTURE7)
-				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images.skin)
-			})
+		gl.activeTexture(gl.TEXTURE7)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images.skin)
 		}
+		images.skin.addEventListener("load", function(){
+			gl.activeTexture(gl.TEXTURE7)
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images.skin)
+		})
     
     let endPortalPixels = new Uint8Array([140,120,100,255])
     endPortalTexture = gl.createTexture()
@@ -26663,14 +26680,13 @@ p.camera.transformation.elements.set(matrix)//*/
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 		if(images.endPortal.naturalWidth){
-			gl.activeTexture(gl.TEXTURE8)
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images.endPortal)
-		}else{
-			images.endPortal.addEventListener("load", function(){
-				gl.activeTexture(gl.TEXTURE8)
-				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images.endPortal)
-			})
+		gl.activeTexture(gl.TEXTURE8)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images.endPortal)
 		}
+		images.endPortal.addEventListener("load", function(){
+			gl.activeTexture(gl.TEXTURE8)
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images.endPortal)
+		})
     
     //TEXTURE9 is text texture
 		lastAnimations = null
@@ -28053,8 +28069,10 @@ p.camera.transformation.elements.set(matrix)//*/
 			e.y = touch.pageY;
 			e.tOucHScrEeN = true
 			currentTouches.push(e.tOuCH)
-			keydown(e)
+			mouseX = e.x
+      mouseY = e.y
 			let over = Button.mouseIsOver(true)
+			keydown(e)
 			mouseDown = true
 			touchScreen = true
 			if(screen === "play" && !over) {
@@ -28277,7 +28295,7 @@ p.camera.transformation.elements.set(matrix)//*/
       entInteract()
     }else{
       p.spyglassStart = Date.now()
-      if(holding) newWorldBlock()
+      newWorldBlock()
     }
   }
 	function toggleView(){
@@ -29683,7 +29701,7 @@ p.camera.transformation.elements.set(matrix)//*/
 			elem[0].classList.remove("selected")
 		}
 	}
-	function initWorldsMenu() {
+	async function initWorldsMenu() {
 		while (window.worlds.firstChild) {
 			window.worlds.removeChild(window.worlds.firstChild)
 		}
@@ -29750,7 +29768,7 @@ p.camera.transformation.elements.set(matrix)//*/
 				console.error(e)
 			}
 		}
-		loadFromDB().then(async res => {
+		await loadFromDB().then(async res => {
 			if (res && res.length) {
 				res = res.map(d => d.data).filter(d => d && d.code).sort((a, b) => b.edited - a.edited)
 				for (let data of res) {
@@ -29773,7 +29791,9 @@ p.camera.transformation.elements.set(matrix)//*/
 			window.worlds.onclick = () => Button.draw()
 			window.boxCenterTop.onkeyup = () => Button.draw()
 		})
+		return worlds
 	}
+	win.initWorldsMenu = initWorldsMenu
 
 	const serversMenuDeselect = () => {
 		let elem = window.servers.getElementsByClassName("selected")
@@ -29850,7 +29870,7 @@ p.camera.transformation.elements.set(matrix)//*/
 
 		let searchMsg = document.createElement("div")
 		searchMsg.className = "select-message"
-		searchMsg.textContent = "Searching..."
+		searchMsg.textContent = "Loading..."
 		window.servers.appendChild(searchMsg)
 		let worlds = await getWorlds(addWorld, msg => window.servers.insertAdjacentHTML('beforeend',"<div class='select-message'>"+msg+"</div>"))
     //if(worlds === "notLoggedIn") return changeScene("main menu")
@@ -29919,7 +29939,7 @@ p.camera.transformation.elements.set(matrix)//*/
 	}
   async function initMarketplace(){
     selectedWorld = null
-		if(marketplaceData) return
+		if(marketplaceData && marketplaceData.length) return marketplace
     marketplace = {}, marketplaceData = []
 		const search = marketplaceSearchInput.value
 		while (window.marketplace.firstChild) {
@@ -30043,7 +30063,10 @@ p.camera.transformation.elements.set(matrix)//*/
     })
     
     window.marketplace.onclick = () => Button.draw()
+
+		return marketplace
   }
+	win.initMarketplace = initMarketplace
 	function initMarketplaceInfo(){
 		let thing = marketplace[selectedWorld]
 		marketplaceInfo.innerHTML = ""
@@ -30403,9 +30426,12 @@ p.camera.transformation.elements.set(matrix)//*/
 		const nosound = urlParams.has("nosound")
 		async function loadSounds(){
 			if(!nosound){
+				if(!win.DecompressionStream) alert("DecompressionStream not supported. no sound.")
 				let f = await fetch("assets/sounds.txt").catch(e => {console.log(e); return null })
-				if(f && f.ok){
-					let soundData = await loadEPK(await f.arrayBuffer())
+				let arr = f && f.ok && (await f.arrayBuffer().catch(e => {console.log(e); return null }))
+				if(f&&f.status===404) logError("If you are copying this, you should also copy "+new URL("assets/sounds.txt",location)+" and "+new URL("maps.json",location)+" and "+(images.panorama&&images.panorama.src)+"")
+				if(arr && win.DecompressionStream){
+					let soundData = await loadEPK(arr)
 					loadDone("Loaded sounds","",f.status)
 					for(let s in soundData){
 						let newName = s.replace(".ogg","").replace(/\//g,".")
@@ -30635,12 +30661,12 @@ p.camera.transformation.elements.set(matrix)//*/
     }
   }
 
-  function handleWorldMusic({id, url, elapsed, pitch, volume}) {
+  async function handleWorldMusic({id, url, elapsed, pitch, volume}) {
     if(!url) {
       const track = worldMusic[id]
       if(track) {
         worldMusicFadeTo(track, 0)
-        setTimeout(() => { track.audio.pause(); track.audio.src = "" }, MUSIC_FADE_TIME * 1000)
+        setTimeout(() => { track.audio.pause(); if(track.destroy) track.destroy() }, MUSIC_FADE_TIME * 1000)
         delete worldMusic[id]
       }
       return
@@ -30663,8 +30689,26 @@ p.camera.transformation.elements.set(matrix)//*/
       worldMusic[id] = track
     }
 		let time = elapsed/1000*pitch
-    if(track.audio.src !== url) {
-      track.audio.src = url
+    if(track.url !== url) {
+			if(track.destroy) track.destroy()
+			if(url.startsWith("hls:")){
+				let Hls
+				try{
+					Hls = await import('https://cdn.jsdelivr.net/npm/hls.js@1/+esm')
+				}catch(e){
+					track.url = null // try again next time
+				}
+				if(Hls && Hls.isSupported()){
+					let hls = new Hls.Hls()
+					hls.loadSource(url.replace("hls:",""))
+					hls.attachMedia(track.audio)
+					track.destroy = () => hls.destroy()
+				}
+			}else{
+				track.audio.src = url
+				track.destroy = () => track.audio.src = ""
+			}
+			track.url = url
       track.audio.currentTime = time
     } else if(Math.abs(track.audio.currentTime - time) > 0.5) {
 			if(track.audio.duration && time>track.audio.duration) return
@@ -30701,7 +30745,7 @@ p.camera.transformation.elements.set(matrix)//*/
       for(const id in worldMusic){
         const track = worldMusic[id]
         worldMusicFadeTo(track, 0)
-        setTimeout(() => track.audio.pause(), MUSIC_FADE_TIME * 1000)
+        setTimeout(() => {track.audio.pause(); if(track.destroy) track.destroy()}, MUSIC_FADE_TIME * 1000)
         delete worldMusic[id]
       }
     }
@@ -31371,6 +31415,7 @@ p.camera.transformation.elements.set(matrix)//*/
 		changeScene("multiplayer connecting")
 		joinWorld(initSingleplayer())
   }
+	win.createNewWorld = createNewWorld
 	function waitAFrame(){
 		return new Promise(resolve => {
 			requestAnimationFrame(resolve)
@@ -31503,66 +31548,6 @@ p.camera.transformation.elements.set(matrix)//*/
 		changeScene("multiplayer connecting")
 		joinWorld(initSingleplayer())
   }
-win.aW=async function(id,cb=emptyFunc,noDoMap=false){
-	if(win.initServerEverything){
-		initServerEverything()
-		win.initServerEverything = null
-	}
-	let iw=inWorld
-	if(!iw){
-	for(let i in worlds)if(worlds[i].id.startsWith(id))data=worlds[i]
-	serverWorld = new ServerWorld({operators:[p.username],trees,caves,fancyRivers,worldType,structures,gameMode:p.gameMode,cheats,settings:worldSettings})
-	serverWorld.setSeed(seedBox.value ? seed : (Math.random() * 2000000000 | 0))
-	serverWorld.name="Starter World"
-	win.serverWorld = serverWorld
-	cb()
-	}
-	let thumbnail=worlds[selectedWorld]&&worlds[selectedWorld].thumbnail
-	genWorldImage=()=>thumbnail
-	if(!iw){
-	let data
-	initWorldsMenu()
-	await sleep(200)
-	if(data){
-	serverWorld.loadSave(data.code)
-	serverWorld.playersInv = data.playersInv || {}
-	serverWorld.mod=data.mod
-	}else if(!noDoMap){
-	while(!marketplaceData||!marketplaceData.length){
-	marketplaceData=null
-	try{await initMarketplace()}catch{}
-	await sleep(1000)
-	}
-	let save=marketplaceData[floor(Math.random()*marketplaceData.length)]
-	if(save.file){
-	let file = JSON.parse(save.file)
-	serverWorld.loadSave(file.code)
-	serverWorld.playersInv = file.playersInv || {}
-	serverWorld.mod=file.mod
-	}else if(save.code){
-	serverWorld.loadSave(save.code)
-	serverWorld.mod=save.mod
-	}
-	}
-	serverWorld.id = serverWorld.id || id+generateID()
-	if(serverWorld.mod){
-	if(!serverWorld.mod.startsWith("function")){
-		initBlockData()
-		let url = URL.createObjectURL(new Blob(["export default function(world,blockData,blockIds,entities,entityIds){ "+mod+" }"],{type:"application/javascript"}))
-		try{let e = await import(url);e.default(serverWorld,blockData,blockIds,serverEntities,serverEntityIds)}catch(e){}
-	}
-	}
-	host = true
-	joinWorld(initSingleplayer())
-	}
-	document.title=document.title.replace(/i/g,"i​")
-	await sleep(200)
-	if(multiplayer)multiplayer.onclose=emptyFunc,multiplayer.close()
-	if(!iw&&serverWorld.players[0])serverWorld.players[0].connection.close()
-	await sleep(200)
-	changeScene("main menu")
-	enableMultiplayer()
-}
 	function deleteSelectedWorld(){
 		if (worlds[selectedWorld] && confirm(`Are you sure you want to delete ${worlds[selectedWorld].name}? This will also delete it from the cloud (if it exists) and the backup (if it exists).`)) {
 			deleteFromDB(selectedWorld)
@@ -33084,6 +33069,7 @@ init()
 	document.body.appendChild(script)
 }*/
 		</script>
+		<script src="features.js"></script>
 	</body>
 </html>
 
