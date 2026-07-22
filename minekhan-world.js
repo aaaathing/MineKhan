@@ -18196,7 +18196,7 @@ class BitArrayReader {
 		return ret
 	}
 	readToInt16Array(length){
-		let ret = new Uint8Array(length)
+		let ret = new Int16Array(length)
 		for(let i = 0; i < length; i++){
 			ret[i] = this.read(16, true)
 		}
@@ -18373,7 +18373,7 @@ let packetTypes = [
 	["mySkin", ["data","string"], ["cape","string"]],
 	["settings", ["data","object",worldSettingKeys.map(r => [r,"boolean"])],["time","double"],["weather","replacerNumber",2,["","rain","snow"]]],
 	["setBlock", ["data","object",[["x","int"],["y","int"],["z","int"],packetDimension,["block","uint"],["keepTags","boolean"]]]],
-	["loadSave", /*["data","bitArray"], ["stringChunks","number",8,1]*/ ["mod","string"],["id","basicString"],["name","string"],["activeResourcePacks","array",[null,"string"]],["x","double"],["y","double"],["z","double"],["version","basicString"],["time","double"],["weather","replacerNumber",2,["","rain","snow"]],packetGameMode,["cheats","boolean"],["hotbarSlot","byte"],["flying",'boolean'],["achievments","array",[null,"uint"]],["saveId","int"]],
+	["loadSave", /*["data","bitArray"], ["stringChunks","number",8,1]*/ ["mod","string"],["id","basicString"],["name","string"],["activeResourcePacks","array",[null,"string"]],["x","double"],["y","double"],["z","double"],["version","basicString"],["time","double"],["weather","replacerNumber",2,["","rain","snow"]],packetGameMode,["cheats","boolean"],["hotbarSlot","byte"],["flying",'boolean'],["achievments","array",[null,"uint"]],["saveId","int"],["supportsDelta","boolean"]],
 	//["loadSaveChunk", ["data","bitArray"],["idx","number",8,1]],
 	["resourcePacks",["activeResourcePacks","array",[null,"string"]]],
 	["serverCmds",["data","array",[null,"object",[["type","basicString"],["name","basicString"],["id","uint"],["next","array",[null,"uint"]],["redirect","uint"],["info","string"],["argType","basicString"],["func","boolean"],["noCheats","boolean"]]]]],
@@ -21952,7 +21952,7 @@ class Entity {
 		this.y = y
 		this.z = z
 		this.dimension = dimension
-		this.world.sendEntityPos(this)
+		this.world.sendEntityPos(this) // this makes entities delete on client if they change dimension
 		this.updateChunk()
 	}
 	updateVelocity(now) {
@@ -26597,6 +26597,7 @@ class Chunk {
 						this.setLight(x, y, z, light, 0)
 					}
 				}
+				if (!stop) this.tops[z * 16 + x] = minHeight-1
 			}
 		}
 
@@ -32292,6 +32293,9 @@ class World{ // aka trueWorld
 		["doingPortal","uint"]
 	]
 	getEntPos(ent,now, forMultiplayer){
+		return entitySerializer.encode(this.getEntPosObj(ent, now))
+	}
+	getEntPosObj(ent, now){
 		const t = ent.type
 		const obj = {
 			id: ent.id, entId: ent.entId,
@@ -32318,7 +32322,7 @@ class World{ // aka trueWorld
 			obj.harmEffect = ent.harmEffect||undefined; obj.health = ent.health
 			obj.burning = ent.burning||undefined; obj.burnTimer = ent.burnTimer||undefined
 			obj.oxygen = ent.oxygen; obj.spinTarget = ent.spinTarget
-			if (ent.path) obj.path = ent.path
+			if ("path" in ent) obj.path = ent.path
 			if ("fur" in ent) obj.fur = ent.fur
 			if ("color" in ent) obj.color = ent.color
 			obj.eating = ent.eating||undefined; obj.target = ent.target||undefined
@@ -32330,7 +32334,7 @@ class World{ // aka trueWorld
 		}
 		if (t === "BlockDisplay") { obj.width = ent.width; obj.height = ent.height; obj.depth = ent.depth }
 		if (t === "Minecart") { obj.harmEffect = ent.harmEffect; obj.health = ent.health }
-		return entitySerializer.encode(obj)
+		return obj
 	}
 	posEntity(p, m, preBetaVersion){
 		if (typeof p === "string") {
@@ -32753,6 +32757,27 @@ class World{ // aka trueWorld
 
 		this.tickMusic()
 		this.event("tick")
+
+		const inFlightCap = 20 //entity-snapshot unacked window per recipient (server-scheduled, so fixed)
+		//send entity positions to every player after the tick event (no rate limit, pause if client falls behind)
+		for(let i in this.players){
+			let p = this.players[i]
+			if(!p || !p.connection || p.entityInFlight >= inFlightCap) continue
+			p.entityInFlight++
+			let entities = p.world.getEntities(p), arr = [], length = 0
+			for(let j=0; j<entities.length; j++){
+				let ent = entities[j]
+				let l = ent.length
+				if(length+l > 10000){
+					p.connection.send({type:"entityPosAll", data: arr})
+					length = 0
+					arr.length = 0
+				}
+				length += l
+				arr.push(ent)
+			}
+			if(length) p.connection.send({type:"entityPosAll", data: arr})
+		}
 
 		if(this.ticking) return
 		this.ticking = true
@@ -33790,12 +33815,14 @@ window.parent.postMessage({ready:true}, "*")
 		p.admin = admin
 		p.maxUserString = 200
 		p.loadChunks = [], p.loadDistance = 0
-		p.posUpdated = {} //List of updated player positions
+		//send the joining player the current position of every existing player
 		for(let p2 of this.players){
-			if(p2.pos && p2 !== p) p.posUpdated[p2.id] = p2.pos
+			if(p2.pos && p2 !== p) c.send(p2.pos)
 		}
 		p.lastSendEntities = 0
 		p.lastSendSettings = 0
+		p.entityInFlight = 0 //unacked entity snapshot sends; pause if server falls behind
+		p.posInFlight = {} //per (sender,recipient) unacked relay counts, acked by the recipient's pos
 		p.updateingLoadedI = 0
 		p.lastChunk = ","
 		p.lastDimension = ""
@@ -33805,6 +33832,7 @@ window.parent.postMessage({ready:true}, "*")
 		p.world = this[""]//temporaryily
 		p.connected = false
 		if(this.event("connect", {player:p})) return
+		const maxPerPairRelay = 20 //max in-flight relays per (sender,recipient) pair, acked via the recipient's pos
 		this.players.push(p)
 		let world = this
 		function sendOthers(msg){
@@ -33886,7 +33914,8 @@ window.parent.postMessage({ready:true}, "*")
 				hotbarSlot:p.inventory.hotbarSlot,
 				flying:p.flying,
 				achievments:p.achievments,
-				saveId:world.saveId
+				saveId:world.saveId,
+				supportsDelta:true //capability handshake: this server merges/relays field-level position deltas
 			})
 			c.send({
 				type:"serverCmds",
@@ -33905,77 +33934,139 @@ window.parent.postMessage({ready:true}, "*")
 			}else if(data.type === "joined"){
 				if(onjoined) onjoined(p)
 			}else if(data.type === "pos"){
-				let pos = data.data
+			let pos = data.data
 				let canPos = true
 				if(p.confirmPos){
-					if(pos.dimension === p.dimension && max(abs(pos.x-p.x),abs(pos.y-p.y),abs(pos.z-p.z))<4){
+					//confirm a teleport against the reported position, falling back to the player's current position
+					//for any axis omitted from the delta (client sends only changed fields; a missing axis means unchanged,
+					//and a fully-empty delta means the player hasn't moved). a missing `dimension` likewise means unchanged,
+					//so treat it as same dimension. this avoids rejecting on NaN (undefined < 4 is false) and deadlocking
+					//the player so they freeze for everyone.
+					let px = pos.x !== undefined ? pos.x : p.pos&&p.pos.data.x
+					let py = pos.y !== undefined ? pos.y : p.pos&&p.pos.data.y
+					let pz = pos.z !== undefined ? pos.z : p.pos&&p.pos.data.z
+					let pdimension = pos.dimension !== undefined ? pos.dimension : p.pos&&p.pos.data.dimension
+					if(pdimension === p.dimension && max(abs(px-p.x),abs(py-p.y),abs(pz-p.z))<4){
 						p.confirmPos = false
 					}else canPos = false
 				}
 				//if(canPos) canPos = p.checkPos(pos, c)
 				let posBack = {}
+				//pos as ack, regardless of canPos: even a position-rejected pos (teleport-confirm) is proof the
+				//client is alive and processing packets, so it must free in-flight slots and echo posBack back to
+				//unpause the client. Gating these on canPos caused a deadlock: a rejected pos sent no posBack, the
+				//client's own in-flight counter pinned at maxPosInFlight and it stopped sending entirely, so the
+				//confirmPos window never cleared and every other player's relay to this one stayed capped (frozen).
+				if(p.entityInFlight > 0) p.entityInFlight--
+				for(let s of world.players){
+					if(s !== p && s.posInFlight && s.posInFlight[p.id] > 0) s.posInFlight[p.id]--
+				}
 				if(canPos){
-				p.setPos(pos.x,pos.y,pos.z,pos.velx,pos.vely,pos.velz)
-				p.setRot(pos.rx, pos.ry, pos.bodyRot)
-				p.onGround = pos.onGround
-				p.sneaking = pos.sneaking
-				p.harmEffect = pos.harmEffect
+				//the client sends only changed fields (delta); merge into p.pos so it always holds the full state
+				//(needed for relaying to newly-joined players), then update the player object from the merged state
+				let full = p.pos ? p.pos.data : (p.pos = {type:"pos", data:{}, afk:data.afk}).data
+				if(pos.x !== undefined) full.x = pos.x; if(pos.y !== undefined) full.y = pos.y; if(pos.z !== undefined) full.z = pos.z
+				if(pos.velx !== undefined) full.velx = pos.velx; if(pos.vely !== undefined) full.vely = pos.vely; if(pos.velz !== undefined) full.velz = pos.velz
+				if(pos.rx !== undefined) full.rx = pos.rx; if(pos.ry !== undefined) full.ry = pos.ry; if(pos.bodyRot !== undefined) full.bodyRot = pos.bodyRot
+				if(pos.onGround !== undefined) full.onGround = pos.onGround; if(pos.sneaking !== undefined) full.sneaking = pos.sneaking
+				if(pos.harmEffect !== undefined) full.harmEffect = pos.harmEffect; if(pos.crack !== undefined) full.crack = pos.crack
+				if(pos.walking !== undefined) full.walking = pos.walking; if(pos.sprinting !== undefined) full.sprinting = pos.sprinting
+				if(pos.punchEffect !== undefined) full.punchEffect = pos.punchEffect; if(pos.eating !== undefined) full.eating = pos.eating
+				if(pos.sleeping !== undefined) full.sleeping = pos.sleeping; if(pos.sitting !== undefined) full.sitting = pos.sitting
+				if(pos.swimming !== undefined) full.swimming = pos.swimming; if(pos.usingItem !== undefined) full.usingItem = pos.usingItem
+				if(pos.spectating !== undefined) full.spectating = pos.spectating; if(pos.riding !== undefined) full.riding = pos.riding
+				if(pos.flying !== undefined) full.flying = pos.flying; if(pos.gliding !== undefined) full.gliding = pos.gliding
+				p.afk = data.afk
+				p.setPos(full.x,full.y,full.z,full.velx,full.vely,full.velz)
+				p.setRot(full.rx, full.ry, full.bodyRot)
+				p.onGround = full.onGround
+				p.sneaking = full.sneaking
+				p.harmEffect = full.harmEffect
 				/*if(thisplayer.username !== pos.username){
 					thisplayer.username = pos.username
 					//thisplayer.changeBlock(abs((pos.username || "").hashCode()) % 80 + 1)
 				}*/
-				p.crack = pos.crack //crack number
-				p.walking = pos.walking
-				p.sprinting = pos.sprinting
-				p.punchEffect = pos.punchEffect
-				p.eating = pos.eating
-				p.sleeping = pos.sleeping
-				p.sitting = pos.sitting
-				p.swimming = pos.swimming
-				p.usingItem = pos.usingItem
-				p.spectating = pos.spectating
-				p.afk = data.afk
-				p.riding = pos.riding
-				p.flying = pos.flying
-				p.gliding = pos.gliding
+				p.crack = full.crack //crack number
+				p.walking = full.walking
+				p.sprinting = full.sprinting
+				p.punchEffect = full.punchEffect
+				p.eating = full.eating
+				p.sleeping = full.sleeping
+				p.sitting = full.sitting
+				p.swimming = full.swimming
+				p.usingItem = full.usingItem
+				p.spectating = full.spectating
+				p.riding = full.riding
+				p.flying = full.flying
+				p.gliding = full.gliding
+				//server-authoritative fields: merge into the cache AND append to the relayed delta so
+				//existing players see them too
+				full.username = username
+				full.dimension = p.dimension
+				full.crackPos = p.crackPos
+				full.burning = p.burning
+				full.holding = p.holding
+				full.die = p.die
+				full.scale = p.scale
+				full.equipment = p.inventory.equipment
+				full.hidden = p.hidden
 				pos.username = username
-				pos.crackPos = p.crackPos
 				pos.dimension = p.dimension
-				posBack.burning = pos.burning = p.burning
-				posBack.holding = pos.holding = p.holding
-				posBack.die = pos.die = p.die
-				posBack.scale = pos.scale = p.scale
-				posBack.equipment = pos.equipment = p.inventory.equipment
-				posBack.hidden = pos.hidden = p.hidden
+				pos.crackPos = p.crackPos
+				pos.burning = p.burning
+				pos.holding = p.holding
+				pos.die = p.die
+				pos.scale = p.scale
+				pos.equipment = p.inventory.equipment
+				pos.hidden = p.hidden
+				posBack.burning = pos.burning
+				posBack.holding = pos.holding
+				posBack.die = pos.die
+				posBack.scale = pos.scale
+				posBack.equipment = pos.equipment
+				posBack.hidden = pos.hidden
 				data.FROM = p.id
-				p.pos = data
+				p.pos.FROM = p.id //same, for when we relay the full cached state on first sight
+
+				//relay immediately, with a per-(sender,recipient) in-flight count (same style as entities), and a
+				//per-recipient baseline so deltas self-heal under flow control: we only advance the baseline when a
+				//packet actually ships, so if a packet is dropped the next one re-sends every change since the last
+				//successfully-delivered state (a one-shot flag change like sneaking/riding can't be lost forever).
 				for(let p2 of world.players){
-					if(p2 !== p && p2.pos) p2.posUpdated[id] = p.pos
-				}
-				}
-				for(let u in p.posUpdated){
-					if(p.posUpdated[u]){
-						c.send(p.posUpdated[u])
-						p.posUpdated[u] = null
+					if(p2 === p || !p2.pos) continue
+					//it should send even if too far because client does not handle deleting
+					let key = p2.id
+					let n = p.posInFlight[key] || 0
+					if(n >= maxPerPairRelay) continue //this pair is at its in-flight limit; drop until acked (baseline NOT advanced -> next send resyncs)
+					p.posInFlight[key] = n + 1
+					let base = p.relayBase && p.relayBase[key]
+					let full = p.pos.data
+					let out
+					if(!base){ //first sight: send the whole state
+						out = p.pos
+					}else{
+						//delta: only fields that differ from what this recipient last actually got.
+						//Cheap `!==` for primitives; only object/array fields (equipment, crackPos) fall back to
+						//a JSON content compare so in-place/deep mutations (e.g. an armor item's durability
+						//ticking) are still caught.
+						let d = {}
+						for(let k in full){
+							let a = full[k], b = base[k]
+							let same = a === b || a !== null && b !== null && typeof a === "object" && typeof b === "object" && JSON.stringify(a) === JSON.stringify(b)
+							if(!same) d[k] = full[k]
+						}
+						out = {type:"pos", data:d, afk:data.afk, FROM:p.id}
 					}
+					//snapshot current full state as this recipient's baseline; deep-copy only object/array fields
+					//so the baseline never shares a ref with the working state (otherwise in-place mutations
+					//would be invisible); primitives are stored as-is
+					let snap = {}
+					for(let k in full) snap[k] = full[k] !== null && typeof full[k] === "object" ? JSON.parse(JSON.stringify(full[k])) : full[k]
+					;(p.relayBase || (p.relayBase = {}))[key] = snap
+					p2.connection.send(out) //skip empty deltas (nothing changed)
+				}
 				}
 				let now = performance.now()
-				//if(now - p.lastSendEntities > 125){
-					p.lastSendEntities = now
-					let entities = p.world.getEntities(p), arr = [], length = 0
-					for(let i=0; i<entities.length; i++){
-						let ent = entities[i]
-						let l = ent.length
-						if(length+l > 10000){
-							p.connection.send({type:"entityPosAll", data: arr})
-							length = 0
-							arr.length = 0
-						}
-						length += l
-						arr.push(ent)
-					}
-					if(length) p.connection.send({type:"entityPosAll", data: arr})
-				//}
 				if(now - p.lastSendSettings > 1000){
 					p.lastSendSettings = now
 					p.connection.send({type:"settings", data:world.settings, time:world.time, weather:world.weather})
@@ -34005,8 +34096,11 @@ window.parent.postMessage({ready:true}, "*")
 					}
 				}
 			}else if(data.type === "playSound"){
+				//only relay positioned sounds to same-dimension players within 16 blocks (range not sent in packet)
 				for(let p2 of world.players){
-					if(p2 !== p && p2.dimension === p.dimension) p2.connection.send(data)
+					if(p2 === p || p2.dimension !== p.dimension) continue
+					if(data.hasPos && max(abs(p2.x-data.x), abs(p2.y-data.y), abs(p2.z-data.z)) > 16) continue
+					p2.connection.send(data)
 				}
 			}else if(data.type === "message"){
 				if(world.event("message", {player:p,data})) return
@@ -34270,7 +34364,7 @@ window.parent.postMessage({ready:true}, "*")
 			let i = world.players.indexOf(p)
 			if(i !== -1) world.players.splice(i,1)
 			for(let p2 of world.players){
-				delete p2.posUpdated[id]
+				if(p2.posInFlight) delete p2.posInFlight[id]
 			}
 			world.sendAll({type:"dc",data:p.id})
 			if(onclose) onclose(p)
@@ -34321,6 +34415,29 @@ window.parent.postMessage({ready:true}, "*")
 						caveBiomes:chunk.caveBiomes,
 						saveId
 					})
+					//chunk (re)sent: the client may have just wiped its entities for this chunk
+					//(initial load or reloadChunks), so resend the chunk's entities as full packets
+					//and reset this player's delta baseline for them
+					if(chunk.entities){
+						let now = performance.now(), arr = [], length = 0
+						for(let [id, ent] of chunk.entities){ // chunk.entities is a Map
+							let cur = world.getEntPosObj(ent, now)
+							for(let k in cur) if(cur[k] === undefined) cur[k] = null
+							cur.delta = false
+							let encoded = entitySerializer.encode(cur)
+							let l = encoded.length
+							if(length+l > 10000){ // don't send one giant entityPosAll
+								if(arr.length) c.send({type:"entityPosAll", data:arr})
+								length = 0; arr.length = 0
+							}
+							length += l
+							arr.push(encoded)
+							if(p.entityInView) delete p.entityInView[id]
+							if(p.entityDeltas) delete p.entityDeltas[id]
+							if(p.entityLastChunk) delete p.entityLastChunk[id]
+						}
+						if(arr.length) c.send({type:"entityPosAll", data:arr})
+					}
 				}
 			}
 			this.updateingLoaded = false
@@ -34723,6 +34840,7 @@ class WorldDimension{
 			return p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:prevBlock, dimension}})
 		}
 		if(place){//placed
+			let canPlace = !prevBlock || blockData[prevBlock].noHitbox
 			let cblock = this.getBlock(ox,oy,oz)
 			if(this.world.event("click", {player:p, x:ox,y:oy,z:oz, block:cblock, holding, holdObj})) return
 			if(holdObj && !holdObj.amount) p.inventory.hotbar[p.inventory.hotbarSlot] = null
@@ -34895,8 +35013,9 @@ class WorldDimension{
         if(state === LAYER7) layer = 7
         if(state === LAYER8) layer = 8
         if(((b & isCube) === (holding & isCube)) && layer > 0 && layer < 8){
-					//p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:this.getBlock(x,y,z), dimension}})
+					p.connection.send({type:"setBlock", data:{x:x, y:y, z:z, block:this.getBlock(x,y,z), dimension}})
           x = ox, y = oy, z = oz
+					canPlace = true
           layer ++
           switch(layer){
             case 2:
@@ -35198,8 +35317,18 @@ class WorldDimension{
       this.playSound(x,y,z,sound, volume, pitch)
     }
   }
-	playSound(x,y,z, name, volume = 1, pitch = 1){
-		this.sendAll({type:"playSound", data:name, volume, pitch, x,y,z, hasPos: (typeof x === "number")})
+	playSound(x,y,z, name, volume = 1, pitch = 1, range = 16){
+		if(typeof x === "number"){
+			// positioned sound: only players in the same dimension and within `range` blocks hear it
+			// (avoids broadcasting every local sound/step/splash to the whole server). range is a
+			// server-side param and is NOT sent in the packet.
+			for(let p of this.world.players){
+				if(p.dimension === this.dimension && max(abs(p.x-x), abs(p.y-y), abs(p.z-z)) <= range) p.connection.send({type:"playSound", data:name, volume, pitch, x,y,z, hasPos:true})
+			}
+		}else{
+			// positionless/global sound (e.g. a command with no coords): broadcast as before
+			this.sendAll({type:"playSound", data:name, volume, pitch, x,y,z, hasPos:false})
+		}
 	}
 	poof(x,y,z,amount,dimension, w,h,d, unremote){
 		if(!amount) amount = w*h*d*20
@@ -35610,7 +35739,11 @@ class WorldDimension{
 		if(chunk) delete chunk.entities.delete(id)
 	}
 	sendEntityPos(ent){
-		this.sendAllInChunk({type:"entityPos", data:this.world.getEntPos(ent,performance.now(), true)}, ent.x,ent.z)
+		// this doesn't update delta
+		/*let cur = this.world.getEntPosObj(ent, performance.now())
+		for(let k in cur) if(cur[k] === undefined) cur[k] = null
+		cur.delta = false
+		this.sendAllInChunk({type:"entityPos", data:entitySerializer.encode(cur)}, ent.x,ent.z)*/
 	}
 	
 	getEntities(p){
@@ -35623,19 +35756,52 @@ class WorldDimension{
 		let maxChunkX = x + loadDistance
 		let minChunkZ = z - loadDistance
 		let maxChunkZ = z + loadDistance
+		let known = p.entityDeltas || (p.entityDeltas = {})
+		let inView = p.entityInView || (p.entityInView = {})
+		let lastChunk = p.entityLastChunk || (p.entityLastChunk = {})
 		let arr = []
+		let seen = {}
 		for (x = minChunkX; x <= maxChunkX; x++) {
 			for (z = minChunkZ; z <= maxChunkZ; z++) {
 				if (this.chunks[x] && this.chunks[x][z]) {
 					let chunk = this.chunks[x][z]
 					for(let [i,ent] of chunk.entities){
 						let now = performance.now()
-						//if(ent.remote) return
-						arr.push(this.world.getEntPos(ent,now, true))
+						//if(ent.remote) continue
+						seen[ent.id] = 1
+						let cur = this.world.getEntPosObj(ent, now)
+						//network send uses null instead of undefined so clears are explicit and delta-detectable;
+						//getEntPosObj keeps undefined for the entity-save path (chunk serialization)
+						for(let k in cur) if(cur[k] === undefined) cur[k] = null
+						let prev = known[ent.id]
+						//entity moved into a different chunk than the client last had it fully in: the client may
+						//have unloaded its old chunk, so its baseline is gone -> resend full, not a delta
+						let movedChunk = lastChunk[ent.id] !== undefined && lastChunk[ent.id] !== (x+','+z)
+						if(prev === undefined || !inView[ent.id] || movedChunk){
+							//first time this player sees the entity, it left view and returned, or it
+							//changed chunks: send everything (explicit full flag)
+							known[ent.id] = cur
+							inView[ent.id] = 1
+							lastChunk[ent.id] = x+','+z
+							cur.delta = false
+							arr.push(entitySerializer.encode(cur))
+						}else{
+							//delta: only fields whose value changed; include the clock-sync field so the client's timers stay correct
+							let delta = {id: ent.id, entId: ent.entId, spawnRelative: cur.spawnRelative, delta: true}
+							if(cur.timerStartRelative !== undefined) delta.timerStartRelative = cur.timerStartRelative
+							for(let k in cur){
+								if(k === "spawnRelative" || k === "timerStartRelative" || k === "delta") continue
+								if(cur[k] !== prev[k]) delta[k] = cur[k]
+							}
+							known[ent.id] = cur
+							if(Object.keys(delta).length > 3) arr.push(entitySerializer.encode(delta))
+						}
 					}
 				}
 			}
 		}
+		//entities that left this player's view
+		for(let id in inView) if(!seen[id]){ delete inView[id]; delete lastChunk[id] }
 		return arr
 	}
 	getEntitiesNear(x,y,z,d, ret = []){

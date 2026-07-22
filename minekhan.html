@@ -5,7 +5,7 @@
 		<title>MineKhan</title>
     <base href>
     <meta name="keywords" content="MineKhan, survival, game, sandbox, biomes, terrain, 3d, multiplayer">
-    <meta name="description" content="MineKhan with survival, dimensions, multiplayer, moving things, biomes and more. Different from MC, but still interesting.">
+    <meta name="description" content="MineKhan with survival, dimensions, multiplayer, entities, terrain with temperate, coniferous, old growth forests, shallow rivers, and more. Different from MC, but still interesting.">
 		<meta property="og:image" content="https://www.khanacademy.org/computer-programming/images/6642195861815296/6212708026073088.png"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
     <meta name="theme-color" id="themeColor">
@@ -921,7 +921,6 @@ Chunks are kept in memory until you restart. So don't explore too far or memory 
 		<br><br>
 		<div style='position:sticky;bottom:8;left:8'>
 		<button onclick='errorScreen.style.display="none"'>Hide</button>
-		<a href="https://thingmaker.us.eu.org">Please send error messages to thingmaker. Website</a>
 		<!--<button onclick='let p=prompt("what did you do before it happened?");sendError("error explained: "+p)'>Help fix this error by explaining how it happened</button>-->
 		</div>
 	</div>
@@ -12841,10 +12840,11 @@ return//*/
 			}
       //if(p.survival) inventory.hotbar[inventory.hotbarSlot].animation = 1.5 //animation because you used one of the blocks
       
-      /*if(p.survival && inventory.hotbar[inventory.hotbarSlot]){
-        inventory.hotbar[inventory.hotbarSlot].amount --;
+      if(p.survival && inventory.slots[inventory.slotIds.hotbar[inventory.hotbarSlot]]){ // predicted
+        inventory.slots[inventory.slotIds.hotbar[inventory.hotbarSlot]].amount --;
+				if(!inventory.slots[inventory.slotIds.hotbar[inventory.hotbarSlot]].amount) inventory.slots[inventory.slotIds.hotbar[inventory.hotbarSlot]] = null
         updateHUD = true
-      }*/
+      }
 		 	p.punchEffect = 10
       
       //play sound
@@ -14515,6 +14515,7 @@ r 11 y  n  n  n
 							this.setLight(x, y, z, light, 0)
 						}
 					}
+					if (!stop) this.tops[z * 16 + x] = minHeight-1
 				}
 			}
 
@@ -15947,18 +15948,18 @@ r 11 y  n  n  n
       var z = zd; this.velz = (z-(Math.sign(z)*7.25)) / 150*/
     }
 		setPos(x,y,z,vx,vy,vz){
-			this.velx = vx
-			this.vely = vy
-			this.velz = vz
+			if(vx !== undefined) this.velx = vx
+			if(vy !== undefined) this.vely = vy
+			if(vz !== undefined) this.velz = vz
 			if(this.doInterpolate){
-				this.targetX = x
-				this.targetY = y
-				this.targetZ = z
+				if(x !== undefined) this.targetX = x
+				if(y !== undefined) this.targetY = y
+				if(z !== undefined) this.targetZ = z
 				this.lastPos = performance.now()
 			}else{
-				this.x = x
-				this.y = y
-				this.z = z
+				if(x !== undefined) this.x = x
+				if(y !== undefined) this.y = y
+				if(z !== undefined) this.z = z
 			}
 		}
 		update() {
@@ -18533,18 +18534,18 @@ r 11 y  n  n  n
       }
     }
     setPos(x,y,z,vx,vy,vz){
-      this.targetX = x
-      this.targetY = y
-      this.targetZ = z
-			this.velx = vx
-			this.vely = vy
-			this.velz = vz
+      if(x !== undefined) this.targetX = x
+      if(y !== undefined) this.targetY = y
+      if(z !== undefined) this.targetZ = z
+			if(vx !== undefined) this.velx = vx
+			if(vy !== undefined) this.vely = vy
+			if(vz !== undefined) this.velz = vz
 			this.lastPos = performance.now()
     }
     setRot(rx,ry, bodyRot){
-      this.targetRx = rx
-      this.targetRy = ry
-      this.bodyRot = (bodyRot || bodyRot === 0) ? bodyRot : ry
+      if(rx !== undefined) this.targetRx = rx
+      if(ry !== undefined) this.targetRy = ry
+      if(bodyRot !== undefined) this.bodyRot = (bodyRot || bodyRot === 0) ? bodyRot : (ry !== undefined ? ry : this.bodyRot)
     }
     render(){
       totalEntites++
@@ -21764,6 +21765,7 @@ r 11 y  n  n  n
 	document.getElementById("editSkin").onchange = function(){
 		let fileReader = new FileReader(), file = this.files[0]
     if(!file) return
+		if(file.size>100000) return alert("Too big")
     fileReader.onload = () => {
 			profile.skin = fileReader.result
 			saveToDB("profile", profile).catch(console.error)
@@ -21774,6 +21776,7 @@ r 11 y  n  n  n
 	document.getElementById("editCape").onchange = function(){
 		let fileReader = new FileReader(), file = this.files[0]
     if(!file) return
+		if(file.size>100000) return alert("Too big")
     fileReader.onload = () => {
 			profile.cape = fileReader.result
 			saveToDB("profile", profile).catch(console.error)
@@ -22426,6 +22429,8 @@ r 11 y  n  n  n
 		if(connection.cAnCeLcOnNectION) return changeScene("multiplayer lost")
 		players = {}, playerSkins = {}, playerCapes = {} //empty
 		let canSendPos = true //if internet is slow, don't send positions too fast because it will slow down the connection
+		let posInFlight = 0 //unacked position sends; stop if the server falls behind
+		const maxPosInFlight = 20 //max unacked position messages before pausing
 		multiplayerError = null
 		multiplayer = connection
 		win.multiplayer = multiplayer
@@ -22449,39 +22454,45 @@ r 11 y  n  n  n
 		multiplayer.mmoveX = multiplayer.mmoveY = 0
 		multiplayer.lastSendPos = 0
 		multiplayer.toSendLoadChunks = null
+		multiplayer.supportsDelta = false //set from the handshake (loadSave.serverDelta); until then send full positions
 		multiplayer.sendPos = (force,type) => {
 			let now = Date.now()
-			if((!canSendPos /*|| now-multiplayer.lastSendPos < 100*/) && !force || !multiplayer || !multiplayer.hasStartedLoad) return //if p3 hasn't been set, don't send
+			if((posInFlight >= maxPosInFlight || !multiplayer.supportsDelta&&!canSendPos/*old way*/) && !force || !multiplayer || !multiplayer.hasStartedLoad) return //if p3 hasn't been set, don't send
 			
-			let obj = {type:"pos", data:{
-				x:p.x,
-				y:p.y,
-				z:p.z,
-				dimension:p.dimension,
-				ry:p.ry,
-				rx:p.rx,
-				bodyRot:p.bodyRot,
-				sneaking:p.sneaking,
-				harmEffect:harmEffect,
-				crackPos:hitBox.pos,
-				crack:crack.idx,
-				walking:p.walking,
-				eating:p.eating,
-				sprinting:p.sprinting,
-				punchEffect:p.punchEffect,
-				sleeping:p.sleeping,
-				sitting:p.sitting,
-				swimming:p.swimming,
-				usingItem:p.usingItem,
-				spectating:p.spectating && p.spectating.id || null,
-				velx:p.velocity.x,
-				vely:p.velocity.y,
-				velz:p.velocity.z,
-				riding:p.riding,
-				onGround:p.onGround,
-				flying:p.flying,
-				gliding:p.gliding,
-			}}
+			//send only fields that changed since the last pos (delta); the serializer omits undefined,
+			//so receivers keep their old value for anything absent
+			let last = multiplayer.lastPosSent || (multiplayer.lastPosSent = {})
+			if(!multiplayer.supportsDelta) last = {} //older/unknown server (handshake not yet confirmed deltas): send the full position every time
+			let data = {}
+			if(last.x !== p.x){ last.x = p.x; data.x = p.x }
+			if(last.y !== p.y){ last.y = p.y; data.y = p.y }
+			if(last.z !== p.z){ last.z = p.z; data.z = p.z }
+			if(last.dimension !== p.dimension){ last.dimension = p.dimension; data.dimension = p.dimension }
+			if(last.ry !== p.ry){ last.ry = p.ry; data.ry = p.ry }
+			if(last.rx !== p.rx){ last.rx = p.rx; data.rx = p.rx }
+			if(last.bodyRot !== p.bodyRot){ last.bodyRot = p.bodyRot; data.bodyRot = p.bodyRot }
+			if(last.sneaking !== p.sneaking){ last.sneaking = p.sneaking; data.sneaking = p.sneaking }
+			if(last.harmEffect !== harmEffect){ last.harmEffect = harmEffect; data.harmEffect = harmEffect }
+			if(last.crack !== crack.idx){ last.crack = crack.idx; data.crack = crack.idx }
+			if(last.walking !== p.walking){ last.walking = p.walking; data.walking = p.walking }
+			if(last.eating !== p.eating){ last.eating = p.eating; data.eating = p.eating }
+			if(last.sprinting !== p.sprinting){ last.sprinting = p.sprinting; data.sprinting = p.sprinting }
+			if(last.punchEffect !== p.punchEffect){ last.punchEffect = p.punchEffect; data.punchEffect = p.punchEffect }
+			if(last.sleeping !== p.sleeping){ last.sleeping = p.sleeping; data.sleeping = p.sleeping }
+			if(last.sitting !== p.sitting){ last.sitting = p.sitting; data.sitting = p.sitting }
+			if(last.swimming !== p.swimming){ last.swimming = p.swimming; data.swimming = p.swimming }
+			if(last.usingItem !== p.usingItem){ last.usingItem = p.usingItem; data.usingItem = p.usingItem }
+			let spectating = p.spectating && p.spectating.id || null
+			if(last.spectating !== spectating){ last.spectating = spectating; data.spectating = spectating }
+			if(last.velx !== p.velocity.x){ last.velx = p.velocity.x; data.velx = p.velocity.x }
+			if(last.vely !== p.velocity.y){ last.vely = p.velocity.y; data.vely = p.velocity.y }
+			if(last.velz !== p.velocity.z){ last.velz = p.velocity.z; data.velz = p.velocity.z }
+			if(last.riding !== p.riding){ last.riding = p.riding; data.riding = p.riding }
+			if(last.onGround !== p.onGround){ last.onGround = p.onGround; data.onGround = p.onGround }
+			if(last.flying !== p.flying){ last.flying = p.flying; data.flying = p.flying }
+			if(last.gliding !== p.gliding){ last.gliding = p.gliding; data.gliding = p.gliding }
+			
+			let obj = {type:"pos", data}
 			/*if(shouldSendInvStuff){
 				obj.inv = invStuff
 				shouldSendInvStuff = false
@@ -22490,6 +22501,7 @@ r 11 y  n  n  n
 				obj.afk = true
 			}
 			canSendPos = false
+			posInFlight++
 			send(obj)
 			multiplayer.lastSendPos = now
 			if(multiplayer.toSendLoadChunks){
@@ -22519,6 +22531,10 @@ r 11 y  n  n  n
 				world = new World()
 				win.world = world
 				world.version = version
+				//handshake: the server told us in loadSave whether it merges/relays field-level position
+				//deltas (supportsDelta). if it's an older server (no field / false), send FULL positions every
+				//time so a delta can't blank unchanged fields on a server that does full-assignment.
+				multiplayer.supportsDelta = !!data.supportsDelta
 				let preBetaVersion = verMoreThan("1.1.0",data.version.replace(/(Alpha|Beta) /, ''))
 				weather = data.weather
 				worldTime = data.time
@@ -22601,7 +22617,6 @@ r 11 y  n  n  n
 					world.activeResourcePacks = data.activeResourcePacks
 				}
 				changeScene("loadingResources")
-				await waitAFrame()
 				await initResources()
 				if(lastResourcesHash !== resourcesHash){
 					await initTextures()
@@ -22618,7 +22633,6 @@ r 11 y  n  n  n
 				//world.resourcePacks = data.resourcePacks
 				world.activeResourcePacks = data.activeResourcePacks
 				changeScene("loadingResources")
-				await waitAFrame()
 				await initResources()
 				await initTextures()
 				initCachedShapes()
@@ -22665,44 +22679,46 @@ r 11 y  n  n  n
 				}
 				let thisplayer = author ? players[author] : p
 				if(author){
+				//position/velocity/rotation are guarded inside setPos/setRot; the rest merge
+				//so fields absent from a delta keep their previous value
 				thisplayer.setPos(pos.x,pos.y,pos.z,pos.velx,pos.vely,pos.velz)
 				thisplayer.setRot(pos.rx, pos.ry, pos.bodyRot)
-				thisplayer.sneaking = pos.sneaking
-				thisplayer.dimension = pos.dimension
+				if(pos.sneaking !== undefined) thisplayer.sneaking = pos.sneaking
+				if(pos.dimension !== undefined) thisplayer.dimension = pos.dimension
 				thisplayer.id = author
-				thisplayer.harmEffect = pos.harmEffect
-				if(thisplayer.username !== pos.username){
+				if(pos.harmEffect !== undefined) thisplayer.harmEffect = pos.harmEffect
+				if(pos.username !== undefined){
 					thisplayer.username = pos.username
 					//thisplayer.changeBlock(abs((pos.username || "").hashCode()) % 80 + 1)
 				}
-				thisplayer.crackPos = pos.crackPos
-				thisplayer.crack = pos.crack //crack number
-				thisplayer.walking = pos.walking
-				thisplayer.sprinting = pos.sprinting
-				thisplayer.punchEffect = pos.punchEffect
-				thisplayer.eating = pos.eating
-				thisplayer.sleeping = pos.sleeping
-				thisplayer.sitting = pos.sitting
-				thisplayer.swimming = pos.swimming
-				thisplayer.usingItem = pos.usingItem
-				thisplayer.spectating = pos.spectating
+				if(pos.crackPos !== undefined) thisplayer.crackPos = pos.crackPos
+				if(pos.crack !== undefined) thisplayer.crack = pos.crack //crack number
+				if(pos.walking !== undefined) thisplayer.walking = pos.walking
+				if(pos.sprinting !== undefined) thisplayer.sprinting = pos.sprinting
+				if(pos.punchEffect !== undefined) thisplayer.punchEffect = pos.punchEffect
+				if(pos.eating !== undefined) thisplayer.eating = pos.eating
+				if(pos.sleeping !== undefined) thisplayer.sleeping = pos.sleeping
+				if(pos.sitting !== undefined) thisplayer.sitting = pos.sitting
+				if(pos.swimming !== undefined) thisplayer.swimming = pos.swimming
+				if(pos.usingItem !== undefined) thisplayer.usingItem = pos.usingItem
+				if(pos.spectating !== undefined) thisplayer.spectating = pos.spectating
 				thisplayer.afk = data.afk
-				thisplayer.riding = pos.riding
-				thisplayer.gliding = pos.gliding
+				if(pos.riding !== undefined) thisplayer.riding = pos.riding
+				if(pos.gliding !== undefined) thisplayer.gliding = pos.gliding
 				}
-				thisplayer.burning = pos.burning
-				thisplayer.holding = pos.holding || 0
-				thisplayer.die = pos.die
-				thisplayer.scale = pos.scale || 1
+				if(pos.burning !== undefined) thisplayer.burning = pos.burning
+				if(pos.holding !== undefined) thisplayer.holding = pos.holding || 0
+				if(pos.die !== undefined) thisplayer.die = pos.die
+				if(pos.scale !== undefined) thisplayer.scale = pos.scale || 1
 				if(pos.equipment) thisplayer.equipment = pos.equipment
-				thisplayer.hidden = pos.hidden
+				if(pos.hidden !== undefined) thisplayer.hidden = pos.hidden
 				if(!thisplayer.skinSet && playerSkins[author]){
 					thisplayer.setSkin(playerSkins[author])
 				}
 				if(!thisplayer.capeSet && playerCapes[author]){
 					thisplayer.setCape(playerCapes[author])
 				}
-				if(!author) canSendPos = true
+				if(!author){ canSendPos = true; if(posInFlight > 0) posInFlight-- }
 			}/*else if(data.type === "canSendPos"){
 				canSendPos = true
 			}else if(data.type === "shouldSendInv"){
@@ -23527,6 +23543,10 @@ r 11 y  n  n  n
 			let now = performance.now()
 			let ent = this.entities.get(p.id)
 			if(!ent){
+				//unknown entity + delta packet: a delta only carries changed fields, so it can't
+				//spawn a new entity from missing data. ignore it; a full packet (sent on chunk
+				//load / chunk change) will create it properly
+				if(p.delta) return
 				if(!this.getChunk(p.x,p.z,p.dimension)) return // don't create ghost entities
 				ent = entities[p.entId]
 				switch(entType){
@@ -23552,39 +23572,50 @@ r 11 y  n  n  n
 			}
 			if(!ent) return
 			ent.setPos(p.x,p.y,p.z,p.velx,p.vely,p.velz)
-			ent.dimension = p.dimension
-			if(!ent.facesPlayer){ ent.yaw = p.yaw; ent.pitch = p.pitch }
-			ent.spawn = now - p.spawnRelative
-			if(p.from) ent.from = p.from
-			if(p.data){
+			if(p.dimension !== undefined) ent.dimension = p.dimension
+			if(p.yaw !== undefined && !ent.facesPlayer) ent.yaw = p.yaw
+			if(p.pitch !== undefined && !ent.facesPlayer) ent.pitch = p.pitch
+			if(p.spawnRelative !== undefined) ent.spawn = now - p.spawnRelative //if absent, client keeps advancing its own clock
+			if(p.from !== undefined) ent.from = p.from
+			if(p.data !== undefined){
 				if(ent.data.amount !== p.data.amount) ent.willUpdateShape = true
 				Object.assign(ent.data,p.data)
 			}
-			if(p.name) ent.name = p.name
-			ent.doingPortal = p.doingPortal||0
+			if(p.name !== undefined) ent.name = p.name
+			if(p.doingPortal !== undefined) ent.doingPortal = p.doingPortal||0
 			if(ent.mob){
-				ent.harmEffect = p.harmEffect||0; ent.health = p.health
-				ent.burning = p.burning||false; ent.burnTimer = p.burnTimer||0
-				ent.oxygen = p.oxygen; ent.spinTarget = p.spinTarget
-				ent.path = p.path || null
-				if("fur" in ent) ent.fur = p.fur
-				if("color" in ent) ent.color = p.color
-				if("eating" in ent) ent.eating = p.eating
-				ent.target = p.target
-				if(entType === "Sheep") ent.wool = p.wool
-				if("tame" in ent) ent.tame = p.tame
-				if("sitting" in ent) ent.sitting = p.sitting
-				if("owner" in ent) ent.owner = p.owner
-				ent.holding = p.holding; ent.attractedBy = p.attractedBy||null
-				if(entType === "Creeper"){ ent.explodeAmount = p.explodeAmount; ent.timerStart = now - p.timerStartRelative }
-				ent.attackCooldown = p.attackCooldown||0
-				ent.effects = p.effects
+				if(p.harmEffect !== undefined) ent.harmEffect = p.harmEffect||0
+				if(p.health !== undefined) ent.health = p.health
+				if(p.burning !== undefined) ent.burning = p.burning||false
+				if(p.burnTimer !== undefined) ent.burnTimer = p.burnTimer||0
+				if(p.oxygen !== undefined) ent.oxygen = p.oxygen
+				if(p.spinTarget !== undefined) ent.spinTarget = p.spinTarget
+				if(p.path !== undefined) ent.path = p.path || null
+				if(p.fur !== undefined && "fur" in ent) ent.fur = p.fur
+				if(p.color !== undefined && "color" in ent) ent.color = p.color
+				if(p.eating !== undefined && "eating" in ent) ent.eating = p.eating
+				if(p.target !== undefined) ent.target = p.target
+				if(p.wool !== undefined && entType === "Sheep") ent.wool = p.wool
+				if(p.tame !== undefined && "tame" in ent) ent.tame = p.tame
+				if(p.sitting !== undefined && "sitting" in ent) ent.sitting = p.sitting
+				if(p.owner !== undefined && "owner" in ent) ent.owner = p.owner
+				if(p.holding !== undefined) ent.holding = p.holding
+				if(p.attractedBy !== undefined) ent.attractedBy = p.attractedBy||null
+				if(entType === "Creeper"){
+					if(p.explodeAmount !== undefined) ent.explodeAmount = p.explodeAmount
+					if(p.timerStartRelative !== undefined) ent.timerStart = now - p.timerStartRelative //if absent, keep advancing
+				}
+				if(p.attackCooldown !== undefined) ent.attackCooldown = p.attackCooldown||0
+				if(p.effects !== undefined) ent.effects = p.effects
 			}else if(ent.type === "BlockDisplay"){
-				ent.width = p.width; ent.height = p.height; ent.depth = p.depth
+				if(p.width !== undefined) ent.width = p.width
+				if(p.height !== undefined) ent.height = p.height
+				if(p.depth !== undefined) ent.depth = p.depth
 			}else if(ent.type === "Minecart"){
-				ent.harmEffect = p.harmEffect; ent.health = p.health
+				if(p.harmEffect !== undefined) ent.harmEffect = p.harmEffect
+				if(p.health !== undefined) ent.health = p.health
 			}
-			if(entType === "TextDisplay" && ent.text !== p.text) ent.setText(p.text)
+			if(entType === "TextDisplay" && p.text !== undefined && ent.text !== p.text) ent.setText(p.text)
 			ent.updateChunk()
 			return ent
 		}
@@ -25474,7 +25505,6 @@ p.camera.transformation.elements.set(matrix)//*/
 			document.documentElement.lang = language ? language.id : "en-us"
 			let s = screen, ps = previousScreen
 			changeScene("loadingResources")
-			await waitAFrame()
 			saveToDB("settings", compareObject(defaultSettings,settings))
 			await initResources()
 			changeScene(s)
@@ -31432,7 +31462,6 @@ p.camera.transformation.elements.set(matrix)//*/
 		textSize(25)
 		text("Reading world data...", width / 2, height / 2 - 65)
 		drawLoadBar(width/2,height/2+85)
-		await waitAFrame()
     serverWorld = new ServerWorld([p.username])
 		win.serverWorld = serverWorld
 		autosaveTimer = null
