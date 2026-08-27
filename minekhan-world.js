@@ -1325,6 +1325,7 @@ const blockData = [
 		serverontouch: function(x,y,z,ent){
 			if(ent.world.world.event("touchportal", {x,y,z,entity:ent})) return
 			ent.portalEffect += 2.5
+			if(ent.portalFadeOutEffect > 0) ent.portalFadeOutEffect = 100
 			if(ent.portalEffect >= 100 && ent.portalFadeOutEffect <= 0){
 				if(ent.type === "Player") ent.connection.send({type:"portalOut"})
 				ent.portalFadeOutEffect = 100
@@ -19334,7 +19335,7 @@ function initBlockDataShapes(){
 	function clickBed(x,y,z,world,p){
     if(p.dimension !== "") return world.explode(x,y,z,5,false)
     p.spawnPoint.x = x
-    p.spawnPoint.y = y+1
+    p.spawnPoint.y = y
     p.spawnPoint.z = z
     p.connection.send({type:"message",data:"Respawn point set",fromServer:true})
     if(world.world.skyLight < 0.5){
@@ -22507,7 +22508,24 @@ class Player extends Entity{
 		if(!spawn){
 			spawn = this.spawnPoint = {x:this.world.world.spawnPoint.x,y:this.world.world.spawnPoint.y,z:this.world.world.spawnPoint.z}
 		}
-		this.x = spawn.x, this.y = spawn.y+0.5+this.height*0.5, this.z = spawn.z
+		let {x,y,z} = this.spawnPoint
+		// if no space or ground below, find a place to spawn within 100 blocks
+		// doesn't work if spawn area not loaded
+		if(!blockData[this.world.getBlock(x,y,z)].solid||blockData[this.world.getBlock(x,y+1,z)].solid||blockData[this.world.getBlock(x,y+2,z)].solid){
+			let i = -1
+			findloop:while(i<100){
+				i++
+				for(let x2=0;x2<i*2+1;x2++){
+					let sx = ((x2%2)?-(x2+1)/2:x2/2) // this alternates back and forth, example: 0, -1, 1, -2, 2
+					let sz = i-Math.abs(sx)
+					let top = this.world.getSolidTop(x+sx,z+sz)
+					if(top>0) {x = x+sx; z = z+sz; y = top; break findloop}
+					top = this.world.getSolidTop(x+sx,z-sz)
+					if(top>0) {x = x+sx; z = z-sz; y = top; break findloop}
+				}
+			}
+		}
+		this.x = x, this.y = y+0.5+this.height*0.5, this.z = z
 		this.targetX = this.x, this.targetY = this.y, this.targetZ = this.z
 		this.velx = this.vely = this.velz = 0
 		this.lastY = this.y
@@ -22530,7 +22548,7 @@ class Player extends Entity{
 		this.effects = {}
 		this.freezeEffect = 0
 		this.burnTimer = 0
-    this.dieMessage = "Invalid death"
+    this.dieMessage = this.username+" died"
     this.dimension = ""
 		this.riding = null
     this.hidden = false
@@ -33961,7 +33979,6 @@ window.parent.postMessage({ready:true}, "*")
 				for(let s of world.players){
 					if(s !== p && s.posInFlight && s.posInFlight[p.id] > 0) s.posInFlight[p.id]--
 				}
-				if(canPos){
 				//the client sends only changed fields (delta); merge into p.pos so it always holds the full state
 				//(needed for relaying to newly-joined players), then update the player object from the merged state
 				let full = p.pos ? p.pos.data : (p.pos = {type:"pos", data:{}, afk:data.afk}).data
@@ -33976,6 +33993,7 @@ window.parent.postMessage({ready:true}, "*")
 				if(pos.swimming !== undefined) full.swimming = pos.swimming; if(pos.usingItem !== undefined) full.usingItem = pos.usingItem
 				if(pos.spectating !== undefined) full.spectating = pos.spectating; if(pos.riding !== undefined) full.riding = pos.riding
 				if(pos.flying !== undefined) full.flying = pos.flying; if(pos.gliding !== undefined) full.gliding = pos.gliding
+				if(canPos){
 				p.afk = data.afk
 				p.setPos(full.x,full.y,full.z,full.velx,full.vely,full.velz)
 				p.setRot(full.rx, full.ry, full.bodyRot)
@@ -34364,7 +34382,7 @@ window.parent.postMessage({ready:true}, "*")
 			let i = world.players.indexOf(p)
 			if(i !== -1) world.players.splice(i,1)
 			for(let p2 of world.players){
-				if(p2.posInFlight) delete p2.posInFlight[id]
+				if(p2.posInFlight) delete p2.posInFlight[p.id]
 			}
 			world.sendAll({type:"dc",data:p.id})
 			if(onclose) onclose(p)

@@ -3,7 +3,7 @@
 <base>
 <style>button,a{border:none;display:block;padding:24px;margin:16px;cursor:pointer;}</style>
 <a href="/">Home</a>
-<button onclick="download('index.html','mk.html')">Download minekhan</button>
+<button onclick="download()">Download minekhan</button>
 <button onclick="openAboutBlank()">Open minekhan with about:blank</button>
 <button onclick="downloadThisPage()">Download this page (offdown.html)</button>
 Copy it anywhere! (do give credit)
@@ -11,14 +11,26 @@ Copy it anywhere! (do give credit)
 You can press Ctrl+H in minekhan to hide the page and Ctrl+J to show it again.<br><br>
 <script>
   let base = document.baseURI||location.href
-  async function download(href,download){
+  function arrtostr(arr){
+    arr = new Uint8Array(arr)
+    let str = ""
+    for (let i = 0; i < arr.length; i++) {
+      str += String.fromCharCode(arr[i])
+    }
+    return btoa(str)
+  }
+  async function download(){
     //let data = await (await fetch("/minekhan")).arrayBuffer()
     //let version = (new TextDecoder().decode(data.slice(0,50))).match(/@[A-Za-z0-9 \.]*/)[0]
-    let a = document.createElement("a")
-    let str = await(await fetch(href)).text()
+    let str = await(await fetch('minekhan.html')).text()
     str = str.replace("<base href>",'<base href="https://thingmaker.us.eu.org/minekhan/">')
+    let soundStr = "\nwindow.soundData='data:text/plain;base64,"+arrtostr(await(await fetch('assets/sounds.txt')).arrayBuffer())+"'"
+    str = str.replace('<script src="minekhan-world.js">', "<script>"+(await(await fetch('minekhan-world.js')).text()))
+	  str = str.replace('<script src="servers.js">', "<script>"+(await(await fetch('servers.js')).text())+soundStr)
+
+    let a = document.createElement("a")
     a.href = URL.createObjectURL(new Blob([str]))
-    a.download = download
+    a.download = 'mk.html'
     a.click()
   }
   async function downloadThisPage(){

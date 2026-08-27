@@ -12476,6 +12476,7 @@ return//*/
 			portalEffect = portalFadeOutEffect
 			updateHUD = true
 		}else if(portalEffect > 0){
+			if(portalEffect>100) portalEffect=100
 			portalEffect -= 1.25
 			updateHUD = true
 			/*fill(255,0,255, portalEffect)
@@ -22626,7 +22627,7 @@ r 11 y  n  n  n
 				if(!multiplayer) return
 				multiplayer.hasStartedLoad = true//allow send position which allows recieving chunks and entities
 				multiplayer.sendPos(true)
-				goToLoadScreen()
+				if(screen === "loadingResources") goToLoadScreen() // don't change it back if on die screen
 				setTimeout(() => clearBottomRightList("connecting"), 1000)
 			}else if(data.type === "resourcePacks"){
 				if(initTextureProgress !== 1) return
@@ -30457,9 +30458,10 @@ p.camera.transformation.elements.set(matrix)//*/
 		async function loadSounds(){
 			if(!nosound){
 				if(!win.DecompressionStream) alert("DecompressionStream not supported. no sound.")
-				let f = await fetch("assets/sounds.txt").catch(e => {console.log(e); return null })
-				let arr = f && f.ok && (await f.arrayBuffer().catch(e => {console.log(e); return null }))
-				if(f&&f.status===404) logError("If you are copying this, you should also copy "+new URL("assets/sounds.txt",location)+" and "+new URL("maps.json",location)+" and "+(images.panorama&&images.panorama.src)+"")
+				let arr
+				let f = await fetch(win.soundData || "assets/sounds.txt").catch(e => {console.log(e); return null })
+				arr = f && f.ok && (await f.arrayBuffer().catch(e => {console.log(e); return null }))
+				//if(f&&f.status===404) logError("If you are copying this, you should also copy "+new URL("assets/sounds.txt",location)+" and "+new URL("maps.json",location)+" and "+(images.panorama&&images.panorama.src)+"")
 				if(arr && win.DecompressionStream){
 					let soundData = await loadEPK(arr)
 					loadDone("Loaded sounds","",f.status)
