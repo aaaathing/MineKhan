@@ -19334,9 +19334,7 @@ function initBlockDataShapes(){
 	}
 	function clickBed(x,y,z,world,p){
     if(p.dimension !== "") return world.explode(x,y,z,5,false)
-    p.spawnPoint.x = x
-    p.spawnPoint.y = y
-    p.spawnPoint.z = z
+    p.spawnPoint = {x,y,z}
     p.connection.send({type:"message",data:"Respawn point set",fromServer:true})
     if(world.world.skyLight < 0.5){
       let block = world.getBlock(x,y,z)
@@ -22504,11 +22502,7 @@ class Player extends Entity{
 	get survival(){return this.gameMode==="survival"||this.gameMode==="hardcore"}
 	get spectator(){return this.gameMode==="spectator"}
 	setDefaults(){
-    let spawn = this.spawnPoint
-		if(!spawn){
-			spawn = this.spawnPoint = {x:this.world.world.spawnPoint.x,y:this.world.world.spawnPoint.y,z:this.world.world.spawnPoint.z}
-		}
-		let {x,y,z} = this.spawnPoint
+		let {x,y,z} = this.spawnPoint || this.world.world.spawnPoint
 		// if no space or ground below, find a place to spawn within 100 blocks
 		// doesn't work if spawn area not loaded
 		if(!blockData[this.world.getBlock(x,y,z)].solid||blockData[this.world.getBlock(x,y+1,z)].solid||blockData[this.world.getBlock(x,y+2,z)].solid){
@@ -22598,7 +22592,7 @@ class Player extends Entity{
 		this.rx = d.rx || 0; this.ry = d.ry || 0
 		this.flying = d.flying||false; this.gameMode = d.gameMode || "creative"
 		this.health = d.health
-		if (d.spawnPoint) { this.spawnPoint.x = d.spawnPoint.x; this.spawnPoint.y = d.spawnPoint.y; this.spawnPoint.z = d.spawnPoint.z }
+		if (d.spawnPoint) { this.spawnPoint = d.spawnPoint }
 		this.food = d.food; this.foodSaturation = d.foodSaturation; this.foodExhaustion = d.foodExhaustion
 		this.oxygen = d.oxygen; this.cheats = d.cheats||false; this.freezeEffect = d.freezeEffect||0
 		this.XP = d.XP||0; this.level = d.level||0; this.setLevel()
@@ -24133,7 +24127,7 @@ entities[entities.length] = class ExperienceOrb extends Entity{
 			//var x = xd/*/abs(zd)*/; this.velx = (x-(Math.sign(x)*7.25)) / 150//; this.velx = -this.velx
 			//if(this.onGround) {var y = this.y - (p.y-p.bottomH); this.vely = (y-(Math.sign(y)*7.25)) / 40/*; this.vely = -this.vely*/}
 			//var z = zd/*/abs(xd)*/; this.velz = (z-(Math.sign(z)*7.25)) / 150//; this.velx = -this.velx
-			this.moveTowards(e.x, e.y-e.height*0.5, e.z, 7.25,7.25,7.25, 5, true)
+			this.moveTowards(e.x, e.y-e.height*0.5, e.z, 7.25,7.25,7.25, 20, true)
 		}
 		return dist < 0.5
 	}
@@ -32099,6 +32093,7 @@ class World{ // aka trueWorld
 		this.worldSeed = 0
 		this.islandGenerator = new IslandGenerator(this);
 		this.setSeed = (seed, noFindSpawn) => {
+			if(this.worldSeed) sendAllWorkers({deleteSeed:this.worldSeed})
 			this.worldSeed = seed
 			seedHash(seed)
 			this.caveNoise = openSimplexNoise(seed)
@@ -33763,9 +33758,7 @@ window.parent.postMessage({ready:true}, "*")
 
 		p.health = reader.read(5)
 		reader.skip(28)//unused
-		p.spawnPoint.x = reader.read(20,true)
-		p.spawnPoint.y = reader.read(20,true)
-		p.spawnPoint.z = reader.read(20,true)
+		p.spawnPoint = {x:reader.read(20,true), y:reader.read(20,true), z:reader.read(20,true)}
 		p.food = reader.read(5)
 		p.foodSaturation = reader.read(5)
 		p.foodExhaustion = reader.read(2)
@@ -33799,9 +33792,7 @@ window.parent.postMessage({ready:true}, "*")
 		p.witherEffect = parseInt(arr[1])
 		p.itherTime = parseInt(arr[2])
 		p.witherDamage = parseInt(arr[3])
-		p.spawnPoint.x = parseInt(arr[4]) || 0
-		p.spawnPoint.y = parseInt(arr[5]) || 0
-		p.spawnPoint.z = parseInt(arr[6]) || 0
+		p.spawnPoint = {x:parseInt(arr[4]) || 0, y:parseInt(arr[5]) || 0, z:parseInt(arr[6]) || 0}
 		p.food = parseInt(arr[7]); if(isNaN(p.food)) p.food = 20
 		p.foodSaturation = parseFloat(arr[8]) || 0, p.foodExhaustion = parseFloat(arr[9]) || 0
 		p.oxygen = parseInt(arr[10]); if(!p.oxygen) p.oxygen = 20
@@ -33896,9 +33887,7 @@ window.parent.postMessage({ready:true}, "*")
 						console.error(e)
 						p.cheats = world.cheats // change them back
 						p.gameMode = world.gameMode
-						p.spawnPoint.x = world.spawnPoint.x
-						p.spawnPoint.y = world.spawnPoint.y
-						p.spawnPoint.z = world.spawnPoint.z
+						p.spawnPoint = null
 						p.setDefaults()
 						p.world = world[p.dimension]
 					}
@@ -33983,6 +33972,7 @@ window.parent.postMessage({ready:true}, "*")
 				//(needed for relaying to newly-joined players), then update the player object from the merged state
 				let full = p.pos ? p.pos.data : (p.pos = {type:"pos", data:{}, afk:data.afk}).data
 				if(pos.x !== undefined) full.x = pos.x; if(pos.y !== undefined) full.y = pos.y; if(pos.z !== undefined) full.z = pos.z
+				if(pos.dimension !== undefined) full.dimension = pos.dimension
 				if(pos.velx !== undefined) full.velx = pos.velx; if(pos.vely !== undefined) full.vely = pos.vely; if(pos.velz !== undefined) full.velz = pos.velz
 				if(pos.rx !== undefined) full.rx = pos.rx; if(pos.ry !== undefined) full.ry = pos.ry; if(pos.bodyRot !== undefined) full.bodyRot = pos.bodyRot
 				if(pos.onGround !== undefined) full.onGround = pos.onGround; if(pos.sneaking !== undefined) full.sneaking = pos.sneaking
@@ -35399,7 +35389,7 @@ class WorldDimension{
 		if (!this.chunks[x >> 4] || !this.chunks[x >> 4][z >> 4]) {
 			return false
 		}
-		if(y < minHeight) return false
+		if(y < minHeight || y > maxHeight) return false
 		if(!blockData[blockID]) throw new Error("no block "+blockID)
 		let chunk = this.chunks[x >> 4] && this.chunks[x >> 4][z >> 4]
 		
@@ -35819,7 +35809,7 @@ class WorldDimension{
 			}
 		}
 		//entities that left this player's view
-		for(let id in inView) if(!seen[id]){ delete inView[id]; delete lastChunk[id] }
+		for(let id in inView) if(!seen[id]){ delete inView[id]; delete lastChunk[id]; p.connection.send({type:"entityDelete", id}) }
 		return arr
 	}
 	getEntitiesNear(x,y,z,d, ret = []){

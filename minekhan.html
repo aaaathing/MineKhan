@@ -12396,7 +12396,7 @@ return//*/
     
     controls()
     if(doPhysics && world.isMK) runGravity()
-    if(!p.spectator && !p.die){
+    if(doPhysics && !p.spectator && !p.die){
       for(let i in players){
         let P = players[i]
         if(!P.hidden && !P.die && P.dimension === p.dimension) pushByMob(P)
@@ -15621,6 +15621,9 @@ r 11 y  n  n  n
 			this.targetY = y
 			this.targetZ = z
 			this.doInterpolate = false
+			this.targetVelx = velx
+			this.targetVely = vely
+			this.targetVelz = velz
 		}
 		updateVelocity(now) {
       this.standingOn = this.world.getBlock(round(this.x), floor(this.y-this.height/2), round(this.z), this.dimension)
@@ -15958,9 +15961,18 @@ r 11 y  n  n  n
 				if(z !== undefined) this.targetZ = z
 				this.lastPos = performance.now()
 			}else{
-				if(x !== undefined) this.x = x
-				if(y !== undefined) this.y = y
-				if(z !== undefined) this.z = z
+				if(x !== undefined) this.targetX = x
+				if(y !== undefined) this.targetY = y
+				if(z !== undefined) this.targetZ = z
+				if(vx !== undefined) this.targetVelx = vx
+				if(vy !== undefined) this.targetVely = vy
+				if(vz !== undefined) this.targetVelz = vz
+				this.x = x !== undefined ? x : this.targetX
+				this.y = y !== undefined ? y : this.targetY
+				this.z = z !== undefined ? z : this.targetZ
+				this.velx = vx !== undefined ? vx : this.targetVelx
+				this.vely = vy !== undefined ? vy : this.targetVely
+				this.velz = vz !== undefined ? vz : this.targetVelz
 			}
 		}
 		update() {
@@ -17320,10 +17332,11 @@ r 11 y  n  n  n
         //var x = xd/*/abs(zd)*/; this.velx = (x-(Math.sign(x)*7.25)) / 150//; this.velx = -this.velx
         //if(this.onGround) {var y = this.y - (p.y-p.bottomH); this.vely = (y-(Math.sign(y)*7.25)) / 40/*; this.vely = -this.vely*/}
         //var z = zd/*/abs(xd)*/; this.velz = (z-(Math.sign(z)*7.25)) / 150//; this.velx = -this.velx
-        this.moveTowards(e.x, e.y-e.height*0.5, e.z, 7.25,7.25,7.25, 5, true)
+        this.moveTowards(e.x, e.y-e.height*0.5, e.z, 7.25,7.25,7.25, 20, true)
       }
     }
     update(){
+			if(!p.hidden && !p.die && p.dimension === this.dimension) this.goToPlayer(p)
       if(multiplayer) for(var i in players){
         if(!players[i].hidden && !players[i].die && players[i].dimension === this.dimension) this.goToPlayer(players[i])
       }
@@ -23191,7 +23204,7 @@ r 11 y  n  n  n
 			return chunk ? chunk.getBlock(x & 15, y, z & 15) : blockIds.air
 		}
 		setBlock(x, y, z, blockID, lazy, noOnupdate, remote, keepTags, dimension) {
-      if(y < minHeight) return false
+      if(y < minHeight || y > maxHeight) return false
       let chunk = this.getChunk(x,z,dimension)
 			if (!chunk || !chunk.loaded) {
 				return false
