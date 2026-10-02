@@ -18184,7 +18184,7 @@ r 11 y  n  n  n
       if(this.die){
         this.dieEffect += 0.05
         if(this.dieEffect > 1){
-          this.hidden = true
+          //this.hidden = true // it caused invisible players bug. let server set it, not client.
 					this.dieEffect = 1
         }
 				this.prevDieRotate = this.dieRotate

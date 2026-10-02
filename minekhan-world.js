@@ -17065,7 +17065,7 @@ let shapes = {
 	},
 	playerHead:{
 		verts:[
-			[objectify(4,8,4,8,8,16,0),objectify(3,6,3,10,10,48,0,false,false,false,8,8)],
+			[objectify(4,8,4,8,8,16,0),objectify(3,7,3,10,10,48,0,false,false,false,8,8)],
 			[objectify(4,16,12,8,8,8,0),objectify(3,17,13,10,10,40,0,false,false,false,8,8)],
 			[objectify(12,16,12,8,8,8,8),objectify(13,17,13,10,10,40,8,false,false,false,8,8)],
 			[objectify(4,16,4,8,8,24,8),objectify(3,17,3,10,10,56,8,false,false,false,8,8)],
@@ -23008,7 +23008,7 @@ class Player extends Entity{
 		}
 		this.hidden = this.dieHidden || this.spectator
 		if(this.spectator && this.spectating){
-			let e = getEntityOrPlayer(this.spectator,this.world)
+			let e = getEntityOrPlayer(this.spectating,this.world)
 			if(e && this.dimension !== e.dimension) this.tp(e.x,e.y,e.z,e.dimension)
 		}
 		if(this.riding){
@@ -33832,6 +33832,7 @@ window.parent.postMessage({ready:true}, "*")
 		p.lastSendSettings = 0
 		p.entityInFlight = 0 //unacked entity snapshot sends; pause if server falls behind
 		p.posInFlight = {} //per (sender,recipient) unacked relay counts, acked by the recipient's pos
+		p.relayBase = {}
 		p.updateingLoadedI = 0
 		p.lastChunk = ","
 		p.lastDimension = ""
@@ -34047,7 +34048,7 @@ window.parent.postMessage({ready:true}, "*")
 					let n = p.posInFlight[key] || 0
 					if(n >= maxPerPairRelay) continue //this pair is at its in-flight limit; drop until acked (baseline NOT advanced -> next send resyncs)
 					p.posInFlight[key] = n + 1
-					let base = p.relayBase && p.relayBase[key]
+					let base = p.relayBase[key]
 					let full = p.pos.data
 					let out
 					if(!base){ //first sight: send the whole state
@@ -34070,7 +34071,7 @@ window.parent.postMessage({ready:true}, "*")
 					//would be invisible); primitives are stored as-is
 					let snap = {}
 					for(let k in full) snap[k] = full[k] !== null && typeof full[k] === "object" ? JSON.parse(JSON.stringify(full[k])) : full[k]
-					;(p.relayBase || (p.relayBase = {}))[key] = snap
+					p.relayBase[key] = snap
 					p2.connection.send(out) //skip empty deltas (nothing changed)
 				}
 				}
@@ -34183,7 +34184,7 @@ window.parent.postMessage({ready:true}, "*")
 					}, data.data)
 				}
 			}*/else if(data.type === "remoteControl"){
-				if(p.spectateRemoteControl) world.sendPlayer(data,data.spectating)
+				if(p.spectateRemoteControl) world.sendPlayer(data,p.spectating)
 			}else if(data.type === "runCmd"){
 				runCmd(data.data,p,world,false, (output,newOutputs) => {
 					for(let i=0; i<newOutputs.length; i+=2) c.send({type:"message",data:newOutputs[i],fromServer:true})
@@ -34373,6 +34374,7 @@ window.parent.postMessage({ready:true}, "*")
 			if(i !== -1) world.players.splice(i,1)
 			for(let p2 of world.players){
 				if(p2.posInFlight) delete p2.posInFlight[p.id]
+				if(p2.relayBase) delete p2.relayBase[p.id]
 			}
 			world.sendAll({type:"dc",data:p.id})
 			if(onclose) onclose(p)
