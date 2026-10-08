@@ -329,22 +329,24 @@ The textures are encoded with <a href="assets/textureConvert.html">this</a>.<br>
 <p>There are so many possibilities! Here are some examples:</p>
 <hr>
 <p>// This shows a welcome message when someone joins. Try changing the message and color!</p>
-<pre>
+<pre><code>
 world.on("join", e => {
 	e.player.connection.send({type:"title", data:"Welcome "+e.player.username, color:"yellow"})
 })
-</pre>
+</code></pre>
 <p>// You can show a message in the chat. The § symbols are for color codes.</p>
-<pre>
+<pre><code>
 world.on("join", e => {
 	e.player.sendMessage("§aWelcome "+e.player.username)
 	e.player.sendMessage("§bThis world is "+world.name)
 })
-</pre>
+</code></pre>
 <p>// `world.on` runs code when an event occurs. The code outside only runs once.</p>
+<p>// The code runs on server side. You can't access other people's client side directly, otherwise you would be able to modify things on other people's device!</p>
+<p>// You can still use Web APIs like DOM and fetch, but it only runs on your device.</p>
 <hr>
 <p>// This gives someone items when they join if they don't already have it.</p>
-<pre>
+<pre><code>
 world.on("join", e => {
 	// This gives apples
 	if(!e.player.hasItem(blockIds.apple)){
@@ -355,11 +357,11 @@ world.on("join", e => {
 		e.player.newInvItem({id: blockIds.cake, customName: "Strange Cake"})
 	}
 })
-</pre>
+</code></pre>
 <p>// You can run the code in console, but you need to replace `world` with `serverWorld`. Press F12 to open console.</p>
 <hr>
 <p>// This makes emerald blocks become checkpoints. When you stand on one, the respawn point is set there.</p>
-<pre>
+<pre><code>
 world.on("tick", e => {
 	for(let p of world.players){
 		if(p.world.getBlock(round(p.x), round(p.y-1), round(p.z)) === blockIds.emeraldBlock){
@@ -367,19 +369,19 @@ world.on("tick", e => {
 		}
 	}
 })
-</pre>
+</code></pre>
 <hr>
 <p>// This stops fall damage.</p>
-<pre>
+<pre><code>
 world.on("damage", e => {
 	if(e.type === "fallbig" || e.type === "fallsmall"){
 		return "stop"
 	}
 })
-</pre>
+</code></pre>
 <hr>
 <p>// This prevents people from breaking things.</p>
-<pre>
+<pre><code>
 world.on("changeblock", e => {
 	// Protect blocks between (-64, -64) and (63, 63)
 	if(e.x &gt; -64 && e.z &gt; -64 && e.x &lt; 63 && e.z &lt; 63){
@@ -398,11 +400,11 @@ world.on("changeblock", e => {
 		return "stop"
 	}
 })
-</pre>
+</code></pre>
 <hr>
 <p>// This drops a item every second. It is a generator.</p>
 <p>// You can rename lastGenerate if there are multiple timers.</p>
-<pre>
+<pre><code>
 let lastGenerate = Date.now()
 world.on("tick", () => {
 	let now = Date.now()
@@ -413,11 +415,11 @@ world.on("tick", () => {
 		// add more here
 	}
 })
-</pre>
+</code></pre>
 <hr>
 <h2>// World generation example</h2>
 <p>// Here is an example of world (terrain) generation.</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 // world[""] means overworld. can also be world["nether"] or world["end"]
 world[""].customChunkGenerate = function(chunk){
 	for (let i = 0; i &lt; 16; i++) { // for each column in the chunk
@@ -451,10 +453,10 @@ world[""].customChunkPopulate = function(chunk){
 		}
 	}
 }
-</pre></details>
+</code></pre></details>
 <hr>
 <p>// This spawns a house when you hold a brick and click. Note: block can also be an item.</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 // Define the list of blocks
 const wallBlocks = [blockIds.quartzBlock, blockIds.bricks, blockIds.oakPlanks, blockIds.stoneBricks, blockIds.endStoneBricks, blockIds.purpurBlock, blockIds.deepslateTiles]
 const frameBlocks = [blockIds.quartzPillar, blockIds.oakLog, blockIds.purpurPillar]
@@ -478,11 +480,11 @@ world.on("click", e => {
 		e.holdObj.amount-- // Subtract one, it was used up
 	}
 })
-</pre></details>
+</code></pre></details>
 <hr>
 <p>// You can set functions for certain blocks in blockData. There is onclick, serveronuse (on use), onupdate, onset, ondelete, onplace, onbreak, serverontouch (on touch), onpowerupdate (for redstone), ongetexploded, onburn, tick</p>
-<p>// The functions in blockData will not change back, even if you exit the world, until you reload the page.</p>
-<pre>
+<p>// These changes last until you reload, even if you exit the world.</p>
+<pre><code>
 // This makes coal ore explode when clicked
 blockData[blockIds.coalOre].onclick = function(x,y,z,world){
 	world.explode(x,y,z, 2) // The radius is 2
@@ -509,9 +511,9 @@ blockData[blockIds.oakLog].onupdate = blockData[blockIds.birchLog].onupdate = bl
 
 // This makes leaves fall (set the leaves onupdate to sand onupdate which falls)
 blockData[blockIds.oakLeaves].onupdate = blockData[blockIds.birchLeaves].onupdate = blockData[blockIds.jungleLeaves].onupdate = blockData[blockIds.sand].onupdate
-</pre>
+</code></pre>
 <p>// You can even change some properties of blocks. Some properties are client-side, so changing them doesn't work.</p>
-<pre>
+<pre><code>
 // This makes tall grass drop carrots
 blockData[blockIds.TallGrass].drop = "carrot"
 blockData[blockIds.TallGrass].dropAmount = [0,2]
@@ -525,11 +527,11 @@ blockData[blockIds.redStain].damage = 5
 // This changes the sound of stone
 blockData[blockIds.stone].digSound = ["click","cow.step1","pig.step1"]
 blockData[blockIds.stone].stepSound = ["click","cow.step1","pig.step1"]
-</pre>
+</code></pre>
 <hr>
 <p>// You can also change some properties and functions (methods) on entities.</p>
 <p>// These will also not change back until you reload.</p>
-<pre>
+<pre><code>
 // This makes pigs hostile and attack.
 entities[entityIds.Pig] = class WeirdPig extends entities[entityIds.Pig] {
 	constructor(x,y,z){
@@ -555,18 +557,18 @@ world.on("click", e => {
 		if(e.entity.mob) e.entity.path = e.entity.findPath(e.player.x, e.player.y, e.player.z)
 	}
 })
-</pre>
+</code></pre>
 <hr>
 <p>// To spawn mobs, use this code and change the coordinates:</p>
-<pre>world[""].addEntity(new entities[entityIds.Pig](10,50,10))</pre>
+<pre><code>world[""].addEntity(new entities[entityIds.Pig](10,50,10))</code></pre>
 <p>// Some entities take different arguments.</p>
 <p>// It can also add item entities.</p>
-<pre>world[""].addItems(10,50,10, 0,0,0, blockIds.grass, true, 64)
-// The arguments are: x,y,z,vx,vy,vz,block,autoSetVel,amount,durability,customName,from</pre>
+<pre><code>world[""].addItems(10,50,10, 0,0,0, blockIds.grass, true, 64)
+// The arguments are: x,y,z,vx,vy,vz,block,autoSetVel,amount,durability,customName,from</code></pre>
 <hr>
 <p>// This plays creepy sounds occasionly. Try changing it to different sounds!</p>
 <p>// Note: rand() is the same as Math.random() except rand can have a range like this: rand(10) rand(1,10).</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 let lastTime = Date.now()
 let sounds = ["damage.classic_hurt","block.portal.travel","grass.step3","creeper.say4"]
 world.on("tick", () => {
@@ -581,23 +583,11 @@ world.on("tick", () => {
 		lastTime = now
 	}
 })
-</pre></details>
-<hr>
-<p>// To prevent throttling which causes lag, you can occasionally play a sound.</p>
-<pre>
-let lastTime = Date.now()
-world.on("tick", () => {
-	let now = Date.now()
-	if(world.players.length>1 && now - lastTime > 30000){
-		playSound('grass.step1')
-		lastTime = now
-	}
-})
-</pre>
+</code></pre></details>
 <hr>
 <p>// This makes the code run when someone goes in the coordinates.</p>
 <p>// It might be easier to use command blocks.</p>
-<pre>
+<pre><code>
 // This gives someone an apple when they go between 10,50,10 and 20,60,20
 world.addPortal(player => {
 	if(!player.hasItem(blockIds.apple)){
@@ -609,11 +599,11 @@ world.addPortal(player => {
 world.addPortal(player => {
 	player.tp(100, 50, 0)
 }, 30,50,0, 40,60,10, "")
-</pre>
+</code></pre>
 <hr>
 <p>// This plays music when someone joins. It will be synced for everyone.</p>
 <p>// You can also use the command like this: /playMusic "https://put url here"</p>
-<pre>
+<pre><code>
 world.on("join", e => {
 	if(!world.music.size){ // If no music is playing, play a new one
 		world.playMusic("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/sounds/records/chirp.ogg", 300)
@@ -621,9 +611,9 @@ world.on("join", e => {
 })
 
 // The arguments are: url, duration, volume, pitch. Duration is in seconds. Volume and pitch are normally 1.
-</pre>
+</code></pre>
 <p>// This occasionly plays random songs in a list:</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 let urls = [ // Example URLs for music
 "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/sounds/music/game/deeper.ogg",
 "https://cdn.freesound.org/previews/831/831502_14312064-lq.mp3",
@@ -638,13 +628,13 @@ world.on("tick", () => {
 		lastMusic = now
 	}
 })
-</pre></details>
+</code></pre></details>
 <hr>
 <hr>
 <h2>// Simple claim system</h2>
 <p>// This is a simple claim system. People can claim chunks to prevent other people from breaking it.</p>
 <p>// You can change the names like claims or add your own messages.</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 let claims = {}
 loadFromDB(world.id+"_claims").then(r => {if(r&&r.data) claims = r.data})
 
@@ -703,10 +693,10 @@ world.rootCommandNode.then(
 		player.connection.send({type:"customMenu", data:`Your claims:&lt;br&gt;${html}`})
 	}, "See all your claims.", null, true)
 )
-</pre></details>
+</code></pre></details>
 <hr>
 <p>// This adds some useful traveling commands.</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 world.rootCommandNode.then(
 	CommandNode.l("spawn", (args,player,scope) => {
 		if(player.tp) player.tp(world.spawnPoint.x, world.spawnPoint.y, world.spawnPoint.z, "")
@@ -748,11 +738,11 @@ world.rootCommandNode.then(
 		}else return ["No one to teleport.","error"]
 	}, null, null, true)
 )
-</pre></details>
+</code></pre></details>
 <hr>
 <h2>// Simple login.</h2>
 <p>// This can prevent people from using other people's username in the same server.</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 world["loginDim"] = new ServerWorldDimension(world, "loginDim")
 world["loginDim"].customChunkGenerate = function(){} // empty generation
 world["loginDim"].customChunkPopulate = function(){}
@@ -793,7 +783,37 @@ world.rootCommandNode.then(
 		}else return ["Wrong password",""]
 	}, "number", null, true))
 )
-</pre></details>
+</code></pre></details>
+<hr>
+<details><summary>Methods and fields</summary>
+<h2>// Inventory</h2>
+<p>// The inventory is stored in player.inventory.main and player.inventory.hotbar.</p>
+<pre><code>
+world.on("join", e => {
+	// It can be changed like this:
+	e.player.inventory.hotbar[0] = {id:blockIds.grass,amount:1}
+	// That replaces anything that was there before.
+})
+</code></pre>
+<hr>
+<h2>World</h2>
+<p>`world` contains dimensions. Use it like this.</p>
+<pre><code>
+world[""]
+world["nether"]
+world["end"]
+</code></pre>
+<p>it has these methods:</p>
+<pre><code><ul><li>setBlock(x, y, z, blockID, lazy, noOnupdate, remote, keepTags) // lazy stops lighting updates and other updates. noOnupdate only stops events like onupdate onset ondelete. remote prevents it from getting sent to client.<li>getBlock(x,y,z)<li>updateBlock(x, y, z, lazy, noOnupdate, sx,sy,sz) // sx,sy,sz is where the update came from. Used when a block changes and updates its neighbours.<li>setTags(x,y,z,data, remote, lazy) // you can set tags on blocks. for some blocks, it is a integer and it defines which bits that each tag uses, while for other blocks it can be any JSON. (it is kind of weird)<li>getTags(x,y,z)<li>setTagByName(x,y,z,name,data)<li>getTagByName(x,y,z,name)</ul></code></pre>
+<pre><code>
+world[""].setBlock(10,50,10, blockIds.stone)
+</code></pre>
+<h2>Player methods</h2>
+<pre><code></code><ul><li>damage(amount, why, nosound,type, x,y,z, attackedBy, velx=0,vely=0,velz=0) // why is a string with the message. type is a string like "hit" "fallsmall" "freeze" "fire" etc. it is not needed. x,y,z is where the damage came from. velx,vely,velz is the velocity to add, calculated from x,y,z if not set.<li>getBlock(x,y,z)<li>applyEffect(name,level,time, showParticles = true) // there are only 2 effects right now: blur, wither<li>newInvItem(data) // data can be block id or object like {id,amount}<li>minusOneItem(id) // finds a item with same block id and remove one<li>hasItem(id)<li>addAchievment(name) // only supports defined achievments. might throw error.<li>addDiscovery(block) // it says something like "You discovered block" the first time it is discovered.<li>addXP(amount)<li>tp(x,y,z,dimension=this.dimension)<li>respawn() // sets back to default and go to spawn point<li>setGameMode(mode) // mode is like "creative" "survival"</ul></pre>
+<h2>Player fields</h2>
+<pre><code><ul><li>health<li>oxygen<li>food<li>foodSaturation<li>foodExhaustion<li>XP<li>level<li>burnTimer<li>die</ul></code></pre>
+<p>There is more but they might be less useful</p>
+</details>
 </section>
 <section id="help_wiki">
 <h1>MineKhan Wiki</h1>
@@ -3455,7 +3475,7 @@ this.capeTex&&("cape"===e.name||e.name.startsWith("elytra"))?(gl.activeTexture(g
 class Mob extends Entity{static mob=!0
 mob=!0
 pushes=!0
-constructor(){super(...arguments),this.health=0,this.path=null,this.walking=!1,this.panick=0,this.drop=null,this.dropAmount=0,this.burnTimer=0,this.burning=!1,this.oxygen=20,this.spinTarget=0,this.spinTargetPitch=0,this.die=!1,this.lastDamage=0,this.lastStepSound=0,this.noScale=!0,this.target=null,this.targetEnt=null,this.attackCooldown=0,this.attractEnt=null,this.attractedBy=null,this.holding=this.prevHolding=0,this.canClimb=!1,this.canFly=!1,this.sitting=!1,this.owner=null,this.name=null,this.effects={},this.doInterpolate=!0}mobUpdate(e){this.maxBurnBlock=this.maxDamageBlock=0,this.updateVelocity(e),this.move(e),this.walking=!(!this.path||!this.path.length),this.panick>0&&this.panick--,this.previousYaw-this.yaw>Math.PI&&(this.previousYaw+=Math.PId),this.previousYaw-this.yaw<-Math.PI&&(this.previousYaw-=Math.PId),this.targetEnt=this.target&&getEntityOrPlayer(this.target),this.attractEnt=this.attractedBy&&getEntityOrPlayer(this.attractedBy),this.burning=this.burnTimer>0,this.harmEffect>0&&(this.harmEffect-=3),this.health<0&&(this.health=0),this.health<=0&&!this.die&&(this.die=!0),this.die&&(this.dieEffect+=.05,this.prevDieRotate=this.dieRotate,this.dieRotate=min(this.dieEffect**2*2,1)*Math.PI2,this.dieEffect>1&&(this.dieEffect=0,this.prevDieRotate=0,this.dieRotate=0,this.hidden=!0)),this.prevHolding!==this.holding&&(this.prevHolding=this.holding,this.updateHolding&&this.updateHolding()),this.prevName!==this.name&&(this.prevName=this.name,this.name?this.nameText?this.nameText.setText(this.name):this.nameText=world.generateTextForEntity(this.name,this,1/4,null,[0,0,0,.7]):this.nameText=null),this.nameText&&(this.nameText.update(),this.nameText.dimension=this.dimension,this.nameText.x=this.x,this.nameText.y=this.y+this.height/2+.25,this.nameText.z=this.z)}}entities[entities.length]=class extends Mob{static name2="Cow"
+constructor(){super(...arguments),this.health=0,this.path=null,this.walking=!1,this.panick=0,this.drop=null,this.dropAmount=0,this.burnTimer=0,this.burning=!1,this.oxygen=20,this.spinTarget=0,this.spinTargetPitch=0,this.die=!1,this.lastDamage=0,this.lastStepSound=0,this.noScale=!0,this.target=null,this.targetEnt=null,this.attackCooldown=0,this.attractEnt=null,this.attractedBy=null,this.holding=this.prevHolding=0,this.canClimb=!1,this.canFly=!1,this.sitting=!1,this.owner=null,this.name=null,this.effects={},this.doInterpolate=!0}mobUpdate(e){this.maxBurnBlock=this.maxDamageBlock=0,this.updateVelocity(e),this.move(e),this.walking=!(!this.path||!this.path.length),this.panick>0&&this.panick--,this.previousYaw-this.yaw>Math.PI&&(this.previousYaw+=Math.PId),this.previousYaw-this.yaw<-Math.PI&&(this.previousYaw-=Math.PId),this.targetEnt=this.target&&getEntityOrPlayer(this.target),this.attractEnt=this.attractedBy&&getEntityOrPlayer(this.attractedBy),this.burning=this.burnTimer>0,this.harmEffect>0&&(this.harmEffect-=3),this.health<0&&(this.health=0),this.health<=0&&!this.die&&(this.die=!0),this.die&&(this.dieEffect+=.05,this.prevDieRotate=this.dieRotate,this.dieRotate=min(this.dieEffect**2*2,1)*Math.PI2,this.dieEffect>1&&(this.dieEffect=0,this.prevDieRotate=0,this.dieRotate=0)),this.prevHolding!==this.holding&&(this.prevHolding=this.holding,this.updateHolding&&this.updateHolding()),this.prevName!==this.name&&(this.prevName=this.name,this.name?this.nameText?this.nameText.setText(this.name):this.nameText=world.generateTextForEntity(this.name,this,1/4,null,[0,0,0,.7]):this.nameText=null),this.nameText&&(this.nameText.update(),this.nameText.dimension=this.dimension,this.nameText.x=this.x,this.nameText.y=this.y+this.height/2+.25,this.nameText.z=this.z)}}entities[entities.length]=class extends Mob{static name2="Cow"
 defaultName="Cow"
 constructor(e,t,i){var a=textureCoords[textureMap.cow],r=generateVAO(shapes.cowBody,a[0],a[1],a[2]-a[0],a[5]-a[1])
 super(e,t,i,0,0,0,0,0,1,21/16,1,null,null,r.size,3e5,r.vao)
@@ -7173,7 +7193,7 @@ if((B&&$[B].ladder||v&&$[v].ladder)&&(this.lastY=this.y),this.y>this.lastY&&(thi
 e&&e.allGenerated&&($[this.doingPortal].doneLoading(this,this.world),this.doingPortal=0)}}update(){if(this.harmEffect>0&&(this.harmEffect-=3),this.health<=0&&!this.die){if(this.die=!0,this.survival){for(let e of this.inventory.hotbar)e&&this.world.addItem(this.x,this.y,this.z,0,0,0,e,!0,this.id)
 for(let e of this.inventory.main)e&&this.world.addItem(this.x,this.y,this.z,0,0,0,e,!0,this.id)
 for(let e in this.inventory.equipment){let t=this.inventory.equipment[e]
-t&&this.world.addItem(this.x,this.y,this.z,0,0,0,t,!0,this.id),this.inventory.equipment[e]=null}this.world.addItems(this.x,this.y,this.z,0,0,0,ee.rawBeef,!0,1,null,this.username+" Meat",this.id),Math.random()>.9&&this.world.addItems(this.x,this.y,this.z,0,0,0,ee.redStain,!0,1,null,null,this.id),this.inventory.hotbar.fill(null),this.inventory.main.fill(null),this.calculateTotalXP(),this.totalXP>0&&this.world.addEntity(new ha[ca.ExperienceOrb](this.x,this.y,this.z,this.totalXP),!1,this.dimension)}this.world.world.event("die",{player:this}),this.world.world.sendAll({type:"die",id:this.id,message:this.dieMessage}),this.world.world.sendAll({type:"message",data:"§6"+this.dieMessage,fromServer:!0})}if(this.die?(this.dieEffect+=.05,this.dieEffect>1&&(this.dieEffect=1,this.dieHidden||this.world.poof(this.x,this.y,this.z,void 0,this.dimension,this.width,this.height,this.depth,!0),this.dieHidden=!0),this.dieRotate=min(this.dieEffect**2*2,1)*Math.PI2):(this.dieEffect=0,this.dieRotate=0,this.dieHidden=!1),this.hidden=this.dieHidden||this.spectator,this.spectator&&this.spectating){let e=Xa(this.spectating,this.world)
+t&&this.world.addItem(this.x,this.y,this.z,0,0,0,t,!0,this.id),this.inventory.equipment[e]=null}this.world.addItems(this.x,this.y,this.z,0,0,0,ee.rawBeef,!0,1,null,this.username+" Meat",this.id),Math.random()>.9&&this.world.addItems(this.x,this.y,this.z,0,0,0,ee.redStain,!0,1,null,null,this.id),this.inventory.hotbar.fill(null),this.inventory.main.fill(null),this.calculateTotalXP(),this.totalXP>0&&this.world.addEntity(new ha[ca.ExperienceOrb](this.x,this.y,this.z,this.totalXP),!1,this.dimension)}this.world.world.event("die",{player:this}),this.world.world.sendAll({type:"die",id:this.id,message:this.dieMessage}),this.sendPos&&this.sendPos(!0),this.world.world.sendAll({type:"message",data:"§6"+this.dieMessage,fromServer:!0})}if(this.die?(this.dieEffect+=.05,this.dieEffect>1&&(this.dieEffect=1,this.dieHidden||this.world.poof(this.x,this.y,this.z,void 0,this.dimension,this.width,this.height,this.depth,!0),this.dieHidden=!0),this.dieRotate=min(this.dieEffect**2*2,1)*Math.PI2):(this.dieEffect=0,this.dieRotate=0,this.dieHidden=!1),this.hidden=this.dieHidden||this.spectator,this.spectator&&this.spectating){let e=Xa(this.spectating,this.world)
 e&&this.dimension!==e.dimension&&this.tp(e.x,e.y,e.z,e.dimension)}if(this.riding){let e=Xa(this.riding,this.world)
 e&&this.dimension!==e.dimension&&this.tp(e.x,e.y+.5*this.height+e.rideOffsetY,e.z,e.dimension)}if(this.move(Ls),!this.die&&this.survival){this.y<V&&(this.y<=J?(this.dieMessage=this.username+" fell out of the world"+(this.attackedBy?" while being attacked by "+this.attackedBy+".":"."),this.health=-1,this.resendHealth=!0):Ls-this.lastBlockHarm>500&&(this.lastBlockHarm=Ls,this.damage(4,this.username+" fell out of the world"+(this.attackedBy?" while being attacked by "+this.attackedBy+".":".")))),this.walking&&this.sprinting&&(this.foodExhaustion+=.016),this.foodSaturation>this.food&&(this.foodSaturation=this.food)
 let s=Ls-this.lastHeal
@@ -8921,25 +8941,25 @@ if(t.amount>0){let e=i.direction
 i.world.addItem(i.x,i.y,i.z,e.x/4,e.y/4,e.z/4,t,!1,i.id)}}}i.loadSave=async()=>{await Promise.all(l.loadPromises),i.cheats=l.cheats,i.gameMode=l.gameMode,i.setDefaults(),i.world=l[i.dimension]
 let t=l.playersInv[s?":host":a]
 if(t){let e=t.version&&Qt("1.1.0",t.version.replace(/(Alpha|Beta) /,""))
-if("string"==typeof t.data&&(t.data=atoarr(t.data)),t.data&&t.data.length&&i.load(t.data,l),"string"==typeof t.inv&&(t.inv.includes(",")?this.loadOldInv(t.inv,i):t.inv=atoarr(t.inv)),"string"==typeof t.survivStr&&(t.survivStr.includes(",")?this.loadOldSurvivStr(t.survivStr,i):t.survivStr=atoarr(t.survivStr)),t.survivStr&&t.survivStr.length&&"string"!=typeof t.survivStr)try{l.loadSurvivStr(new je(t.survivStr),e,i)}catch(e){console.error(e),i.cheats=l.cheats,i.gameMode=l.gameMode,i.spawnPoint=null,i.setDefaults(),i.world=l[i.dimension]}void 0!==t.x&&(i.x=t.x,i.y=t.y,i.z=t.z,delete t.x,delete t.y,delete t.z),t.inv&&t.inv.length&&"string"!=typeof t.inv&&l.loadInv(new je(t.inv),i,e)}i.connected=!0,i.connection.send({type:"tp",x:i.x,y:i.y,z:i.z,dimension:i.dimension}),e.send({type:"loadSave",name:l.name,id:l.id,inv:t,activeResourcePacks:l.activeResourcePacks,x:0,y:0,z:0,version:l.version,weather:l.weather,time:l.time,gameMode:i.gameMode,cheats:i.cheats,hotbarSlot:i.inventory.hotbarSlot,flying:i.flying,achievments:i.achievments,saveId:l.saveId,supportsDelta:!0}),e.send({type:"serverCmds",data:l.commandNodes.map(e=>({type:e.type,name:e.name,id:e.id,next:e.next,redirect:e.redirect,info:e.info,argType:e.argType,func:Boolean(e.func||e.anonymousFunc),noCheats:e.noCheats}))}),i.sendHealth(),i.setRot(i.rx,i.ry,i.bodyRot,!0),i.sendEffects(),l.sendMusicTo(e)},e.onmessage=async function(t){if("connect"===t.type)await i.loadSave(),l.event("join",{player:i}),d(t)
+if("string"==typeof t.data&&(t.data=atoarr(t.data)),t.data&&t.data.length&&i.load(t.data,l),"string"==typeof t.inv&&(t.inv.includes(",")?this.loadOldInv(t.inv,i):t.inv=atoarr(t.inv)),"string"==typeof t.survivStr&&(t.survivStr.includes(",")?this.loadOldSurvivStr(t.survivStr,i):t.survivStr=atoarr(t.survivStr)),t.survivStr&&t.survivStr.length&&"string"!=typeof t.survivStr)try{l.loadSurvivStr(new je(t.survivStr),e,i)}catch(e){console.error(e),i.cheats=l.cheats,i.gameMode=l.gameMode,i.spawnPoint=null,i.setDefaults(),i.world=l[i.dimension]}void 0!==t.x&&(i.x=t.x,i.y=t.y,i.z=t.z,delete t.x,delete t.y,delete t.z),t.inv&&t.inv.length&&"string"!=typeof t.inv&&l.loadInv(new je(t.inv),i,e)}i.connected=!0,i.connection.send({type:"tp",x:i.x,y:i.y,z:i.z,dimension:i.dimension}),e.send({type:"loadSave",name:l.name,id:l.id,inv:t,activeResourcePacks:l.activeResourcePacks,x:0,y:0,z:0,version:l.version,weather:l.weather,time:l.time,gameMode:i.gameMode,cheats:i.cheats,hotbarSlot:i.inventory.hotbarSlot,flying:i.flying,achievments:i.achievments,saveId:l.saveId,supportsDelta:!0}),e.send({type:"serverCmds",data:l.commandNodes.map(e=>({type:e.type,name:e.name,id:e.id,next:e.next,redirect:e.redirect,info:e.info,argType:e.argType,func:Boolean(e.func||e.anonymousFunc),noCheats:e.noCheats}))}),i.sendHealth(),i.setRot(i.rx,i.ry,i.bodyRot,!0),i.sendEffects(),l.sendMusicTo(e)},i.sendPos=e=>{if(i.pos&&i.pos.data)for(let t of l.players){if(t===i||!t.pos)continue
+let a=t.id,s=i.posInFlight[a]||0
+if(s>=20&&!e)continue
+i.posInFlight[a]=s+1
+let o,n=i.relayBase[a],r=i.pos.data
+if(n){let e={}
+for(let t in r){let a=r[t],s=n[t]
+a===s||null!==a&&null!==s&&"object"==typeof a&&"object"==typeof s&&JSON.stringify(a)===JSON.stringify(s)||(e[t]=r[t])}o={type:"pos",data:e,afk:i.pos.afk,FROM:i.id}}else o=i.pos
+let l={}
+for(let e in r)l[e]=null!==r[e]&&"object"==typeof r[e]?JSON.parse(JSON.stringify(r[e])):r[e]
+i.relayBase[a]=l,t.connection.send(o)}},e.onmessage=async function(t){if("connect"===t.type)await i.loadSave(),l.event("join",{player:i}),d(t)
 else if("joined"===t.type)r&&r(i)
 else if("pos"===t.type){let s=t.data,o=!0
 if(i.confirmPos){let e=void 0!==s.x?s.x:i.pos&&i.pos.data.x,t=void 0!==s.y?s.y:i.pos&&i.pos.data.y,a=void 0!==s.z?s.z:i.pos&&i.pos.data.z;(void 0!==s.dimension?s.dimension:i.pos&&i.pos.data.dimension)===i.dimension&&max(abs(e-i.x),abs(t-i.y),abs(a-i.z))<4?i.confirmPos=!1:o=!1}let n={}
 i.entityInFlight>0&&i.entityInFlight--
 for(let e of l.players)e!==i&&e.posInFlight&&e.posInFlight[i.id]>0&&e.posInFlight[i.id]--
 let r=i.pos?i.pos.data:(i.pos={type:"pos",data:{},afk:t.afk}).data
-if(void 0!==s.x&&(r.x=s.x),void 0!==s.y&&(r.y=s.y),void 0!==s.z&&(r.z=s.z),void 0!==s.dimension&&(r.dimension=s.dimension),void 0!==s.velx&&(r.velx=s.velx),void 0!==s.vely&&(r.vely=s.vely),void 0!==s.velz&&(r.velz=s.velz),void 0!==s.rx&&(r.rx=s.rx),void 0!==s.ry&&(r.ry=s.ry),void 0!==s.bodyRot&&(r.bodyRot=s.bodyRot),void 0!==s.onGround&&(r.onGround=s.onGround),void 0!==s.sneaking&&(r.sneaking=s.sneaking),void 0!==s.harmEffect&&(r.harmEffect=s.harmEffect),void 0!==s.crack&&(r.crack=s.crack),void 0!==s.walking&&(r.walking=s.walking),void 0!==s.sprinting&&(r.sprinting=s.sprinting),void 0!==s.punchEffect&&(r.punchEffect=s.punchEffect),void 0!==s.eating&&(r.eating=s.eating),void 0!==s.sleeping&&(r.sleeping=s.sleeping),void 0!==s.sitting&&(r.sitting=s.sitting),void 0!==s.swimming&&(r.swimming=s.swimming),void 0!==s.usingItem&&(r.usingItem=s.usingItem),void 0!==s.spectating&&(r.spectating=s.spectating),void 0!==s.riding&&(r.riding=s.riding),void 0!==s.flying&&(r.flying=s.flying),void 0!==s.gliding&&(r.gliding=s.gliding),o){i.afk=t.afk,i.setPos(r.x,r.y,r.z,r.velx,r.vely,r.velz),i.setRot(r.rx,r.ry,r.bodyRot),i.onGround=r.onGround,i.sneaking=r.sneaking,i.harmEffect=r.harmEffect,i.crack=r.crack,i.walking=r.walking,i.sprinting=r.sprinting,i.punchEffect=r.punchEffect,i.eating=r.eating,i.sleeping=r.sleeping,i.sitting=r.sitting,i.swimming=r.swimming,i.usingItem=r.usingItem,i.spectating=r.spectating,i.riding=r.riding,i.flying=r.flying,i.gliding=r.gliding,r.username=a,r.dimension=i.dimension,r.crackPos=i.crackPos,r.burning=i.burning,r.holding=i.holding,r.die=i.die,r.scale=i.scale,r.equipment=i.inventory.equipment,r.hidden=i.hidden,s.username=a,s.dimension=i.dimension,s.crackPos=i.crackPos,s.burning=i.burning,s.holding=i.holding,s.die=i.die,s.scale=i.scale,s.equipment=i.inventory.equipment,s.hidden=i.hidden,n.burning=s.burning,n.holding=s.holding,n.die=s.die,n.scale=s.scale,n.equipment=s.equipment,n.hidden=s.hidden,t.FROM=i.id,i.pos.FROM=i.id
-for(let e of l.players){if(e===i||!e.pos)continue
-let a=e.id,s=i.posInFlight[a]||0
-if(s>=20)continue
-i.posInFlight[a]=s+1
-let o,n=i.relayBase[a],r=i.pos.data
-if(n){let e={}
-for(let t in r){let a=r[t],s=n[t]
-a===s||null!==a&&null!==s&&"object"==typeof a&&"object"==typeof s&&JSON.stringify(a)===JSON.stringify(s)||(e[t]=r[t])}o={type:"pos",data:e,afk:t.afk,FROM:i.id}}else o=i.pos
-let l={}
-for(let e in r)l[e]=null!==r[e]&&"object"==typeof r[e]?JSON.parse(JSON.stringify(r[e])):r[e]
-i.relayBase[a]=l,e.connection.send(o)}}let d=performance.now()
+i.pos.afk=t.afk,void 0!==s.x&&(r.x=s.x),void 0!==s.y&&(r.y=s.y),void 0!==s.z&&(r.z=s.z),void 0!==s.dimension&&(r.dimension=s.dimension),void 0!==s.velx&&(r.velx=s.velx),void 0!==s.vely&&(r.vely=s.vely),void 0!==s.velz&&(r.velz=s.velz),void 0!==s.rx&&(r.rx=s.rx),void 0!==s.ry&&(r.ry=s.ry),void 0!==s.bodyRot&&(r.bodyRot=s.bodyRot),void 0!==s.onGround&&(r.onGround=s.onGround),void 0!==s.sneaking&&(r.sneaking=s.sneaking),void 0!==s.harmEffect&&(r.harmEffect=s.harmEffect),void 0!==s.crack&&(r.crack=s.crack),void 0!==s.walking&&(r.walking=s.walking),void 0!==s.sprinting&&(r.sprinting=s.sprinting),void 0!==s.punchEffect&&(r.punchEffect=s.punchEffect),void 0!==s.eating&&(r.eating=s.eating),void 0!==s.sleeping&&(r.sleeping=s.sleeping),void 0!==s.sitting&&(r.sitting=s.sitting),void 0!==s.swimming&&(r.swimming=s.swimming),void 0!==s.usingItem&&(r.usingItem=s.usingItem),void 0!==s.spectating&&(r.spectating=s.spectating),void 0!==s.riding&&(r.riding=s.riding),void 0!==s.flying&&(r.flying=s.flying),void 0!==s.gliding&&(r.gliding=s.gliding),o&&(i.afk=t.afk,i.setPos(r.x,r.y,r.z,r.velx,r.vely,r.velz),i.setRot(r.rx,r.ry,r.bodyRot),i.onGround=r.onGround,i.sneaking=r.sneaking,i.harmEffect=r.harmEffect,i.crack=r.crack,i.walking=r.walking,i.sprinting=r.sprinting,i.punchEffect=r.punchEffect,i.eating=r.eating,i.sleeping=r.sleeping,i.sitting=r.sitting,i.swimming=r.swimming,i.usingItem=r.usingItem,i.spectating=r.spectating,i.riding=r.riding,i.flying=r.flying,i.gliding=r.gliding,r.username=a,r.dimension=i.dimension,r.crackPos=i.crackPos,r.burning=i.burning,r.holding=i.holding,r.die=i.die,r.scale=i.scale,r.equipment=i.inventory.equipment,r.hidden=i.hidden,s.username=a,s.dimension=i.dimension,s.crackPos=i.crackPos,s.burning=i.burning,s.holding=i.holding,s.die=i.die,s.scale=i.scale,s.equipment=i.inventory.equipment,s.hidden=i.hidden,n.burning=s.burning,n.holding=s.holding,n.die=s.die,n.scale=s.scale,n.equipment=s.equipment,n.hidden=s.hidden,t.FROM=i.id,i.pos.FROM=i.id,i.sendPos())
+let d=performance.now()
 d-i.lastSendSettings>1e3&&(i.lastSendSettings=d,i.connection.send({type:"settings",data:l.settings,time:l.time,weather:l.weather}),l.sendMusicTo(i.connection)),i.resendHealth&&(i.sendHealth(),i.resendHealth=!1),i.resendEffects&&(i.sendEffects(),i.resendEffects=!1),k(),e.send({type:"pos",data:n})}else if("loadChunks"===t.type)i.updateingLoadedI++,i.loadDistance=t.loadDistance,i.loadChunks=t.data
 else if("mySkin"===t.type)d(t)
 else if("particles"===t.type)for(let e of l.players)e!==i&&e.dimension===i.dimension&&Ka(i.x>>4,i.z>>4,e.x>>4,e.z>>4)<=e.loadDistance&&e.connection.send(t)

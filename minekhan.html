@@ -1291,22 +1291,24 @@ With touch screen:
 <p>There are so many possibilities! Here are some examples:</p>
 <hr>
 <p>// This shows a welcome message when someone joins. Try changing the message and color!</p>
-<pre>
+<pre><code>
 world.on("join", e => {
 	e.player.connection.send({type:"title", data:"Welcome "+e.player.username, color:"yellow"})
 })
-</pre>
+</code></pre>
 <p>// You can show a message in the chat. The § symbols are for color codes.</p>
-<pre>
+<pre><code>
 world.on("join", e => {
 	e.player.sendMessage("§aWelcome "+e.player.username)
 	e.player.sendMessage("§bThis world is "+world.name)
 })
-</pre>
+</code></pre>
 <p>// `world.on` runs code when an event occurs. The code outside only runs once.</p>
+<p>// The code runs on server side. You can't access other people's client side directly, otherwise you would be able to modify things on other people's device!</p>
+<p>// You can still use Web APIs like DOM and fetch, but it only runs on your device.</p>
 <hr>
 <p>// This gives someone items when they join if they don't already have it.</p>
-<pre>
+<pre><code>
 world.on("join", e => {
 	// This gives apples
 	if(!e.player.hasItem(blockIds.apple)){
@@ -1317,18 +1319,18 @@ world.on("join", e => {
 		e.player.newInvItem({id: blockIds.cake, customName: "Strange Cake"})
 	}
 })
-</pre>
+</code></pre>
 <p>// You can run the code in console, but you need to replace `world` with `serverWorld`. Press F12 to open console.</p>
 <hr>
 <!--<p>// This makes you get damage when you click a redStain.</p>
-<pre>
+<pre><code>
 world.on("click", e => {
 	if(e.block === blockIds.redStain) e.player.damage(3, e.player.username+" died from clicking it.")
 })
-</pre>
+</code></pre>
 <hr>-->
 <p>// This makes emerald blocks become checkpoints. When you stand on one, the respawn point is set there.</p>
-<pre>
+<pre><code>
 world.on("tick", e => {
 	for(let p of world.players){
 		if(p.world.getBlock(round(p.x), round(p.y-1), round(p.z)) === blockIds.emeraldBlock){
@@ -1336,19 +1338,19 @@ world.on("tick", e => {
 		}
 	}
 })
-</pre>
+</code></pre>
 <hr>
 <p>// This stops fall damage.</p>
-<pre>
+<pre><code>
 world.on("damage", e => {
 	if(e.type === "fallbig" || e.type === "fallsmall"){
 		return "stop"
 	}
 })
-</pre>
+</code></pre>
 <hr>
 <p>// This prevents people from breaking things.</p>
-<pre>
+<pre><code>
 world.on("changeblock", e => {
 	// Protect blocks between (-64, -64) and (63, 63)
 	if(e.x &gt; -64 && e.z &gt; -64 && e.x &lt; 63 && e.z &lt; 63){
@@ -1367,11 +1369,11 @@ world.on("changeblock", e => {
 		return "stop"
 	}
 })
-</pre>
+</code></pre>
 <hr>
 <p>// This drops a item every second. It is a generator.</p>
 <p>// You can rename lastGenerate if there are multiple timers.</p>
-<pre>
+<pre><code>
 let lastGenerate = Date.now()
 world.on("tick", () => {
 	let now = Date.now()
@@ -1382,11 +1384,11 @@ world.on("tick", () => {
 		// add more here
 	}
 })
-</pre>
+</code></pre>
 <hr>
 <h2>// World generation example</h2>
 <p>// Here is an example of world (terrain) generation.</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 // world[""] means overworld. can also be world["nether"] or world["end"]
 world[""].customChunkGenerate = function(chunk){
 	for (let i = 0; i &lt; 16; i++) { // for each column in the chunk
@@ -1420,10 +1422,10 @@ world[""].customChunkPopulate = function(chunk){
 		}
 	}
 }
-</pre></details>
+</code></pre></details>
 <hr>
 <p>// This spawns a house when you hold a brick and click. Note: block can also be an item.</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 // Define the list of blocks
 const wallBlocks = [blockIds.quartzBlock, blockIds.bricks, blockIds.oakPlanks, blockIds.stoneBricks, blockIds.endStoneBricks, blockIds.purpurBlock, blockIds.deepslateTiles]
 const frameBlocks = [blockIds.quartzPillar, blockIds.oakLog, blockIds.purpurPillar]
@@ -1447,11 +1449,11 @@ world.on("click", e => {
 		e.holdObj.amount-- // Subtract one, it was used up
 	}
 })
-</pre></details>
+</code></pre></details>
 <hr>
 <p>// You can set functions for certain blocks in blockData. There is onclick, serveronuse (on use), onupdate, onset, ondelete, onplace, onbreak, serverontouch (on touch), onpowerupdate (for redstone), ongetexploded, onburn, tick</p>
-<p>// The functions in blockData will not change back, even if you exit the world, until you reload the page.</p>
-<pre>
+<p>// These changes last until you reload, even if you exit the world.</p>
+<pre><code>
 // This makes coal ore explode when clicked
 blockData[blockIds.coalOre].onclick = function(x,y,z,world){
 	world.explode(x,y,z, 2) // The radius is 2
@@ -1478,9 +1480,9 @@ blockData[blockIds.oakLog].onupdate = blockData[blockIds.birchLog].onupdate = bl
 
 // This makes leaves fall (set the leaves onupdate to sand onupdate which falls)
 blockData[blockIds.oakLeaves].onupdate = blockData[blockIds.birchLeaves].onupdate = blockData[blockIds.jungleLeaves].onupdate = blockData[blockIds.sand].onupdate
-</pre>
+</code></pre>
 <p>// You can even change some properties of blocks. Some properties are client-side, so changing them doesn't work.</p>
-<pre>
+<pre><code>
 // This makes tall grass drop carrots
 blockData[blockIds.TallGrass].drop = "carrot"
 blockData[blockIds.TallGrass].dropAmount = [0,2]
@@ -1494,11 +1496,11 @@ blockData[blockIds.redStain].damage = 5
 // This changes the sound of stone
 blockData[blockIds.stone].digSound = ["click","cow.step1","pig.step1"]
 blockData[blockIds.stone].stepSound = ["click","cow.step1","pig.step1"]
-</pre>
+</code></pre>
 <hr>
 <p>// You can also change some properties and functions (methods) on entities.</p>
 <p>// These will also not change back until you reload.</p>
-<pre>
+<pre><code>
 // This makes pigs hostile and attack.
 entities[entityIds.Pig] = class WeirdPig extends entities[entityIds.Pig] {
 	constructor(x,y,z){
@@ -1524,18 +1526,18 @@ world.on("click", e => {
 		if(e.entity.mob) e.entity.path = e.entity.findPath(e.player.x, e.player.y, e.player.z)
 	}
 })
-</pre>
+</code></pre>
 <hr>
 <p>// To spawn mobs, use this code and change the coordinates:</p>
-<pre>world[""].addEntity(new entities[entityIds.Pig](10,50,10))</pre>
+<pre><code>world[""].addEntity(new entities[entityIds.Pig](10,50,10))</code></pre>
 <p>// Some entities take different arguments.</p>
 <p>// It can also add item entities.</p>
-<pre>world[""].addItems(10,50,10, 0,0,0, blockIds.grass, true, 64)
-// The arguments are: x,y,z,vx,vy,vz,block,autoSetVel,amount,durability,customName,from</pre>
+<pre><code>world[""].addItems(10,50,10, 0,0,0, blockIds.grass, true, 64)
+// The arguments are: x,y,z,vx,vy,vz,block,autoSetVel,amount,durability,customName,from</code></pre>
 <hr>
 <p>// This plays creepy sounds occasionly. Try changing it to different sounds!</p>
 <p>// Note: rand() is the same as Math.random() except rand can have a range like this: rand(10) rand(1,10).</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 let lastTime = Date.now()
 let sounds = ["damage.classic_hurt","block.portal.travel","grass.step3","creeper.say4"]
 world.on("tick", () => {
@@ -1550,23 +1552,11 @@ world.on("tick", () => {
 		lastTime = now
 	}
 })
-</pre></details>
-<hr>
-<p>// To prevent throttling which causes lag, you can occasionally play a sound.</p>
-<pre>
-let lastTime = Date.now()
-world.on("tick", () => {
-	let now = Date.now()
-	if(world.players.length>1 && now - lastTime > 30000){
-		playSound('grass.step1')
-		lastTime = now
-	}
-})
-</pre>
+</code></pre></details>
 <hr>
 <p>// This makes the code run when someone goes in the coordinates.</p>
 <p>// It might be easier to use command blocks.</p>
-<pre>
+<pre><code>
 // This gives someone an apple when they go between 10,50,10 and 20,60,20
 world.addPortal(player => {
 	if(!player.hasItem(blockIds.apple)){
@@ -1578,11 +1568,11 @@ world.addPortal(player => {
 world.addPortal(player => {
 	player.tp(100, 50, 0)
 }, 30,50,0, 40,60,10, "")
-</pre>
+</code></pre>
 <hr>
 <p>// This plays music when someone joins. It will be synced for everyone.</p>
 <p>// You can also use the command like this: /playMusic "https://put url here"</p>
-<pre>
+<pre><code>
 world.on("join", e => {
 	if(!world.music.size){ // If no music is playing, play a new one
 		world.playMusic("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/sounds/records/chirp.ogg", 300)
@@ -1590,9 +1580,9 @@ world.on("join", e => {
 })
 
 // The arguments are: url, duration, volume, pitch. Duration is in seconds. Volume and pitch are normally 1.
-</pre>
+</code></pre>
 <!--<p>// This keeps playing random songs:</p>
-<pre>
+<pre><code>
 // First get the file names
 fetch("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/sounds/music/game/_list.json")
 .then(r => r.json()).then(r => {
@@ -1606,9 +1596,9 @@ fetch("https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/ref
 		}
 	})
 })
-</pre>-->
+</code></pre>-->
 <p>// This occasionly plays random songs in a list:</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 let urls = [ // Example URLs for music
 "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/sounds/music/game/deeper.ogg",
 "https://cdn.freesound.org/previews/831/831502_14312064-lq.mp3",
@@ -1623,10 +1613,10 @@ world.on("tick", () => {
 		lastMusic = now
 	}
 })
-</pre></details>
+</code></pre></details>
 <hr>
 <!--<p>// Although you can create custom dimensions, it is a little glitchy and won't save.</p>
-<pre>
+<pre><code>
 world["aether"] = new ServerWorldDimension(world, "aether")
 world.on("touchportal", e => {
 	if(blockData[e.entity.world.getBlock(e.x,e.y,e.z)].name === "portal"){
@@ -1635,10 +1625,10 @@ world.on("touchportal", e => {
 	}
 })
 // You can use custom terrain generation. See terrain example.
-</pre>
+</code></pre>
 <hr>-->
 <!--<p>// You can add custom commands. It is a bit complicated.</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 world.rootCommandNode.then(
 	CommandNode.l("myCommand", (args,pos,scope) => {
 		return ["This is my command!", ""]
@@ -1652,13 +1642,13 @@ world.rootCommandNode.then(
 // The arguments for CommandNode.l (literal): name,func,info,anonymousFunc,noCheats
 // The arguments for CommandNode.a (argument): name,func,argType,anonymousFunc,noCheats
 // There is a difference between JavaScript arguments and command arguments.
-</pre></details>
+</code></pre></details>
 <hr>-->
 <hr>
 <h2>// Simple claim system</h2>
 <p>// This is a simple claim system. People can claim chunks to prevent other people from breaking it.</p>
 <p>// You can change the names like claims or add your own messages.</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 let claims = {}
 loadFromDB(world.id+"_claims").then(r => {if(r&&r.data) claims = r.data})
 
@@ -1717,10 +1707,10 @@ world.rootCommandNode.then(
 		player.connection.send({type:"customMenu", data:`Your claims:&lt;br&gt;${html}`})
 	}, "See all your claims.", null, true)
 )
-</pre></details>
+</code></pre></details>
 <hr>
 <p>// This adds some useful traveling commands.</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 world.rootCommandNode.then(
 	CommandNode.l("spawn", (args,player,scope) => {
 		if(player.tp) player.tp(world.spawnPoint.x, world.spawnPoint.y, world.spawnPoint.z, "")
@@ -1762,11 +1752,11 @@ world.rootCommandNode.then(
 		}else return ["No one to teleport.","error"]
 	}, null, null, true)
 )
-</pre></details>
+</code></pre></details>
 <hr>
 <h2>// Simple login.</h2>
 <p>// This can prevent people from using other people's username in the same server.</p>
-<details><summary>Code</summary><pre>
+<details><summary>Code</summary><pre><code>
 world["loginDim"] = new ServerWorldDimension(world, "loginDim")
 world["loginDim"].customChunkGenerate = function(){} // empty generation
 world["loginDim"].customChunkPopulate = function(){}
@@ -1807,7 +1797,37 @@ world.rootCommandNode.then(
 		}else return ["Wrong password",""]
 	}, "number", null, true))
 )
-</pre></details>
+</code></pre></details>
+<hr>
+<details><summary>Methods and fields</summary>
+<h2>// Inventory</h2>
+<p>// The inventory is stored in player.inventory.main and player.inventory.hotbar.</p>
+<pre><code>
+world.on("join", e => {
+	// It can be changed like this:
+	e.player.inventory.hotbar[0] = {id:blockIds.grass,amount:1}
+	// That replaces anything that was there before.
+})
+</code></pre>
+<hr>
+<h2>World</h2>
+<p>`world` contains dimensions. Use it like this.</p>
+<pre><code>
+world[""]
+world["nether"]
+world["end"]
+</code></pre>
+<p>it has these methods:</p>
+<pre><code><ul><li>setBlock(x, y, z, blockID, lazy, noOnupdate, remote, keepTags) // lazy stops lighting updates and other updates. noOnupdate only stops events like onupdate onset ondelete. remote prevents it from getting sent to client.</li><li>getBlock(x,y,z)</li><li>updateBlock(x, y, z, lazy, noOnupdate, sx,sy,sz) // sx,sy,sz is where the update came from. Used when a block changes and updates its neighbours.</li><li>setTags(x,y,z,data, remote, lazy) // you can set tags on blocks. for some blocks, it is a integer and it defines which bits that each tag uses, while for other blocks it can be any JSON. (it is kind of weird)</li><li>getTags(x,y,z)</li><li>setTagByName(x,y,z,name,data)</li><li>getTagByName(x,y,z,name)</li></ul></code></pre>
+<pre><code>
+world[""].setBlock(10,50,10, blockIds.stone)
+</code></pre>
+<h2>Player methods</h2>
+<pre><code></code><ul><li>damage(amount, why, nosound,type, x,y,z, attackedBy, velx=0,vely=0,velz=0) // why is a string with the message. type is a string like "hit" "fallsmall" "freeze" "fire" etc. it is not needed. x,y,z is where the damage came from. velx,vely,velz is the velocity to add, calculated from x,y,z if not set.</li><li>getBlock(x,y,z)</li><li>applyEffect(name,level,time, showParticles = true) // there are only 2 effects right now: blur, wither</li><li>newInvItem(data) // data can be block id or object like {id,amount}</li><li>minusOneItem(id) // finds a item with same block id and remove one</li><li>hasItem(id)</li><li>addAchievment(name) // only supports defined achievments. might throw error.</li><li>addDiscovery(block) // it says something like "You discovered block" the first time it is discovered.</li><li>addXP(amount)</li><li>tp(x,y,z,dimension=this.dimension)</li><li>respawn() // sets back to default and go to spawn point</li><li>setGameMode(mode) // mode is like "creative" "survival"</li></ul></code></pre>
+<h2>Player fields</h2>
+<pre><code><ul><li>health</li><li>oxygen</li><li>food</li><li>foodSaturation</li><li>foodExhaustion</li><li>XP</li><li>level</li><li>burnTimer</li><li>die</li></ul></code></pre>
+<p>There is more but they might be less useful</p>
+</details>
 			</section>
       <section id="help_wiki">
 				<h1>MineKhan Wiki</h1>
@@ -18727,7 +18747,7 @@ r 11 y  n  n  n
 					this.dieEffect = 0
 					this.prevDieRotate = 0
 					this.dieRotate = 0
-					this.hidden = true
+					//this.hidden = true
 				}
       }
 			if(this.prevHolding !== this.holding){

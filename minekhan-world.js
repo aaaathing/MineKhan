@@ -22991,6 +22991,7 @@ class Player extends Entity{
 			}
 			this.world.world.event("die", {player:this})
 			this.world.world.sendAll({type:"die",id:this.id,message:this.dieMessage})
+			if(this.sendPos) this.sendPos(true)
 			this.world.world.sendAll({type:"message",data:"§6"+this.dieMessage,fromServer:true})
 		}
 		if(this.die){
@@ -33934,6 +33935,47 @@ window.parent.postMessage({ready:true}, "*")
 			p.sendEffects()
 			world.sendMusicTo(c)
 		}
+		p.sendPos = (force) => {
+			let full = p.pos && p.pos.data
+			if(!full) return
+			//relay immediately, with a per-(sender,recipient) in-flight count (same style as entities), and a
+			//per-recipient baseline so deltas self-heal under flow control: we only advance the baseline when a
+			//packet actually ships, so if a packet is dropped the next one re-sends every change since the last
+			//successfully-delivered state (a one-shot flag change like sneaking/riding can't be lost forever).
+			for(let p2 of world.players){
+				if(p2 === p || !p2.pos) continue
+				//it should send even if too far because client does not handle deleting
+				let key = p2.id
+				let n = p.posInFlight[key] || 0
+				if(n >= maxPerPairRelay && !force) continue //this pair is at its in-flight limit; drop until acked (baseline NOT advanced -> next send resyncs)
+				p.posInFlight[key] = n + 1
+				let base = p.relayBase[key]
+				let full = p.pos.data
+				let out
+				if(!base){ //first sight: send the whole state
+					out = p.pos
+				}else{
+					//delta: only fields that differ from what this recipient last actually got.
+					//Cheap `!==` for primitives; only object/array fields (equipment, crackPos) fall back to
+					//a JSON content compare so in-place/deep mutations (e.g. an armor item's durability
+					//ticking) are still caught.
+					let d = {}
+					for(let k in full){
+						let a = full[k], b = base[k]
+						let same = a === b || a !== null && b !== null && typeof a === "object" && typeof b === "object" && JSON.stringify(a) === JSON.stringify(b)
+						if(!same) d[k] = full[k]
+					}
+					out = {type:"pos", data:d, afk:p.pos.afk, FROM:p.id}
+				}
+				//snapshot current full state as this recipient's baseline; deep-copy only object/array fields
+				//so the baseline never shares a ref with the working state (otherwise in-place mutations
+				//would be invisible); primitives are stored as-is
+				let snap = {}
+				for(let k in full) snap[k] = full[k] !== null && typeof full[k] === "object" ? JSON.parse(JSON.stringify(full[k])) : full[k]
+				p.relayBase[key] = snap
+				p2.connection.send(out) //skip empty deltas (nothing changed)
+			}
+		}
 		c.onmessage = async function(data){
 			if(data.type === "connect"){
 				await p.loadSave()
@@ -33972,6 +34014,7 @@ window.parent.postMessage({ready:true}, "*")
 				//the client sends only changed fields (delta); merge into p.pos so it always holds the full state
 				//(needed for relaying to newly-joined players), then update the player object from the merged state
 				let full = p.pos ? p.pos.data : (p.pos = {type:"pos", data:{}, afk:data.afk}).data
+				p.pos.afk = data.afk
 				if(pos.x !== undefined) full.x = pos.x; if(pos.y !== undefined) full.y = pos.y; if(pos.z !== undefined) full.z = pos.z
 				if(pos.dimension !== undefined) full.dimension = pos.dimension
 				if(pos.velx !== undefined) full.velx = pos.velx; if(pos.vely !== undefined) full.vely = pos.vely; if(pos.velz !== undefined) full.velz = pos.velz
@@ -34037,43 +34080,7 @@ window.parent.postMessage({ready:true}, "*")
 				data.FROM = p.id
 				p.pos.FROM = p.id //same, for when we relay the full cached state on first sight
 
-				//relay immediately, with a per-(sender,recipient) in-flight count (same style as entities), and a
-				//per-recipient baseline so deltas self-heal under flow control: we only advance the baseline when a
-				//packet actually ships, so if a packet is dropped the next one re-sends every change since the last
-				//successfully-delivered state (a one-shot flag change like sneaking/riding can't be lost forever).
-				for(let p2 of world.players){
-					if(p2 === p || !p2.pos) continue
-					//it should send even if too far because client does not handle deleting
-					let key = p2.id
-					let n = p.posInFlight[key] || 0
-					if(n >= maxPerPairRelay) continue //this pair is at its in-flight limit; drop until acked (baseline NOT advanced -> next send resyncs)
-					p.posInFlight[key] = n + 1
-					let base = p.relayBase[key]
-					let full = p.pos.data
-					let out
-					if(!base){ //first sight: send the whole state
-						out = p.pos
-					}else{
-						//delta: only fields that differ from what this recipient last actually got.
-						//Cheap `!==` for primitives; only object/array fields (equipment, crackPos) fall back to
-						//a JSON content compare so in-place/deep mutations (e.g. an armor item's durability
-						//ticking) are still caught.
-						let d = {}
-						for(let k in full){
-							let a = full[k], b = base[k]
-							let same = a === b || a !== null && b !== null && typeof a === "object" && typeof b === "object" && JSON.stringify(a) === JSON.stringify(b)
-							if(!same) d[k] = full[k]
-						}
-						out = {type:"pos", data:d, afk:data.afk, FROM:p.id}
-					}
-					//snapshot current full state as this recipient's baseline; deep-copy only object/array fields
-					//so the baseline never shares a ref with the working state (otherwise in-place mutations
-					//would be invisible); primitives are stored as-is
-					let snap = {}
-					for(let k in full) snap[k] = full[k] !== null && typeof full[k] === "object" ? JSON.parse(JSON.stringify(full[k])) : full[k]
-					p.relayBase[key] = snap
-					p2.connection.send(out) //skip empty deltas (nothing changed)
-				}
+				p.sendPos()
 				}
 				let now = performance.now()
 				if(now - p.lastSendSettings > 1000){
